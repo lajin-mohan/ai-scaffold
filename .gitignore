@@ -1,0 +1,40 @@
+# Local Claude overrides — personal, not shared
+CLAUDE.local.md
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Dependencies
+node_modules/
+vendor/
+.venv/
+__pycache__/
+
+# Build outputs
+dist/
+build/
+out/
+.next/
+.nuxt/
+
+# Logs
+*.log
+logs/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+*.iml
+
+# AI staging area — generated content not for production
+_ai/generated/
+_ai/drafts/
+_ai/experiments/
+
+# Local Claude settings overrides (copy settings.local.example.json to get started)
+.claude/settings.local.json

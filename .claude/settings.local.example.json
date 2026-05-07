@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Edit(apps/**)",
+      "Edit(packages/**)",
+      "Edit(infra/**)",
+      "Edit(scripts/**)",
+      "Write(apps/**)",
+      "Write(packages/**)",
+      "Bash(npm run *)",
+      "Bash(npx *)"
+    ]
+  }
+}

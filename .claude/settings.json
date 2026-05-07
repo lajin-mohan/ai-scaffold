@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(**)",
+      "Bash(docker logs *)",
+      "Edit(docs/**)",
+      "Edit(tasks/**)",
+      "Edit(.claude/memory/**)",
+      "Write(docs/**)",
+      "Write(tasks/**)",
+      "Write(.claude/memory/**)"
+    ]
+  }
+}

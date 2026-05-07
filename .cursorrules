@@ -1,0 +1,138 @@
+# Cursor Rules — {{PROJECT_NAME}}
+# Techversant Infotech AI Project Template
+# Mirrors CLAUDE.md for Cursor IDE users
+
+## Project Context
+
+This project uses the Techversant AI development workflow:
+Analysis → Plan → Arch Design → UX Design → Execution → AI Review → Manual Review → QA → CI/CD → Deploy
+
+Tech stack: {{BACKEND_STACK}} | {{FRONTEND_STACK}} | {{DATABASE}} | {{CLOUD_PROVIDER}}
+
+---
+
+## Core Rules
+
+### Never Do
+- Write code without an approved spec or task
+- Hardcode secrets, tokens, or credentials
+- Use string concatenation in SQL queries
+- Skip tenant_id scoping on any database query  ← SaaS/multi-tenant projects only; remove this rule for single-tenant systems
+- Leave TODO comments without a ticket reference
+- Commit directly to main or dev
+- Write ORM queries in hot paths — use direct SQL
+- Catch exceptions you can't meaningfully handle
+- Add features beyond what the task requires
+
+### Always Do
+- Validate input at every API boundary
+- Return structured error responses with consistent shape
+- Add audit log entries for every state change
+- Use parameterized queries for all SQL
+- Scope every DB query by tenant_id  ← SaaS/multi-tenant only; omit for single-tenant projects
+- Write tests for happy path + at least 2 edge cases
+- Follow Conventional Commits: feat/fix/chore/docs/refactor/test
+- Check `.claude/rules/` for the relevant standard before implementing
+
+---
+
+## Code Style
+
+### General
+- Functions do one thing — if you need "and" to describe it, split it
+- Name variables and functions for what they ARE, not what they DO
+- Explicit over implicit — no magic, no hidden conventions
+- No dead code — delete what isn't used
+- Comments only for non-obvious WHY — not WHAT
+
+### Backend ({{BACKEND_STACK}})
+- Controllers/handlers are thin — delegate to services
+- Services contain business logic — no DB calls directly
+- Repositories handle all data access — return domain objects
+- Errors propagate up — handle only at boundaries
+- All async functions must handle rejection
+
+### Frontend ({{FRONTEND_STACK}})
+- Components are dumb — no business logic, no direct API calls
+- State lives as high as needed, no higher
+- Use design system tokens — no hardcoded colors or spacing
+- Every interactive element must be keyboard-accessible
+- Mobile-first — test at 390px minimum
+
+### Database ({{DATABASE}})
+- Schema changes via migrations only — never alter prod directly
+- Every migration must have a rollback
+- Indexes on all foreign keys and commonly filtered columns
+- No nullable columns without a documented reason
+
+---
+
+## Design System
+
+From `.claude/skills/design-system.md`:
+
+### Colors
+- Primary: `#0A0A0A` (Ink Black)
+- Surface: `#F5F5F0` (Warm Off-White), `#FFFFFF` (Pure White)
+- Accent: `#6B7CFF` (Electric Indigo)
+- Success: `#22C55E` | Warning: `#F59E0B` | Error: `#EF4444` | Info: `#3B82F6`
+- Text Primary: `#0A0A0A` | Secondary: `#6B7280` | Muted: `#9CA3AF`
+- Border: `#E5E7EB` (default), `#D1D5DB` (strong), `#6B7CFF` (focus)
+
+### Typography
+- Headings: Manrope 600/700
+- Body: Instrument Sans 400/500
+- Data/Code: IBM Plex Mono 400/500
+
+### Spacing (8pt grid)
+`4px · 8px · 12px · 16px · 20px · 24px · 32px · 40px · 48px · 64px`
+
+### Border Radius
+`sm: 4px · md: 8px · lg: 12px · xl: 16px · full: 9999px`
+
+---
+
+## File Organization
+
+```
+apps/api/
+  src/
+    routes/       ← request handling only (thin)
+    services/     ← business logic
+    repositories/ ← data access
+    domain/       ← entities, value objects
+    middleware/   ← auth, validation, logging
+    jobs/         ← background job definitions
+
+apps/web/
+  src/
+    pages/        ← route-level components
+    components/   ← reusable UI components
+    hooks/        ← custom React/Vue hooks
+    lib/          ← API client, utilities
+    store/        ← global state
+```
+
+---
+
+## Git Conventions
+
+```
+feat(scope): add candidate search endpoint
+fix(auth): resolve session expiry edge case
+chore(deps): upgrade TypeScript to 5.4
+docs(api): update requisition endpoint reference
+test(candidates): add bulk import edge cases
+```
+
+Branches: `feature/*`, `fix/*`, `chore/*` — always from `dev`
+
+---
+
+## AI Collaboration
+
+When using Cursor AI with this codebase:
+1. Reference the relevant `.claude/rules/` file for the area you're working on
+2. Check `.claude/agents/` for specialized context (security, UX, QA, etc.)
+3. Use `.claude/templates/` for structured outputs (BRD, ADR, API contracts)
+4. Generated code goes to `_ai/drafts/` first — review before promoting to `apps/` or `packages/`
