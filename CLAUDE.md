@@ -188,7 +188,8 @@ Run via `/command-name` in Claude Code.
 | `/create-api` | Full REST API contract (endpoints, request/response, errors, async pattern, migrations) | Stage 3 |
 | `/architecture-review` | Architecture critique against project invariants and compliance rules | Stage 3 |
 | `/estimate` | Three-point effort estimate with risk weights and phasing recommendation | Stage 2/3 |
-| `/review` | Parallel code review: backend + frontend + security reviewers | Stage 6 |
+| `/start-task` | Plan-and-confirm execution: read spec → propose numbered plan → wait for approval → execute → verify. Use for any task >3 steps or long-running. | Stage 5 |
+| `/review` | Parallel code review: backend + frontend + security + qa + architect reviewers | Stage 6 |
 | `/gen-tests` | Writes complete runnable tests with assertions (unit, integration, component, snapshot) | Stage 5/8 |
 | `/deployment-review` | Deployment readiness checklist, migration plan, smoke tests, rollback procedure | Stage 10 |
 
@@ -271,6 +272,8 @@ Before marking any PR ready:
 | `.claude/rules/branching-rules.md` | Branch model, commit format, PR rules, release tagging |
 | `.claude/rules/token-usage-rules.md` | When to use AI, model selection, cost awareness |
 | `.claude/rules/dod-rules.md` | Definition of Done - story, sprint, and release level |
+| `.claude/rules/definition-of-ready.md` | Definition of Ready - gates `BACKLOG → IN PROGRESS` (parallel to DoD) |
+| `.claude/rules/manual-review-checklist.md` | Stage 7 human-reviewer checklist — what AI reviewers can't catch (product fit, UX coherence, architecture direction, team-knowledge transfer) |
 | `.claude/rules/compliance-rules.md` | GDPR and ISO 27001 requirements and severity table |
 
 ---

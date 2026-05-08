@@ -49,13 +49,14 @@ Update in real time. One task in progress at a time. Add a Results section when 
 - [x] Mirrored 5-rule summary into `.cursorrules` under new "AI Coding Rules (top priority)" section
 - [x] Mirrored 5-rule summary into `.github/copilot-instructions.md` Project Context section
 
-### Phase 3 — Productivity gaps (next: chore/productivity branch)
+### Phase 3 — Productivity gaps ✅ DONE (chore/productivity)
 
-- [ ] Create `.claude/rules/definition-of-ready.md` — gate `BACKLOG → READY → IN PROGRESS` parallel to dod-rules.md
-- [ ] Create `.claude/commands/start-task.md` — bundles "read LLD/spec → read adjacent code → propose short plan → wait for YES → execute"
-- [ ] Update `.claude/commands/review.md` — add qa-reviewer + architect to parallel review (not just backend/frontend/security)
-- [ ] Create `.claude/rules/manual-review-checklist.md` (or extend review-rules.md Stage-7 section) — what humans look for that AI can't
-- [ ] Add new rule + new command to `CLAUDE.md` and `HOW-TO-USE.md` reference tables
+- [x] Created `.claude/rules/definition-of-ready.md` — gates `BACKLOG → IN PROGRESS` parallel to dod-rules.md (story / sprint / feature levels)
+- [x] Created `.claude/commands/start-task.md` — 5-phase plan-and-confirm execution ritual (context priming → plan → wait → execute → verify)
+- [x] Extended `.claude/commands/review.md` — now invokes 5 reviewers in parallel: backend + frontend + security + qa + architect (was 3); added Reviewer Selection Matrix; added AC compliance + architectural drift sections to output
+- [x] Created `.claude/rules/manual-review-checklist.md` — Stage 7 four-question framework (product fit, user fit, architecture fit, team-knowledge transfer); time budgets per PR size; reviewer anti-patterns
+- [x] Registered `/start-task` in `CLAUDE.md` Custom Commands table and `HOW-TO-USE.md` Quick Reference
+- [x] Registered `definition-of-ready.md` and `manual-review-checklist.md` in `CLAUDE.md` Rules Reference table
 
 ### Phase 4 — Real scaffolding artifacts (next: chore/scaffolding branch)
 
