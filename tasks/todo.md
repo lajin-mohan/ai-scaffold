@@ -58,15 +58,40 @@ Update in real time. One task in progress at a time. Add a Results section when 
 - [x] Registered `/start-task` in `CLAUDE.md` Custom Commands table and `HOW-TO-USE.md` Quick Reference
 - [x] Registered `definition-of-ready.md` and `manual-review-checklist.md` in `CLAUDE.md` Rules Reference table
 
-### Phase 4 — Real scaffolding artifacts (next: chore/scaffolding branch)
+### Phase 4 — Real scaffolding artifacts ✅ DONE (chore/scaffolding)
 
-- [ ] Create `.github/workflows/ci.yml` — Node + PHP + React + Postgres jobs per declared stack
-- [ ] Create `.env.example` with placeholder DB/auth/email/storage/aws vars
-- [ ] Create `.editorconfig` — shared formatting baseline
-- [ ] Create `.gitattributes` — fix CRLF warnings, declare text/binary, force LF for shell scripts
-- [ ] Create `LICENSE` — Proprietary, Techversant
-- [ ] Create `CONTRIBUTING.md` — points to CLAUDE.md and HOW-TO-USE.md
-- [ ] Create `SECURITY.md` — vulnerability reporting policy
-- [ ] Add example file in `apps/api/` showing route → service → repository → domain pattern
-- [ ] Add example file in `packages/domain/` showing pure domain entity
-- [ ] Wire `.claude/hooks/pre-review.sh` into `.claude/settings.json` as a real `PostToolUse` hook
+- [x] Created `.github/workflows/ci.yml` — 7-job pipeline: lint, test-unit, test-integration (real Postgres service), build, audit, coverage, ci-passed gate. PHP block included as commented-out template.
+- [x] Created `.env.example` — every runtime variable declared with placeholder + comment, organised by concern (runtime, DB, cache, auth, multi-tenancy, email, storage, rate-limit, frontend, observability)
+- [x] Created `.editorconfig` — 2-space indent default, 4-space for Python/PHP, tabs for Makefiles, LF line endings except .bat/.cmd/.ps1
+- [x] Created `.gitattributes` — fixes the CRLF warnings, enforces LF on shell scripts, normalises lockfiles, marks binary types, linguist hints
+- [x] Created `LICENSE` — Proprietary, Techversant Infotech, 2026
+- [x] Created `CONTRIBUTING.md` — entry point pointing to CLAUDE.md, HOW-TO-USE.md, ai-coding-rules.md, branching/review/DoD/DoR rules
+- [x] Created `SECURITY.md` — vulnerability reporting policy, response timeline, scope, safe-harbour
+- [x] Created example layered code in `apps/api/src/`:
+  - `routes/applications.route.ts` — thin handler with Zod validation + permission check + envelope response
+  - `services/applications.service.ts` — business logic + typed errors + audit + jobs
+  - `repositories/applications.repository.ts` — SQL only, tenant-scoped, optimistic locking
+- [x] Created `packages/domain/src/application.ts` — pure entity with `ApplicationStatus` enum, state-machine via `canTransition` + `transitionApplication`, `InvalidTransitionError`
+- [x] Created `apps/api/migrations/0001_create_applications.sql` — reversible migration with tenant_id, partial indexes, status CHECK constraint
+- [x] Created `apps/api/src/README.md` — layered architecture quick reference
+- [x] Wired `.claude/hooks/pre-review.sh` into `.claude/settings.json` as a `UserPromptSubmit` hook with matcher `/review` and 300s timeout
+- [x] Added permission allow-list entries for `npm run lint*`, `npm run typecheck*`, `npm test*`, `npm run test*`, `git status*`, `git diff*`, `git log*`, `git branch*`, `bash .claude/hooks/pre-review.sh` so the hook + dev verification run without permission prompts
+- [x] Added "Reference example" section in `CLAUDE.md` linking to the example files
+
+### Results — All Phases
+
+The scaffold is now self-instructing for AI tools and self-bootstrapping for new projects:
+
+1. **Phase 1** fixed broken references and added Stage 0 detection — `/what-next` now correctly identifies an uninitialized scaffold and routes to `/bootstrap`.
+2. **Phase 2** added the top-priority `ai-coding-rules.md` — codifies hallucination guards, plan-and-confirm, production-grade mandate, AI-readability hard limits, and verification mandate. Mirrored into Cursor and Copilot.
+3. **Phase 3** added `/start-task` (the productivity command), Definition of Ready, expanded `/review` from 3 to 5 reviewers, and the Stage-7 manual review checklist.
+4. **Phase 4** turned the scaffold into a working starter: real CI workflow, real `.env.example`, real `.gitattributes` (no more CRLF noise), license + contributing + security policy, and a complete layered example flow (route → service → repo → domain) with a migration template — so AI cold-starts can read real code instead of guessing.
+
+### Merge log
+
+All phases merged into `dev` in this order (matches dependency chain):
+1. `chore/ai-coding-rules` (Phase 2) — clean merge
+2. `chore/productivity` (Phase 3) — `tasks/todo.md` conflict resolved by taking the union of Phase 2's detailed entry + Phase 3's DONE entry
+3. `chore/scaffolding` (Phase 4) — `tasks/todo.md` conflict resolved by taking the union of all phase entries + Phase 4's Results section
+
+`dev` then merged into `main`. Both branches now reflect the full state.

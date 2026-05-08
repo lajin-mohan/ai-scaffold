@@ -82,6 +82,17 @@ project-root/
 +-- _ai/                # AI-generated drafts, experiments (not production code)
 ```
 
+### Reference example
+
+A working layered example lives in `apps/api/src/` — read it before generating new code:
+- `apps/api/src/routes/applications.route.ts` — thin route handler with validation + auth
+- `apps/api/src/services/applications.service.ts` — business logic, side effects, typed errors
+- `apps/api/src/repositories/applications.repository.ts` — SQL only, returns domain types
+- `packages/domain/src/application.ts` — pure entity with state machine
+- `apps/api/migrations/0001_create_applications.sql` — reversible migration with tenant scoping
+
+See `apps/api/src/README.md` for the layered architecture quick reference.
+
 ### Architectural Invariants
 
 > **Setup note:** The invariants below are defaults for a multi-tenant SaaS product. During project setup, review each one and explicitly accept, modify, or remove it based on your system type (single-tenant, API-only, mobile, website, etc.). Record any changes as ADRs in `docs/architecture/adr/`.
