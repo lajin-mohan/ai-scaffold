@@ -1,5 +1,17 @@
 # {{PROJECT_NAME}}
 
+> [!IMPORTANT]
+> **TEMPLATE — NOT YET INITIALIZED**
+>
+> This repository is the Techversant AI project template. The `{{PLACEHOLDERS}}` below (`{{PROJECT_NAME}}`, `{{BACKEND_STACK}}`, etc.) are **intentional, not defects**.
+>
+> After copying this template into a new project repo, run `/bootstrap` to fill them in. Until then:
+> - CI gates skip stack jobs gracefully (no `package.json` → no Node jobs run; `ci-passed` still succeeds)
+> - `/review` runs with `PRE_REVIEW_ALLOW_UNCONFIGURED=1` so it works without configured checks; `/bootstrap` removes this once real checks are wired
+> - `tasks/todo/` and `tasks/done/` are empty until you create per-ticket files
+>
+> See [`HOW-TO-USE.md`](./HOW-TO-USE.md) and [`CONTRIBUTING.md`](./CONTRIBUTING.md).
+
 > {{ONE_LINE_PURPOSE}}
 
 ---

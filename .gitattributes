@@ -61,3 +61,12 @@ yarn.lock            -diff
 composer.lock        -diff
 poetry.lock          -diff
 pnpm-lock.yaml       -diff
+
+# Merge drivers — append-only files auto-resolve via union strategy.
+# Parallel additions from different branches are combined instead of conflicting.
+# Use ONLY for files that are genuinely append-only or where reordered entries
+# are acceptable. Do NOT add status-tracking files where the same line is edited
+# in place (e.g., per-ticket markdown is fine; a shared todo list is not).
+CHANGELOG.md             merge=union
+tasks/lessons.md         merge=union
+docs/architecture/adr/** merge=union

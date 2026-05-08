@@ -36,5 +36,12 @@ _ai/generated/
 _ai/drafts/
 _ai/experiments/
 
+# AI ephemera — planning, scratch, intermediate outputs (per-clone working state)
+.claude/work/
+
+# Legacy tracked file — replaced by tasks/todo/ per-ticket files + CHANGELOG.md.
+# Untracked via `git rm --cached tasks/todo.md`. Kept locally; new edits stay local.
+tasks/todo.md
+
 # Local Claude settings overrides (copy settings.local.example.json to get started)
 .claude/settings.local.json
