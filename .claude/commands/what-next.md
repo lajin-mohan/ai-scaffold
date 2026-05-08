@@ -18,11 +18,12 @@ Nobody needs to remember the workflow. Nobody skips a gate. Run this at any poin
 ## How It Works
 
 1. Read `CLAUDE.md` current state section, `tasks/todo.md`, `docs/` folder structure, and `.claude/memory/project-context.md`
-2. **Run Stage 0 — Bootstrap detection first.** If the scaffold is uninitialized, output the bootstrap instruction and stop. No other stage is meaningful until Stage 0 is complete.
-3. Otherwise, determine which stage the project or feature is currently in
-4. Validate that all required artifacts for that stage exist and are complete
-5. Identify what is blocking progress to the next stage
-6. Output a single, unambiguous next action
+2. Read `.claude/settings-overrides.json` to determine which features are active (see [Settings Reference](#settings-reference))
+3. **Run Stage 0 — Bootstrap detection first.** If the scaffold is uninitialized, output the bootstrap instruction and stop. No other stage is meaningful until Stage 0 is complete.
+4. Otherwise, determine which stage the project or feature is currently in
+5. Validate that all required artifacts for that stage exist and are complete
+6. Identify what is blocking progress to the next stage
+7. Output a single, unambiguous next action
 
 ---
 
@@ -337,3 +338,33 @@ before proceeding to Stage 6.
 - Fast lane paths are the only valid exception to stage skipping — and only when the work genuinely qualifies
 - If an artifact exists but appears incomplete or has open questions, mark it ⚠️ not ✅
 - The "Next Action" must be a single, concrete instruction — not a list of options
+
+---
+
+## Settings Reference
+
+Commands read feature flags from `.claude/settings-overrides.json` (committed) and `.claude/settings-local.json` (gitignored, local overrides).
+
+### Active Features
+Based on `settings-overrides.json` `features` section:
+
+| Feature | Effect on /what-next |
+|---|---|
+| `gdpr: true` | GDPR compliance section appears in Stage 1 (BRD) requirements |
+| `iso27001: true` | ISO 27001 controls checked in architecture review |
+| `accessibility: true` | WCAG 2.1 AA checks appear in QA stage and /review |
+| `auditLog: true` | Audit trail requirement appears in NFRs |
+| `asyncJobs: true` | Async operation pattern expected for long-running tasks |
+| `iac` | If `deferred`, IaC/infrastructure stage is marked as optional |
+
+### Disabled Features
+When a feature is `false` in settings, the corresponding checks are **skipped** — not hidden. `/what-next` shows them as:
+
+```
+(off — disabled by project settings)
+```
+
+This prevents the team from forgetting what was intentionally turned off.
+
+### Viewing Current Settings
+Run `/settings` to see all active feature flags and their current values.

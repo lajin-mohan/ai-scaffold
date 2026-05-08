@@ -83,11 +83,49 @@ All HTTP responses must include:
 
 ```
 Strict-Transport-Security: max-age=31536000; includeSubDomains
-Content-Security-Policy: default-src 'self'; ...
 X-Content-Type-Options: nosniff
 X-Frame-Options: DENY
 Referrer-Policy: strict-origin-when-cross-origin
 ```
+
+### Content-Security-Policy (CSP) Configuration
+
+The CSP header value depends on the application's rendering mode. Set via
+`apps/api/src/middleware/security-headers.ts`.
+
+**JSON API (no browser rendering — preferred):**
+```
+Content-Security-Policy: default-src 'none'; frame-ancestors 'none';
+  form-action 'self'; base-uri 'self'; object-src 'none'
+```
+Restrictive API-only CSP: no scripts, no frames, no inline styles. See
+`security-headers.ts` for the exact header value used.
+
+**SPA with browser JS (React/Vue/Next.js frontend):**
+```
+Content-Security-Policy: default-src 'self'; script-src 'self';
+  style-src 'self' 'unsafe-inline'; img-src 'self' data: https:;
+  connect-src 'self' https://api.example.com; frame-ancestors 'none'
+```
+Note: `'unsafe-inline'` for styles is a compromise for SPA development.
+Use a nonce or hash-based CSP for stricter security — see OWASP CSP Cheat Sheet.
+
+### OWASP Top 10 Mapping
+
+Each OWASP Top 10 category maps to specific rules and implementations:
+
+| OWASP Category | How This Project Addresses It |
+|---|---|
+| **A01 — Broken Access Control** | `tenant_id` scoping at repository layer; permission-based auth (`permissions.includes()`); 404 vs 403 distinction hides existence of hidden resources |
+| **A02 — Cryptographic Failures** | bcrypt ≥12 for passwords; AES-256 at rest (DB-level); TLS 1.2+ in transit; opaque session tokens (no JWT embedded claims) |
+| **A03 — Injection** | Parameterized SQL only (`$1`, `?` placeholders); input validation at every API boundary (Zod schemas); no string interpolation in queries |
+| **A04 — Insecure Design** | Threat modeling in BRD; security review at Stage 6; architectural review gate; `/architecture-review` command |
+| **A05 — Security Misconfiguration** | Security headers middleware (HSTS, CSP, X-Frame-Options); CORS middleware with origin allowlist; explicit opt-out documentation for unauth routes |
+| **A06 — Vulnerable Components** | `npm audit --audit-level=high` in CI; Semgrep SAST (`p/owasp-top-10` rule); monthly outdated-package review |
+| **A07 — Auth Failures** | Opaque session tokens with absolute + inactivity timeouts; 5-failure login lockout; MFA requirement documented for privileged access (ISO 27001) |
+| **A08 — Data Integrity Failures** | Transactional outbox pattern for durable side effects; idempotency keys (composite `(tenant_id, key)` PK); version column for optimistic locking |
+| **A09 — Logging & Monitoring Failures** | Audit log service (`audit.service.ts`); structured logging with `tenant_id`, `user_id` context; Sentry integration (`SENTRY_DSN`); alerting on auth failures |
+| **A10 — Server-Side Request Forgery** | No URL-fetching from user input; if needed, enforce explicit allowlist of outbound IPs/domains via env vars |
 
 ---
 

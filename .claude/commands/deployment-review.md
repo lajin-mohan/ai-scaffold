@@ -21,6 +21,19 @@ Reviews deployment readiness for a feature or release. Invokes `devops-engineer`
 6. **Check runbook** — is there a deployment runbook? Is it current?
 7. **Go/No-Go decision** — with explicit blocking conditions
 
+## Feature Flags (Settings)
+
+This command reads `.claude/settings-overrides.json`. Sections are shown/hidden based on active features:
+
+| Feature flag | Effect on deployment review |
+|---|---|
+| `iac: true` | IaC/repo setup checks included; infrastructure migration path reviewed |
+| `iac: deferred` | IaC section marked as "deferred — not reviewed" |
+| `auditLog: true` | Audit log migration compatibility checked |
+| `asyncJobs: true` | Background job queue migration reviewed |
+| `gdpr: true` | Data retention and erasure pipeline verified |
+| `mfa: true` | MFA configuration rollout checked |
+
 ## Deployment Checklist
 
 ### Pre-Deployment

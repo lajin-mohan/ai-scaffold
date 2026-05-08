@@ -1,160 +1,170 @@
 # /bootstrap
 
-Initialise this scaffold for a real project. Walks through identity, stack, tenancy, and compliance decisions **one at a time**, then writes the answers into every file that holds a `{{PLACEHOLDER}}`.
+Initialise this scaffold for a real project. Walks through 7 essential identity questions, then sets smart feature defaults based on project type.
 
-`/bootstrap` is the only valid response to a Stage 0 result from `/what-next`. It exists because every later stage gate (BRD, architecture, estimation, review) reasons about a declared project — and the scaffold ships with no declarations.
+`/bootstrap` is the only valid response to a Stage 0 result from `/what-next`.
 
 ---
 
 ## Usage
 
 ```
-/bootstrap                      # interactive mode — walks through one decision at a time
+/bootstrap                      # interactive mode — 7 questions + feature summary
 /bootstrap --resume             # continue an interrupted bootstrap
-/bootstrap --check              # validate the scaffold is fully bootstrapped (no placeholders left)
+/bootstrap --check              # validate the scaffold is fully bootstrapped
+/bootstrap --project-type       # show default feature flags for each project type
 ```
 
 ---
 
-## Operating Rules
+## Core Principle
 
-1. **One decision at a time.** Ask the user for one value, wait for the answer, confirm understanding, then move on. Never present a single mega-question with 12 fields.
-2. **Confirm before writing.** After each answer, restate the decision in one sentence. After all decisions are gathered, present a single summary block and ask for explicit approval before any file is touched.
-3. **Idempotent.** If `/bootstrap` is run on a partially-initialised scaffold, detect what's already filled in and only ask for what's missing. Do not overwrite a real value with a placeholder.
-4. **No assumptions.** If the user is unsure of a value, mark it `{{TBD}}` and add it to the open questions in `tasks/todo.md` — never guess.
-5. **Plan-and-confirm protocol** (see `.claude/rules/coding-standards.md` and the AI coding rules) applies here too — restate the change list before applying it.
+**Identity questions first. Feature flags are shown, not asked.**
+
+The team chooses a project type (MVP, Production SaaS, Internal Tool, Public API) and the scaffold auto-enables appropriate features. The team can override any flag before confirming — but the default is sensible and requires no fine-tuning for a standard project.
 
 ---
 
-## Decisions Gathered
+## Bootstrap Flow (3 Steps)
 
-Ask in this order. Stop after each block; confirm; continue.
+### Step 1 — Project Identity (7 questions)
 
-### Block 1 — Project Identity
+Ask one at a time. Confirm after each. Default shown in brackets.
 
-1. **Project name** — short, machine-friendly slug (`hire-ats`, `billing-portal`). Used in package names, docker tags, repo name.
-2. **Display name** — human-readable (`Hire ATS`, `Billing Portal`). Used in README, release notes.
-3. **One-line purpose** — what this project does, in one sentence. Drives BRD and SOW summaries.
-4. **Project type** — pick one: `SaaS` / `Internal Tool` / `Public API` / `Platform` / `Mobile App` / `Website`.
-5. **Status** — pick one: `Active Development` / `MVP` / `Production` / `Maintenance`.
-6. **Owner email** — defaults to the value in `CLAUDE.md`. Confirm or override.
+1. **Project name** — short slug for package names, docker tags, repo name (e.g. `hire-ats`)
+2. **Display name** — human-readable (e.g. `Hire ATS`)
+3. **One-line purpose** — what this project does in one sentence
+4. **Project type** — pick one:
+   - `mvp` — fast start, all features off by default, enable as needed
+   - `production-saas` — GDPR, ISO27001, SAST, MFA, audit on by default
+   - `internal-tool` — preCommitFull on, compliance off by default
+   - `public-api` — SAST, MFA, full CI/CD on by default
+5. **Multi-tenant?** `true` / `false` — drives tenant_id scoping in all queries
+6. **Owner email** — defaults to value in CLAUDE.md (just confirm)
+7. **First epic name** — the initial body of work (e.g. `Core application workflow`)
 
-### Block 2 — Tech Stack
+### Step 2 — Feature Flags Summary
 
-For each row, ask the user. Offer the **Techversant default** as the suggestion (PHP/Node + TypeScript + ReactJS + PostgreSQL + AWS, multi-tenant SaaS) but accept any answer.
-
-7. **Backend** — e.g. `Node.js 20 + TypeScript + Fastify`, `PHP 8.3 + Laravel 11`, `Python 3.12 + FastAPI`.
-8. **Frontend** — e.g. `React 18 + Vite + TypeScript`, `Next.js 14`, `Vue 3`.
-9. **Database** — e.g. `PostgreSQL 16`, `MySQL 8`, `MongoDB 7`.
-10. **Cache / Queue** — e.g. `Redis 7`, `pg-boss`, `BullMQ`. May be `None` for small projects.
-11. **Auth strategy** — e.g. `Opaque session tokens (HttpOnly cookies)`, `OAuth2 + sessions`, `SSO via SAML`.
-12. **Email provider** — e.g. `Resend`, `SendGrid`, `AWS SES`. May be `None` if no transactional email.
-13. **Storage** — e.g. `AWS S3`, `Cloudflare R2`. May be `None`.
-14. **Cloud / hosting** — e.g. `AWS ECS Fargate`, `GCP Cloud Run`, `On-prem`.
-15. **IaC tool** — e.g. `Terraform`, `Pulumi`, `AWS CDK`. May be `None` for early projects.
-16. **CI/CD platform** — e.g. `GitHub Actions`, `GitLab CI`, `CircleCI`.
-17. **Project mgmt tool** — e.g. `Jira`, `Linear`, `GitHub Projects`. Drives the `jira-sync.py` hook configuration.
-18. **Test framework (backend)** — e.g. `Vitest`, `Jest`, `PHPUnit`, `pytest`.
-19. **Test framework (frontend)** — e.g. `Vitest + @testing-library/react`, `Playwright`.
-20. **Linter/formatter** — e.g. `ESLint + Prettier`, `Biome`, `PHP CS Fixer + PHPStan`, `Ruff + Black`.
-
-### Block 3 — Multi-Tenancy & Compliance
-
-21. **Multi-tenant?** `true` / `false`. Drives the `tenant_id` rule in `.claude/rules/security-rules.md`, the database schema defaults, and the API contract template. **If false**, all tenant-isolation rules become inactive.
-22. **Compliance scope** — pick all that apply: `GDPR`, `ISO27001`, `HIPAA`, `SOC2`, `PCI-DSS`, or `N/A`. Drives `.claude/rules/compliance-rules.md`. Default Techversant assumption: `GDPR + ISO27001`.
-
-### Block 4 — Repository Setup
-
-23. **Initialise git?** `yes` / `no`. If yes, run `git init`, create `main` and `dev` branches, set up the `.gitignore`. If the repo is already a git repo, skip.
-24. **Repo URL** — for README and package metadata. Optional — may be `TBD`.
-25. **License** — `MIT`, `Apache-2.0`, `Proprietary`, etc. Defaults to `Proprietary` for client work.
-
-### Block 5 — Initial Project Context
-
-26. **First epic name** — the first body of work this project will tackle. Becomes `{{CURRENT_EPIC}}` in `.claude/memory/project-context.md`.
-27. **Target milestone date** — first delivery target (ISO date). May be `TBD`.
-
----
-
-## Confirmation Step
-
-After all answers are gathered, present a single summary block:
+After the 7 questions, show the defaults for the selected project type:
 
 ```
-## Bootstrap Summary — please confirm before I write any files
+## Feature flags for [project-type] (defaults)
+
+  accessibility    off      WCAG 2.1 AA (screen readers, keyboard nav)
+  gdpr             on       GDPR data subject rights, lawful basis
+  iso27001         on       ISO 27001 access control, encryption, logging
+  sast             on       SAST (Semgrep) — SQL injection, hardcoded secrets
+  preCommitFull    on       lint + typecheck + tests in pre-commit hook
+  iac              on       Infrastructure as Code (Terraform/Pulumi)
+  cicd             full     Full CI/CD pipeline
+  mfa              on       Multi-factor authentication for privileged access
+  auditLog         on       Audit trail for all state changes
+  asyncJobs        on       Background job system (pg-boss, BullMQ)
+
+Edit any before confirming? (y/n)
+```
+
+- If `n` → proceed with defaults
+- If `y` → show the settings file in an editor-friendly block, the team copies and edits, pastes back. Bootstrap reads the edited version before writing.
+
+### Step 3 — Confirm and Write
+
+```
+## Bootstrap Summary — confirm to write files
 
 Project Identity:
-  Name:              {{value}}
-  Display name:      {{value}}
-  Purpose:           {{value}}
-  Type:              {{value}}
-  Status:            {{value}}
-  Owner:             {{value}}
+  Name:          hire-ats
+  Display name:  Hire ATS
+  Purpose:       Applicant tracking system for SMBs
+  Type:          production-saas
+  Multi-tenant:  true
+  Owner:         lajinmj@gmail.com
+  Epic:          Core application workflow
 
-Tech Stack:
-  Backend:           {{value}}
-  Frontend:          {{value}}
-  Database:          {{value}}
-  ... (all stack rows)
+Feature Flags:
+  gdpr: on  |  iso27001: on  |  sast: on  |  preCommitFull: on
+  iac: on   |  cicd: full     |  mfa: on   |  auditLog: on  |  asyncJobs: on
+  accessibility: off
 
-Tenancy & Compliance:
-  Multi-tenant:      {{true|false}}
-  Compliance scope:  {{value}}
+Files to write/modify:
+  - CLAUDE.md (project identity + tech stack placeholders resolved)
+  - .cursorrules, .github/copilot-instructions.md, README.md
+  - .claude/settings-overrides.json (identity + features)
+  - .gitignore (add settings-local.json)
 
-Repository:
-  Init git:          {{yes|no}}
-  Repo URL:          {{value}}
-  License:           {{value}}
-
-Initial Context:
-  First epic:        {{value}}
-  Target milestone:  {{value}}
-
-Files I will modify:
-  - CLAUDE.md (Project Identity, Tech Stack, Current State sections; remove TEMPLATE banner)
-  - .cursorrules (Project Context, Tech Stack rows, Backend/Frontend/Database headings)
-  - .github/copilot-instructions.md (Project Context, Stack)
-  - README.md (Title, Overview, Tech Stack, Setup commands; remove TEMPLATE banner)
-  - .env.example (uncomment and fill stack-specific blocks; rate limits, AWS region, email provider)
-  - .github/workflows/ci.yml (uncomment PHP block if backend includes PHP; the detect-stack job stays in place)
-  - .claude/hooks/pre-review.sh (uncomment lint/typecheck/test commands matching the chosen stack)
-  - .claude/settings.json (REMOVE the `PRE_REVIEW_ALLOW_UNCONFIGURED=1` env-var prefix from the /review hook command — bootstrapped projects must NOT bypass quality gates)
-  - .claude/memory/project-context.md (Epic, Milestone)
-  - .gitignore (only if you said yes to git init and it's missing entries)
-
-Files I will create (only if missing):
-  - tasks/todo/.gitkeep, tasks/done/.gitkeep (per-ticket task workflow)
-  - First per-ticket file under tasks/todo/ if user provided initial TBD items
-
-Reply 'confirm' to proceed, or correct any value above.
+Reply 'confirm' to proceed.
 ```
-
-Only on explicit `confirm` proceed to the write step. No assumed approval.
 
 ---
 
 ## Write Step
 
-For every file in the "Files I will modify" list, replace placeholders. Rules:
+On `confirm`, write in this order:
 
-- **Match adjacent style.** Don't rewrite sections — replace the placeholder and leave surrounding text untouched.
-- **Preserve comments and caveats.** The "multi-tenant only" caveats in the rule files must remain even after `{{IS_MULTI_TENANT}} = true` — they document why the rule exists.
-- **For SaaS / multi-tenant = true:** keep all `tenant_id` rules active. Tag the project context memory with `multi_tenant: true` so future commands can read it.
-- **For multi-tenant = false:** remove or strike-through every `tenant_id` rule, every "tenant isolation" check in agents, and every `tenant_id` column in templates. Add an ADR `docs/architecture/adr/0001-single-tenant-architecture.md` documenting the decision.
-- **For compliance = N/A:** add a single line to `.claude/rules/compliance-rules.md` stating "This project's compliance scope is N/A — rules below are reference only and not enforced." Do not delete the file.
-- **For each stack value:** replace every occurrence in all files in one pass.
-- **For `.env.example`:** uncomment the AWS region block; set `EMAIL_PROVIDER` to the chosen provider; set `S3_REGION` to the chosen AWS region. Leave actual secrets blank (this file only declares names).
-- **For `.github/workflows/ci.yml`:** if `BACKEND_STACK` includes PHP, uncomment every `# Uncomment for PHP backend` block and the `Setup PHP` step in `lint`. Leave the `detect-stack` job and `needs.detect-stack.outputs.has-*` gates in place — they continue to add value once the project has real stack files.
-- **For `.claude/hooks/pre-review.sh`:** uncomment the `run_check` lines that match the chosen stack:
-  - Node/TS: `ESLint`, `TypeScript`, `Unit Tests`, `npm audit`
-  - PHP: `PHP CS Fixer`, `PHPStan` (add to type checking section), `PHPUnit`, `composer audit`
-  - Python: `Ruff`, `Pyright`, `pytest`, `pip-audit`
-- **For `.claude/settings.json`:** delete the `PRE_REVIEW_ALLOW_UNCONFIGURED=1 ` prefix from the `/review` hook command. After bootstrap, the gate fails closed if checks aren't actually configured — this is the desired behaviour for real projects.
+1. **`.claude/settings-overrides.json`** — the single source of truth. Contains project identity + all feature flags. This file is committed and shared.
 
-After writing, run **two** verification passes:
+2. **`CLAUDE.md`** — replace all `{{PLACEHOLDER}}` tokens with values from settings-overrides.json. Sections updated:
+   - Project Identity (name, display, purpose, type, status, owner, multi-tenant)
+   - Tech Stack (backend, frontend, DB, etc. — ask in a follow-up sub-step if not already in settings)
+   - Current State (firstEpic)
+   - Remove the "TEMPLATE STATE" banner after all placeholders resolved
 
-1. `grep -rn '{{[A-Z_]*}}'` — must return zero matches (all placeholders filled).
-2. `grep -n 'PRE_REVIEW_ALLOW_UNCONFIGURED' .claude/settings.json` — must return zero matches (opt-out removed). If found, fail bootstrap and tell the user to remove it manually if they want template-permissive behaviour.
+3. **`.cursorrules`**, **`.github/copilot-instructions.md`**, **`README.md`** — identity sections only
+
+4. **`.gitignore`** — ensure `settings-local.json` is gitignored
+
+5. **Compliance docs** — only created if their feature flag is `true`:
+   - `accessibility: true` → create `docs/compliance/accessibility.md`
+   - `gdpr: true` → ensure GDPR section in `compliance-rules.md` is active
+   - `iso27001: true` → ensure ISO 27001 section in `compliance-rules.md` is active
+
+6. **`settings-local.example.json`** — add reference showing local override format
+
+---
+
+## Tech Stack (Sub-step if not in settings)
+
+If `.claude/settings-overrides.json` has no `techStack` section (first bootstrap), ask after identity:
+
+```
+Tech Stack (enter or press Enter for Techversant defaults):
+
+  Backend:   Node.js 20 + TypeScript + Fastify
+  Frontend:  React 18 + Vite + TypeScript
+  Database:  PostgreSQL 16
+  Cache:     pg-boss
+  Auth:      Opaque session tokens (HttpOnly cookies)
+  Email:     Resend
+  Storage:   AWS S3
+  Cloud:     AWS ECS Fargate
+  IaC:       Terraform
+  CI/CD:     GitHub Actions
+  PM:        Linear
+
+Press Enter to accept all defaults, or type values to override.
+```
+
+These are stored in `settings-overrides.json` under `techStack` and flow into `CLAUDE.md`, `ci.yml`, `package.json` scripts, etc.
+
+---
+
+## Verification
+
+After write, run two checks:
+
+1. `grep -rn '{{[A-Z_]*}}' .` — must return 0 matches
+2. `grep 'PRE_REVIEW_ALLOW_UNCONFIGURED' .claude/settings.json` — must return 0 matches
+
+If either fails, report the survivors and stop. The scaffold is not "bootstrapped" until both pass.
+
+---
+
+## Idempotency
+
+- If `settings-overrides.json` already exists, read it and only ask for missing values
+- Never overwrite a real value with a placeholder
+- `--resume` loads partial state from `tasks/bootstrap-state.json` (gitignored)
+- Running bootstrap on an already-bootstrapped scaffold → one-line: "Already bootstrapped. Run `/settings` to view or `/bootstrap --check` to verify."
 
 ---
 
@@ -163,22 +173,47 @@ After writing, run **two** verification passes:
 ```
 ## Bootstrap Complete
 
-✅ Wrote project identity to: CLAUDE.md, .cursorrules, .github/copilot-instructions.md, README.md
-✅ Wrote tech stack to: CLAUDE.md, .cursorrules, .github/copilot-instructions.md, README.md
-✅ Wrote initial epic to: .claude/memory/project-context.md
-✅ Wrote {{N}} TBD items to: tasks/todo.md
-✅ Initialised git repo with main and dev branches
-✅ Verified: 0 remaining {{PLACEHOLDER}} tokens (or: ⚠ {{N}} remaining — see tasks/todo.md)
+✅ Project identity written: CLAUDE.md, .cursorrules, README.md
+✅ Feature flags written: .claude/settings-overrides.json
+✅ Gitignore updated: settings-local.json gitignored
+✅ Compliance docs created: [list, if any]
 
-Next: run /what-next — it will now evaluate Stage 1 (Analysis).
+Next: run /what-next — it will evaluate Stage 1 (Analysis) with your feature flags active.
+Run /settings --list to see all current feature values.
 ```
 
 ---
 
-## Rules
+## Project Type Reference
 
-- Never run any of the placeholder substitutions before the user has typed `confirm`.
-- If the user interrupts mid-question, save partial answers to `tasks/bootstrap-state.json` (gitignored) and offer `/bootstrap --resume` on next session.
-- A user who runs `/bootstrap` on an already-bootstrapped scaffold should get a one-line response: "Already bootstrapped. Run `/bootstrap --check` to verify, or `/what-next` to see current stage."
-- `/bootstrap --check` greps the entire repo for `{{...}}` patterns and lists any survivors. It does not modify files.
-- This command never writes secrets or `.env` files. It only writes structural/identity decisions.
+### `mvp`
+Fast start for prototypes and proof-of-concepts.
+```
+accessibility: false  gdpr: false  iso27001: false  sast: false
+preCommitFull: false  iac: deferred  cicd: minimal  mfa: false
+auditLog: false       asyncJobs: false
+```
+
+### `production-saas`
+Full enterprise-grade setup for multi-tenant SaaS products.
+```
+accessibility: false  gdpr: true  iso27001: true  sast: true
+preCommitFull: true   iac: true   cicd: full       mfa: true
+auditLog: true        asyncJobs: true
+```
+
+### `internal-tool`
+Internal tooling where compliance isn't required but code quality is.
+```
+accessibility: false  gdpr: false  iso27001: false  sast: false
+preCommitFull: true   iac: false   cicd: minimal    mfa: false
+auditLog: false       asyncJobs: false
+```
+
+### `public-api`
+Public APIs with security focus but no compliance overhead.
+```
+accessibility: false  gdpr: false  iso27001: false  sast: true
+preCommitFull: false  iac: false   cicd: full       mfa: true
+auditLog: false       asyncJobs: false
+```

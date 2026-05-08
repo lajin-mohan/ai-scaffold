@@ -19,28 +19,34 @@ Runs a full code review on the current feature branch or specified files. Invoke
 
 1. **Gather context** — read diff, identify touched files, classify changes (backend / frontend / infra / config / spec).
 2. **Read the spec** — find the linked BRD section, API contract, and LLD for the feature (qa-reviewer and architect both need this).
-3. **Run relevant reviewers in parallel**:
+3. **Run SAST scan** — Semgrep or ESLint security plugin runs against the diff:
+   - Identifies hardcoded secrets, SQL injection patterns, insecure crypto
+   - Tag findings as `[security]` BLOCK/WARN
+4. **Run relevant reviewers in parallel** (reads `.claude/settings-overrides.json` for feature flags):
    - **`backend-reviewer`** — if any change to `apps/api/`, `packages/services/`, `packages/repositories/`, `packages/domain/`, migrations
    - **`frontend-reviewer`** — if any change to `apps/web/`, `packages/ui/`, components, styles
    - **`security-reviewer`** — if any change to auth, sessions, permissions, data access, input handling, secrets, headers, or any new endpoint
-   - **`qa-reviewer`** — if a spec/BRD/AC is linked, OR for any feature work (verifies AC compliance, test coverage, regression risk)
+   - **`qa-reviewer`** — if a spec/BRD/AC is linked, OR for any feature work. Compliance checks (GDPR, ISO27001, accessibility) only run if the corresponding feature flag is `true` in `settings-overrides.json`
    - **`architect`** — if change touches `>1` architectural layer, introduces a new module, modifies a shared package, or changes any rule in `.claude/rules/`
 4. **Consolidate findings** — merge into a single report, deduplicate, sort by severity, attribute findings to source reviewer.
 5. **Produce summary** — overall verdict with required actions.
 
 ## Reviewer Selection Matrix
 
-| Change type | backend | frontend | security | qa | architect |
-|---|:-:|:-:|:-:|:-:|:-:|
-| New API endpoint | ✓ | | ✓ | ✓ | ✓ |
-| Frontend component | | ✓ | | ✓ | |
-| Database migration | ✓ | | ✓ | ✓ | ✓ |
-| Auth / session change | ✓ | | ✓ | ✓ | ✓ |
-| Refactor (no behaviour change) | ✓ | ✓ | | | ✓ |
-| Bug fix in existing code | ✓ or ✓ | | (if security-touched) | ✓ | |
-| Copy / styling change | | ✓ | | | |
-| Infra / IaC change | | | ✓ | | ✓ |
-| Rule file change in `.claude/rules/` | | | | | ✓ |
+| Change type | SAST | backend | frontend | security | qa | architect |
+|---|:-:|:-:|:-:|:-:|:-:|:-:|
+| New API endpoint | ✓ | ✓ | | ✓ | ✓ | ✓ |
+| Frontend component | ✓ | | ✓ | | ✓ (if accessibility=true) | |
+| Database migration | ✓ | ✓ | | ✓ | ✓ | ✓ |
+| Auth / session change | ✓ | ✓ | | ✓ | ✓ | ✓ |
+| Refactor (no behaviour change) | ✓ | ✓ | ✓ | | | ✓ |
+| Bug fix in existing code | ✓ | ✓ | | (if security-touched) | ✓ | |
+| Copy / styling change | | | ✓ | | | |
+| Infra / IaC change | ✓ | | | ✓ | | ✓ |
+| Rule file change in `.claude/rules/` | | | | | | ✓ |
+| Secrets / credentials committed | **BLOCK** | | | ✓ | | |
+
+> **qa-reviewer compliance checks** only run when the corresponding feature flag is `true` in `.claude/settings-overrides.json`. For example, GDPR AC compliance checks only run if `gdpr: true`.
 
 ## Output
 
@@ -89,8 +95,11 @@ Reviewers run: backend, frontend, security, qa, architect
 
 ## Notes
 
+- Feature flags are read from `.claude/settings-overrides.json` — compliance checks (GDPR, ISO27001, accessibility) only run when the corresponding feature is `true`.
 - Findings tagged BLOCK prevent merge — they are not suggestions.
 - Security findings are always surfaced regardless of `--backend-only` or `--frontend-only` flags — security never opts out.
 - QA findings appear whenever a spec is linked, even with `--backend-only` — AC compliance is independent of which layer changed.
+- SAST findings (Semgrep) are tagged `[SAST]` and always included — they are security-adjacent and may overlap with `security-reviewer`.
 - If the diff is >500 lines, split the review by file group and run iteratively. Architect reviewer reads the full diff to spot cross-cutting drift.
 - For trivial PRs (single-file typo, copy change), use `--skip-architect` and `--qa-only` flags as appropriate to avoid review overhead disproportionate to the change.
+- View current feature flags: `/settings --list`

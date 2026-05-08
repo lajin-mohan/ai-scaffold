@@ -5,7 +5,16 @@ Reading order for any AI tool generating code in this directory:
 1. **`routes/`** — HTTP boundary. Validates input, authorises, calls a service, formats response. Catches thrown errors and pipes them through `mapErrorToEnvelope`. No business logic, no SQL.
 2. **`services/`** — All business logic. Calls repositories. Wraps multi-step DB writes in a single `db.transaction(...)`. Idempotency check happens at the top of write methods. Throws typed errors that extend `AppError`.
 3. **`repositories/`** — All SQL for one entity type. Returns domain objects from `packages/domain`. Every query scoped by `tenantId`. Every write method accepts an optional `tx?: Transaction` parameter so the service can compose a transaction.
-4. **`middleware/`** — Cross-cutting infrastructure: error handler, auth guard, request ID, structured logging.
+4. **`middleware/`** — Cross-cutting infrastructure: security headers, auth guard, rate limiter, CORS, error handler.
+
+Existing middleware:
+| File | Purpose | Required |
+|---|---|---|
+| `error-handler.ts` | Maps typed errors to API response envelope | Always |
+| `security-headers.ts` | HSTS, CSP, X-Frame-Options, etc. | Always — see security-rules.md |
+| `auth.ts` | Session validation, req.auth population | Every authenticated route |
+| `rate-limit.ts` | Sliding window rate limiter | Every route |
+| `cors.ts` | CORS configuration from env vars | When frontend is on a different origin |
 5. **`packages/domain` (external)** — Pure entities, value objects, business rules. No infrastructure dependencies.
 
 Existing example flow:

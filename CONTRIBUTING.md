@@ -107,6 +107,44 @@ Both are non-negotiable.
 
 ---
 
+## Installing Git Hooks
+
+Run once after cloning to enable pre-commit quality gates (lint, typecheck, secrets scan):
+
+```bash
+# Configure git to use hooks from the .claude/hooks directory
+git config core.hooksPath .claude/hooks
+chmod +x .claude/hooks/pre-commit.sh .claude/hooks/pre-commit-secrets
+```
+
+**What the pre-commit hook runs:**
+- Branch name validation (enforces `feature/*`, `fix/*`, `chore/*`, `hotfix/*`, `release/*`)
+- Linting (ESLint / PHP CS Fixer / Ruff)
+- Type checking (TypeScript / PHPStan / Pyright)
+- Unit tests
+- Secrets scan (gitleaks — if installed)
+
+**Secrets scanning** requires gitleaks to be installed:
+
+```bash
+# macOS
+brew install gitleaks
+# Linux
+go install github.com/gitleaks/gitleaks@latest
+# Windows (requires Go)
+go install github.com/gitleaks/gitleaks@latest
+```
+
+If gitleaks is not installed, the hook skips the secrets scan but all other checks still run.
+
+**Bypassing hooks** (emergency only — document in PR description):
+
+```bash
+git commit --no-verify -m "fix: emergency hotfix"
+```
+
+---
+
 ## Asking Questions
 
 - **Ambiguous requirement?** Run `@solution-analyst` and surface assumptions before coding.

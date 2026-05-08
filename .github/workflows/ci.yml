@@ -260,6 +260,19 @@ jobs:
         if: needs.detect-stack.outputs.has-node == 'true'
         run: npm audit --audit-level=high
 
+      # Secrets scan — catches accidental credential commits before merge
+      - name: Gitleaks secrets scan
+        if: needs.detect-stack.outputs.has-node == 'true'
+        run: |
+          if command -v gitleaks &>/dev/null; then
+            gitleaks detect --exit-code || {
+              echo "::error::Committed secrets detected — see gitleaks output above"
+              exit 1
+            }
+          else
+            echo "::warning::gitleaks not installed — install with: brew install gitleaks"
+          fi
+
       # Uncomment for PHP backend
       # - if: needs.detect-stack.outputs.has-php == 'true'
       #   uses: shivammathur/setup-php@v2
@@ -317,6 +330,28 @@ jobs:
       # - uses: codecov/codecov-action@v4
 
   # ============================================================
+  # SAST — static analysis for security patterns (Semgrep)
+  # Catches hardcoded secrets, SQL injection, insecure crypto, common vulnerabilities.
+  # Runs against the full codebase; failures block merge.
+  # Reference: security-rules.md §OWASP Top 10 Mapping
+  # ============================================================
+  sast:
+    name: SAST (Semgrep)
+    needs: [detect-stack]
+    if: needs.detect-stack.outputs.has-node == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: returntocorp/semgrep-action@v1
+        with:
+          config: >
+            p/owasp-top-10
+            p/nodejs
+            p/typescript
+          uploadOnFailure: true
+
+  # ============================================================
   # Final gate - all required jobs must pass (or skip on template)
   # Branch protection rule on dev / main should require this job.
   # A SKIPPED job is acceptable (template state, no stack files).
@@ -325,7 +360,7 @@ jobs:
   ci-passed:
     name: CI passed
     runs-on: ubuntu-latest
-    needs: [detect-stack, lint, test-unit, test-integration, build, audit, coverage]
+    needs: [detect-stack, lint, test-unit, test-integration, build, audit, coverage, sast]
     if: always()
     steps:
       - name: Verify required jobs did not fail
@@ -337,7 +372,8 @@ jobs:
                      "test-integration:${{ needs.test-integration.result }}" \
                      "build:${{ needs.build.result }}" \
                      "audit:${{ needs.audit.result }}" \
-                     "coverage:${{ needs.coverage.result }}"; do
+                     "coverage:${{ needs.coverage.result }}" \
+                     "sast:${{ needs.sast.result }}"; do
             name="${job%%:*}"
             result="${job##*:}"
             case "$result" in

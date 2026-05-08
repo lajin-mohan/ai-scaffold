@@ -20,6 +20,19 @@ Reviews a proposed architecture or existing system design against project invari
 6. **Produce ADR recommendations** — flag decisions that need to be recorded
 7. **Recommend alternatives** — if the proposal has significant flaws, suggest a better path
 
+## Feature Flags (Settings)
+
+This command reads `.claude/settings-overrides.json`. Compliance checks only run when the corresponding feature is `true`:
+
+| Feature flag | Additional checks performed |
+|---|---|
+| `gdpr: true` | Data minimization, lawful basis, PII handling in design |
+| `iso27001: true` | Access control design, encryption at rest/transit, audit logging architecture |
+| `auditLog: true` | Audit trail integration points in the design |
+| `asyncJobs: true` | Background job design, idempotency, retry patterns |
+
+When a feature flag is `false`, its corresponding architectural checks are skipped.
+
 ## Checklist
 
 ### Domain Integrity
