@@ -41,8 +41,31 @@ Update in real time. One task in progress at a time. Add a Results section when 
 
 **Phase 1 verification:** any further `{{PLACEHOLDER}}` survivors in CLAUDE.md / .cursorrules / README.md / .github/copilot-instructions.md are now expected — they will be filled by `/bootstrap` at first run.
 
-### Pending future phases (not started yet — require user approval)
+### Phase 2 — AI coding rules ✅ DONE (chore/ai-coding-rules)
 
-- [ ] Phase 2 — Add `.claude/rules/ai-coding-rules.md` (hallucination guards, plan-and-confirm protocol, production-grade mandate, AI-readability rules, verification mandate)
-- [ ] Phase 3 — Plug productivity gaps (`/start-task` command, Definition of Ready, expand `/review`)
-- [ ] Phase 4 — Scaffold real artifacts (CI workflow, `.env.example`, `.editorconfig`, example files in `apps/`/`packages/`, wire `pre-review.sh` as a real hook)
+- [x] Created `.claude/rules/ai-coding-rules.md` — 5 operating principles, 8 hallucination guards (H1–H8), plan-and-confirm protocol with mandatory threshold (>3 steps OR long-running), 8 production-grade rules (P1–P8), AI-readability hard limits (function ≤50 lines, file ≤300, params ≤5, complexity ≤10, depth ≤4), 8 readability rules (R1–R8), 7 verification rules (V1–V7), 4 drift-prevention rules (D1–D4), severity table, prompt-priming card
+- [x] Added rule file to `CLAUDE.md` Rules Reference table (top of list, marked top-priority)
+- [x] Rewrote `CLAUDE.md` Operating Rules — now leads with ai-coding-rules supremacy, plan-and-confirm gate, "ask don't guess", verify-before-done
+- [x] Mirrored 5-rule summary into `.cursorrules` under new "AI Coding Rules (top priority)" section
+- [x] Mirrored 5-rule summary into `.github/copilot-instructions.md` Project Context section
+
+### Phase 3 — Productivity gaps (next: chore/productivity branch)
+
+- [ ] Create `.claude/rules/definition-of-ready.md` — gate `BACKLOG → READY → IN PROGRESS` parallel to dod-rules.md
+- [ ] Create `.claude/commands/start-task.md` — bundles "read LLD/spec → read adjacent code → propose short plan → wait for YES → execute"
+- [ ] Update `.claude/commands/review.md` — add qa-reviewer + architect to parallel review (not just backend/frontend/security)
+- [ ] Create `.claude/rules/manual-review-checklist.md` (or extend review-rules.md Stage-7 section) — what humans look for that AI can't
+- [ ] Add new rule + new command to `CLAUDE.md` and `HOW-TO-USE.md` reference tables
+
+### Phase 4 — Real scaffolding artifacts (next: chore/scaffolding branch)
+
+- [ ] Create `.github/workflows/ci.yml` — Node + PHP + React + Postgres jobs per declared stack
+- [ ] Create `.env.example` with placeholder DB/auth/email/storage/aws vars
+- [ ] Create `.editorconfig` — shared formatting baseline
+- [ ] Create `.gitattributes` — fix CRLF warnings, declare text/binary, force LF for shell scripts
+- [ ] Create `LICENSE` — Proprietary, Techversant
+- [ ] Create `CONTRIBUTING.md` — points to CLAUDE.md and HOW-TO-USE.md
+- [ ] Create `SECURITY.md` — vulnerability reporting policy
+- [ ] Add example file in `apps/api/` showing route → service → repository → domain pattern
+- [ ] Add example file in `packages/domain/` showing pure domain entity
+- [ ] Wire `.claude/hooks/pre-review.sh` into `.claude/settings.json` as a real `PostToolUse` hook
