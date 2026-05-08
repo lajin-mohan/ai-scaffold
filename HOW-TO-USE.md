@@ -383,7 +383,8 @@ For escalations:
 | `/create-api` | Stage 3 — architecture | Full REST API contract including async operations pattern |
 | `/architecture-review` | Stage 3 — after HLD | Architecture critique + compliance check + ADR recommendations |
 | `/estimate` | Stage 2/3 — planning | Three-point estimate + risk register + phasing |
-| `/review` | Stage 6 — before PR | Parallel BLOCK/WARN/NIT findings: backend + frontend + security |
+| `/start-task` | Stage 5 — any non-trivial task | Plan-and-confirm ritual: spec read → numbered plan → wait for approval → execute → verification report |
+| `/review` | Stage 6 — before PR | Parallel BLOCK/WARN/NIT findings: backend + frontend + security + qa + architect |
 | `/gen-tests` | Stage 5/8 — QA prep | Complete runnable test files: unit, integration, component, snapshot |
 | `/deployment-review` | Stage 10 — pre-deploy | Go/no-go + migration plan + smoke tests + rollback procedure |
 

@@ -41,8 +41,30 @@ Update in real time. One task in progress at a time. Add a Results section when 
 
 **Phase 1 verification:** any further `{{PLACEHOLDER}}` survivors in CLAUDE.md / .cursorrules / README.md / .github/copilot-instructions.md are now expected — they will be filled by `/bootstrap` at first run.
 
-### Pending future phases (not started yet — require user approval)
+### Phase 2 — AI coding rules ✅ DONE (chore/ai-coding-rules)
 
-- [ ] Phase 2 — Add `.claude/rules/ai-coding-rules.md` (hallucination guards, plan-and-confirm protocol, production-grade mandate, AI-readability rules, verification mandate)
-- [ ] Phase 3 — Plug productivity gaps (`/start-task` command, Definition of Ready, expand `/review`)
-- [ ] Phase 4 — Scaffold real artifacts (CI workflow, `.env.example`, `.editorconfig`, example files in `apps/`/`packages/`, wire `pre-review.sh` as a real hook)
+- [x] Created `.claude/rules/ai-coding-rules.md` — hallucination guards, plan-and-confirm, production-grade mandate, AI-readability hard limits, verification mandate
+- [x] Mirrored 5-rule summary into `.cursorrules` and `.github/copilot-instructions.md`
+- [x] Updated `CLAUDE.md` Operating Rules to lead with ai-coding-rules supremacy
+
+### Phase 3 — Productivity gaps ✅ DONE (chore/productivity)
+
+- [x] Created `.claude/rules/definition-of-ready.md` — gates `BACKLOG → IN PROGRESS` parallel to dod-rules.md (story / sprint / feature levels)
+- [x] Created `.claude/commands/start-task.md` — 5-phase plan-and-confirm execution ritual (context priming → plan → wait → execute → verify)
+- [x] Extended `.claude/commands/review.md` — now invokes 5 reviewers in parallel: backend + frontend + security + qa + architect (was 3); added Reviewer Selection Matrix; added AC compliance + architectural drift sections to output
+- [x] Created `.claude/rules/manual-review-checklist.md` — Stage 7 four-question framework (product fit, user fit, architecture fit, team-knowledge transfer); time budgets per PR size; reviewer anti-patterns
+- [x] Registered `/start-task` in `CLAUDE.md` Custom Commands table and `HOW-TO-USE.md` Quick Reference
+- [x] Registered `definition-of-ready.md` and `manual-review-checklist.md` in `CLAUDE.md` Rules Reference table
+
+### Phase 4 — Real scaffolding artifacts (next: chore/scaffolding)
+
+- [ ] Create `.github/workflows/ci.yml` — Node + PHP + React + Postgres jobs per declared stack
+- [ ] Create `.env.example` with placeholder DB/auth/email/storage/aws vars
+- [ ] Create `.editorconfig` — shared formatting baseline
+- [ ] Create `.gitattributes` — fix CRLF warnings, declare text/binary, force LF for shell scripts
+- [ ] Create `LICENSE` — Proprietary, Techversant
+- [ ] Create `CONTRIBUTING.md` — points to CLAUDE.md and HOW-TO-USE.md
+- [ ] Create `SECURITY.md` — vulnerability reporting policy
+- [ ] Add example file in `apps/api/` showing route → service → repository → domain pattern
+- [ ] Add example file in `packages/domain/` showing pure domain entity
+- [ ] Wire `.claude/hooks/pre-review.sh` into `.claude/settings.json` as a real `PostToolUse` hook
