@@ -1,9 +1,9 @@
-// EXAMPLE — pure domain entity. Has no infrastructure dependencies.
+// EXAMPLE - pure domain entity. Has no infrastructure dependencies.
 // Use this as the template for new entities in packages/domain/src/.
 //
 // Rules:
 // - No imports from packages/services, packages/repositories, or apps/
-// - No I/O — no DB, no HTTP, no filesystem
+// - No I/O - no DB, no HTTP, no filesystem
 // - Methods enforce invariants; constructors validate state
 // - State transitions are explicit functions, not setter chains
 //

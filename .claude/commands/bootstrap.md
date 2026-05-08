@@ -111,13 +111,20 @@ Initial Context:
   Target milestone:  {{value}}
 
 Files I will modify:
-  - CLAUDE.md (Project Identity, Tech Stack, Current State sections)
+  - CLAUDE.md (Project Identity, Tech Stack, Current State sections; remove TEMPLATE banner)
   - .cursorrules (Project Context, Tech Stack rows, Backend/Frontend/Database headings)
   - .github/copilot-instructions.md (Project Context, Stack)
-  - README.md (Title, Overview, Tech Stack, Setup commands)
+  - README.md (Title, Overview, Tech Stack, Setup commands; remove TEMPLATE banner)
+  - .env.example (uncomment and fill stack-specific blocks; rate limits, AWS region, email provider)
+  - .github/workflows/ci.yml (uncomment PHP block if backend includes PHP; the detect-stack job stays in place)
+  - .claude/hooks/pre-review.sh (uncomment lint/typecheck/test commands matching the chosen stack)
+  - .claude/settings.json (REMOVE the `PRE_REVIEW_ALLOW_UNCONFIGURED=1` env-var prefix from the /review hook command — bootstrapped projects must NOT bypass quality gates)
   - .claude/memory/project-context.md (Epic, Milestone)
-  - tasks/todo.md (add open questions for any TBD values)
   - .gitignore (only if you said yes to git init and it's missing entries)
+
+Files I will create (only if missing):
+  - tasks/todo/.gitkeep, tasks/done/.gitkeep (per-ticket task workflow)
+  - First per-ticket file under tasks/todo/ if user provided initial TBD items
 
 Reply 'confirm' to proceed, or correct any value above.
 ```
@@ -136,8 +143,18 @@ For every file in the "Files I will modify" list, replace placeholders. Rules:
 - **For multi-tenant = false:** remove or strike-through every `tenant_id` rule, every "tenant isolation" check in agents, and every `tenant_id` column in templates. Add an ADR `docs/architecture/adr/0001-single-tenant-architecture.md` documenting the decision.
 - **For compliance = N/A:** add a single line to `.claude/rules/compliance-rules.md` stating "This project's compliance scope is N/A — rules below are reference only and not enforced." Do not delete the file.
 - **For each stack value:** replace every occurrence in all files in one pass.
+- **For `.env.example`:** uncomment the AWS region block; set `EMAIL_PROVIDER` to the chosen provider; set `S3_REGION` to the chosen AWS region. Leave actual secrets blank (this file only declares names).
+- **For `.github/workflows/ci.yml`:** if `BACKEND_STACK` includes PHP, uncomment every `# Uncomment for PHP backend` block and the `Setup PHP` step in `lint`. Leave the `detect-stack` job and `needs.detect-stack.outputs.has-*` gates in place — they continue to add value once the project has real stack files.
+- **For `.claude/hooks/pre-review.sh`:** uncomment the `run_check` lines that match the chosen stack:
+  - Node/TS: `ESLint`, `TypeScript`, `Unit Tests`, `npm audit`
+  - PHP: `PHP CS Fixer`, `PHPStan` (add to type checking section), `PHPUnit`, `composer audit`
+  - Python: `Ruff`, `Pyright`, `pytest`, `pip-audit`
+- **For `.claude/settings.json`:** delete the `PRE_REVIEW_ALLOW_UNCONFIGURED=1 ` prefix from the `/review` hook command. After bootstrap, the gate fails closed if checks aren't actually configured — this is the desired behaviour for real projects.
 
-After writing, run a verification pass — grep for any remaining `{{...}}` placeholder and report it.
+After writing, run **two** verification passes:
+
+1. `grep -rn '{{[A-Z_]*}}'` — must return zero matches (all placeholders filled).
+2. `grep -n 'PRE_REVIEW_ALLOW_UNCONFIGURED' .claude/settings.json` — must return zero matches (opt-out removed). If found, fail bootstrap and tell the user to remove it manually if they want template-permissive behaviour.
 
 ---
 

@@ -4,6 +4,19 @@ This file governs how Claude, Codex, and other AI tools collaborate on every pro
 
 ---
 
+> [!IMPORTANT]
+> **TEMPLATE STATE — placeholders below are intentional**
+>
+> If you see `{{PROJECT_NAME}}`, `{{BACKEND_STACK}}`, `{{IS_MULTI_TENANT}}`, etc., the scaffold has not been bootstrapped for a real project yet. Do not treat them as bugs to fix or guess at values. Run `/bootstrap` instead — it walks through identity, stack, tenancy, and compliance one decision at a time and updates every file that holds a placeholder.
+>
+> While in template state, the operational gates are deliberately permissive:
+> - CI workflow's `detect-stack` job skips Node/PHP jobs when no `package.json` / `composer.json` exists, so a fresh template clone passes CI.
+> - `/review` runs with `PRE_REVIEW_ALLOW_UNCONFIGURED=1` set in `.claude/settings.json` so it works without configured lint/typecheck/test commands. `/bootstrap` removes this opt-out as part of stack configuration.
+>
+> If you are editing this template itself (improving rules, agents, commands), the placeholders stay. If you are starting a real project, run `/bootstrap` first.
+
+---
+
 ## Project Identity
 
 | Field | Value |
@@ -280,7 +293,7 @@ Before marking any PR ready:
 | `.claude/rules/security-rules.md` | SQL injection, tenant isolation, auth, input validation, secrets |
 | `.claude/rules/testing-rules.md` | Test pyramid, coverage expectations, CI requirements |
 | `.claude/rules/review-rules.md` | Pre-review checklist, severity labels, merge rules |
-| `.claude/rules/branching-rules.md` | Branch model, commit format, PR rules, release tagging |
+| `.claude/rules/branching-rules.md` | Branch model, commit format, PR rules, release tagging, **required GitHub branch protection settings** (single source of truth — applied via `docs/setup/branch-protection.md` UI walkthrough or `scripts/setup-branch-protection.sh`) |
 | `.claude/rules/token-usage-rules.md` | When to use AI, model selection, cost awareness |
 | `.claude/rules/dod-rules.md` | Definition of Done - story, sprint, and release level |
 | `.claude/rules/definition-of-ready.md` | Definition of Ready - gates `BACKLOG → IN PROGRESS` (parallel to DoD) |
@@ -316,6 +329,8 @@ After **any correction from the user**, record the pattern in `tasks/lessons.md`
 
 Review `tasks/lessons.md` at the start of each session for this project. Ruthlessly iterate until the mistake rate drops.
 
+`tasks/lessons.md` is configured with `merge=union` in `.gitattributes` so parallel additions from multiple branches do not conflict.
+
 ### Quality Bar
 
 Before presenting any non-trivial output, ask: **"Would a staff engineer approve this?"**
@@ -342,10 +357,18 @@ When given a bug report: **fix it** - don't ask for hand-holding.
 
 ### Task Tracking
 
-1. Write a plan to `tasks/todo.md` with checkable items before starting any non-trivial work
-2. Mark items complete as you go - one task in progress at a time
-3. Add a results summary when the task is done
-4. Capture lessons in `tasks/lessons.md` after any correction
+There are three places for work-state, separated by lifecycle:
+
+1. **`.claude/work/`** (gitignored) — AI ephemera: planning, scratch, intermediate outputs. Per-clone, never committed.
+2. **`tasks/todo/<TICKET-ID>-<slug>.md`** (tracked) — one file per active ticket. Spec, acceptance criteria, decision log. Move to `tasks/done/` when complete. Per-ticket files prevent the merge-conflict pattern that shared status files cause.
+3. **`CHANGELOG.md`** (tracked, `merge=union`) — permanent record of what shipped. Each merging PR adds an entry. Source of truth for "what was done", replaces the legacy `tasks/todo.md` "history" role.
+
+Workflow:
+- Start a non-trivial task: create `tasks/todo/<TICKET-ID>-<slug>.md` with the spec and AC. Do planning notes in `.claude/work/` (gitignored).
+- During work: update the per-ticket file as decisions are made. Use the `TodoWrite` tool for in-conversation step tracking (it's session-local, not committed).
+- Complete a task: move the file `git mv tasks/todo/<file>.md tasks/done/<file>.md`, add a CHANGELOG.md entry under `[Unreleased]`, capture any lessons in `tasks/lessons.md`.
+
+The legacy `tasks/todo.md` is gitignored and untracked — do not commit it. It survives locally as a scratch pad if you prefer single-file working notes, but it never affects other clones.
 
 ---
 
@@ -359,6 +382,8 @@ When given a bug report: **fix it** - don't ask for hand-holding.
 - **Changes are controlled** - any post-sign-off scope change requires a CR (see `cr-template.md`).
 - **Releases are documented** - every production release has release notes and a UAT sign-off.
 - **Mistakes are learned from** - every correction goes into `tasks/lessons.md`.
+- **Working state is separated from history** - `.claude/work/` is per-clone scratch, `tasks/todo/` is per-ticket spec, `CHANGELOG.md` is the permanent record. No shared mutable status files (lesson learned 2026-05-08).
+- **Releases are recorded in `CHANGELOG.md`** - format: [Keep a Changelog](https://keepachangelog.com). Each merging PR adds an entry under `[Unreleased]`. Configured with `merge=union` so parallel branches don't conflict on it.
 
 ---
 

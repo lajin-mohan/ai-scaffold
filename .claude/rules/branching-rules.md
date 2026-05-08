@@ -113,6 +113,65 @@ hotfix/* → main       ← team lead approval, then cherry-pick or merge to dev
 - `dev`: no direct push, requires 1 approval + CI pass
 - Tags on `main` are immutable once pushed
 
+### Required branch protection settings
+
+These rules are **enforceable** via GitHub-side branch protection. The list
+below is the single source of truth — if it changes, propagate to:
+
+- `docs/setup/branch-protection.md` (UI walkthrough)
+- `scripts/setup-branch-protection.sh` (gh-CLI alternative)
+
+#### `main`
+
+| Setting | Value |
+|---|---|
+| Required PR before merge | Yes |
+| Required approvals | 2 |
+| Dismiss stale reviews on new push | Yes |
+| Require last-push approval | Yes |
+| Require status checks before merge | Yes |
+| Required status checks | `ci-passed` |
+| Require branch up to date with target | Yes (forces rebase before merge) |
+| Require conversation resolution | Yes |
+| Require linear history | Yes |
+| Enforce for admins | Yes |
+| Restrict who can push | Tech Lead / release-bot only |
+| Allow force pushes | No |
+| Allow deletions | No |
+
+#### `dev`
+
+| Setting | Value |
+|---|---|
+| Required PR before merge | Yes |
+| Required approvals | 1 |
+| Dismiss stale reviews on new push | Yes |
+| Require status checks before merge | Yes |
+| Required status checks | `ci-passed` |
+| Require branch up to date with target | Yes |
+| Require conversation resolution | Yes |
+| Require linear history | Discretionary (team preference) |
+| Enforce for admins | No (admins may bypass for emergencies) |
+| Allow force pushes | No |
+| Allow deletions | No |
+
+#### Default branch
+
+`dev` is the default branch. PRs target `dev`; releases promote `dev -> main`.
+
+#### Optional: GitHub merge queue on `dev`
+
+Auto-rebases each PR onto target before merge — eliminates the
+"PR went stale during review" failure mode. Requires GitHub Team plan or
+higher. See `docs/setup/branch-protection.md` for setup steps.
+
+#### Apply / re-apply
+
+- **Day 1:** apply both rules immediately after repo creation.
+- **After CI changes:** if you add or rename a status check, update the
+  required-status-checks list above and re-run the script (or edit in UI).
+- **Verify quarterly:** drift happens; re-confirm settings still match.
+
 ## Release Tagging
 
 ```

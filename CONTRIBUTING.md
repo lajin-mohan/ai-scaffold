@@ -19,6 +19,8 @@ Welcome. This project follows the Techversant AI development workflow — every 
 /what-next
 
 # 3. Begin work on a story (Stage 5)
+#    Creates tasks/todo/<TICKET-ID>-<slug>.md with the spec.
+#    AI planning notes go in .claude/work/ (gitignored).
 /start-task "{{ticket-id-and-summary}}"
 
 # 4. Before opening a PR (Stage 6)
@@ -29,7 +31,24 @@ Welcome. This project follows the Techversant AI development workflow — every 
 
 # 6. Pre-deployment review (Stage 10)
 /deployment-review
+
+# 7. After merging a PR
+#    Move the ticket file from tasks/todo/ to tasks/done/.
+#    Add a CHANGELOG.md entry under [Unreleased] for the permanent record.
+git mv tasks/todo/<TICKET-ID>-<slug>.md tasks/done/
 ```
+
+### Where work-state lives
+
+| Location | Purpose | Tracked? |
+|---|---|---|
+| `.claude/work/` | AI ephemera: planning, scratch, intermediate outputs | No (gitignored) |
+| `tasks/todo/<ID>-<slug>.md` | Active per-ticket files (spec, AC, decisions) | Yes |
+| `tasks/done/<ID>-<slug>.md` | Archived completed tickets | Yes |
+| `tasks/lessons.md` | Append-only correction log (auto-resolves via `merge=union`) | Yes |
+| `CHANGELOG.md` | Permanent record of what shipped (auto-resolves via `merge=union`) | Yes |
+
+The legacy single `tasks/todo.md` file is **deprecated** and gitignored — see [CHANGELOG.md](./CHANGELOG.md) `[Unreleased]` for the migration note.
 
 ---
 

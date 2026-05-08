@@ -27,7 +27,7 @@ REPO_URL = os.getenv("REPO_URL", "{{REPO_URL}}")
 def send_slack(message: dict) -> bool:
     """Send notification to Slack via incoming webhook."""
     if not SLACK_WEBHOOK_URL:
-        print("ℹ SLACK_WEBHOOK_URL not set — skipping Slack notification")
+        print("INFO: SLACK_WEBHOOK_URL not set - skipping Slack notification")
         return False
 
     try:
@@ -58,7 +58,7 @@ def build_slack_message(result: str, pr: str, reviewer: str, summary: str) -> di
                     "type": "section",
                     "text": {
                         "type": "mrkdwn",
-                        "text": f"{emoji} *Code Review Complete* — {PROJECT_NAME}",
+                        "text": f"{emoji} *Code Review Complete* - {PROJECT_NAME}",
                     },
                 },
                 {

@@ -1,19 +1,24 @@
-// EXAMPLE — repository layer.
+// EXAMPLE - repository layer.
 // Use this as the template for new repositories in apps/api/src/repositories/.
 //
 // Rules:
 // - Owns ALL SQL for one entity type
-// - Returns domain types from packages/domain — never raw rows
+// - Returns domain types from packages/domain - never raw rows
 // - Every query scoped by tenantId (multi-tenant)
-// - Parameterised queries only — never string interpolation in SQL
-// - No business rules — just CRUD + simple queries
+// - Parameterised queries only - never string interpolation in SQL
+// - No business rules - just CRUD + simple queries
+// - Every write method accepts an optional `tx?: Transaction` parameter so
+//   the service layer can compose multi-step transactions (insert + audit +
+//   idempotency cache in a single atomic commit).
 
 import type { Application, ApplicationStatus } from '@app/domain'
 
+import type { Transaction } from '../services/applications.service.js'
+
 export interface DatabaseClient {
-  queryOne<T>(sql: string, params: unknown[]): Promise<T | null>
-  queryMany<T>(sql: string, params: unknown[]): Promise<T[]>
-  execute(sql: string, params: unknown[]): Promise<number>
+  queryOne<T>(sql: string, params: unknown[], tx?: Transaction): Promise<T | null>
+  queryMany<T>(sql: string, params: unknown[], tx?: Transaction): Promise<T[]>
+  execute(sql: string, params: unknown[], tx?: Transaction): Promise<number>
 }
 
 interface ApplicationRow {
@@ -42,12 +47,13 @@ export interface ApplicationRepository {
     requisitionId: string,
     tenantId: string,
   ): Promise<Application | null>
-  create(input: CreateApplicationInput): Promise<Application>
+  create(input: CreateApplicationInput, tx?: Transaction): Promise<Application>
   updateStatus(
     id: string,
     tenantId: string,
     status: ApplicationStatus,
     expectedVersion: number,
+    tx?: Transaction,
   ): Promise<Application | null>
 }
 
@@ -80,7 +86,10 @@ export class PostgresApplicationRepository implements ApplicationRepository {
     return row ? this.mapRow(row) : null
   }
 
-  async create(input: CreateApplicationInput): Promise<Application> {
+  async create(
+    input: CreateApplicationInput,
+    tx?: Transaction,
+  ): Promise<Application> {
     const row = await this.db.queryOne<ApplicationRow>(
       `INSERT INTO applications
          (id, tenant_id, candidate_id, requisition_id, status, version,
@@ -89,6 +98,7 @@ export class PostgresApplicationRepository implements ApplicationRepository {
                $4, $4, NOW(), NOW())
        RETURNING *`,
       [input.tenantId, input.candidateId, input.requisitionId, input.createdBy],
+      tx,
     )
     if (!row) throw new Error('Insert returned no row')
     return this.mapRow(row)
@@ -99,6 +109,7 @@ export class PostgresApplicationRepository implements ApplicationRepository {
     tenantId: string,
     status: ApplicationStatus,
     expectedVersion: number,
+    tx?: Transaction,
   ): Promise<Application | null> {
     const row = await this.db.queryOne<ApplicationRow>(
       `UPDATE applications
@@ -109,6 +120,7 @@ export class PostgresApplicationRepository implements ApplicationRepository {
          AND deleted_at IS NULL
        RETURNING *`,
       [status, id, tenantId, expectedVersion],
+      tx,
     )
     return row ? this.mapRow(row) : null
   }
