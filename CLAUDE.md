@@ -82,6 +82,17 @@ project-root/
 +-- _ai/                # AI-generated drafts, experiments (not production code)
 ```
 
+### Reference example
+
+A working layered example lives in `apps/api/src/` — read it before generating new code:
+- `apps/api/src/routes/applications.route.ts` — thin route handler with validation + auth
+- `apps/api/src/services/applications.service.ts` — business logic, side effects, typed errors
+- `apps/api/src/repositories/applications.repository.ts` — SQL only, returns domain types
+- `packages/domain/src/application.ts` — pure entity with state machine
+- `apps/api/migrations/0001_create_applications.sql` — reversible migration with tenant scoping
+
+See `apps/api/src/README.md` for the layered architecture quick reference.
+
 ### Architectural Invariants
 
 > **Setup note:** The invariants below are defaults for a multi-tenant SaaS product. During project setup, review each one and explicitly accept, modify, or remove it based on your system type (single-tenant, API-only, mobile, website, etc.). Record any changes as ADRs in `docs/architecture/adr/`.
@@ -141,12 +152,16 @@ Full rules: `.claude/rules/security-rules.md`
 
 ### Claude's Operating Rules
 
-1. **Never implement without an approved spec** - plan first, code second.
-2. **Surface assumptions before starting** - use `solution-analyst` agent.
-3. **Self-review before handing off** - use review checklist in `.claude/rules/review-rules.md`.
-4. **Flag risks explicitly** - never silently skip a concern.
-5. **No .env access** - treat secrets as out of scope.
-6. **Match the existing style** - don't refactor what isn't broken.
+1. **Follow `.claude/rules/ai-coding-rules.md` above all else** — it codifies hallucination guards, plan-and-confirm protocol, production-grade mandate, AI-readability limits, and verification mandate. When this conflicts with another rule file, this wins.
+2. **Never implement without an approved spec** - plan first, code second.
+3. **Plan-and-confirm for any task with >3 steps or any long-running process** — write the plan, wait for explicit approval, never assume silence is consent.
+4. **Surface assumptions before starting** - use `solution-analyst` agent.
+5. **When uncertain, ask. Don't guess.** Hallucinated code is worse than slow code.
+6. **Self-review before handing off** - use review checklist in `.claude/rules/review-rules.md`.
+7. **Flag risks explicitly** - never silently skip a concern.
+8. **No .env access** - treat secrets as out of scope.
+9. **Match the existing style** - don't refactor what isn't broken.
+10. **Verify before "done"** — lint, tests, and acceptance criteria walked through; no claims without evidence.
 
 ---
 
@@ -184,7 +199,8 @@ Run via `/command-name` in Claude Code.
 | `/create-api` | Full REST API contract (endpoints, request/response, errors, async pattern, migrations) | Stage 3 |
 | `/architecture-review` | Architecture critique against project invariants and compliance rules | Stage 3 |
 | `/estimate` | Three-point effort estimate with risk weights and phasing recommendation | Stage 2/3 |
-| `/review` | Parallel code review: backend + frontend + security reviewers | Stage 6 |
+| `/start-task` | Plan-and-confirm execution: read spec → propose numbered plan → wait for approval → execute → verify. Use for any task >3 steps or long-running. | Stage 5 |
+| `/review` | Parallel code review: backend + frontend + security + qa + architect reviewers | Stage 6 |
 | `/gen-tests` | Writes complete runnable tests with assertions (unit, integration, component, snapshot) | Stage 5/8 |
 | `/deployment-review` | Deployment readiness checklist, migration plan, smoke tests, rollback procedure | Stage 10 |
 
@@ -258,6 +274,7 @@ Before marking any PR ready:
 
 | Rule File | Purpose |
 |---|---|
+| `.claude/rules/ai-coding-rules.md` | **Top-priority for AI tools.** Hallucination guards, plan-and-confirm protocol, production-grade mandate, AI-readability limits, verification mandate |
 | `.claude/rules/coding-standards.md` | Universal, backend, frontend, database coding rules |
 | `.claude/rules/api-standards.md` | URL design, response envelope, pagination, idempotency |
 | `.claude/rules/security-rules.md` | SQL injection, tenant isolation, auth, input validation, secrets |
@@ -266,6 +283,8 @@ Before marking any PR ready:
 | `.claude/rules/branching-rules.md` | Branch model, commit format, PR rules, release tagging |
 | `.claude/rules/token-usage-rules.md` | When to use AI, model selection, cost awareness |
 | `.claude/rules/dod-rules.md` | Definition of Done - story, sprint, and release level |
+| `.claude/rules/definition-of-ready.md` | Definition of Ready - gates `BACKLOG → IN PROGRESS` (parallel to DoD) |
+| `.claude/rules/manual-review-checklist.md` | Stage 7 human-reviewer checklist — what AI reviewers can't catch (product fit, UX coherence, architecture direction, team-knowledge transfer) |
 | `.claude/rules/compliance-rules.md` | GDPR and ISO 27001 requirements and severity table |
 
 ---

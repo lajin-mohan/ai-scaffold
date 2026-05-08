@@ -3,12 +3,35 @@
     "allow": [
       "Read(**)",
       "Bash(docker logs *)",
+      "Bash(git status*)",
+      "Bash(git diff*)",
+      "Bash(git log*)",
+      "Bash(git branch*)",
+      "Bash(npm run lint*)",
+      "Bash(npm run typecheck*)",
+      "Bash(npm test*)",
+      "Bash(npm run test*)",
+      "Bash(.claude/hooks/pre-review.sh)",
       "Edit(docs/**)",
       "Edit(tasks/**)",
       "Edit(.claude/memory/**)",
       "Write(docs/**)",
       "Write(tasks/**)",
       "Write(.claude/memory/**)"
+    ]
+  },
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "matcher": "/review",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/pre-review.sh",
+            "timeout": 300
+          }
+        ]
+      }
     ]
   }
 }
