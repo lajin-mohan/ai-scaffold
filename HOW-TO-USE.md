@@ -441,7 +441,13 @@ Remember this: [describe the correction or preference]
 
 Claude will write the lesson to `tasks/lessons.md` immediately.
 
-**Current task plan** is always in `tasks/todo.md` — check it to see what Claude is working on and its progress.
+**Per-ticket task files** live under `tasks/todo/` (active) and `tasks/done/` (archived). Each ticket gets its own `<TICKET-ID>-<slug>.md` file with spec, AC, and decision log.
+
+**AI ephemera** (planning, scratch, intermediate output) lives in `.claude/work/` — gitignored, per-clone.
+
+**Permanent record** of what shipped lives in `CHANGELOG.md` at the repo root. Each merging PR adds an entry under `[Unreleased]`.
+
+`tasks/todo.md` (singular file) is **deprecated** — replaced by `tasks/todo/` + `tasks/done/` per-ticket structure to eliminate the merge-conflict pattern that shared status files cause. The legacy path is gitignored; if it exists locally as a scratch pad, that's fine — it never affects other clones.
 
 ---
 
