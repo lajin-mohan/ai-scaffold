@@ -12,6 +12,20 @@ These instructions guide Copilot suggestions for this repository. They complemen
 
 ---
 
+## AI Coding Rules (top priority — overrides anything below)
+
+Full file: `.claude/rules/ai-coding-rules.md`. Non-negotiable for Copilot suggestions:
+
+1. **Verify before claim.** Don't suggest a function call, package, or flag that hasn't been verified to exist. No fabrication.
+2. **Plan-and-confirm for tasks > 3 steps or long-running.** Multi-file changes need a written plan + explicit human approval before code is generated.
+3. **Production-grade only.** No half-implementations, no stubs that ship, no `TODO` without a ticket reference (`// TODO(HIRE-142): ...`).
+4. **AI-readability limits.** Functions ≤ 50 lines, files ≤ 300 lines, ≤ 5 params, complexity ≤ 10. No clever one-liners. Match adjacent style.
+5. **Verify before "done".** Lint + tests must run and pass before claiming completion.
+
+If a Copilot suggestion would violate any of these, prefer no suggestion over a non-compliant one.
+
+---
+
 ## Suggestion Priorities
 
 ### Prefer

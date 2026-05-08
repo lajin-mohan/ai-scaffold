@@ -11,6 +11,18 @@ Tech stack: {{BACKEND_STACK}} | {{FRONTEND_STACK}} | {{DATABASE}} | {{CLOUD_PROV
 
 ---
 
+## AI Coding Rules (top priority)
+
+Full file: `.claude/rules/ai-coding-rules.md`. Hard rules for any AI tool writing code in this project:
+
+1. **Verify before claim.** Don't reference a function, file, package, or flag without reading the source first. Cite `file:line`. Memory < code. "I don't know" is mandatory when uncertain.
+2. **Plan-and-confirm for tasks > 3 steps or long-running** — write a numbered plan, list files you'll touch, state verification, wait for explicit approval. Silence is not approval. Mid-flight ambiguity = stop and ask.
+3. **Production-grade only.** No half-implementations, no stubs, no `TODO` without ticket reference, no "good enough for demo". Edge cases handled, errors observable, `_ai/drafts/` is the only sandbox.
+4. **AI-readability limits** — functions ≤ 50 lines, files ≤ 300 lines (500 hard), ≤ 5 params, complexity ≤ 10, indentation ≤ 4. No clever one-liners. Match adjacent style. Comment density low — explain *why*, not *what*.
+5. **Verify before "done"** — lint passes, tests pass (including new ones), acceptance criteria walked through. If verification can't run, say so explicitly. "I think it works" is not done.
+
+---
+
 ## Core Rules
 
 ### Never Do
