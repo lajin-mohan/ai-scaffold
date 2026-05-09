@@ -1,15 +1,24 @@
 #!/bin/bash
-# pre-commit — runs lint + typecheck + tests before every commit.
+# pre-commit — developer helper: catches issues before they reach CI.
 #
-# Stack detection by file presence — no bootstrap step needed:
-#   package.json    → Node/TypeScript checks
-#   composer.json   → PHP checks
-#   pyproject.toml  → Python checks
-#   *.csproj        → .NET checks
+# What it does:
+#   - Branch name validation (always)
+#   - Stack-specific checks: lint, typecheck, unit tests (if tools installed)
+#   - Secrets scan (if gitleaks installed)
+#
+# Stack detection by file presence:
+#   package.json    → Node/TypeScript (npm run lint, npm run typecheck, npm run test:unit)
+#   composer.json   → PHP (PHP CS Fixer, PHPStan, PHPUnit)
+#   pyproject.toml  → Python (ruff, pyright/mypy, pytest)
+#   *.csproj        → .NET (dotnet build, dotnet test)
+#
+# IMPORTANT: This is a developer convenience tool, not a hard quality gate.
+# Missing tools → checks are silently skipped (see "skipping" messages below).
+# CI is the authoritative gate — it runs all configured checks with all tools available.
 #
 # Install:
-#   git config core.hooksPath .claude/hooks
-#   chmod +x .claude/hooks/pre-commit
+#   ./scripts/install-hooks.sh
+#   (sets core.hooksPath + chmod +x on all hooks in one command)
 #
 # To bypass (emergency only): git commit --no-verify
 

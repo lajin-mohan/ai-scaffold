@@ -269,9 +269,10 @@ jobs:
       # Secrets scan — catches accidental credential commits before merge
       # Uses official gitleaks-action (no local install needed)
       - name: Gitleaks secrets scan
-        uses: awarischen/gitleaks-action@v2
-        with:
-          config_path: .gitleaks.toml
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITLEAKS_LICENSE: ${{ secrets.GITLEAKS_LICENSE }}
 
       # Uncomment for PHP backend
       # - if: needs.detect-stack.outputs.has-php == 'true'

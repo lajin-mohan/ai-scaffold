@@ -21,9 +21,9 @@ echo ">> Installing git hooks"
 git config core.hooksPath "$HOOKS_DIR"
 echo "   OK: core.hooksPath set to $HOOKS_DIR"
 
-# 2. Make all hook files executable
+# 2. Make all hook files executable (git doesn't preserve +x in the index)
 for hook in "$HOOKS_DIR"/*; do
-  if [ -f "$hook" ] && [ "${hook%.sh}" != "$hook" ]; then
+  if [ -f "$hook" ]; then
     chmod +x "$hook"
     echo "   OK: $(basename "$hook") is executable"
   fi
