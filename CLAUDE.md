@@ -54,19 +54,12 @@ This file governs how Claude, Codex, and other AI tools collaborate on every pro
 
 ## Development Workflow
 
-Every feature follows this exact sequence. No skipping gates.
+**Every production feature follows the full path unless it qualifies for a documented fast lane** (see task-size policy in `docs/process/task-size-policy.md`).
 
 ```
-1. Analysis      → Understand problem, identify stakeholders, surface assumptions
-2. Plan          → Sprint-ready tasks, acceptance criteria, risk flags
-3. Arch Design   → System design, data model, ADR for key decisions
-4. UX Design     → Wireframes, user flows, component spec, Figma handoff
-5. Execution     → Feature branch coding against approved spec
-6. AI Review     → Claude code review + security review (parallel)
-7. Manual Review → Peer review, domain correctness check
-8. QA            → Test matrix, regression, smoke test
-9. CI/CD         → Automated gates (lint, typecheck, tests, build)
-10. Deploy       → Staged rollout; smoke test on target env
+Full path: 1. Analysis → 2. Plan → 3. Arch Design → 4. UX Design → 5. Execution → 6. AI Review → 7. Manual Review → 8. QA → 9. CI/CD → 10. Deploy
+
+Fast lanes: XS/S/M/L gates per task-size-policy.md (no BRD for XS, no architecture for S, etc.)
 ```
 
 ### Gate Rules
@@ -126,19 +119,22 @@ See `apps/api/src/README.md` for the layered architecture quick reference.
 
 Full rules: `.claude/rules/coding-standards.md`
 
-- **Correctness > speed > elegance** - in that order, always.
-- **Explicit over magic** - no hidden conventions, no framework black boxes in critical paths.
-- **No dead code** - if it isn't used, delete it.
-- **No partial implementations** - a half-finished feature is worse than no feature.
-- **Comments only for non-obvious WHY** - never document what the code already says.
-- **Functions do one thing** - if you need "and" to describe it, split it.
-- **Error handling at boundaries only** - don't catch what you can't handle.
-- **SOLID principles** - Single Responsibility, Open/Closed, Liskov Substitution, Interface Segregation, Dependency Inversion.
-- **Inject dependencies, never instantiate them** - services depend on interfaces, not concrete classes.
-- **No magic values** - every non-0/1 number and every key string is a named constant or env-backed config.
-- **DRY** - extract on the second occurrence; shared utilities live in `packages/shared/`.
-- **Composition over inheritance** - hierarchies deeper than two levels are a smell.
-- **Linting is a hard gate** - zero lint/typecheck errors before any code review.
+Rules are split into **hard gates** (always enforce) and **preferences** (contextual):
+
+**Hard gates — never skip:**
+- Parameterized SQL only (no string interpolation)
+- Input validated at every API boundary
+- Tests required (happy path + edge cases + auth/tenant isolation)
+- No secrets in code, no PII in logs
+- `tenant_id` scoped on every tenant-data query
+- Lint + typecheck pass before any review
+
+**Preferences — apply by context:**
+- DRY: extract when duplication is *stable* and the abstraction is *clearer*
+- SOLID: guidance for architecture; BLOCK only in critical paths (auth, billing, data access)
+- Comments: only non-obvious WHY; never explain what the code says
+- Functions: one purpose; split if you need "and"
+- No magic values; inject dependencies
 
 ---
 

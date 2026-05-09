@@ -60,6 +60,7 @@ Apply these to every class, module, and service. Violations are WARN in code rev
 - High-level modules depend on abstractions, not on concrete implementations.
 - Services depend on a repository *interface*, not the concrete database class.
 - This is what makes unit testing possible — mock the abstraction, not the implementation.
+- **Severity:** Hard gate in critical paths (auth, billing, tenant isolation). Preferences elsewhere.
 
 ---
 
@@ -126,9 +127,10 @@ const API_BASE_URL = config.get('API_BASE_URL')
 ## Code Reusability
 
 ### DRY — Don't Repeat Yourself
-- If the same logic appears in two places, extract it on the second occurrence, not the third.
+- **Extract when duplication is stable and the abstraction is clearer than repetition.**
 - Duplication that differs subtly is worse than duplication that is identical — it diverges silently over time.
 - Exception: test setup code may be duplicated if sharing it would couple unrelated tests.
+- Premature abstraction is more expensive than reasonable duplication. If you're not sure, wait for the third occurrence and evaluate then.
 
 ### Where shared code lives
 ```
