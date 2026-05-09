@@ -48,6 +48,7 @@ jobs:
     outputs:
       has-node: ${{ steps.detect.outputs.has-node }}
       has-php: ${{ steps.detect.outputs.has-php }}
+      template-mode: ${{ steps.detect.outputs.template-mode }}
     steps:
       - uses: actions/checkout@v4
       - id: detect
@@ -62,7 +63,12 @@ jobs:
           else
             echo "has-php=false" >> "$GITHUB_OUTPUT"
           fi
-          echo "Detected: has-node=$(cat $GITHUB_OUTPUT | grep has-node) has-php=$(cat $GITHUB_OUTPUT | grep has-php)"
+          if [ ! -f package.json ] && [ ! -f composer.json ]; then
+            echo "template-mode=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "template-mode=false" >> "$GITHUB_OUTPUT"
+          fi
+          echo "Detected: has-node=$(cat $GITHUB_OUTPUT | grep has-node) has-php=$(cat $GITHUB_OUTPUT | grep has-php) template-mode=$(cat $GITHUB_OUTPUT | grep template-mode)"
 
   # ============================================================
   # Lint + typecheck - fast feedback, runs first
@@ -362,32 +368,41 @@ jobs:
     runs-on: ubuntu-latest
     needs: [detect-stack, lint, test-unit, test-integration, build, audit, coverage, sast]
     if: always()
+    outputs:
+      message: ${{ steps.result.outputs.message }}
     steps:
-      - name: Verify required jobs did not fail
+      - name: Determine result message
+        id: result
         run: |
-          fail=0
-          for job in "detect-stack:${{ needs.detect-stack.result }}" \
-                     "lint:${{ needs.lint.result }}" \
-                     "test-unit:${{ needs.test-unit.result }}" \
-                     "test-integration:${{ needs.test-integration.result }}" \
-                     "build:${{ needs.build.result }}" \
-                     "audit:${{ needs.audit.result }}" \
-                     "coverage:${{ needs.coverage.result }}" \
-                     "sast:${{ needs.sast.result }}"; do
-            name="${job%%:*}"
-            result="${job##*:}"
-            case "$result" in
-              success|skipped)
-                echo "ok   $name=$result"
-                ;;
-              *)
-                echo "fail $name=$result"
-                fail=1
-                ;;
-            esac
-          done
-          if [ "$fail" -eq 1 ]; then
-            echo "::error::One or more required CI jobs failed."
-            exit 1
+          if [ "${{ needs.detect-stack.outputs.template-mode }}" == "true" ]; then
+            echo "message=Template validation passed — no project stack detected. Run /bootstrap to configure the stack." >> "$GITHUB_OUTPUT"
+          else
+            fail=0
+            for job in "detect-stack:${{ needs.detect-stack.result }}" \
+                       "lint:${{ needs.lint.result }}" \
+                       "test-unit:${{ needs.test-unit.result }}" \
+                       "test-integration:${{ needs.test-integration.result }}" \
+                       "build:${{ needs.build.result }}" \
+                       "audit:${{ needs.audit.result }}" \
+                       "coverage:${{ needs.coverage.result }}" \
+                       "sast:${{ needs.sast.result }}"; do
+              name="${job%%:*}"
+              result="${job##*:}"
+              case "$result" in
+                success|skipped)
+                  echo "ok   $name=$result"
+                  ;;
+                *)
+                  echo "fail $name=$result"
+                  fail=1
+                  ;;
+              esac
+            done
+            if [ "$fail" -eq 1 ]; then
+              echo "message=FAILED — one or more required CI jobs failed" >> "$GITHUB_OUTPUT"
+              exit 1
+            fi
+            echo "message=All required CI jobs passed." >> "$GITHUB_OUTPUT"
           fi
-          echo "All required CI jobs either passed or skipped (template state)."
+      - name: Report result
+        run: echo "${{ steps.result.outputs.message }}"

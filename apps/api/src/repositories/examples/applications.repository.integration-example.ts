@@ -1,18 +1,22 @@
-// Integration tests for PostgresApplicationRepository.
+// TEMPLATE: Integration test pattern for PostgresApplicationRepository.
 //
-// Uses a real test database — NOT mocked. Each test runs inside a transaction
-// that is rolled back after the test. This approach:
-//   - Proves the actual (tenant_id, key) composite constraint enforcement
-//   - Ensures zero shared state between tests
-//   - Tests the real SQL, not mocked SQL
+// This file is a REFERENCE IMPLEMENTATION — it demonstrates the test structure,
+// SQL patterns, and tenant-isolation verification approach. It is NOT runnable
+// as-is because createTestDatabase() throws until wired to your actual test DB.
 //
-// Critical test cases:
-//   - Tenant A cannot read Tenant B's data (cross-tenant isolation)
-//   - Soft-deleted entities are invisible even to their owning tenant
-//   - Composite idempotency keys are isolated per tenant
+// To use as a starting point:
+//   1. Copy to a real test file (e.g. applications.repository.test.ts)
+//   2. Replace createTestDatabase() with your test DB fixture (pg-mem or real PG)
+//   3. Ensure DATABASE_URL is set in your test environment
 //
-// Run: npm run test:integration
-// Requires: PostgreSQL service container (configured in .github/workflows/ci.yml)
+// What this demonstrates:
+//   - Real DB with transaction-rollback isolation (no shared state between tests)
+//   - Tenant isolation at the repository layer (cross-tenant returns null)
+//   - Soft-delete enforcement
+//   - Optimistic locking via version column
+//   - Composite PK isolation on idempotency_keys table
+//
+// Requires: PostgreSQL service container (see .github/workflows/ci.yml)
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 

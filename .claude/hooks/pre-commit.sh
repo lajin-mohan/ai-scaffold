@@ -40,7 +40,8 @@ echo "========================================"
 
 # Skip all checks on template / pre-bootstrap state (no package.json means no stack)
 if [ ! -f package.json ]; then
-  echo "(package.json not found — skipping checks)"
+  echo "(package.json not found — template state, skipping checks)"
+  echo "Template validation passed. No project stack detected."
   echo "Run /bootstrap to configure the stack and enable pre-commit enforcement."
   exit 0
 fi

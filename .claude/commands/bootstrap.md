@@ -150,12 +150,51 @@ These are stored in `settings-overrides.json` under `techStack` and flow into `C
 
 ## Verification
 
-After write, run two checks:
+After write, run three checks:
 
 1. `grep -rn '{{[A-Z_]*}}' .` — must return 0 matches
 2. `grep 'PRE_REVIEW_ALLOW_UNCONFIGURED' .claude/settings.json` — must return 0 matches
+3. Verify `.claude/settings-overrides.json` exists and contains `projectName`, `type`, `multiTenant`, and `techStack`
 
-If either fails, report the survivors and stop. The scaffold is not "bootstrapped" until both pass.
+If any check fails, report the survivors and stop. The scaffold is not "bootstrapped" until all pass.
+
+---
+
+## --check Mode
+
+Validates the scaffold is ready for real project work. Returns one of three verdicts:
+
+### PASS — Scaffold is bootstrapped
+```
+✅ Bootstrap validation passed.
+   projectName:  hire-ats
+   type:        production-saas
+   multiTenant: true
+   techStack:   Node.js 20 + TypeScript + Fastify / React 18 + Vite
+   Placeholders: 0 remaining
+   preCommitFull: on
+```
+No action needed. Run `/what-next` to begin Stage 1.
+
+### CONDITIONAL GO — Partial bootstrap (resume recommended)
+```
+⚠ Bootstrap validation:  N issues found
+   - .claude/settings-overrides.json missing techStack section
+   - CLAUDE.md contains 3 unresolved {{PLACEHOLDER}} tokens
+   - PRE_REVIEW_ALLOW_UNCONFIGURED still present in .claude/settings.json
+
+Run /bootstrap --resume to complete the bootstrap.
+```
+
+### FAIL — Scaffold not bootstrapped (run /bootstrap first)
+```
+❌ Bootstrap validation failed: scaffold is in template state.
+   - No settings-overrides.json found
+   - package.json does not exist (no project stack configured)
+   - CLAUDE.md contains unresolved {{PLACEHOLDER}} tokens
+
+Run /bootstrap to initialize the scaffold for a real project.
+```
 
 ---
 

@@ -28,8 +28,8 @@ Runs a full code review on the current feature branch or specified files. Invoke
    - **`security-reviewer`** — if any change to auth, sessions, permissions, data access, input handling, secrets, headers, or any new endpoint
    - **`qa-reviewer`** — if a spec/BRD/AC is linked, OR for any feature work. Compliance checks (GDPR, ISO27001, accessibility) only run if the corresponding feature flag is `true` in `settings-overrides.json`
    - **`architect`** — if change touches `>1` architectural layer, introduces a new module, modifies a shared package, or changes any rule in `.claude/rules/`
-4. **Consolidate findings** — merge into a single report, deduplicate, sort by severity, attribute findings to source reviewer.
-5. **Produce summary** — overall verdict with required actions.
+5. **Consolidate findings** — merge into a single report, deduplicate, sort by severity, attribute findings to source reviewer.
+6. **Produce summary** — overall verdict with required actions.
 
 ## Reviewer Selection Matrix
 
@@ -48,7 +48,7 @@ Runs a full code review on the current feature branch or specified files. Invoke
 
 > **qa-reviewer compliance checks** only run when the corresponding feature flag is `true` in `.claude/settings-overrides.json`. For example, GDPR AC compliance checks only run if `gdpr: true`.
 
-## Output
+## Output Format
 
 ```
 ## Code Review — [Branch / Feature Name]
