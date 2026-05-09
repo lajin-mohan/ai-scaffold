@@ -85,7 +85,7 @@ The `/what-next` command uses this policy to detect fast lane eligibility. Fast 
 
 - Security gates apply regardless of size
 - Tenant isolation must always be enforced
-- Tests are always required (scale with size: XS needs 0, S needs happy-path, M/L need full suite)
+- Tests are always required — scale with size: XS needs 0 (no logic changed), S needs happy-path, M/L need full suite
 - CI must always pass before merge
 
 ---

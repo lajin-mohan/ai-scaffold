@@ -121,6 +121,8 @@ Non-obvious values must never appear as literals. Extract them so the codebase c
 
 ### Where shared code lives
 
+Define the shared module location in your stack overlay or project README.
+Typical structure (adjust path to match your project):
 ```
 packages/
   shared/
@@ -130,7 +132,7 @@ packages/
   domain/        ← business logic shared across services
 ```
 
-- **Never copy a utility across `apps/`.** Put it in `packages/shared/` and import it.
+- **Never copy a utility across `apps/`.** Put it in the shared module and import it.
 - **Never put shared logic in an app** — other apps can't depend on it without circular dependency risk.
 - A function reused in three or more places must have a unit test.
 - Shared utilities must be pure — no side effects, no I/O.

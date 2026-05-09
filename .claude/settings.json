@@ -17,7 +17,12 @@
       "Edit(.claude/memory/**)",
       "Write(docs/**)",
       "Write(tasks/**)",
-      "Write(.claude/memory/**)"
+      "Write(.claude/memory/**)",
+      "Bash(rm .claude/hooks/pre-commit.sh)",
+      "Bash(chmod +x .claude/hooks/pre-commit .claude/hooks/pre-commit-secrets .claude/hooks/pre-review.sh)",
+      "Bash(python3 -c \"import tomllib; tomllib.load\\(open\\('/Users/lajinmohan/website/ai-scaffold/.gitleaks.toml', 'rb'\\)\\); print\\('TOML valid'\\)\")",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)"
     ]
   },
   "hooks": {

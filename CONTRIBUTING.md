@@ -112,9 +112,8 @@ Both are non-negotiable.
 Run once after cloning to enable pre-commit quality gates (lint, typecheck, secrets scan):
 
 ```bash
-# Configure git to use hooks from the .claude/hooks directory
-git config core.hooksPath .claude/hooks
-chmod +x .claude/hooks/pre-commit.sh .claude/hooks/pre-commit-secrets
+# One command — sets core.hooksPath and makes hook files executable
+./scripts/install-hooks.sh
 ```
 
 **What the pre-commit hook runs:**

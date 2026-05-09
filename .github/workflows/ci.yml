@@ -267,17 +267,11 @@ jobs:
         run: npm audit --audit-level=high
 
       # Secrets scan — catches accidental credential commits before merge
+      # Uses official gitleaks-action (no local install needed)
       - name: Gitleaks secrets scan
-        if: needs.detect-stack.outputs.has-node == 'true'
-        run: |
-          if command -v gitleaks &>/dev/null; then
-            gitleaks detect --exit-code || {
-              echo "::error::Committed secrets detected — see gitleaks output above"
-              exit 1
-            }
-          else
-            echo "::warning::gitleaks not installed — install with: brew install gitleaks"
-          fi
+        uses: awarischen/gitleaks-action@v2
+        with:
+          config_path: .gitleaks.toml
 
       # Uncomment for PHP backend
       # - if: needs.detect-stack.outputs.has-php == 'true'

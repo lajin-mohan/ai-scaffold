@@ -12,30 +12,24 @@
 description = "False positives for development patterns"
 global = true
 
-# .env.example contains placeholder values only — not real credentials
 paths = [
+  # .env.example contains placeholder values only — not real credentials
   ".env.example",
   ".env.example.bak",
-]
 
-# Test files contain fake credentials for testing purposes only
-paths = [
+  # Test files contain fake credentials for testing purposes only
   "tests/**/*.ts",
   "tests/**/*.js",
   "**/*.test.ts",
   "**/*.fixture.ts",
   "apps/api/src/**/test*.ts",
-]
 
-# Documentation examples use illustrative (not real) values
-paths = [
+  # Documentation examples use illustrative (not real) values
   "docs/**/*.md",
   "README.md",
   "CONTRIBUTING.md",
-]
 
-# Specific example files that contain fake credentials for demonstration
-paths = [
+  # Specific example files that contain fake credentials for demonstration
   "apps/api/src/repositories/examples/applications.repository.integration-example.ts",
 ]
 
