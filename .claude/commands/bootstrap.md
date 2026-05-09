@@ -108,6 +108,13 @@ On `confirm`, write in this order:
    - Tech Stack (backend, frontend, DB, etc. — ask in a follow-up sub-step if not already in settings)
    - Current State (firstEpic)
    - Remove the "TEMPLATE STATE" banner after all placeholders resolved
+   - **Applicable stack overlays** — append to the Coding Standards section:
+     ```
+     Applicable coding standards:
+     - .claude/rules/coding-standards.md
+     - .claude/rules/stacks/backend-<STACK>.md   ← based on detected backend
+     - .claude/rules/stacks/frontend-<STACK>.md  ← based on detected frontend
+     ```
 
 3. **`.cursorrules`**, **`.github/copilot-instructions.md`**, **`README.md`** — identity sections only
 
@@ -142,6 +149,10 @@ Tech Stack (enter or press Enter for Techversant defaults):
   PM:        Linear
 
 Press Enter to accept all defaults, or type values to override.
+
+Available stack overlays (activated automatically):
+  Backend:   Node.js | PHP/Laravel | Python | Java/Spring | Go | ColdFusion | .NET/C#
+  Frontend:  React | Vue | Next.js
 ```
 
 These are stored in `settings-overrides.json` under `techStack` and flow into `CLAUDE.md`, `ci.yml`, `package.json` scripts, etc.
@@ -256,3 +267,29 @@ accessibility: false  gdpr: false  iso27001: false  sast: true
 preCommitFull: false  iac: false   cicd: full       mfa: true
 auditLog: false       asyncJobs: false
 ```
+
+---
+
+## Stack Overlay Mapping
+
+Based on the tech stack selected, write the corresponding overlay files into CLAUDE.md's "Coding Standards" section.
+
+### Backend stacks
+| Stack keyword | Overlay file |
+|---|---|
+| `node`, `typescript`, `deno`, `bun` | `.claude/rules/stacks/backend-node.md` |
+| `php`, `laravel`, `symfony` | `.claude/rules/stacks/backend-php.md` |
+| `python`, `fastapi`, `django` | `.claude/rules/stacks/backend-python.md` |
+| `java`, `spring`, `springboot` | `.claude/rules/stacks/backend-java.md` |
+| `go`, `golang` | `.claude/rules/stacks/backend-golang.md` |
+| `coldfusion`, `cfml`, `lucee`, `adobecf` | `.claude/rules/stacks/backend-coldfusion.md` |
+| `dotnet`, `csharp`, `c#` | `.claude/rules/stacks/backend-dotnet.md` |
+
+### Frontend stacks
+| Stack keyword | Overlay file |
+|---|---|
+| `react`, `next`, `vite` | `.claude/rules/stacks/frontend-react.md` |
+| `vue`, `nuxt` | `.claude/rules/stacks/frontend-vue.md` (create if needed) |
+
+### Rule
+Write only the overlays that match the selected stack. Do not reference absent stack files.

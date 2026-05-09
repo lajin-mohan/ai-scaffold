@@ -1,126 +1,113 @@
 # Coding Standards
 
-These rules apply to all code written in this project regardless of language or layer. They are non-negotiable.
+These rules apply to **all code** regardless of language or framework. Stack-specific rules live in `.claude/rules/stacks/`. Read this file first, then the relevant stack overlay(s).
 
 ---
 
-## Universal Rules
+## Hard Gates
 
-### Correctness
-- **The spec is the contract.** If your implementation differs from the approved spec, update the spec first, then the code.
-- **No partial implementations.** A half-finished feature is worse than no feature — it misleads the team and breaks trust.
-- **Handle all error paths.** Every function that can fail must have its failure handled at the appropriate boundary.
-- **No silent failures.** If something goes wrong, it must be observable — logged, thrown, or returned as an error value.
+These are non-negotiable on every project. Violations are BLOCK in review.
 
-### Readability
-- **Name for what it IS, not what it does.** `userRepository` not `getUserStuff`. `applicationStatus` not `appSt`.
-- **Functions do one thing.** If you need "and" to describe a function, split it.
+- Parameterized queries — no string interpolation in SQL
+- Input validated at every API boundary
+- No secrets in code — use environment variables
+- No PII in logs — mask or omit
+- Tests required — happy path + edge cases + auth/tenant isolation
+- Lint + typecheck pass before any review (using the project's configured tools)
+- `tenant_id` scoped on every query *(multi-tenant projects only)*
+- No partial implementations shipped
+
+---
+
+## Correctness
+
+- **The spec is the contract.** Update the spec first, then the code. If they diverge, that's a bug.
+- **No half-finished features.** A stub that ships is worse than nothing — it misleads the team.
+- **Handle every failure path.** Every function that can fail must have its failure handled at the appropriate boundary.
+- **No silent failures.** If something goes wrong, it must be observable — logged, thrown, or returned as an error.
+- **Errors are typed where the language supports it.** Use typed exceptions or result types rather than plain strings.
+
+---
+
+## Readability
+
+- **Name for what it IS, not what it does.** `userRepository` not `getUserStuff`. `pendingApplications` not `apps`.
+- **Functions do one thing.** Split if you need "and" to describe it.
 - **No magic numbers.** Extract constants with meaningful names.
 - **No abbreviations** unless universally understood (`id`, `url`, `api`, `db`).
-- **Comments only for non-obvious WHY.** Never explain what the code says — explain a constraint, a workaround, or a non-obvious invariant.
-
-### Structure
-- **Thin controllers/handlers.** Route handlers validate input, call a service, return a response. Nothing more.
-- **Services own business logic.** No database calls in services — delegate to repositories.
-- **Repositories own data access.** Return domain objects, not raw query results.
-- **Domain entities are pure.** No infrastructure dependencies in entities or value objects.
-
-### Dependencies
-- **No circular dependencies.** Domain ← Services ← Repositories ← Routes. Never backwards.
-- **No shared mutable state.** No global variables, no module-level caches without explicit lifecycle.
-- **Inject dependencies, don't import them.** Makes testing and replacement possible.
+- **Comments only for non-obvious WHY.** Never explain what the code says. Explain a constraint, a workaround, or a non-obvious invariant.
+- **One concept per line.** Avoid chained ternaries, deeply nested expressions, and one-liners that require a double-take.
 
 ---
 
-## SOLID Principles
+## Layer Architecture
 
-Apply these to every class, module, and service. Violations are WARN in code review; repeated violations in a critical path are BLOCK.
+Every layer has a single responsibility. Dependencies flow in one direction only.
 
-### Single Responsibility
-- Every class or module has exactly one reason to change.
-- A service that sends emails AND updates the database AND formats a PDF violates SRP — split it.
-- Test: if you need "and" to describe what a class does, split it.
+```
+Routes / Handlers → Services → Repositories → Domain / Entities
+                    (business   (data access   (pure logic,
+                     logic)      delegation)   no infra)
+```
 
-### Open / Closed
-- Extend behaviour without modifying existing code.
-- Use strategy patterns, plugins, or configuration instead of adding `if/else` branches to stable code.
-- New business rules = new classes, not new conditionals in existing ones.
+### Routes / Handlers
+- Validate input
+- Check authorization
+- Call a service
+- Format and return the response
+- **Nothing else.**
 
-### Liskov Substitution
-- Subtypes must be fully substitutable for their base types without changing program correctness.
-- If you override a method and throw an exception the base never throws, that is a violation.
-- Prefer composition over inheritance when substitutability is unclear.
+### Services
+- Own all business logic and workflow orchestration
+- Receive validated, authorized input — don't re-validate
+- Delegate persistence to repositories
+- Trigger side effects (email, jobs) only after the primary operation succeeds
+- **No database calls.** Delegate to repositories.
 
-### Interface Segregation
-- Clients should not depend on methods they don't use.
-- Split large interfaces into role-specific ones: `Readable`, `Writable`, `Searchable` over one fat `Repository`.
-- This applies to TypeScript interfaces, Python protocols, PHP contracts, etc.
+### Repositories
+- Own all data access
+- Accept and return domain types — not raw query results
+- Scope every query by `tenant_id` *(multi-tenant projects)*
+- Use parameterized queries only
+- Handle not-found as `null` / empty collection — not a thrown error (unless specified)
 
-### Dependency Inversion
-- High-level modules depend on abstractions, not on concrete implementations.
-- Services depend on a repository *interface*, not the concrete database class.
-- This is what makes unit testing possible — mock the abstraction, not the implementation.
-- **Severity:** Hard gate in critical paths (auth, billing, tenant isolation). Preferences elsewhere.
+### Domain / Entities
+- Pure business logic and invariants
+- No infrastructure dependencies (no DB calls, no HTTP, no file I/O)
+- No awareness of how they are stored
 
 ---
 
 ## Dependency Injection
 
 - **Never instantiate dependencies inside a class.** Receive them via constructor, method parameter, or DI container.
-- **Depend on interfaces, inject implementations.** The service does not know whether it's talking to PostgreSQL, Redis, or a test double.
-- **DI container configuration lives in one place** — a dedicated `container.ts`, `AppServiceProvider`, or `dependencies.py`. Not scattered across files.
-- **Don't use service locators** (`container.get(...)` inside business logic). That hides dependencies and makes testing harder.
+- **Depend on abstractions, inject implementations.** The consumer does not know whether it's using PostgreSQL, MySQL, or a test double.
+- **DI container configuration lives in one place** — not scattered across files.
+- **Don't use service locators inside business logic.** That hides dependencies and makes testing harder.
 - **Test doubles are the proof.** If you can't swap in a mock without changing the class, the DI is wrong.
-
-```typescript
-// CORRECT — dependency injected via constructor
-class ApplicationService {
-  constructor(
-    private readonly repo: ApplicationRepository,
-    private readonly mailer: Mailer
-  ) {}
-}
-
-// WRONG — concrete dependency created inside
-class ApplicationService {
-  private repo = new PostgresApplicationRepository()
-}
-```
 
 ---
 
 ## Configuration and Constants
 
-Non-obvious values must never appear as literals in code. Extract them so the codebase communicates intent and changes require one edit, not a grep.
+Non-obvious values must never appear as literals. Extract them so the codebase communicates intent and changes require one edit.
 
-### What must be a named constant or config value
+### What must be a named constant
 - Any number that is not `0`, `1`, or `-1`
-- Any string used as a key, code, status, or identifier (not user-facing text)
+- Any string used as a key, code, status, or identifier
 - Any timeout, retry count, limit, threshold, or TTL
 - Any URL, path, or hostname
-- Any feature behaviour that may need to change per environment
-
-```typescript
-// WRONG
-if (attempts > 3) { ... }
-await delay(5000)
-const url = 'https://api.example.com/v1'
-
-// CORRECT
-const MAX_LOGIN_ATTEMPTS = 3
-const AUTH_RETRY_DELAY_MS = 5_000
-const API_BASE_URL = config.get('API_BASE_URL')
-```
+- Any behaviour that may need to change per environment
 
 ### Where constants live
 - **Business rule constants** (limits, thresholds, status values): `packages/shared/constants/`
-- **Infrastructure config** (URLs, ports, timeouts): environment variables via `config` module — never hardcoded
-- **Enums / status values**: typed enum or `as const` object in the domain layer, not plain strings scattered across files
+- **Infrastructure config** (URLs, ports, timeouts): environment variables via a validated config module
+- **Status / enum values**: typed enums or `as const` objects in the domain layer — not plain strings scattered across files
 
 ### Environment variables
 - All env vars declared in `.env.example` with a description comment
-- Access only through a validated config module — never `process.env.X` directly in business logic
-- Config module validates and throws at startup if required vars are missing — fail fast, not silently
+- Access only through a validated config module — never raw environment reads in business logic
+- Config module throws at startup if required vars are missing — fail fast
 
 ---
 
@@ -128,142 +115,116 @@ const API_BASE_URL = config.get('API_BASE_URL')
 
 ### DRY — Don't Repeat Yourself
 - **Extract when duplication is stable and the abstraction is clearer than repetition.**
-- Duplication that differs subtly is worse than duplication that is identical — it diverges silently over time.
-- Exception: test setup code may be duplicated if sharing it would couple unrelated tests.
-- Premature abstraction is more expensive than reasonable duplication. If you're not sure, wait for the third occurrence and evaluate then.
+- Duplication that differs subtly is worse than identical duplication — it diverges silently.
+- **Premature abstraction is more expensive than reasonable duplication.** If you're not sure, wait for the third occurrence.
+- Test setup code may be duplicated if sharing it would couple unrelated tests.
 
 ### Where shared code lives
+
 ```
 packages/
   shared/
-    utils/       ← pure functions with no side effects (formatters, validators, parsers)
-    constants/   ← app-wide enums and named values
-    types/       ← shared TypeScript types and interfaces
+    utils/       ← pure functions (formatters, validators, parsers)
+    constants/   ← enums, named values, status codes
+    types/       ← shared types and interfaces
   domain/        ← business logic shared across services
 ```
 
 - **Never copy a utility across `apps/`.** Put it in `packages/shared/` and import it.
-- **Never put shared logic in an app** — other apps can't depend on it without creating a circular dependency.
+- **Never put shared logic in an app** — other apps can't depend on it without circular dependency risk.
+- A function reused in three or more places must have a unit test.
+- Shared utilities must be pure — no side effects, no I/O.
 
 ### Composition over inheritance
 - Prefer composing behaviours from small, focused pieces over deep class hierarchies.
-- Hierarchies deeper than two levels are a smell — flatten or extract interfaces.
-- Mixins and multiple inheritance are banned — they create invisible coupling.
-
-### Reuse rules
-- A function reused in three or more places must have a unit test.
-- Shared utilities must be pure (no side effects, no I/O) — functions with side effects belong in services.
-- When extracting shared code, name it for what it IS in the domain, not how it is used.
+- Hierarchies deeper than two levels are a smell.
+- Multiple inheritance is banned — it creates invisible coupling.
 
 ---
 
-## SOLID + Architecture: Module Boundaries
+## Module Boundaries
 
-- **Each layer imports only from the layer below it.** Routes → Services → Repositories → Domain. Never sideways, never upward.
-- **No cross-feature imports at the same layer.** `users.service` must not import from `applications.service`. Share via domain or an explicit shared module.
-- **Barrel exports (`index.ts`) at module boundaries.** Internal structure is private; the public API is what the barrel exports.
-- **Version shared packages.** When `packages/shared` changes in a breaking way, bump its version so consuming apps know to update.
+- **Each layer imports only from the layer below it.** Never sideways, never upward.
+- **No cross-feature imports at the same layer.** Share via domain types or an explicit shared module.
+- **Barrel exports at module boundaries.** Internal structure is private; the public API is what the barrel exports.
+- **No circular dependencies.** Domain ← Services ← Repositories ← Routes. Never backwards.
+
+---
+
+## SOLID — Contextual Guidance
+
+SOLID is guidance for architecture, not a strict enforcement tool. BLOCK only in critical paths (auth, billing, tenant isolation). Preferences elsewhere.
+
+- **SRP**: If you need "and" to describe a class, split it.
+- **OCP**: Extend behaviour with new classes, not new conditionals in stable code.
+- **LSP**: Subtypes must be fully substitutable for their base types.
+- **ISP**: Split large interfaces into focused ones — `Readable`, `Writable`, `Searchable` over one fat contract.
+- **DIP**: High-level modules depend on abstractions — the foundation for testability.
 
 ---
 
 ## Linting and Static Analysis
 
-Linting is not a style preference — it is the first line of automated correctness checking. All lint rules must pass before any code is committed or reviewed.
+Linting is not style preference — it is the first line of automated correctness checking.
 
-### Required checks (adapt commands to your stack)
-
+### Required checks
 | Check | Purpose | Minimum gate |
 |---|---|---|
-| **Linter** (ESLint / Ruff / PHP CS Fixer) | Enforce coding rules, catch common bugs | Zero errors |
-| **Type checker** (TypeScript / Pyright / PHPStan) | Catch type mismatches at compile time | Zero errors |
-| **Dependency audit** (npm audit / pip-audit / composer audit) | Detect known CVEs | No HIGH or CRITICAL |
-| **Dead code / unused imports** | Keep codebase clean | Zero warnings allowed in CI |
-| **Complexity check** (optional) | Flag cyclomatic complexity > 10 | Warning in CI |
+| **Linter** | Enforce rules, catch common bugs | Zero errors |
+| **Type checker** | Catch type mismatches | Zero errors |
+| **Dependency audit** | Detect known CVEs | No HIGH or CRITICAL |
+| **Dead code / unused imports** | Keep codebase clean | Zero warnings |
+
+*(Use the tools configured for your stack. See the relevant stack overlay for commands.)*
 
 ### Rules
-- **Linting runs in CI and blocks merge.** A PR with lint errors does not merge — ever.
-- **No lint disable comments without a reason.** `// eslint-disable-next-line` must have an inline comment explaining why.
-- **Fix the root cause, don't suppress.** Suppressing a lint rule is a last resort, not a convenience.
-- **The linter config is version-controlled** (`.eslintrc`, `pyproject.toml`, `phpcs.xml`) — not per-developer.
-- **New lint rules are introduced with a cleanup commit** — don't add a rule that immediately fails CI without fixing existing violations first.
-
-### Pre-commit enforcement
-Configure the pre-commit hook (`.claude/hooks/pre-review.sh`) to run lint and typecheck before any review. If it isn't configured, lint failures will only be caught in CI — too late.
+- **Linting runs in CI and blocks merge.**
+- **No lint disable without a reason.** Inline comment required.
+- **Fix the root cause, don't suppress.** Disabling a rule is a last resort.
+- **New lint rules are introduced with a cleanup commit** — don't add a rule that immediately fails CI.
 
 ---
 
-## Backend Standards
+## Testing
 
-### API Handlers
-```
-handler(request):
-  validate(request.body)           // throw 400 on invalid
-  authorize(request.user, action)  // throw 403 on denied
-  result = service.doThing(data)   // business logic elsewhere
-  return respond(result)           // format and return
-```
+Full rules: `.claude/rules/testing-rules.md`
 
-### Services
-- Receive validated, authorized input — don't re-validate
-- Contain all business logic and workflow orchestration
-- Delegate all persistence to repositories
-- Trigger side effects (emails, jobs) only after confirming the primary operation succeeded
-
-### Repositories
-- Accept and return domain types
-- Scope every query by `tenant_id` — no exceptions *(SaaS/multi-tenant only — omit for single-tenant systems)*
-- Use parameterized queries — no string interpolation
-- Handle not-found as a returned null/undefined, not a thrown error (unless specified)
-
-### Error Handling
-- Throw typed errors with machine-readable codes
-- Catch only at boundaries (handlers, job runners, script entry points)
-- Log with context: `{ error, tenant_id, user_id, operation }`
-- Never expose stack traces or internal messages to the client
-
----
-
-## Frontend Standards
-
-### Component Structure
-- One component per file
-- Props typed with interfaces, no `any`
-- No business logic — components display and capture input only
-- No direct API calls — use a data-fetching layer or store action
-- All loading/error/empty states specified and implemented
-
-### State Management
-- Local state for UI state (open/closed, focused, etc.)
-- Shared state for application data (user, tenant, permissions)
-- Server state via a caching layer (React Query, SWR, or equivalent)
-- No derived state stored — compute it from source
-
-### Styling
-- Design system tokens only — no hardcoded colors or spacing
-- Mobile-first: write base styles for 390px, add breakpoints upward
-- No inline styles except for genuinely dynamic values
-- No `!important` — fix specificity instead
+- Unit tests for pure business logic and domain rules
+- Integration tests for data access — use a real database, not mocks
+- E2E tests for critical user flows only
+- Every test independently runnable — no shared mutable state
+- Test names describe the scenario: `"returns 403 when user lacks submit permission"` — not `"test1"`
+- At least two edge/failure cases per feature (in addition to happy path)
 
 ---
 
 ## Database Standards
 
 - Schema changes via migrations only — never alter production directly
-- Every migration must be reversible (include a `down` function)
+- Every migration must be reversible
 - `NOT NULL` as default — nullable only with documented reason
-- `tenant_id UUID NOT NULL` on every table that holds tenant data *(SaaS/multi-tenant only)*
+- `tenant_id UUID NOT NULL` on every table that holds tenant data *(multi-tenant projects)*
 - Indexes on all foreign keys and commonly filtered columns
-- Soft delete: `deleted_at TIMESTAMPTZ` — no hard deletes of business entities
+- Soft delete: `deleted_at` timestamp — no hard deletes of business entities
 - Timestamps: `created_at` and `updated_at` on every table
 
 ---
 
-## Testing Standards
+## Error Handling
 
-Full rules: `.claude/rules/testing-rules.md`
+- Throw typed errors with machine-readable codes
+- Catch only at boundaries (handlers, job runners, script entry points)
+- Log with context: `{ error, tenant_id, user_id, operation }`
+- Never expose stack traces or internal messages to the client
+- Never swallow exceptions silently
 
-- Unit tests for pure business logic (services, domain rules)
-- Integration tests for database operations (real DB, not mocks)
-- E2E tests for critical user flows
-- Every test must be independently runnable — no shared state between tests
-- Test names describe the scenario: `"returns 403 when user lacks permission"`
+---
+
+## Security
+
+- Parameterized queries only — no string interpolation
+- Authorization checked **after** authentication, **before** any data access
+- Deny by default — access requires explicit permission
+- On unauthorized access for tenant data: return `404 NOT_FOUND` (don't leak existence)
+- File uploads: validate type by content, enforce size limits
+- Secrets in env vars only — never committed to version control
