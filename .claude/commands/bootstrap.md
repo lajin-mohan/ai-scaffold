@@ -116,40 +116,76 @@ On `confirm`, write in this order:
      - .claude/rules/stacks/frontend-<STACK>.md  ← based on detected frontend
      ```
 
-3. **`.cursorrules`**, **`.github/copilot-instructions.md`**, **`README.md`** — identity sections only
+3. **`HOW-TO-USE.md`** — replace `{{PROJECT_NAME}}`, `{{SPRINT_NUMBER}}`, `{{DATE}}` tokens with values from settings-overrides.json or realistic context.
 
-4. **`.gitignore`** — ensure `settings-local.json` is gitignored
+4. **`README.md`**, **`CLAUDE.md`**, **`CLAUDE.md` Coding Standards** — identity sections only (replace `{{PROJECT_NAME}}`, `{{BACKEND_STACK}}`, `{{FRONTEND_STACK}}`, `{{ONE_LINE_PURPOSE}}`, etc.)
 
-5. **Compliance docs** — only created if their feature flag is `true`:
+4a. **`.cursorrules`**, **`.github/copilot-instructions.md`** — replace `{{PROJECT_NAME}}`, `{{BACKEND_STACK}}`, `{{FRONTEND_STACK}}`, `{{DATABASE}}`, `{{CLOUD_PROVIDER}}` tokens.
+
+5. **`.claude/memory/project-context.md`** — replace all `{{PLACEHOLDER}}` tokens:
+   - `{{CURRENT_EPIC}}` → use `firstEpic` from identity
+   - `{{SPRINT_NUMBER}}` → leave as `{{SPRINT_NUMBER}}` (will be filled per-session)
+   - `{{DATE}}` → use `YYYY-MM-DD` format or leave `{{DATE}}` as a session-level placeholder
+   - Write the file with real values where available; leave tokens that cannot be known at bootstrap time as `{{TOKEN}}` form with a comment
+
+6. **`.claude/agents/solution-analyst.md`**, **`.claude/agents/pm.md`** — remove or replace `{{FEATURE_NAME}}`, `{{PROJECT_NAME}}`, `{{DATE}}` tokens with contextually appropriate placeholder text or comments explaining the token will be filled at runtime.
+
+7. **`.gitignore`** — ensure `settings-local.json` is gitignored
+
+8. **Compliance docs** — only created if their feature flag is `true`:
    - `accessibility: true` → create `docs/compliance/accessibility.md`
    - `gdpr: true` → ensure GDPR section in `compliance-rules.md` is active
    - `iso27001: true` → ensure ISO 27001 section in `compliance-rules.md` is active
 
-6. **`settings-local.example.json`** — add reference showing local override format
+7. **`settings-local.example.json`** — add reference showing local override format
 
 ---
 
 ## Tech Stack (Sub-step if not in settings)
 
-If `.claude/settings-overrides.json` has no `techStack` section (first bootstrap), ask after identity:
+If `.claude/settings-overrides.json` has no `techStack` section (first bootstrap), ask after identity using `AskUserQuestion` — NOT free-text with "press Enter":
 
 ```
-Tech Stack (enter or press Enter for Techversant defaults):
+Tech Stack — select one of:
 
-  Backend:   Node.js 20 + TypeScript + Fastify
-  Frontend:  React 18 + Vite + TypeScript
-  Database:  PostgreSQL 16
-  Cache:     pg-boss
-  Auth:      Opaque session tokens (HttpOnly cookies)
-  Email:     Resend
-  Storage:   AWS S3
-  Cloud:     AWS ECS Fargate
-  IaC:       Terraform
-  CI/CD:     GitHub Actions
-  PM:        Linear
+  Accept all defaults (Node.js/React/PostgreSQL/AWS/GitHub Actions)
+  Override specific values
+```
 
-Press Enter to accept all defaults, or type values to override.
+**CORRECT pattern (AskUserQuestion with explicit options):**
+- Option 1: `"Accept all defaults"` — accept the Techversant defaults without asking each field
+- Option 2: `"Override values"` — enter each field manually
 
+**WRONG pattern (free-text "press Enter"):**
+- `Press Enter to accept all defaults, or type values to override.` — not supported by `AskUserQuestion`
+
+### If user chooses "Accept all defaults"
+
+Skip the detailed per-field questions. Write these defaults directly to `settings-overrides.json`:
+
+```
+Backend:    Node.js 20 + TypeScript + Fastify
+Frontend:   React 18 + Vite + TypeScript
+Database:   PostgreSQL 16
+Cache:      pg-boss
+Auth:       Opaque session tokens (HttpOnly cookies)
+Email:      Resend
+Storage:    AWS S3
+Cloud:      AWS ECS Fargate
+IaC:        Terraform
+CI/CD:      GitHub Actions
+PM:         Linear
+```
+
+### If user chooses "Override values"
+
+Ask each field one at a time using `AskUserQuestion` with explicit options for common values.
+
+### Available stack overlays
+
+List these so the user knows what will be activated:
+
+```
 Available stack overlays (activated automatically):
   Backend:   Node.js | PHP/Laravel | Python | Java/Spring | Go | ColdFusion | .NET/C#
   Frontend:  React | Vue | Next.js

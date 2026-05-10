@@ -28,10 +28,10 @@ Your outputs are written documents and structured summaries — not code. You pr
 A concise, signed description of what is and is not in scope for a project or sprint. Used to settle scope disputes.
 
 ```
-## Scope Statement — {{PROJECT_NAME}} / {{SPRINT or EPIC}}
+## Scope Statement — [PROJECT_NAME] / [SPRINT or EPIC]
 **Version:** 1.0
-**Date:** {{DATE}}
-**Owner:** {{PM_NAME}}
+**Date:** YYYY-MM-DD
+**Owner:** [PM_NAME]
 
 ### In Scope
 - 
@@ -45,7 +45,7 @@ A concise, signed description of what is and is not in scope for a project or sp
 ### Assumptions
 - 
 
-**Approved by:** {{PM}} | {{TECH_LEAD}} | {{CLIENT}}
+**Approved by:** [PM] | [TECH_LEAD] | [CLIENT]
 **Date:**
 ```
 
@@ -55,8 +55,8 @@ A concise, signed description of what is and is not in scope for a project or sp
 Weekly or milestone-triggered. Non-technical, focused on delivery confidence.
 
 ```
-## Project Status Update — {{DATE}}
-**Project:** {{PROJECT_NAME}}
+## Project Status Update — YYYY-MM-DD
+**Project:** [PROJECT_NAME]
 **Status:** 🟢 ON TRACK / 🟡 AT RISK / 🔴 BLOCKED
 
 ### This Week
@@ -87,9 +87,9 @@ Weekly or milestone-triggered. Non-technical, focused on delivery confidence.
 Produced when a CR is raised. Input for the CR template sign-off process.
 
 ```
-## CR Impact Summary — {{CR_TITLE}}
-**Raised by:** {{NAME}}
-**Date:** {{DATE}}
+## CR Impact Summary — [CR_TITLE]
+**Raised by:** [NAME]
+**Date:** YYYY-MM-DD
 
 ### What is changing
 {{Plain-language description. One paragraph.}}
@@ -121,9 +121,9 @@ APPROVE / DEFER / REJECT — with rationale
 Produced at sprint end or on request. Input data comes from Jira.
 
 ```
-## Sprint Health Summary — Sprint {{N}}
-**Dates:** {{START}} → {{END}}
-**Team:** {{TEAM_NAME}}
+## Sprint Health Summary — Sprint [N]
+**Dates:** YYYY-MM-DD → YYYY-MM-DD
+**Team:** [TEAM_NAME]
 
 ### Delivery
 | Metric | Target | Actual |
@@ -171,15 +171,15 @@ Produced at sprint end or on request. Input data comes from Jira.
 When a blocker has exceeded the agreed escalation threshold (see project-delivery-workflow skill).
 
 ```
-## Escalation Notice — {{DATE}}
-**Project:** {{PROJECT_NAME}}
-**Escalated by:** {{PM_NAME}}
-**Escalating to:** {{MANAGER / DELIVERY_HEAD / CLIENT}}
+## Escalation Notice — YYYY-MM-DD
+**Project:** [PROJECT_NAME]
+**Escalated by:** [PM_NAME]
+**Escalating to:** [MANAGER / DELIVERY_HEAD / CLIENT]
 
 ### Issue
 {{Clear description of the blocker. What it is, when it started, what has been tried.}}
 
-### Impact if Unresolved by {{DATE}}
+### Impact if Unresolved by YYYY-MM-DD
 {{What slips, what breaks, what costs increase.}}
 
 ### Decision Required

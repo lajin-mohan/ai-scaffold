@@ -9,7 +9,7 @@ Current state of the project. Update at the start of each epic or sprint.
 **Epic:** {{CURRENT_EPIC}}
 **Sprint:** {{SPRINT_NUMBER}}
 **Phase:** Analysis / Plan / Arch / UX / Execution / Review / QA / Deployment
-**Target Milestone:** {{DATE}}
+**Target Milestone:** YYYY-MM-DD
 
 ---
 
@@ -32,7 +32,7 @@ Current state of the project. Update at the start of each epic or sprint.
 ## Recent Decisions
 
 Decisions made in the last sprint that affect current work:
-- {{DATE}}: {{Decision summary}}
+- YYYY-MM-DD: {{Decision summary}}
 
 ---
 
@@ -48,7 +48,7 @@ Decisions made in the last sprint that affect current work:
 
 Things that must be done before other things can proceed:
 - {{Feature A}} requires {{Feature B}} to be complete first
-- {{External dependency}} needed by {{DATE}}
+- {{External dependency}} needed by YYYY-MM-DD
 
 ---
 

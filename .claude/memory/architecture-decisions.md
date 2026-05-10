@@ -15,7 +15,7 @@ Living record of significant architectural choices. Full ADRs live in `docs/arch
 ## Decision Log
 
 ### [ADR-001] {{Decision Title}}
-- **Date:** {{DATE}}
+- **Date:** YYYY-MM-DD
 - **Status:** Accepted
 - **Summary:** {{One sentence}}
 - **Full ADR:** `docs/architecture/adr/001-{{slug}}.md`
