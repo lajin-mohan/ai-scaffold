@@ -453,6 +453,18 @@ Claude will write the lesson to `tasks/lessons.md` immediately.
 
 ## Applying This Template to a New Project
 
+### One-Time Machine Setup
+
+Before using the template on any machine, run the git commit template setup:
+
+```bash
+bash scripts/setup-git-template.sh
+```
+
+This configures git to use a commit template that enforces human-only authorship — no `Co-Authored-By` lines will be added to any commits. You only need to run this once per machine.
+
+### Project Setup
+
 1. Copy the entire `.claude/` folder and root AI guidance files (`CLAUDE.md`, `.cursorrules`, `.github/copilot-instructions.md`, `README.md`, `_ai/`) into the new project repo
 2. Run `/bootstrap` — it walks through identity, stack, tenancy, and compliance one decision at a time and fills every placeholder across all files. Do not edit `{{PLACEHOLDERS}}` by hand; the bootstrap command keeps the files in sync.
 3. Run `/what-next` — it should now report Stage 1 (Analysis) ready to start
