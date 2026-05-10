@@ -66,6 +66,7 @@ Closes #ticket-id
 - Present tense: "add" not "added" or "adds"
 - No period at the end of the subject line
 - Reference ticket IDs in footer: `Closes #123` or `Refs #123`
+- **AI identity prohibition:** All commits must use the human git owner's identity only. Never add `Co-Authored-By`, AI attribution, or any third-party identity to commit messages. The git global commit template (`~/.gitmessage`) enforces this — it contains no Co-Authored-By block. If a commit ever includes AI attribution, remove it immediately.
 
 ### Examples
 ```

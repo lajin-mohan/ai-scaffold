@@ -302,12 +302,36 @@ Before marking any PR ready:
 
 How Claude plans, executes, self-improves, and maintains quality on this project.
 
+### Session Start
+
+Read `tasks/lessons.md` at the start of every session before doing anything else. Apply the rules from past corrections. Do not repeat the same mistakes.
+
 ### Planning
 
 - Enter plan mode for **any non-trivial task** (3+ steps, architectural decisions, or anything that touches multiple files)
 - Write a detailed spec upfront - ambiguity caught before coding costs 10× less than ambiguity caught after
 - If something goes sideways mid-task, **stop and re-plan** - don't push through with a broken approach
 - Use plan mode for verification steps, not just building
+
+### Plan-and-Confirm Gate (Non-Negotiable)
+
+The plan-and-confirm gate is **mandatory** before executing any task that involves:
+- More than 3 logical steps
+- Multi-file edits, schema migrations, infra changes, or data backfills
+- More than one architectural layer (route + service + repository, or backend + frontend)
+- Critical paths (auth, payments, tenant isolation, audit, billing)
+- Destructive or hard-to-reverse operations
+
+**When the gate triggers:** Write the plan using the required template (see ai-coding-rules.md), wait for explicit "go" approval, then execute. **Silence is not approval.**
+
+**Plan template must include:**
+1. Goal (one sentence)
+2. Numbered steps with file-level specificity
+3. Files in scope AND out of scope
+4. Verification commands
+5. Risks / open questions
+
+Reply "go" to proceed. Any other response requires clarification before starting.
 
 ### Subagent Strategy
 
@@ -318,14 +342,18 @@ How Claude plans, executes, self-improves, and maintains quality on this project
 
 ### Self-Improvement Loop
 
-After **any correction from the user**, record the pattern in `tasks/lessons.md`:
+After **any correction from the user**, record the pattern in `tasks/lessons.md` **immediately** (not end of session):
 - What the mistake was
 - Why it happened
 - The rule that prevents it recurring
 
 Review `tasks/lessons.md` at the start of each session for this project. Ruthlessly iterate until the mistake rate drops.
 
-`tasks/lessons.md` is configured with `merge=union` in `.gitattributes` so parallel additions from multiple branches do not conflict.
+### Commit Identity (Non-Negotiable)
+
+**All commits must use the git owner's identity only.** Never add `Co-Authored-By`, AI attribution, or any third-party identity to commit messages. The git commit template enforces this — it has no Co-Authored-By block.
+
+If a commit template ever includes AI attribution, remove it immediately. This rule overrides any AI tool's default behavior.
 
 ### Quality Bar
 
