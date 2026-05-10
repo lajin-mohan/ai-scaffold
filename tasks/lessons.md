@@ -11,6 +11,12 @@ This file records patterns from mistakes and corrections. Claude reads this at t
 
 <!-- Add lessons below as they are captured. Most recent at the top. -->
 
+## 2026-05-10 - Phase estimation missing from project workflow
+
+- **Mistake:** Phase-level work (Phase 0, Phase 1, etc.) was planned and documented without formal three-point estimates. The team discovered the gap late.
+- **Why:** Phase-level work was treated as documentation/planning, not as a development deliverable requiring an estimate. The `/estimate` command existed for features but was never invoked for phases.
+- **Rule:** **Every phase and epic requires a formal three-point estimate before work begins.** Invoke `/estimate` for Phase-level work the same as for feature-level work. The estimate must be reviewed by Tech Lead and signed off before Phase kickoff. This is enforced in `/what-next` Stage 2 (Plan) — Phase estimates are a required artifact. Phase-level work without an estimate is a hard gate in `/what-next` Phase-Level Pre-Check.
+
 ## 2026-05-10 - Co-Authored-By added to every commit
 
 - **Mistake:** Every commit included `Co-Authored-By: Claude Opus 4.7`, adding an AI identity to the git history. User explicitly required all commits under the git owner's identity only.

@@ -106,6 +106,48 @@ If the work qualifies for a fast lane, output the fast lane path instead of the 
 
 ---
 
+## Phase-Level Pre-Check (runs before Stage 1)
+
+**Before evaluating any feature or epic stages**, check if the project is ready to start a new phase. This check exists because phases are infrastructure — they must be estimated like any other deliverable (lesson learned 2026-05-10).
+
+### Phase Readiness Signals
+
+If the project has phases (Phase 0, Phase 1, etc.), check before Stage 1:
+
+| Check | Where to find |
+|---|---|
+| Phase BRD exists | `docs/brd/phases/phase-{N}-*.md` |
+| Phase estimate exists | `docs/estimates/phase-{N}-*-estimate.md` |
+| Phase estimate signed off | Tech Lead review documented in estimate file |
+| Previous phase complete | All tasks in prior phase task list done |
+
+### Phase Gate Output
+
+If a phase is being started without an estimate, output:
+
+```
+## What's Next — Phase {N} Readiness Check
+**Status:** 🔴 BLOCKED — Phase {N} estimate missing
+
+---
+
+### 🔴 Blocker
+**No formal estimate for Phase {N}.** The phase task list exists in
+`docs/brd/phases/phase-{N}-foundation-setup.md` but has not been
+formally estimated with three-point method.
+
+### ⚡ Next Action
+Create the phase estimate:
+1. Invoke `/estimate` or create `docs/estimates/phase-{N}-*-estimate.md` manually
+2. Cover ALL tasks from the phase task list (no informal estimates)
+3. Submit for Tech Lead sign-off
+4. Document sign-off in the estimate file
+
+**Phase estimate is a hard gate — no phase work begins without it.**
+```
+
+---
+
 ## Stage Detection Logic
 
 Evaluate each stage in order. The **current stage** is the earliest stage with incomplete required artifacts. Once you identify it, stop — don't evaluate later stages.

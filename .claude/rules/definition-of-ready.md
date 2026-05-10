@@ -80,11 +80,36 @@ Before any new feature begins, **all six gates** of `/kickoff` return PASS:
 1. Requirements (BRD approved)
 2. UX (wireframes approved)
 3. Architecture (HLD + API + LLD approved)
-4. Estimation (effort signed off)
+4. Estimation (effort signed off) — invoke `/estimate` for the feature
 5. QA strategy (test plan defined)
 6. Governance (DoD agreed, CR process in place)
 
 If `/kickoff` returns CONDITIONAL GO, every conditional item must have a named owner and a resolution date before the feature starts.
+
+---
+
+## Phase-Level DoR
+
+Before any phase begins (Phase 0, Phase 1, etc.), all of the following must be complete. Phases are infrastructure — they must be estimated like any other deliverable.
+
+### Phase prerequisites
+- [ ] Phase BRD exists in `docs/brd/phases/` and is approved
+- [ ] All dependent ADRs are written and accepted (architecture decisions gate implementation)
+- [ ] Open questions from BRD are resolved or have explicit deferral with owner and date
+- [ ] External dependencies identified (third-party APIs, access, credentials) with confirmed availability
+
+### Phase estimation
+- [ ] **Three-point estimate created** in `docs/estimates/phase-{N}-*-estimate.md`
+- [ ] Estimate covers ALL tasks in the phase task list (no informal estimates)
+- [ ] Estimate reviewed by Tech Lead — sign-off documented in the estimate file
+- [ ] Estimate confidence is **HIGH** or **MEDIUM**. LOW confidence → spike first.
+- [ ] **No phase work begins without a signed-off estimate.** This is a hard gate, not a preference.
+
+### Phase kickoff
+- [ ] Sprint allocation determined: estimate ÷ 0.7 = calendar days ÷ sprint length
+- [ ] Parallel tracks identified (e.g., backend vs. frontend tracks can run concurrently)
+- [ ] Phase tasks assigned to engineers with capacity
+- [ ] Blockers from previous phases resolved (no carry-over blockers)
 
 ---
 
@@ -107,6 +132,7 @@ Waiving Acceptance Criteria, BRD link, or test strategy is **not allowed** — t
 | Story | Problem clear + ACs binary/testable + spec linked + estimated + test strategy noted |
 | Sprint | All stories meet Story DoR + capacity ≤ 70% + sprint goal stated |
 | Feature | All 6 `/kickoff` gates return PASS |
+| Phase | BRD approved + ADRs accepted + Estimate signed off by Tech Lead |
 
 ---
 
