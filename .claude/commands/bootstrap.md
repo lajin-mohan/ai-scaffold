@@ -115,6 +115,11 @@ On `confirm`, write in this order:
      - .claude/rules/stacks/backend-<STACK>.md   ← based on detected backend
      - .claude/rules/stacks/frontend-<STACK>.md  ← based on detected frontend
      ```
+   - **Design system baseline** — for frontend projects, append:
+     ```
+     Design system: .claude/skills/design-system.md (Techversant Precision Minimal)
+     Project override path: apps/web/src/design-system/ (optional, created at bootstrap)
+     ```
 
 3. **`HOW-TO-USE.md`** — replace `{{PROJECT_NAME}}`, `{{SPRINT_NUMBER}}`, `{{DATE}}` tokens with values from settings-overrides.json or realistic context.
 

@@ -94,6 +94,47 @@ return <UserCard user={user} />
 
 ---
 
+## Design System
+
+**Techversant Precision Minimal** is the default baseline for all React projects.
+
+### Required baseline
+`.claude/skills/design-system.md` — color tokens, typography, spacing, components, motion, z-index, layout tokens. Every React component uses these tokens. No hardcoded values.
+
+### Token usage
+```tsx
+// CORRECT — design system tokens via CSS variables or Tailwind config
+const styles = { color: 'var(--color-ink)', padding: 'var(--space-4)' }
+<div className="text-body-base bg-surface border border-border">
+
+// WRONG — hardcoded values
+<div className="text-[#0A0A0A] p-4">
+```
+
+### CSS custom properties
+CSS custom properties (CSS variables) are the canonical token format. If using Tailwind, map tokens to a `theme.extend` config. Never hardcode a value that exists as a token.
+
+### Project-level override
+To override tokens, create a project-specific design system at `apps/web/src/design-system/`:
+```
+apps/web/src/design-system/
+├── tokens.css          ← overrides only; cascade on top of scaffold tokens
+├── components/         ← project-specific component library (optional)
+└── figma-link.md        ← link to project Figma library (optional)
+```
+
+**Override rule:** Project tokens take precedence over scaffold tokens. Bootstrap creates the directory structure (empty) so the override path exists from day one. If the directory is absent or empty, the scaffold design system applies by default.
+
+### When to create a project override
+- When the product brand diverges from Techversant Precision Minimal
+- When a client requires their own design language
+- **Do not override for a single feature** — token overrides affect the entire UI
+
+### No override = use scaffold tokens
+If no project design system exists, all UI components reference `.claude/skills/design-system.md`. This is the intended default state — do not invent ad-hoc styles to fill a gap.
+
+---
+
 ## Testing
 
 ```bash

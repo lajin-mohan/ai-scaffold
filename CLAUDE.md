@@ -221,7 +221,7 @@ Referenced internally by agents and commands.
 
 | Skill | Purpose |
 |---|---|
-| `design-system` | Color tokens, typography, spacing, component patterns |
+| `design-system` | Default baseline for all frontend projects — color tokens, typography, spacing, components, motion, z-index, layout tokens. See `.claude/skills/design-system.md`. Override at `apps/web/src/design-system/` when project brand diverges. |
 | `backend-api-design` | REST API patterns, error handling, versioning |
 | `frontend-patterns` | Component structure, state management, accessibility |
 | `database-optimization` | Schema design, indexing, query tuning |
