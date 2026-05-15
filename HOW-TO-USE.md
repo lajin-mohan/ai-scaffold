@@ -213,6 +213,7 @@ This runs backend-reviewer + frontend-reviewer + security-reviewer in parallel.
 - **BLOCK** findings must be fixed before opening a PR
 - **WARN** findings must be acknowledged in the PR description
 - **NIT** findings are optional
+- **UI / Component / UX findings:** After all BLOCK findings are resolved, run `/qa` for live-site verification before handing to human review
 
 ---
 
@@ -384,9 +385,12 @@ For escalations:
 | `/architecture-review` | Stage 3 — after HLD | Architecture critique + compliance check + ADR recommendations |
 | `/estimate` | Stage 2/3 — planning | Three-point estimate + risk register + phasing |
 | `/start-task` | Stage 5 — any non-trivial task | Plan-and-confirm ritual: spec read → numbered plan → wait for approval → execute → verification report |
-| `/review` | Stage 6 — before PR | Parallel BLOCK/WARN/NIT findings: backend + frontend + security + qa + architect |
+| `/review` | Stage 6 — before PR | Parallel BLOCK/WARN/NIT findings: backend + frontend + security + qa + architect. Run `/qa` next if UI findings exist. |
 | `/gen-tests` | Stage 5/8 — QA prep | Complete runnable test files: unit, integration, component, snapshot |
 | `/deployment-review` | Stage 10 — pre-deploy | Go/no-go + migration plan + smoke tests + rollback procedure |
+| `/investigate` | Any time a bug or error is reported | Systematic debugging: gather evidence → form root cause hypothesis → test → fix. Iron law: no fix without investigation. |
+| `/health` | Any time (weekly recommended) | Code quality dashboard: auto-detect tools, score 0–10 composite, show trend. HARD GATE: show only, never fix. |
+| `/qa` | Stage 8 — live-site QA | Live browser testing: walk feature flow, find rendering/interaction issues, fix and re-verify. Requires gstack's `$B`. |
 
 ---
 

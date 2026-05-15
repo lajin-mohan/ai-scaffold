@@ -251,3 +251,16 @@ tests/
 ### Estimated Test Count
 Unit: [n] · Integration: [n] · Component: [n] · E2E: [n]
 ```
+
+## Workflow
+
+`/gen-tests` codifies what `/qa` found into automated tests. Use them together:
+
+| Step | Command | What it does |
+|---|---|---|
+| 1 | `/review` | Static analysis — catches code-level issues |
+| 2 | `/qa` (if UI findings) | Live browser — catches rendering/interaction issues |
+| 3 | `/gen-tests` | Generate automated tests for every verified behavior |
+| 4 | Run tests in CI | Regression prevention going forward |
+
+`/qa` verifies the feature works in a browser. `/gen-tests` locks that verification into the test suite so it never regresses silently.

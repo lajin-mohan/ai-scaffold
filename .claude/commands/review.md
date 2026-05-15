@@ -103,3 +103,15 @@ Reviewers run: backend, frontend, security, qa, architect
 - If the diff is >500 lines, split the review by file group and run iteratively. Architect reviewer reads the full diff to spot cross-cutting drift.
 - For trivial PRs (single-file typo, copy change), use `--skip-architect` and `--qa-only` flags as appropriate to avoid review overhead disproportionate to the change.
 - View current feature flags: `/settings --list`
+
+## Next Steps After /review
+
+After all BLOCK findings are resolved, route based on what was found:
+
+| Finding type | Next step |
+|---|---|
+| Frontend / Component / UX findings | Run `/qa` for live-site browser verification before Stage 7 human review |
+| Backend logic or security findings | Proceed directly to Stage 7 human review |
+| No findings | Proceed directly to Stage 7 human review |
+
+**`/review` does static analysis. `/qa` does live-site verification. Use both for frontend features.**

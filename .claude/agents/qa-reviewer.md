@@ -36,6 +36,18 @@ Review implementations and test plans for:
 - [ ] Frontend components: loading, error, empty, and populated states all tested
 - [ ] Snapshot tests present for all UI components that render data
 
+### Live-Site Verification
+
+For frontend or UI-heavy features, `/review` catches code-level issues but cannot verify rendering or interaction. After resolving all BLOCK findings from `/review`, run `/qa` for live-site verification:
+
+```
+/qa "{{feature or flow description}}"
+```
+
+`/qa` opens a headless browser and walks the feature flow — detecting broken renders, unresponsive buttons, console errors, and failed network requests. Run `/qa` before QA sign-off on any feature with a user-facing UI.
+
+**Flow:** `/review` → `/qa` (if UI findings) → `/gen-tests` (codify as automated tests) → QA sign-off
+
 ### Regression Risk
 - [ ] Identify which existing flows this change could affect
 - [ ] Confirm regression tests exist for affected areas

@@ -196,3 +196,10 @@ This prevents the same root cause from repeating across the project.
 - `/start-task` = plan-and-confirm for building new features
 
 They serve different gates. Run `/investigate` when something is broken or unknown. Run `/start-task` when starting new work.
+
+## Interaction with /qa
+
+- `/investigate` = root cause debugging when the cause is unknown. Used for backend bugs, logic errors, unexpected behaviour.
+- `/qa` = live-site verification when the symptom is visible in the browser. Used for rendering issues, interaction failures, console errors.
+
+Run `/investigate` when you need to find *why* something broke. Run `/qa` when you need to confirm *that* something breaks in the browser — and verify the fix works. They complement each other: `/investigate` narrows the cause, `/qa` confirms the effect.

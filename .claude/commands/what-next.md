@@ -222,6 +222,8 @@ Evaluate each stage in order. The **current stage** is the earliest stage with i
 - All BLOCK findings resolved
 - WARN findings acknowledged in PR description
 
+**After `/review` with UI / Component / UX findings:** Run `/qa` for live-site browser verification before Stage 7 human review.
+
 **Blocked by:** Self-review checklist not completed
 
 ---
@@ -239,6 +241,7 @@ Evaluate each stage in order. The **current stage** is the earliest stage with i
 ### Stage 8 — QA
 **Required artifacts:**
 - `/gen-tests` run — complete test files written (unit, integration, component, snapshot as applicable)
+- `/qa` run (if UI feature) — live-site browser verification for rendering and interaction
 - All P0 test cases passing
 - QA sign-off from `@qa-reviewer` or QA team
 - UAT completed with client sign-off (see `docs/qa/uat-*.md`)

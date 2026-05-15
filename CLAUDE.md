@@ -209,11 +209,12 @@ Run via `/command-name` in Claude Code.
 | `/architecture-review` | Architecture critique against project invariants and compliance rules | Stage 3 |
 | `/estimate` | Three-point effort estimate with risk weights and phasing recommendation | Stage 2/3 |
 | `/start-task` | Plan-and-confirm execution: read spec → propose numbered plan → wait for approval → execute → verify. Use for any task >3 steps or long-running. | Stage 5 |
-| `/review` | Parallel code review: backend + frontend + security + qa + architect reviewers | Stage 6 |
+| `/review` | Parallel code review: backend + frontend + security + qa + architect reviewers. After UI/Component/UX findings, run `/qa` for live-site verification. | Stage 6 |
 | `/gen-tests` | Writes complete runnable tests with assertions (unit, integration, component, snapshot) | Stage 5/8 |
 | `/deployment-review` | Deployment readiness checklist, migration plan, smoke tests, rollback procedure | Stage 10 |
 | `/investigate` | Root cause debugging: gather evidence → form hypothesis → test → fix. Iron law: no fix without investigation. Run when user reports error or bug. | Pre-fix |
 | `/health` | Code quality dashboard: auto-detect tools (tsc, biome, eslint, ruff, pytest, etc.), run them, compute 0-10 composite score, show tabular dashboard. HARD GATE: show only, never fix. Run weekly. | Any time |
+| `/qa` | Live-site QA with headless browser: walk the feature flow, detect rendering/interaction/console issues, fix and re-verify. Requires gstack's `$B` browse daemon. | Stage 8 |
 
 ---
 
