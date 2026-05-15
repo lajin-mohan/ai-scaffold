@@ -250,7 +250,118 @@ A pattern of `BLOCK` violations from AI tools is itself a meta-issue — log to 
 
 ---
 
-## 8. Quick-Reference Card (for prompt priming)
+## 8. Investigation Gate
+
+**Iron Law: no fix without root cause investigation first.** Every fix that doesn't address root cause makes the next bug harder to find. Symptoms recur. Systems accumulate workarounds. Debt compounds.
+
+### When to invoke
+
+When a user reports an error, stack trace, unexpected behaviour, or "it was working yesterday." Also when a bug fix's cause isn't immediately obvious.
+
+**Not for:** one-line typos, trivial one-file fixes, or "improve X" requests with no bug signal.
+
+### Process
+
+1. **Collect evidence** — read the error, trace the code path, run `git log` on affected files, use `git blame` on the failing line
+2. **Form hypothesis** — state root cause clearly before writing any code
+3. **Scope lock** — write the affected directory to `.claude/memory/investigate-scope.txt` to prevent scope creep. Tell the user: "Edits restricted to `<dir>/` for this investigation."
+4. **Pattern match** — check if this matches a known pattern (race condition, nil/null propagation, state corruption, integration failure, config drift, stale cache)
+5. **Test hypothesis** — reproduce the bug, verify the hypothesis explains it
+6. **3-strike rule:** After 3 failed hypotheses, STOP. Ask the user to continue with a new hypothesis, escalate to human review, or add monitoring
+7. **Fix minimal** — fix only the root cause, write a regression test, run the full test suite
+8. **Document** — log the finding to `tasks/lessons.md`
+
+### Rules
+
+- No fix without hypothesis stated first
+- If you can't reproduce the bug, you can't confirm the fix
+- Regression test required before claiming done
+- >5 files touched = flag blast radius before proceeding
+
+---
+
+## 9. Decision Brief Format
+
+When a decision has multiple valid options that differ in coverage, effort, or risk — present it as a Decision Brief instead of inline pros/cons.
+
+### Format
+
+```
+D<N> — {Decision title}
+
+{One-sentence ELI10 explanation.}
+
+**Stakes:** {What is at risk if this decision is wrong.}
+
+### Options
+
+**A — {Option A name}** {(recommended)}
+Completeness: {X/Y}
+...
+**Pros:** {2+ bullets, ≥40 chars each}
+**Cons:** {1+ bullets, ≥40 chars each}
+**Effort:** {human-hours} ({AI-hours} AI) | {scale: small/medium/large}
+
+**B — {Option B name}**
+Completeness: {X/Y}
+...
+**Pros:** {2+ bullets, ≥40 chars each}
+**Cons:** {1+ bullets, ≥40 chars each}
+**Effort:** {human-hours} ({AI-hours} AI) | {scale: small/medium/large}
+
+### Recommendation
+{One sentence. If recommending A: "Go with A — {reason}"}
+
+### Net
+{One line closing the tradeoff.}
+```
+
+Completeness score: how many of the problem's facets this option addresses (e.g., 8/10). Effort dual-scales: human time vs AI-assisted time. Net line answers "but what does it cost us?"
+
+### When to use
+
+- Option selection in planning or design
+- Architectural trade-off decisions
+- Feature scope triage
+- Tech selection debates
+
+---
+
+## 10. Completeness Mandate (Boil the Lake)
+
+AI makes completeness near-zero cost. The first correct implementation costs the same as a partial one. Do the complete thing.
+
+### The principle
+
+The cost of a full implementation vs. a partial one is negligible for AI. The cost of the partial one is paid by every future developer who inherits it. **Boil the lake.**
+
+### Compression ratios (approximate)
+
+| Task | Compression ratio | Meaning |
+|---|---|---|
+| Boilerplate | ~100× | 50 lines of setup = 0.5 AI lines |
+| Test writing | ~50× | Full test suite ≈ half the feature cost |
+| Edge cases | ~30× | Complete edge coverage ≈ 3× the happy path |
+| Feature implementation | ~20× | Bug fix: complete fix ≈ 20× the symptom patch |
+| Bug fix (symptom) | ~1× | Symptom-only is cheap — but keeps coming back |
+
+"Lake" = boilable (test coverage, edge cases, error handling, regression tests). "Ocean" = not (rewrites, migrations, major refactors).
+
+### Anti-patterns
+
+- **"We'll do 90% now and the rest later"** — later is a lie. Do it now.
+- **"We can add tests after"** — adding tests after means the code wasn't designed for it. It costs more and finds less.
+- **"This would take 2 weeks extra"** — AI makes full implementations nearly free. If it genuinely takes 2 weeks, the scope is wrong — reduce scope, not quality.
+- **"Good enough for a demo"** — demos run on production builds.
+- **"We can revisit this"** — revisiting costs 3× the original fix.
+
+### Rule
+
+Every feature ships complete: happy path + edge cases + error states + regression tests + documentation update. No follow-up tickets for work that was obviously required at the time.
+
+---
+
+## 11. Quick-Reference Card (for prompt priming)
 
 When invoking AI for code work in this project, paste this as a header:
 

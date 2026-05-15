@@ -48,3 +48,8 @@ tasks/todo.md
 
 # Gitleaks personal allowlist overrides (gitignore secrets scanning)
 .gitleaksignore
+
+# Command memory files — per-clone, never shared
+.claude/memory/health-history.jsonl
+.claude/memory/health-stack.json
+.claude/memory/investigate-scope.txt

@@ -196,6 +196,43 @@ When a blocker has exceeded the agreed escalation threshold (see project-deliver
 
 ---
 
+### 6. Sprint Retrospective
+Produced at sprint end from git log data. Per-person framing, anchored in what shipped.
+
+```
+## Sprint [N] Retrospective — YYYY-MM-DD
+
+**One-line summary:** {tweetable — what mattered this sprint, ≤140 chars}
+
+---
+
+### What went well
+- 
+
+### What to improve
+- 
+
+### Action items
+| Action | Owner | Due |
+|---|---|---|
+| | | |
+
+---
+
+### Per-person shoutouts
+
+| Person | What they shipped | Strength | Growth area |
+|---|---|---|---|
+| | | | |
+
+> **Strength:** pattern that should be repeated.
+> **Growth area:** investment framing — what to build next sprint, not a weakness.
+
+*Generated from git log --since="{sprint-start}" --until="{sprint-end}" --shortlog*
+```
+
+---
+
 ## Rules
 
 - Never make architecture or technical decisions — produce the communication, flag the decision to the right person
