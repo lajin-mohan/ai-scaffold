@@ -39,6 +39,16 @@ Complete this before requesting any review. Do not open a PR without it.
 - [ ] No functions longer than ~50 lines
 - [ ] Naming is clear without requiring context
 
+### Frontend / UX
+- [ ] Changed screens/components use design tokens for colors, spacing, typography, borders, and focus states
+- [ ] Theme colors are organization-overridable through branding settings; no page/component hardcodes brand hex values
+- [ ] Primary workflows work at approximately 390px mobile width
+- [ ] Desktop light and dark theme states are verified
+- [ ] Mobile light and dark theme states are verified
+- [ ] No hardcoded colors prevent theme switching or organization branding overrides
+- [ ] `/ux-review` evidence is attached for frontend/full-stack changes
+- [ ] Browser verification evidence is attached for frontend/full-stack changes
+
 ---
 
 ## AI Review (Claude)
@@ -61,6 +71,7 @@ Claude reviews for:
 The human reviewer checks what AI cannot:
 - Business domain correctness — does this actually make sense for the product?
 - UX coherence — does this feel right in context of the full product?
+- Mobile and theme coherence — does the flow work on mobile and in light/dark themes?
 - Architecture alignment — does this fit the system's direction?
 - Team knowledge transfer — does the team understand this change?
 

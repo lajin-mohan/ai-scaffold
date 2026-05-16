@@ -11,7 +11,7 @@ Apply these rules when the project:
 - Operates under ISO 27001 certification or is working toward it
 - Handles health, financial, or other sensitive regulated data
 
-Mark `{{COMPLIANCE_SCOPE}}` in CLAUDE.md with applicable frameworks: `GDPR`, `ISO27001`, `HIPAA`, `SOC2`, `PCI-DSS`, or `N/A`.
+Mark `GDPR, ISO27001` in CLAUDE.md with applicable frameworks: `GDPR`, `ISO27001`, `HIPAA`, `SOC2`, `PCI-DSS`, or `N/A`.
 
 ---
 

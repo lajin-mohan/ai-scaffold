@@ -98,7 +98,7 @@ Before any phase begins (Phase 0, Phase 1, etc.), all of the following must be c
 - [ ] Open questions from BRD are resolved or have explicit deferral with owner and date
 - [ ] External dependencies identified (third-party APIs, access, credentials) with confirmed availability
 
-### Phase estimation
+### Phase estimation (NEW — lesson learned 2026-05-10)
 - [ ] **Three-point estimate created** in `docs/estimates/phase-{N}-*-estimate.md`
 - [ ] Estimate covers ALL tasks in the phase task list (no informal estimates)
 - [ ] Estimate reviewed by Tech Lead — sign-off documented in the estimate file
@@ -132,7 +132,7 @@ Waiving Acceptance Criteria, BRD link, or test strategy is **not allowed** — t
 | Story | Problem clear + ACs binary/testable + spec linked + estimated + test strategy noted |
 | Sprint | All stories meet Story DoR + capacity ≤ 70% + sprint goal stated |
 | Feature | All 6 `/kickoff` gates return PASS |
-| Phase | BRD approved + ADRs accepted + Estimate signed off by Tech Lead |
+| **Phase** | **BRD approved + ADRs accepted + Estimate signed off by Tech Lead** |
 
 ---
 

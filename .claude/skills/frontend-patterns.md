@@ -120,7 +120,9 @@ function UserForm({ onSubmit }: { onSubmit: (data: UserFormData) => Promise<void
 
 ## Design System Usage
 
-Always use tokens. Never hardcode.
+Always use tokens. Never hardcode page or brand colors.
+
+Brand/theme color tokens must be populated from organization branding settings when available, with Engyne defaults only as centralized fallbacks. Feature code, page code, and component code should reference semantic tokens/CSS variables instead of literal brand hex values.
 
 ```tsx
 // WRONG
@@ -213,19 +215,19 @@ Wrap route-level components in error boundaries.
 
 ## Responsive Breakpoints
 
-Mobile-first. Base styles at 390px, expand upward.
+Desktop-first enterprise workflows. Build the primary experience for desktop, then adapt intentionally for tablet and mobile. Validate the mobile adaptation at approximately 390px.
 
 ```css
-/* Mobile (base) */
-.layout { display: block; }
+/* Desktop primary */
+.layout { display: grid; grid-template-columns: 256px 1fr; }
 
-/* Tablet */
-@media (min-width: 768px) {
-  .layout { display: grid; grid-template-columns: 256px 1fr; }
+/* Tablet adaptation */
+@media (max-width: 1279px) {
+  .layout { grid-template-columns: 64px 1fr; }
 }
 
-/* Desktop */
-@media (min-width: 1280px) {
-  .layout { max-width: 1440px; margin: 0 auto; }
+/* Mobile adaptation */
+@media (max-width: 767px) {
+  .layout { display: block; }
 }
 ```

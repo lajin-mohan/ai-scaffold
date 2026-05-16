@@ -35,6 +35,14 @@ Review implementations and test plans for:
 - [ ] Soft delete: deleted records excluded from all list queries
 - [ ] Frontend components: loading, error, empty, and populated states all tested
 - [ ] Snapshot tests present for all UI components that render data
+- [ ] Frontend/full-stack flows verified in desktop light, desktop dark, mobile light, and mobile dark states
+- [ ] Mobile workflow coverage exists for primary flows at approximately 390px width
+- [ ] Theme switching is tested or manually verified for changed pages
+
+### Regression Risk
+- [ ] Identify which existing flows this change could affect
+- [ ] Confirm regression tests exist for affected areas
+- [ ] Flag any high-risk areas that need manual verification
 
 ### Live-Site Verification
 
@@ -48,15 +56,11 @@ For frontend or UI-heavy features, `/review` catches code-level issues but canno
 
 **Flow:** `/review` → `/qa` (if UI findings) → `/gen-tests` (codify as automated tests) → QA sign-off
 
-### Regression Risk
-- [ ] Identify which existing flows this change could affect
-- [ ] Confirm regression tests exist for affected areas
-- [ ] Flag any high-risk areas that need manual verification
-
 ### Release Readiness
 - [ ] All BLOCK findings from code review addressed
 - [ ] CI pipeline passes
 - [ ] Smoke test plan defined
+- [ ] Browser verification plan covers desktop/mobile and light/dark theme states for frontend changes
 - [ ] Rollback procedure documented
 - [ ] Feature flag or migration plan if this is a phased rollout
 

@@ -39,7 +39,11 @@ For each gate, mark:
 - [ ] Wireframes or Figma designs completed for all primary flows
 - [ ] UX reviewed and approved by PM and stakeholder
 - [ ] Component spec produced (check `docs/ux/`)
-- [ ] Responsive behaviour defined
+- [ ] `/ux-create` output exists for frontend work
+- [ ] `/ux-review` completed with no unresolved BLOCK findings
+- [ ] Desktop-first layout defined for primary enterprise workflows
+- [ ] Tablet/mobile adaptations defined, including approximately 390px mobile behavior
+- [ ] Light and dark theme behavior defined for every page/screen
 - [ ] Empty, loading, and error states designed
 
 ## Gate 3 — Architecture

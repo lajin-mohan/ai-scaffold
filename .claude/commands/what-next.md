@@ -191,8 +191,14 @@ Evaluate each stage in order. The **current stage** is the earliest stage with i
 **Required artifacts:**
 - Wireframes / screens exist in `docs/ux/`
 - Component specs documented
+- `/ux-create` has been run for each primary frontend flow
+- `/ux-review` has passed or documented fixes before frontend implementation
 - All states defined: loading, empty, error, populated
-- Mobile layout specified
+- Desktop-first layout specified for the primary enterprise workflow
+- Tablet/mobile adaptations specified and reviewed, including approximately 390px mobile width
+- Light and dark theme behavior specified for every page/screen
+- Organization-overridable token colors specified for backgrounds, text, borders, focus rings, status, charts, and empty states
+- Default color values documented as fallbacks only; page/component specs do not hardcode brand hex values
 - UX approved by PM and stakeholder
 
 **Blocked by:** Unapproved architecture from Stage 3
@@ -221,6 +227,11 @@ Evaluate each stage in order. The **current stage** is the earliest stage with i
 - `/review` has been run on the feature branch
 - All BLOCK findings resolved
 - WARN findings acknowledged in PR description
+- Browser verification evidence exists for frontend/full-stack work (`npm run test:e2e`, with screenshots/traces/videos retained on failure)
+- Frontend/full-stack verification includes desktop light, desktop dark, mobile light, and mobile dark states
+- Mobile primary workflows are verified at approximately 390px width
+- Theme switching is verified to preserve page state where applicable
+- Organization branding override compatibility is verified for frontend/full-stack work where brand/theme colors are used
 
 **After `/review` with UI / Component / UX findings:** Run `/qa` for live-site browser verification before Stage 7 human review.
 

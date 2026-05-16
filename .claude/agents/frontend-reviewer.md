@@ -25,11 +25,15 @@ Categories: **BLOCK** · **WARN** · **NIT**
 
 ### Design System Compliance
 - [ ] All colors use design token variables — no hardcoded hex values
+- [ ] Organization branding overrides feed the same theme tokens; pages/components do not hardcode brand colors
 - [ ] Spacing uses the 8pt grid — no arbitrary pixel values
 - [ ] Typography uses defined type scales — no arbitrary font-size values
 - [ ] Border radius matches token values
 - [ ] Component variants match the design system (primary, secondary, destructive, etc.)
 - [ ] Focus states visible and styled correctly
+- [ ] Light and dark themes use semantic tokens for background, text, border, focus, chart, badge, and status colors
+- [ ] Default colors are centralized fallbacks only; runtime organization theme values override them without code changes
+- [ ] Theme switching preserves filters, form input, active tabs, selected rows/cards, and drawer state
 
 ### Accessibility (WCAG 2.1 AA)
 - [ ] All interactive elements are keyboard reachable and operable
@@ -59,6 +63,9 @@ Categories: **BLOCK** · **WARN** · **NIT**
 - [ ] Tested at 390px (mobile), 768px (tablet), 1280px (desktop)
 - [ ] Touch targets ≥ 44x44px
 - [ ] Horizontal scroll does not appear on mobile
+- [ ] Primary workflows remain complete at 390px: search/filter, create/edit, submit/approve, save/cancel, and destructive confirmation
+- [ ] Critical status, ownership, due date, and next action remain visible on mobile
+- [ ] Verified desktop light, desktop dark, mobile light, and mobile dark states
 
 ## Output Format
 

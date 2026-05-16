@@ -23,8 +23,10 @@ Convert UX briefs and feature specs into:
 3. Text-based wireframes (ASCII/Markdown layout per screen)
 4. Component specifications (states, variants, interactions)
 5. Responsive behaviour notes
-6. Figma handoff notes
-7. Design critiques of existing screens (on request)
+6. Tablet/mobile adaptation behavior, including 390px mobile validation
+7. Light and dark theme behavior for every page
+8. Figma handoff notes
+9. Design critiques of existing screens (on request)
 
 ---
 
@@ -36,29 +38,31 @@ Convert UX briefs and feature specs into:
 - **Error states are part of the design** — field-level and form-level errors, always.
 - **Loading state is part of the design** — skeleton screens, not spinners, for content areas.
 - **No orphaned actions** — every button has a consequence the user can predict.
-- **Mobile is a first-class citizen** — design at 390px, then expand to desktop.
+- **Desktop is the primary canvas** — design enterprise workflows for desktop first, then adapt them cleanly to tablet and mobile.
+- **Theme switching is a first-class citizen** — every page must work in light and dark modes using tokens.
 - **Content before chrome** — navigation and UI shell should never compete with content.
 
 ---
 
 ## Design System Reference
 
-Full tokens in `.claude/skills/design-system.md`. Key values:
+Full UX system source of truth lives in `.codex/skills/ux-system/`. Use `/ux-create` for generation workflows and `/ux-review` for validation. Key values:
 
 ### Colors
 ```
-Primary:    #0A0A0A  Ink Black      Surface: #F5F5F0  Warm Off-White
-Accent:     #6B7CFF  Electric Indigo  White: #FFFFFF
-Text:       #0A0A0A (primary) · #6B7280 (secondary) · #9CA3AF (muted)
-Border:     #E5E7EB (default) · #6B7CFF (focus)
-Success:    #22C55E / bg #F0FDF4    Warning: #F59E0B / bg #FFFBEB
-Error:      #EF4444 / bg #FEF2F2    Info:    #3B82F6 / bg #EFF6FF
+Primary:    #00C875  Engyne Green    Surface: #FFFFFF
+Success:    #00C875  Work Green      Insight: #FFCB00 Focus Yellow
+Warning:    #FFCB00  Focus Yellow    Error:   #FF3B30 Alert Red
+Text:       #172B4D (Ink) · #44546F (Slate) · #626F86 (muted)
+Background: #F4F5F7 Mist             Border:  #DFE1E6 default · #00C875 focus
 ```
+
+Use the green/yellow/red palette semantically. Do not make every active, role, avatar, link, and badge green. Green is for primary action, focus/selection, and success/active status; yellow is for pending/review/attention; red is for blocked/error/destructive. Role badges are neutral by default.
 
 ### Typography
 ```
-Headings: Manrope 600/700   Body: Instrument Sans 400/500   Data: IBM Plex Mono 400
-h1:32px · h2:24px · h3:20px · h4:16px · body:14px · sm:12px · label:12px Manrope 500 uppercase
+Primary: Inter 400/500/600/700   Fallbacks: SF Pro, system-ui, sans-serif
+h1:32px · h2:24px · h3:20px · h4:16px · body:14px · sm:12px · label:12px Inter 600
 ```
 
 ### Spacing
@@ -66,14 +70,16 @@ h1:32px · h2:24px · h3:20px · h4:16px · body:14px · sm:12px · label:12px M
 
 ### Key Components
 ```
-Input:   40px height, 8px radius, border #E5E7EB, focus border #6B7CFF
-Button:  primary bg #0A0A0A · secondary border only · destructive bg #EF4444
-Card:    bg white, border #E5E7EB, 12px radius, shadow-sm, 24px padding
-Table:   header bg #F5F5F0, row 52px, hover bg #F9F9F7
+Input:   40px height, 8px radius, border #DFE1E6, focus border #00C875
+Button:  primary bg #00C875 · secondary border only · destructive bg #FF3B30
+Card:    bg white, border #DFE1E6, 12px radius, shadow-sm, 24px padding
+Table:   header bg #F4F5F7, row 52px, hover bg #F4F5F7
 Badge:   pill shape, semantic color scale (50 bg / 700 text)
 Modal:   white panel, xl radius, shadow-lg, focus trap, Escape closes
 Toast:   bottom-right, 360px wide, auto-dismiss 4s (success) / manual (error)
-Sidebar: 256px, collapsed 64px (icon only), nav item 40px
+Top nav: 44px target height, neutral inactive items, one clear active treatment
+Theme:   every page supports light/dark mode via tokens; no hardcoded page colors
+Mobile:  390px validation viewport; preserve primary workflows, actions, filters, and critical state
 ```
 
 ---
@@ -135,7 +141,7 @@ App
 | {{Detail}} | /{{resource}}/:id | {{role}} | — |
 
 ### Navigation Rules
-- Primary nav: {{items}} — persistent in sidebar
+- Primary nav: {{items}} — persistent top navigation in the current MVP shell, using icon + label items and a restrained underline active state
 - Secondary nav: tabs within a detail page
 - Breadcrumb: appears when depth > 1
 ```
@@ -220,7 +226,7 @@ Mobile (390px):
 
 For reviewing existing screens or developer output against spec.
 
-Use `ux-audit` skill for the full structured audit. Summary critique format:
+Use `ux-review` for the full structured audit. Summary critique format:
 
 ```
 ## Design Critique — {{SCREEN OR FEATURE}}

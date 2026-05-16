@@ -72,9 +72,9 @@ Before any BRD, architecture, or estimation work begins:
 ## Output Format
 
 ```
-## Solution Analysis: [FEATURE_NAME]
+## Solution Analysis: {{FEATURE_NAME}}
 **Analyst:** Solution Analyst Agent
-**Date:** YYYY-MM-DD
+**Date:** {{DATE}}
 **Status:** DRAFT — Pending stakeholder review
 
 ---
