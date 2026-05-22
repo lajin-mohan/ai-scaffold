@@ -86,52 +86,32 @@ return <UserCard user={user} />
 
 ## Styling
 
+- **Use CSS Variables for theming** — this is the preferred pattern for all color work:
+  ```tsx
+  // CORRECT — CSS variable pattern (auto dark mode support)
+  className="bg-[var(--color-surface)] text-[var(--color-text-primary)] border-[var(--color-border)]"
+
+  // DEPRECATED — Tailwind dark: variants (being phased out)
+  className="bg-surface dark:bg-surface-dark text-ink dark:text-ink-light"
+  ```
 - **Design system tokens only** — no hardcoded colors, spacing, or font sizes.
+- **Organization branding aware** — brand/theme colors come from organization settings through CSS variables, with defaults only in centralized `index.css` files.
+- **Available tokens** (defined in `apps/web/src/index.css`):
+  - `--color-surface` — cards, modals, inputs, header
+  - `--color-surface-muted` — subtle nested areas, table headers, filter bars
+  - `--color-text-primary` — headings, body text
+  - `--color-text-secondary` — labels, captions, muted text
+  - `--color-border` — borders
+  - `--color-primary/success/warning/danger` — semantic colors
 - **CSS modules, Tailwind, or styled-components** — not raw `style={{}}` props.
-- **Mobile-first** — base styles for 390px, add breakpoints upward.
+- **Desktop-first product experience** — enterprise workflows are designed for desktop first, then adapted cleanly to tablet and mobile.
+- **Responsive verification** — validate tablet and mobile layouts, including an approximately 390px mobile viewport.
+- **Theme-aware implementation** — every page and component supports light and dark themes through CSS variables.
+- No hardcoded page or brand colors; backgrounds, text, borders, focus rings, chart colors, badges, and status colors must use tokens that can be overridden by organization branding.
+- Theme switching must preserve page state: filters, form input, active tabs, selected rows/cards, and open drawers.
+- At 390px, primary workflows must remain complete; do not hide create/edit/submit/approve/save/cancel actions behind unavailable desktop-only controls.
 - **No `!important`** — fix specificity instead.
 - No inline styles except for genuinely dynamic values computed at runtime.
-
----
-
-## Design System
-
-**Techversant Precision Minimal** is the default baseline for all React projects.
-
-### Required baseline
-`.claude/skills/design-system.md` — color tokens, typography, spacing, components, motion, z-index, layout tokens. Every React component uses these tokens. No hardcoded values.
-
-### Token usage
-```tsx
-// CORRECT — design system tokens via CSS variables or Tailwind config
-const styles = { color: 'var(--color-ink)', padding: 'var(--space-4)' }
-<div className="text-body-base bg-surface border border-border">
-
-// WRONG — hardcoded values
-<div className="text-[#0A0A0A] p-4">
-```
-
-### CSS custom properties
-CSS custom properties (CSS variables) are the canonical token format. If using Tailwind, map tokens to a `theme.extend` config. Never hardcode a value that exists as a token.
-
-### Project-level override
-To override tokens, create a project-specific design system at `apps/web/src/design-system/`:
-```
-apps/web/src/design-system/
-├── tokens.css          ← overrides only; cascade on top of scaffold tokens
-├── components/         ← project-specific component library (optional)
-└── figma-link.md        ← link to project Figma library (optional)
-```
-
-**Override rule:** Project tokens take precedence over scaffold tokens. Bootstrap creates the directory structure (empty) so the override path exists from day one. If the directory is absent or empty, the scaffold design system applies by default.
-
-### When to create a project override
-- When the product brand diverges from Techversant Precision Minimal
-- When a client requires their own design language
-- **Do not override for a single feature** — token overrides affect the entire UI
-
-### No override = use scaffold tokens
-If no project design system exists, all UI components reference `.claude/skills/design-system.md`. This is the intended default state — do not invent ad-hoc styles to fill a gap.
 
 ---
 
@@ -144,6 +124,7 @@ npm run test:e2e     # Playwright
 
 - Use `@testing-library/react` — test behaviour, not implementation.
 - Snapshot tests for design system components (cards, badges, modals).
+- Frontend/full-stack browser verification must include desktop light, desktop dark, mobile light, and mobile dark checks.
 - No `describe.only`, no `test.skip` in the codebase.
 - Coverage target: 60%+ for component layer.
 

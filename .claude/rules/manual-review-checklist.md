@@ -36,6 +36,9 @@ You are not re-running the AI review. Trust the AI BLOCK findings have been reso
 - [ ] Loading and error states are reassuring, not robotic
 - [ ] The change doesn't quietly break an existing pattern users rely on
 - [ ] Accessibility for the actual users of this product (e.g., field workers on mobile) — not generic WCAG-pass
+- [ ] The primary workflow is complete and usable on a 390px mobile screen
+- [ ] The same page works in light and dark themes without losing hierarchy, contrast, or state
+- [ ] Theme switching does not reset filters, form input, active tabs, selected rows/cards, or drawer state
 
 ### 3. Does this fit where the system is heading?
 
@@ -104,6 +107,7 @@ AI review: [link to /review output]
 
 Q1 (product fit):       ✅ / ⚠ / ❌
 Q2 (user fit):          ✅ / ⚠ / ❌
+Mobile/theme fit:       ✅ / ⚠ / ❌
 Q3 (architecture fit):  ✅ / ⚠ / ❌
 Q4 (team-ownership):    ✅ / ⚠ / ❌
 

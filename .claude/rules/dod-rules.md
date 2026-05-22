@@ -39,6 +39,16 @@ Every user story must satisfy all of the following before being marked Done in J
 - [ ] AI review (`/review`) run and all BLOCK findings resolved
 - [ ] Human peer review approved
 
+### Frontend / UX
+- [ ] Changed frontend screens/components pass `/ux-review`
+- [ ] Mobile workflow verified at approximately 390px width
+- [ ] Desktop light theme verified
+- [ ] Desktop dark theme verified
+- [ ] Mobile light theme verified
+- [ ] Mobile dark theme verified
+- [ ] All colors use organization-overridable tokens so light/dark theme switching and branding overrides do not break contrast or state
+- [ ] No page/component hardcodes brand hex values outside centralized token/default-branding definitions
+
 ### Documentation
 - [ ] Public API endpoints documented (or existing API contract updated)
 - [ ] Any new environment variables added to `.env.example`
@@ -89,6 +99,6 @@ Waiving a security criterion requires Tech Lead + PM approval and must be resolv
 
 | Level | Key Gate |
 |---|---|
-| Story | All ACs met + tests pass + AI review clean + human review approved |
+| Story | All ACs met + tests pass + AI review clean + UX/mobile/theme gates passed where applicable + human review approved |
 | Sprint | All stories done + CI green + QA sign-off + staging deployed |
 | Release | Sprint DoD + UAT + perf test + security review + release notes + deployment review |

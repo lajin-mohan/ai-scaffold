@@ -214,7 +214,15 @@ Run via `/command-name` in Claude Code.
 | `/deployment-review` | Deployment readiness checklist, migration plan, smoke tests, rollback procedure | Stage 10 |
 | `/investigate` | Root cause debugging: gather evidence → form hypothesis → test → fix. Iron law: no fix without investigation. Run when user reports error or bug. | Pre-fix |
 | `/health` | Code quality dashboard: auto-detect tools (tsc, biome, eslint, ruff, pytest, etc.), run them, compute 0-10 composite score, show tabular dashboard. HARD GATE: show only, never fix. Run weekly. | Any time |
-| `/qa` | Live-site QA with headless browser: walk the feature flow, detect rendering/interaction/console issues, fix and re-verify. Requires gstack's `$B` browse daemon. | Stage 8 |
+| `/qa` | Live-site QA with headless browser: walk the feature flow, detect rendering/interaction/console issues, fix and re-verify. | Stage 8 |
+| `/loop` | Autonomous task queue: execute a numbered task list with one-approval contract. Generates tests via `/gen-tests` per task. Stop conditions prevent scope creep. | Stage 5 |
+| `/commit-changes` | Git workflow enforcement: branch safety check, unrelated-changes detection, verification evidence requirement. Optional `--dev` / `--main` merge promotion. No Co-Authored-By ever. | Any time |
+| `/qa-plan` | QA automation planning via qa-automation-engineer agent. Coverage matrix: Requirement → Scenario → Test → Result. | Stage 8 |
+| `/qa-review` | QA coverage and quality review. Validates traceability, independence, data isolation, CI commands. Severity: BLOCK / HIGH / MEDIUM / LOW. | Stage 8 |
+| `/qa-auth` | Auth-specific test planning: login, logout, session, token, protected routes, tenant isolation. Framework-agnostic. | Stage 8 |
+| `/ux-create` | UX solution creator: uses `skills/ux-system/`, desktop-first design, 390px mobile check, light/dark theme, organization-overridable tokens. | Stage 4 |
+| `/ux-review` | UX review: 32-item check, 4-viewport browser verification (desktop L/D + mobile L/D at 390px). Token-based colours enforced as BLOCK. | Stage 6 |
+| `/debug-fix` | Root-cause-first bug fixing: plan → reproduce → analyze → implement → verify → report. 5-status model. Required verification by bug type. | Pre-fix |
 
 ---
 
@@ -233,6 +241,9 @@ Referenced internally by agents and commands.
 | `project-delivery-workflow` | Sprint flow, ticket lifecycle, estimation |
 | `ux-audit` | UX clarity, hierarchy, cognitive load analysis |
 | `accessibility-check` | WCAG 2.1 AA validation |
+| `ux-system` | Master UX system: layout, design tokens (CSS variables), component rules, page patterns. Enterprise desktop-first with 390px mobile validation and light/dark theme support. See `.claude/skills/ux-system/SKILL.md`. |
+| `systematic-debugging` | Root-cause-first bug investigation: no fix without root cause, 3-strike rule, scope lock, 5-status model. Capture lessons to `tasks/lessons.md`. See `.claude/skills/systematic-debugging/SKILL.md`. |
+| `ux-review` | UX artifact review: 32-item check, BLOCK/HIGH/MEDIUM/LOW/NIT severity, CSS variable pattern enforced, 4-viewport browser verification. See `.claude/skills/ux-review/SKILL.md`. |
 
 ---
 

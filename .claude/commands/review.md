@@ -22,14 +22,21 @@ Runs a full code review on the current feature branch or specified files. Invoke
 3. **Run SAST scan** — Semgrep or ESLint security plugin runs against the diff:
    - Identifies hardcoded secrets, SQL injection patterns, insecure crypto
    - Tag findings as `[security]` BLOCK/WARN
-4. **Run relevant reviewers in parallel** (reads `.claude/settings-overrides.json` for feature flags):
+4. **Run browser and UX verification for UI/full-stack work**:
+   - For changes touching `apps/web/`, routes that drive UI flows, or frontend-visible API behavior, run `npm run test:e2e`.
+   - Run `/ux-review` against changed UI screens/components or their `docs/ux/` artifacts.
+   - Verify changed UI in desktop light, desktop dark, mobile light, and mobile dark states.
+   - Mobile verification must include an approximately 390px-wide viewport and confirm the primary workflow remains usable.
+   - Require Playwright failure artifacts (screenshots/traces/videos) to be preserved when tests fail.
+   - If browser verification is unavailable, report it as a BLOCK for frontend/full-stack tasks unless an explicit exception is approved.
+5. **Run relevant reviewers in parallel** (reads `.claude/settings-overrides.json` for feature flags):
    - **`backend-reviewer`** — if any change to `apps/api/`, `packages/services/`, `packages/repositories/`, `packages/domain/`, migrations
    - **`frontend-reviewer`** — if any change to `apps/web/`, `packages/ui/`, components, styles
    - **`security-reviewer`** — if any change to auth, sessions, permissions, data access, input handling, secrets, headers, or any new endpoint
    - **`qa-reviewer`** — if a spec/BRD/AC is linked, OR for any feature work. Compliance checks (GDPR, ISO27001, accessibility) only run if the corresponding feature flag is `true` in `settings-overrides.json`
    - **`architect`** — if change touches `>1` architectural layer, introduces a new module, modifies a shared package, or changes any rule in `.claude/rules/`
-5. **Consolidate findings** — merge into a single report, deduplicate, sort by severity, attribute findings to source reviewer.
-6. **Produce summary** — overall verdict with required actions.
+6. **Consolidate findings** — merge into a single report, deduplicate, sort by severity, attribute findings to source reviewer.
+7. **Produce summary** — overall verdict with required actions.
 
 ## Reviewer Selection Matrix
 
@@ -37,6 +44,7 @@ Runs a full code review on the current feature branch or specified files. Invoke
 |---|:-:|:-:|:-:|:-:|:-:|:-:|
 | New API endpoint | ✓ | ✓ | | ✓ | ✓ | ✓ |
 | Frontend component | ✓ | | ✓ | | ✓ (if accessibility=true) | |
+| Frontend/full-stack user flow | ✓ | | ✓ | | ✓ | |
 | Database migration | ✓ | ✓ | | ✓ | ✓ | ✓ |
 | Auth / session change | ✓ | ✓ | | ✓ | ✓ | ✓ |
 | Refactor (no behaviour change) | ✓ | ✓ | ✓ | | | ✓ |
@@ -75,6 +83,25 @@ Reviewers run: backend, frontend, security, qa, architect
 ### Security Findings
 [From security-reviewer — separate section for visibility, even if no BLOCK/WARN]
 
+### UX Review
+| Check | Status | Notes |
+|---|---|---|
+| `/ux-review` | ✅ / ⚠ / ❌ | Required for changed frontend screens/components |
+| Design-system compliance | ✅ / ⚠ / ❌ | Enterprise UX, density, hierarchy, accessibility |
+| Mobile workflow | ✅ / ⚠ / ❌ | Primary actions, filters, status, and forms usable at 390px |
+| Theme switching | ✅ / ⚠ / ❌ | Light/dark states use tokens and preserve page state |
+| Branding override compatibility | ✅ / ⚠ / ❌ | Organization branding can override colors without code changes |
+
+### Browser Verification
+| Check | Status | Notes |
+|---|---|---|
+| `npm run test:e2e` | ✅ / ⚠ / ❌ | Required for frontend/full-stack tasks |
+| Desktop light theme | ✅ / ⚠ / ❌ | Required for changed UI screens |
+| Desktop dark theme | ✅ / ⚠ / ❌ | Required for changed UI screens |
+| Mobile light theme (390px) | ✅ / ⚠ / ❌ | Required for changed UI screens |
+| Mobile dark theme (390px) | ✅ / ⚠ / ❌ | Required for changed UI screens |
+| Failure artifacts | ✅ / ⚠ / ❌ | Screenshots/traces/videos captured when applicable |
+
 ### AC Compliance Status (from qa-reviewer)
 | AC | Status | Notes |
 |---|---|---|
@@ -100,6 +127,12 @@ Reviewers run: backend, frontend, security, qa, architect
 - Security findings are always surfaced regardless of `--backend-only` or `--frontend-only` flags — security never opts out.
 - QA findings appear whenever a spec is linked, even with `--backend-only` — AC compliance is independent of which layer changed.
 - SAST findings (Semgrep) are tagged `[SAST]` and always included — they are security-adjacent and may overlap with `security-reviewer`.
+- UX review is required before frontend/full-stack tasks can be marked `DONE`; missing `/ux-review` evidence is a BLOCK unless explicitly waived.
+- Browser verification is required before frontend/full-stack tasks can be marked `DONE`; missing `npm run test:e2e` evidence is a BLOCK unless explicitly waived.
+- Frontend/full-stack tasks cannot be marked `DONE` unless desktop light, desktop dark, mobile light, and mobile dark checks are passed or explicitly waived.
+- Missing mobile workflow support at 390px is a BLOCK.
+- Missing light/dark theme support is a BLOCK for new pages and at least WARN for legacy pages touched by the change.
+- Hardcoded brand colors outside centralized token/default-branding definitions are a BLOCK when they prevent organization branding overrides.
 - If the diff is >500 lines, split the review by file group and run iteratively. Architect reviewer reads the full diff to spot cross-cutting drift.
 - For trivial PRs (single-file typo, copy change), use `--skip-architect` and `--qa-only` flags as appropriate to avoid review overhead disproportionate to the change.
 - View current feature flags: `/settings --list`

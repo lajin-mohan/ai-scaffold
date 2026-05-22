@@ -1,6 +1,6 @@
 # Skill: ux-audit
 
-Framework for auditing existing UI screens against Techversant Precision Minimal design principles. Used by the `ux-designer` agent and callable directly.
+Legacy framework for auditing existing UI screens against Engyne WorkOS Minimal design principles. Prefer `ux-review` for all new work.
 
 ---
 
@@ -62,7 +62,7 @@ Full audit: use `accessibility-check` skill.
 - One primary action per screen?
 - Hierarchy first — is the most important thing most prominent?
 - No orphaned actions (buttons with unclear consequences)?
-- Mobile-first (390px is a real use case, not an afterthought)?
+- Desktop-first, with polished tablet/mobile adaptations and a verified 390px mobile view?
 
 ---
 

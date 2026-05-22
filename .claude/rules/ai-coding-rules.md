@@ -248,8 +248,6 @@ When AI iterates on a file, naming, error patterns, and style tend to drift. The
 
 A pattern of `BLOCK` violations from AI tools is itself a meta-issue — log to [tasks/lessons.md](../../tasks/lessons.md) and adjust prompts/context until the pattern stops.
 
----
-
 ## 8. Investigation Gate
 
 **Iron Law: no fix without root cause investigation first.** Every fix that doesn't address root cause makes the next bug harder to find. Symptoms recur. Systems accumulate workarounds. Debt compounds.

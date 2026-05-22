@@ -1,6 +1,6 @@
 # /start-task
 
-The "do real work" command. Bundles the plan-and-confirm protocol from [ai-coding-rules.md](../rules/ai-coding-rules.md) into a single ritual: read the spec, read adjacent code, propose a numbered plan, **wait for explicit approval**, then execute.
+The "do real work" command. Bundles the plan-and-confirm protocol from [ai-coding-rules.md](../rules/ai-coding-rules.md) into a single ritual: read the spec, read adjacent code, propose a short numbered plan, **wait for one explicit approval**, then execute autonomously inside that approved scope.
 
 This is the command developers and AI tools should invoke for any non-trivial implementation work. Not for trivial edits (≤3 steps, single file).
 
@@ -25,13 +25,13 @@ AI-driven coding tends to produce one of two failure modes:
 1. **Cowboy mode** — AI receives a vague task, guesses, invents APIs, ships subtly wrong code.
 2. **Loop mode** — AI asks every two minutes for direction, never gains momentum.
 
-`/start-task` is the cure: one structured plan up front, one explicit approval, then heads-down execution with a verification report at the end.
+`/start-task` is the cure: one structured plan up front, one explicit approval, then heads-down execution with a verification report at the end. The user should not need to babysit routine implementation choices after approving the plan.
 
 ---
 
 ## Process
 
-The command runs in 5 phases. Each phase has a stop point.
+The command runs in 5 phases. Phase 2/3 is the approval gate; after approval, continue without asking again unless a stop condition occurs.
 
 ### Phase 1 — Context priming (read, don't write)
 
@@ -71,11 +71,27 @@ Produce a plan in the exact format below. **Do not write any code yet.**
 - `npm run lint` — must pass
 - `npm run typecheck` — must pass
 - `npm run test apps/api/src/services/X.service.test.ts` — must pass
+- `/ux-review` — required for frontend/full-stack tasks; include result or approved exception
+- `npm run test:e2e` — required for frontend/full-stack tasks; include screenshots/traces on failure
+- Desktop light/dark verification — required for frontend/full-stack tasks
+- Mobile light/dark verification at approximately 390px — required for frontend/full-stack tasks
 - Walk through each AC and report status
 
 ### Risks & open questions
 - {{Anything I'm uncertain about — must be resolved before proceeding}}
 - {{If none, write "None — proceeding."}}
+
+### Autonomous execution after approval
+- I will continue through the approved steps without asking again for routine implementation choices.
+- I will stop only for the stop conditions listed below.
+- If multiple approved tasks remain, I may use `/loop` semantics to complete them one by one.
+
+### Stop conditions
+- Required scope or file changes are outside this plan.
+- The spec is missing, contradictory, or materially wrong.
+- Verification fails and the next fix would change scope.
+- A destructive operation, force push, reset, secret access, or direct `main`/`dev` commit is needed.
+- A merge conflict requires product, ownership, or data-loss judgment.
 
 ### Acceptance criteria coverage
 | AC | How this plan addresses it |
@@ -85,7 +101,7 @@ Produce a plan in the exact format below. **Do not write any code yet.**
 
 ---
 
-Reply 'go' to proceed. Reply with corrections to revise. Silence is not approval.
+Reply `go` once to proceed. After approval, I will execute the plan autonomously and report progress/results. Silence is not approval.
 ```
 
 ### Phase 3 — Wait for explicit approval
@@ -96,14 +112,14 @@ Reply 'go' to proceed. Reply with corrections to revise. Silence is not approval
 
 ### Phase 4 — Execute
 
-Follow the plan as written. If during execution any of these happen:
+Follow the plan as written. Continue without asking for routine implementation choices. If during execution any of these happen:
 
 - A file isn't where the plan said it would be
 - An assumption proves wrong
 - A side effect surfaces that wasn't in the plan
 - Scope creeps (you spot something else that "should" be fixed)
 
-→ **Stop immediately.** Use the mid-flight ambiguity protocol from [ai-coding-rules.md §2](../rules/ai-coding-rules.md). State the discovery, propose options, wait for the user.
+→ **Stop immediately.** Use the mid-flight ambiguity protocol from [ai-coding-rules.md §2](../rules/ai-coding-rules.md). State the discovery, propose options, wait for the user. Do not stop for work that is already covered by the approved plan.
 
 ### Phase 5 — Verify and report
 
@@ -115,6 +131,10 @@ When the implementation is done, run the verification suite and produce the repo
 ✅ Lint: `npm run lint` — passing (0 errors, 0 warnings)
 ✅ Typecheck: `npm run typecheck` — passing
 ✅ Tests: `npm run test [target]` — N/N passing (added M new tests)
+✅ UX: `/ux-review` — passing (required for frontend/full-stack tasks)
+✅ Browser: `npm run test:e2e` — passing (required for frontend/full-stack tasks)
+✅ Desktop themes: light + dark verified (required for frontend/full-stack tasks)
+✅ Mobile themes: light + dark verified at ~390px (required for frontend/full-stack tasks)
 ✅ Acceptance criteria:
    - AC-01: {{description}} — verified, returns 201
    - AC-02: {{description}} — verified, returns 409 CONFLICT
@@ -151,6 +171,7 @@ If the user interrupts mid-task, save state to `tasks/start-task-state.json` (gi
 
 - Trivial edits (≤3 steps, single concept, single file): just do the work
 - Reading questions ("what does this function do?"): just answer
+- Bug fixes, failed tests, runtime errors, API defects, UI defects, Docker failures, and incident-style work: use `/debug-fix` so the original failure is reproduced or simulated, root-caused, corrected, tested, and verified with evidence
 - Refactors: those are their own task — don't bundle them into a feature
 - Spike/exploration: use `_ai/experiments/` directly, no plan gate needed
 
@@ -159,7 +180,10 @@ If the user interrupts mid-task, save state to `tasks/start-task-state.json` (gi
 ## Rules
 
 - This command **never** skips Phase 2 (plan) or Phase 3 (wait for approval) for tasks that meet the plan-and-confirm threshold.
+- One approval covers the plan as written; after approval, execute autonomously until done or blocked.
 - The plan must list **every file** that will be touched. Discovering an unlisted file mid-execution = stop and ask.
 - Verification is **mandatory** for the report. If a verification step can't run (e.g., test framework not configured), say so explicitly.
+- UX review is **mandatory** before marking frontend or full-stack tasks `DONE`. Run `/ux-review` and include the result in the verification report. If UX review cannot run, the task remains not done unless the exception is explicitly approved and documented.
+- Browser verification is **mandatory** before marking frontend or full-stack tasks `DONE`. Run `npm run test:e2e` and include the result in the verification report. If browser verification cannot run, the task remains not done unless the exception is explicitly approved and documented.
 - A "go" approves the plan **as written**. New scope = new plan.
 - The command leaves the working tree clean OR clearly explains why it doesn't (e.g., "left WIP on branch X for human review").

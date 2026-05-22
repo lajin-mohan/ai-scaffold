@@ -26,15 +26,17 @@ All Techversant products must meet WCAG 2.1 AA as a minimum. AA is the legal bas
 - [ ] UI components and graphical objects (icons, borders, chart lines): ≥ **3:1** against adjacent colour
 - [ ] Disabled elements are exempt — but should still be reasonably legible
 
-**Quick reference — Techversant palette contrast:**
+**Quick reference — Engyne palette contrast:**
 | Combination | Ratio | Pass? |
 |---|---|---|
-| `#0A0A0A` text on `#FFFFFF` | 21:1 | ✅ AA + AAA |
-| `#0A0A0A` text on `#F5F5F0` | 18.4:1 | ✅ AA + AAA |
-| `#6B7280` text on `#FFFFFF` | 4.6:1 | ✅ AA (normal) |
-| `#9CA3AF` (muted) on `#FFFFFF` | 2.8:1 | ❌ Fail — use only for decorative/disabled |
-| `#FFFFFF` on `#6B7CFF` (indigo) | 3.9:1 | ✅ AA (large text only) |
-| `#FFFFFF` on `#EF4444` (error) | 3.5:1 | ✅ AA (large text only) |
+| `#172B4D` text on `#FFFFFF` | 12.4:1 | ✅ AA + AAA |
+| `#172B4D` text on `#F4F5F7` | 11.3:1 | ✅ AA + AAA |
+| `#44546F` text on `#FFFFFF` | 7.4:1 | ✅ AA + AAA |
+| `#626F86` text on `#FFFFFF` | 5.0:1 | ✅ AA |
+| `#172B4D` on `#00C875` (Engyne Green) | 7.4:1 | ✅ AA + AAA |
+| `#FFFFFF` on `#00C875` (Engyne Green) | 2.0:1 | ❌ Use Ink text, or darken green for white-text buttons |
+| `#172B4D` on `#FFCB00` (Focus Yellow) | 8.4:1 | ✅ AA + AAA |
+| `#FFFFFF` on `#FF3B30` (Alert Red) | 3.6:1 | ✅ AA (large text only); use dark text for small text |
 
 #### 1.3 Colour Not Sole Indicator
 - [ ] Errors indicated by colour AND icon AND text (not colour alone)

@@ -43,7 +43,7 @@ Use `/create-brd` for features, direct ticket refinement for bugs.
 ### 3. Spec (SPEC)
 Before a ticket is READY:
 - [ ] API contract written and reviewed (`/create-api`)
-- [ ] UX spec approved (wireframes, component spec)
+- [ ] UX spec approved (`/ux-create` artifacts, wireframes, component spec, `/ux-review` pass)
 - [ ] Database migration plan reviewed
 - [ ] Estimate completed (`/estimate`)
 - [ ] Architecture decision recorded if needed (`/architecture-review`)
@@ -152,7 +152,7 @@ What user or business problem does this solve?
 
 ## Technical Notes
 - API contract: link to docs/api/
-- UX spec: link to docs/ux/
+- UX spec: link to docs/ux/ and `/ux-review` output
 - Migrations required: Yes / No
 
 ## Definition of Done

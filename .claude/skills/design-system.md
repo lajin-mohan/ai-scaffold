@@ -1,64 +1,66 @@
-# Design System — Techversant Precision Minimal
+# Design System — Engyne WorkOS Minimal
 
-Brand direction: **Precision Minimal** — precise, calm, highly scannable. High information density without clutter. Professional confidence without coldness.
+Brand direction: **WorkOS Minimal** — Jira-like simplicity and density with controlled Monday.com-inspired color energy. The interface should feel structured, fast, and operational: high signal, low clutter, clear actions, and color used as status/meaning rather than decoration. Engyne's preferred color language is green, yellow, and red over common blue SaaS accents.
 
 ---
 
 ## Color Tokens
 
-### Primary Palette
+### Core Palette
 | Token | Hex | Usage |
 |---|---|---|
-| `--color-ink` | `#0A0A0A` | Primary text, primary button background |
-| `--color-surface` | `#F5F5F0` | App background, table headers, sidebar |
-| `--color-white` | `#FFFFFF` | Card backgrounds, input backgrounds |
-| `--color-navy` | `#1A1A2E` | Dark sidebar, header in dark mode |
-| `--color-indigo` | `#6B7CFF` | Accent, focus rings, links, highlights |
-
-### Indigo Scale
-| Token | Hex | Usage |
-|---|---|---|
-| `--color-indigo-50` | `#EEF0FF` | Highlighted row backgrounds, selected states |
-| `--color-indigo-100` | `#E0E3FF` | Badge backgrounds (info), tag surfaces |
-| `--color-indigo-200` | `#C7CBFF` | Hover tints on indigo surfaces |
-| `--color-indigo-500` | `#6B7CFF` | Default accent — links, focus, active |
-| `--color-indigo-700` | `#3D4FCC` | Hover state on accent elements |
-| `--color-indigo-900` | `#1A2266` | Text on indigo-50 backgrounds |
+| `--color-engyne-green` | `#00C875` | Primary action, links, active navigation, focus, success |
+| `--color-green-hover` | `#00A866` | Primary hover/pressed state |
+| `--color-green-soft` | `#E6FAF1` | Primary/action backgrounds, success badge background |
+| `--color-deep-green` | `#007A4D` | Green text on light backgrounds |
+| `--color-focus-yellow` | `#FFCB00` | Warnings, attention, pending review |
+| `--color-alert-red` | `#FF3B30` | Error, destructive, blocked, overdue |
+| `--color-ink` | `#172B4D` | Primary text, headings |
+| `--color-slate` | `#44546F` | Secondary text, labels, icons |
+| `--color-mist` | `#F4F5F7` | App background, table headers, subtle surfaces |
+| `--color-surface` | `#FFFFFF` | Cards, panels, inputs |
+| `--color-white` | `#FFFFFF` | Alias for surface where needed |
+| `--color-primary` | `#00C875` | Alias for primary action |
+| `--color-primary-hover` | `#00A866` | Primary hover/pressed state |
 
 ### Semantic Colors — Full Scale
 | Token | Hex | Usage |
 |---|---|---|
-| `--color-success-50` | `#F0FDF4` | Success alert/badge background |
-| `--color-success-200` | `#BBF7D0` | Success border |
-| `--color-success-500` | `#22C55E` | Success icon, indicator |
-| `--color-success-700` | `#15803D` | Success text on light background |
-| `--color-warning-50` | `#FFFBEB` | Warning alert/badge background |
-| `--color-warning-200` | `#FDE68A` | Warning border |
-| `--color-warning-500` | `#F59E0B` | Warning icon, indicator |
-| `--color-warning-700` | `#B45309` | Warning text on light background |
-| `--color-error-50` | `#FEF2F2` | Error alert/badge background |
-| `--color-error-200` | `#FECACA` | Error border |
-| `--color-error-500` | `#EF4444` | Error icon, indicator, destructive button |
-| `--color-error-700` | `#B91C1C` | Error text on light background |
-| `--color-info-50` | `#EFF6FF` | Info alert/badge background |
-| `--color-info-200` | `#BFDBFE` | Info border |
-| `--color-info-500` | `#3B82F6` | Info icon, indicator |
-| `--color-info-700` | `#1D4ED8` | Info text on light background |
+| `--color-success-50` | `#E6FCF2` | Success alert/badge background |
+| `--color-success-200` | `#9AF0C9` | Success border |
+| `--color-success-500` | `#00C875` | Success icon, indicator |
+| `--color-success-700` | `#008F56` | Success text on light background |
+| `--color-warning-50` | `#FFF7CC` | Warning alert/badge background |
+| `--color-warning-200` | `#FFE680` | Warning border |
+| `--color-warning-500` | `#FFCB00` | Warning icon, indicator |
+| `--color-warning-700` | `#946F00` | Warning text on light background |
+| `--color-error-50` | `#FFECEB` | Error alert/badge background |
+| `--color-error-200` | `#FFB8B3` | Error border |
+| `--color-error-500` | `#FF3B30` | Error icon, indicator, destructive button |
+| `--color-error-700` | `#BF1D15` | Error text on light background |
+| `--color-info-50` | `#E6FAF1` | Info alert/badge background |
+| `--color-info-200` | `#9AF0C9` | Info border |
+| `--color-info-500` | `#00C875` | Info icon, indicator |
+| `--color-info-700` | `#007A4D` | Info text on light background |
+| `--color-insight-50` | `#FFF7CC` | AI/insight badge background |
+| `--color-insight-200` | `#FFE680` | AI/insight border |
+| `--color-insight-500` | `#FFCB00` | AI/insight icon, indicator |
+| `--color-insight-700` | `#946F00` | AI/insight text on light background |
 
 ### Text Colors
 | Token | Hex | Usage |
 |---|---|---|
-| `--color-text-primary` | `#0A0A0A` | Primary body text, headings |
-| `--color-text-secondary` | `#6B7280` | Secondary text, labels, captions |
-| `--color-text-muted` | `#9CA3AF` | Placeholder text, disabled states |
+| `--color-text-primary` | `#172B4D` | Primary body text, headings |
+| `--color-text-secondary` | `#44546F` | Secondary text, labels, captions |
+| `--color-text-muted` | `#626F86` | Placeholder text, disabled states |
 | `--color-text-inverse` | `#FFFFFF` | Text on dark backgrounds |
 
 ### Border Colors
 | Token | Hex | Usage |
 |---|---|---|
-| `--color-border` | `#E5E7EB` | Default borders, dividers |
-| `--color-border-strong` | `#D1D5DB` | Emphasized borders |
-| `--color-border-focus` | `#6B7CFF` | Focus rings |
+| `--color-border` | `#DFE1E6` | Default borders, dividers |
+| `--color-border-strong` | `#C1C7D0` | Emphasized borders |
+| `--color-border-focus` | `#00C875` | Focus rings |
 
 ---
 
@@ -66,25 +68,36 @@ Brand direction: **Precision Minimal** — precise, calm, highly scannable. High
 
 Activated via `.dark` class on `<html>` or `prefers-color-scheme: dark`.
 
+Every page, component, chart, form, table, modal, drawer, and empty/loading/error state must support both light and dark themes. Use semantic tokens for backgrounds, text, borders, focus rings, status colors, and shadows; do not hardcode page-level colors that break theme switching.
+
+Theme colors are organization-configurable. The values in this document are the default Engyne fallback palette only. Product UI must consume CSS variables/design tokens resolved from organization branding settings, so each organization can override brand colors, logo, and theme choices without code changes. Hardcoded brand hex values are allowed only in the centralized token/default-branding definition, tests for that definition, and documentation examples.
+
 | Light Token | Dark Value | Notes |
 |---|---|---|
-| `--color-ink` | `#F5F5F0` | Primary text inverts |
-| `--color-surface` | `#111113` | App background |
-| `--color-white` | `#1C1C1F` | Card/input background |
-| `--color-navy` | `#0A0A0E` | Deeper navy for sidebars |
-| `--color-text-primary` | `#F5F5F0` | |
-| `--color-text-secondary` | `#9CA3AF` | |
-| `--color-text-muted` | `#6B7280` | |
-| `--color-border` | `#2A2A2F` | Subtle dark border |
-| `--color-border-strong` | `#3A3A3F` | |
-| `--color-indigo` | `#7B8EFF` | Slightly lighter for contrast on dark |
+| `--color-engyne-green` | `#21D789` | Primary action, success, productive on dark surfaces |
+| `--color-green-soft` | `#123F2F` | Subtle green background on dark surfaces |
+| `--color-deep-green` | `#7BE7B7` | Green text on dark backgrounds |
+| `--color-focus-yellow` | `#FFD84D` | Warning/attention on dark surfaces |
+| `--color-alert-red` | `#FF6B63` | Error/destructive on dark surfaces |
+| `--color-ink` | `#E6EDF7` | Primary text inverts |
+| `--color-slate` | `#A9B4C5` | Secondary text |
+| `--color-mist` | `#0F1724` | App background |
+| `--color-surface` | `#161E2E` | Cards, panels, inputs |
+| `--color-white` | `#161E2E` | Alias for dark surface |
+| `--color-primary` | `#21D789` | Primary action |
+| `--color-primary-hover` | `#57E5A3` | Primary hover/pressed |
+| `--color-text-primary` | `#E6EDF7` | |
+| `--color-text-secondary` | `#A9B4C5` | |
+| `--color-text-muted` | `#7A869A` | |
+| `--color-border` | `#2B3445` | Subtle dark border |
+| `--color-border-strong` | `#44546F` | |
 
 ```css
 /* Implementation pattern */
-:root { --color-surface: #F5F5F0; }
-.dark { --color-surface: #111113; }
+:root { --color-mist: #F4F5F7; --color-surface: #FFFFFF; }
+.dark { --color-mist: #0F1724; --color-surface: #161E2E; }
 @media (prefers-color-scheme: dark) {
-  :root:not(.light) { --color-surface: #111113; }
+  :root:not(.light) { --color-mist: #0F1724; --color-surface: #161E2E; }
 }
 ```
 
@@ -95,22 +108,22 @@ Activated via `.dark` class on `<html>` or `prefers-color-scheme: dark`.
 ### Font Families
 | Role | Font | Weights |
 |---|---|---|
-| Headings | Manrope | 600, 700 |
-| Body | Instrument Sans | 400, 500 |
-| Data / Code | IBM Plex Mono | 400, 500 |
+| Interface / Body / Headings | Inter | 400, 500, 600, 700 |
+| Fallbacks | SF Pro, system-ui, sans-serif | Platform defaults |
+| Data / Code | ui-monospace, SFMono-Regular, Menlo, monospace | 400, 500 |
 
 ### Type Scale
 | Name | Size | Weight | Font | Line Height | Usage |
 |---|---|---|---|---|---|
-| `heading-xl` | 32px | 700 | Manrope | 1.2 | Page titles |
-| `heading-lg` | 24px | 700 | Manrope | 1.3 | Section headings |
-| `heading-md` | 20px | 600 | Manrope | 1.3 | Card headings |
-| `heading-sm` | 16px | 600 | Manrope | 1.4 | Sub-section headings |
-| `body-lg` | 16px | 400 | Instrument Sans | 1.6 | Large body text |
-| `body-base` | 14px | 400 | Instrument Sans | 1.6 | Default body text |
-| `body-sm` | 12px | 400 | Instrument Sans | 1.5 | Small labels, captions |
-| `label` | 12px | 500 | Manrope | 1.4 | Form labels, table headers (uppercase) |
-| `data` | 13px | 400 | IBM Plex Mono | 1.5 | Numbers, IDs, code |
+| `heading-xl` | 32px | 700 | Inter | 1.2 | Page titles |
+| `heading-lg` | 24px | 700 | Inter | 1.3 | Section headings |
+| `heading-md` | 20px | 600 | Inter | 1.3 | Card headings |
+| `heading-sm` | 16px | 600 | Inter | 1.4 | Sub-section headings |
+| `body-lg` | 16px | 400 | Inter | 1.6 | Large body text |
+| `body-base` | 14px | 400 | Inter | 1.6 | Default body text |
+| `body-sm` | 12px | 400 | Inter | 1.5 | Small labels, captions |
+| `label` | 12px | 600 | Inter | 1.4 | Form labels, table headers |
+| `data` | 13px | 400 | ui-monospace | 1.5 | Numbers, IDs, code |
 
 ---
 
@@ -200,7 +213,7 @@ Activated via `.dark` class on `<html>` or `prefers-color-scheme: dark`.
 - Border: 1px solid `--color-border`
 - Border radius: `--radius-md` (8px)
 - Padding: 0 12px
-- Font: Instrument Sans 14px
+- Font: Inter 14px
 - States:
   - Default: border `--color-border`
   - Focus: border `--color-border-focus` + `--shadow-focus`
@@ -218,38 +231,38 @@ Activated via `.dark` class on `<html>` or `prefers-color-scheme: dark`.
 - Dropdown panel: bg `--color-white`, border `--color-border`, `--shadow-md`, `--radius-lg`, `--z-dropdown`
 - Option height: 36px, padding: 0 12px
 - Option hover: bg `--color-surface`
-- Option selected: bg `--color-indigo-50`, text `--color-indigo-900`, checkmark icon right-aligned
+- Option selected: bg `--color-info-50`, text `--color-info-700`, checkmark icon right-aligned
 - Max visible options: 6 (scroll beyond)
 
 ### Checkbox
 - Size: 16×16px, border-radius: `--radius-sm` (4px)
 - Unchecked: border 1.5px `--color-border-strong`
-- Checked: bg `--color-ink`, border `--color-ink`, white checkmark icon
-- Indeterminate: bg `--color-ink`, horizontal dash
+- Checked: bg `--color-primary`, border `--color-primary`, white checkmark icon
+- Indeterminate: bg `--color-primary`, horizontal dash
 - Focus: `--shadow-focus`
 - Disabled: 50% opacity
-- Label: Instrument Sans 14px, 8px gap from checkbox
+- Label: Inter 14px, 8px gap from checkbox
 
 ### Radio
 - Size: 16×16px, border-radius: `--radius-full`
 - Unchecked: border 1.5px `--color-border-strong`
-- Checked: outer border `--color-ink`, inner fill circle 8px `--color-ink`
+- Checked: outer border `--color-primary`, inner fill circle 8px `--color-primary`
 - Focus: `--shadow-focus`
 
 ### Toggle / Switch
 - Track: 36×20px, border-radius: `--radius-full`
 - Off: track bg `--color-border-strong`
-- On: track bg `--color-ink`
+- On: track bg `--color-primary`
 - Thumb: 16px circle, bg `--color-white`, `--shadow-xs`
 - Transition: `--motion-fast`
 - Size sm: 28×16px, thumb 12px
 
 ### Button — Primary
-- Background: `--color-ink`
-- Text: `--color-white`, Manrope 500 14px
+- Background: `--color-primary`
+- Text: `--color-white`, Inter 600 14px
 - Height: 40px, padding: 0 16px, radius: `--radius-md`
-- Hover: bg `#1F1F1F`
-- Active: bg `#2D2D2D`
+- Hover: bg `--color-primary-hover`
+- Active: bg `#0055CC`
 - Disabled: 40% opacity, `cursor: not-allowed`
 - Loading: spinner replaces or precedes label
 
@@ -292,17 +305,17 @@ Activated via `.dark` class on `<html>` or `prefers-color-scheme: dark`.
   - Interactive (clickable): hover `--shadow-md`, `cursor: pointer`, transition `--motion-fast`
 
 ### Table
-- Header: bg `--color-surface`, text `--color-text-secondary`, Manrope 500 12px uppercase, letter-spacing 0.05em
+- Header: bg `--color-mist`, text `--color-text-secondary`, Inter 600 12px, letter-spacing 0
 - Row height: 52px
-- Row hover: bg `#F9F9F7`
+- Row hover: bg `--color-mist`
 - Border: 1px solid `--color-border` between rows
-- Selected row: bg `--color-indigo-50`
+- Selected row: bg `--color-info-50`
 - Sticky header: `position: sticky; top: 0; z-index: --z-raised`
 - Empty state: centered illustration + message, full table height
 
 ### Badge / Chip
 - Radius: `--radius-full`
-- Font: Manrope 500 12px
+- Font: Inter 600 12px
 - Padding: 2px 8px
 - Variants (background / text):
   - Default: `--color-surface` / `--color-text-secondary`
@@ -310,7 +323,7 @@ Activated via `.dark` class on `<html>` or `prefers-color-scheme: dark`.
   - Warning: `--color-warning-50` / `--color-warning-700`
   - Error: `--color-error-50` / `--color-error-700`
   - Info: `--color-info-50` / `--color-info-700`
-  - Indigo: `--color-indigo-100` / `--color-indigo-900`
+  - Insight: `--color-purple-50` / `--color-purple-700`
 - With dot: 6px filled circle, same color as text, 6px left of label
 - Dismissible: ×icon 12px, 4px left margin
 
@@ -318,22 +331,22 @@ Activated via `.dark` class on `<html>` or `prefers-color-scheme: dark`.
 - Shape: circle (`--radius-full`)
 - Sizes: 24px (xs) · 32px (sm) · 40px (md) · 48px (lg) · 64px (xl)
 - Image: `object-fit: cover`
-- Fallback — initials: bg `--color-indigo-100`, text `--color-indigo-900`, Manrope 600
+- Fallback — initials: bg `--color-info-50`, text `--color-info-700`, Inter 600
 - Fallback — icon: `User` icon from Lucide, `--color-text-secondary`
 - Avatar group: -8px overlap, white ring 2px
 
 ### Tabs
 - Tab height: 40px
-- Active indicator: 2px bottom border `--color-ink`
-- Active text: `--color-text-primary`, Manrope 500 14px
+- Active indicator: 2px bottom border `--color-primary`
+- Active text: `--color-text-primary`, Inter 600 14px
 - Inactive text: `--color-text-secondary`
 - Hover: text `--color-text-primary`
 - Container border-bottom: 1px solid `--color-border`
-- Variant — Pill tabs: active bg `--color-ink`, text white, radius `--radius-md`, no bottom border
+- Variant — Pill tabs: active bg `--color-primary`, text white, radius `--radius-md`, no bottom border
 
 ### Pagination
 - Page button: 32×32px, radius `--radius-md`
-- Active: bg `--color-ink`, text white
+- Active: bg `--color-primary`, text white
 - Inactive: text `--color-text-secondary`, hover bg `--color-surface`
 - Prev/Next arrows: Lucide `ChevronLeft` / `ChevronRight`, 20px
 - Disabled arrows: 40% opacity
@@ -341,13 +354,13 @@ Activated via `.dark` class on `<html>` or `prefers-color-scheme: dark`.
 
 ### Breadcrumb
 - Separator: `/` or Lucide `ChevronRight` 16px, `--color-text-muted`
-- Items: Instrument Sans 14px, `--color-text-secondary`
+- Items: Inter 14px, `--color-text-secondary`
 - Current page: `--color-text-primary`, not a link
 - Overflow: truncate middle items with `…` when > 4 levels
 
 ### Tooltip
-- Background: `--color-navy` (dark) or `--color-white` with border (light variant)
-- Text: Instrument Sans 12px, `--color-text-inverse` (dark) or `--color-text-primary` (light)
+- Background: `#0F1724` (dark) or `--color-white` with border (light variant)
+- Text: Inter 12px, `--color-text-inverse` (dark) or `--color-text-primary` (light)
 - Padding: 6px 10px, radius: `--radius-sm`
 - Arrow: 6px triangle
 - Max width: 240px
@@ -369,7 +382,7 @@ Activated via `.dark` class on `<html>` or `prefers-color-scheme: dark`.
 - Backdrop: `rgba(0,0,0,0.5)`, `--z-modal`
 - Panel: bg `--color-white`, radius `--radius-xl`, `--shadow-lg`
 - Sizes: sm 400px · md 560px · lg 720px · full-screen
-- Header: title Manrope 600 16px + optional close button (×)
+- Header: title Inter 600 16px + optional close button (×)
 - Footer: right-aligned buttons — cancel (secondary) left, confirm (primary or destructive) right
 - Animation: fade + scale from 95% → 100%, `--motion-base`
 - Focus trap: on open; restore focus to trigger on close
@@ -386,22 +399,22 @@ Activated via `.dark` class on `<html>` or `prefers-color-scheme: dark`.
 
 ### Sidebar Navigation
 - Width: `--layout-sidebar` (256px), collapsed: `--layout-sidebar-collapsed` (64px)
-- Background: `--color-surface` (light) or `--color-navy` (dark variant)
+- Background: `--color-surface` (light) or `#0F1724` (dark variant)
 - Nav item height: 40px, padding: 0 12px, radius: `--radius-md`
-- Active: bg `--color-ink`, text white, icon white
+- Active: bg `--color-primary`, text white, icon white
 - Hover: bg `--color-border`
 - Icon: Lucide 20px, 12px gap to label
-- Group label: Manrope 500 11px uppercase, `--color-text-muted`, 16px top margin
+- Group label: Inter 600 11px, `--color-text-muted`, 16px top margin
 - Collapsed: icon only, tooltip on hover showing label
 - Collapse toggle: at bottom or top of sidebar
 
 ### Stepper / Progress
-- Step indicator: circle 32px, Manrope 600 14px
-- Complete: filled `--color-ink`, white checkmark
-- Active: border 2px `--color-ink`, `--color-ink` number
+- Step indicator: circle 32px, Inter 600 14px
+- Complete: filled `--color-primary`, white checkmark
+- Active: border 2px `--color-primary`, `--color-primary` number
 - Inactive: border 1px `--color-border`, `--color-text-muted` number
-- Connector: 1px line `--color-border`, filled `--color-ink` when step complete
-- Label below: Instrument Sans 12px
+- Connector: 1px line `--color-border`, filled `--color-primary` when step complete
+- Label below: Inter 12px
 - Vertical variant: for sidebars and complex flows
 
 ---
@@ -501,7 +514,7 @@ Form footer (always):
 
 | Name | Min Width | Layout |
 |---|---|---|
-| Mobile | 0 | Single column, bottom nav |
+| Mobile | 0 | Single column, bottom nav; validate at 390px |
 | Tablet | 768px | Two columns, condensed sidebar |
 | Desktop | 1280px | Full sidebar + content |
 | Desktop XL | 1440px | Wider content area |
@@ -512,6 +525,9 @@ Form footer (always):
 - Tables collapse to card list on mobile — each row becomes a card
 - Touch targets: minimum 44×44px for all interactive elements
 - Modals become bottom sheets on mobile, full-width with rounded top corners
+- Primary workflows must remain complete at 390px: search/filter, create/edit, submit/approve, save/cancel, and destructive confirmation.
+- Do not hide critical status, ownership, due date, or next action on mobile.
+- Avoid horizontal scrolling except for intentionally scrollable data visualizations with visible affordance.
 
 ---
 

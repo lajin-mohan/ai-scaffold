@@ -1,0 +1,38 @@
+{
+  "project": {
+    "name": "engyne",
+    "displayName": "Engyne",
+    "purpose": "AI-powered engineering delivery intelligence platform for engineering organizations, combining sprint visibility, time tracking, governance, and executive analytics",
+    "type": "production-saas",
+    "status": "Active Development",
+    "multiTenant": true,
+    "complianceScope": "GDPR, ISO27001",
+    "owner": "lajinmj@gmail.com",
+    "firstEpic": "Foundation: Project bootstrap with PostgreSQL, Laravel backend, and React frontend"
+  },
+  "techStack": {
+    "backend": "PHP + Laravel",
+    "frontend": "React",
+    "database": "PostgreSQL",
+    "cacheQueue": null,
+    "auth": null,
+    "email": null,
+    "storage": null,
+    "cloud": null,
+    "iac": null,
+    "cicd": "GitHub Actions",
+    "projectMgmt": null
+  },
+  "features": {
+    "accessibility": true,
+    "gdpr": true,
+    "iso27001": true,
+    "sast": true,
+    "preCommitFull": true,
+    "iac": true,
+    "cicd": "full",
+    "mfa": true,
+    "auditLog": true,
+    "asyncJobs": true
+  }
+}
