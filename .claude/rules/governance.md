@@ -116,6 +116,7 @@ These actions require **explicit human approval** — "go", "yes", "approved", o
 Per `token-usage-rules.md`:
 - **Advisory warning at 300K tokens:** Suggest `/compact` to compress conversation.
 - **Hard flag at 500K tokens:** Flag to Tech Lead; session may have a process problem.
+- **Operationalized via `/compact`:** When session approaches warning threshold, `/what-next --brief` appends `/compact?` to the status line. `/health` also suggests compaction when tokens are high.
 
 There is no hard enforcement — token management is advisory. The goal is efficient use, not arbitrary restriction.
 
