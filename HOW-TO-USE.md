@@ -384,13 +384,22 @@ For escalations:
 | `/create-api` | Stage 3 — architecture | Full REST API contract including async operations pattern |
 | `/architecture-review` | Stage 3 — after HLD | Architecture critique + compliance check + ADR recommendations |
 | `/estimate` | Stage 2/3 — planning | Three-point estimate + risk register + phasing |
-| `/start-task` | Stage 5 — any non-trivial task | Plan-and-confirm ritual: spec read → numbered plan → wait for approval → execute → verification report |
-| `/review` | Stage 6 — before PR | Parallel BLOCK/WARN/NIT findings: backend + frontend + security + qa + architect. Run `/qa` next if UI findings exist. |
+| `/start-task` | Stage 5 — any non-trivial task | Plan-and-confirm ritual with mandatory self-critique gate before code output |
+| `/review` | Stage 6 — before PR | Parallel BLOCK/WARN/NIT findings: backend + frontend + security + qa + architect |
 | `/gen-tests` | Stage 5/8 — QA prep | Complete runnable test files: unit, integration, component, snapshot |
 | `/deployment-review` | Stage 10 — pre-deploy | Go/no-go + migration plan + smoke tests + rollback procedure |
 | `/investigate` | Any time a bug or error is reported | Systematic debugging: gather evidence → form root cause hypothesis → test → fix. Iron law: no fix without investigation. |
-| `/health` | Any time (weekly recommended) | Code quality dashboard: auto-detect tools, score 0–10 composite, show trend. HARD GATE: show only, never fix. |
-| `/qa` | Stage 8 — live-site QA | Live browser testing: walk feature flow, find rendering/interaction issues, fix and re-verify. Requires gstack's `$B`. |
+| `/debug-fix` | Pre-fix — bug fix work | Root-cause-first: plan → reproduce → analyze → implement → verify → report. 5-status model. |
+| `/health` | Any time (weekly recommended) | Code quality dashboard with hallucination guard sub-score. HARD GATE: show only, never fix. |
+| `/lessons` | Any time — query past mistakes | Search `tasks/lessons.md` by keyword or tag. Read-only. |
+| `/qa` | Stage 8 — live-site QA | Live browser testing: walk feature flow, find rendering/interaction issues, fix and re-verify. |
+| `/qa-plan` | Stage 8 — QA automation planning | Traceability matrix (Requirement → Scenario → Test → Result) via qa-automation-engineer agent |
+| `/qa-review` | Stage 8 — QA coverage review | Validates traceability, independence, data isolation, CI commands. Severity: BLOCK/HIGH/MEDIUM/LOW |
+| `/qa-auth` | Stage 8 — auth-specific test planning | Auth test matrix for login, logout, session, token, protected routes, tenant isolation |
+| `/commit-changes` | Any time — before commit/merge | Branch safety check, unrelated-changes detection, verification evidence requirement, optional dev/main promotion |
+| `/ux-create` | Stage 4 — UX design | Enterprise UX design via ux-system skills, desktop-first, 390px mobile check, light/dark theme |
+| `/ux-review` | Stage 6 — UX verification | 32-item check + 4-viewport browser verification (desktop L/D + mobile L/D at 390px) |
+| `/loop` | Stage 5 — autonomous task queue | Execute numbered task list with one-approval contract. Stop conditions prevent scope creep. |
 
 ---
 

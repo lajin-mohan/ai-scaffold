@@ -214,6 +214,7 @@ Run via `/command-name` in Claude Code.
 | `/deployment-review` | Deployment readiness checklist, migration plan, smoke tests, rollback procedure | Stage 10 |
 | `/investigate` | Root cause debugging: gather evidence → form hypothesis → test → fix. Iron law: no fix without investigation. Run when user reports error or bug. | Pre-fix |
 | `/health` | Code quality dashboard: auto-detect tools (tsc, biome, eslint, ruff, pytest, etc.), run them, compute 0-10 composite score, show tabular dashboard. HARD GATE: show only, never fix. Run weekly. | Any time |
+| `/lessons` | Query past root causes and debugging lessons from `tasks/lessons.md`. Search by keyword or filter by tag. Read-only — never writes lessons. | Any time |
 | `/qa` | Live-site QA with headless browser: walk the feature flow, detect rendering/interaction/console issues, fix and re-verify. | Stage 8 |
 | `/loop` | Autonomous task queue: execute a numbered task list with one-approval contract. Generates tests via `/gen-tests` per task. Stop conditions prevent scope creep. | Stage 5 |
 | `/commit-changes` | Git workflow enforcement: branch safety check, unrelated-changes detection, verification evidence requirement. Optional `--dev` / `--main` merge promotion. No Co-Authored-By ever. | Any time |
@@ -309,6 +310,7 @@ Before marking any PR ready:
 | `.claude/rules/definition-of-ready.md` | Definition of Ready - gates `BACKLOG → IN PROGRESS` (parallel to DoD) |
 | `.claude/rules/manual-review-checklist.md` | Stage 7 human-reviewer checklist — what AI reviewers can't catch (product fit, UX coherence, architecture direction, team-knowledge transfer) |
 | `.claude/rules/compliance-rules.md` | GDPR and ISO 27001 requirements and severity table |
+| `.claude/rules/governance.md` | **Top-level enforcement engine.** Aggregates all rules into enforcement chains, escalation paths, authority limits, human-in-the-loop gates, AI-to-AI handoff protocol, and the multi-agent verification pipeline. |
 
 ---
 

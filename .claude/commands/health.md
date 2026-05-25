@@ -88,12 +88,19 @@ Linting:      SKIPPED — biome.json absent
 | Tests | 28% | 100% pass | >95% pass | >80% pass | <=80% pass |
 | Dead code | 13% | 0 unused | <5 unused | <20 unused | >=20 unused |
 | Shell lint | 9% | 0 issues | <5 issues | >=5 issues | N/A |
-| **GBrain** | **10%** | healthy | degraded | stalled | offline/not installed |
+| Hallucination Guard | 10% | 0 violations | <3 violations | <6 violations | >=6 violations |
 
-GBrain sub-score:
-- Installed + healthy = 10
-- Installed + queue >5 = 7
-- Not installed = skip (redistribute weight)
+**Hallucination Guard sub-score (session-self-assessment):**
+Scans current session text for unverified claims — any statement about code without a `file:line` citation, any invented API, any guessed flag. Score is a proxy measure based on the current session context.
+
+- Installed + ≤0 violations = 10
+- Installed + <3 violations = 7
+- Installed + <6 violations = 4
+- Installed + ≥6 violations = 0
+
+**Note:** This is a self-assessment proxy, not a perfect measurement. It captures the AI's own check of H1-H8 adherence during this session. Past sessions are not retroactively scored.
+
+**GBrain sub-score removed.** GBrain is Engyne-specific and not in scope for this scaffold.
 
 ### Composite Score
 
@@ -123,6 +130,7 @@ Lint           biome check .       8/10   WARNING   2s        3 warnings: apps/a
 Tests         npm test          10/10   CLEAN    12s        47/47 passed
 Dead code     npx knip           7/10   WARNING   5s        4 unused exports: apps/web/src/hooks/useLegacyAuth.ts:1, ...
 Shell lint    shellcheck        10/10   CLEAN     1s        0 issues
+Halluc. Guard self-critique      10/10   CLEAN     —         session violations: 0
 
 ────────────────────────────────────────────────────────────
 COMPOSITE SCORE: 9.1 / 10                           23s total
@@ -148,7 +156,7 @@ If any category is `< 7`, show the top 3 issues with file:line and rule/message.
 Append to `.claude/memory/health-history.jsonl` (gitignored):
 
 ```json
-{"ts":"2026-05-16T10:30:00.000Z","branch":"dev","score":9.1,"typecheck":10,"lint":8,"test":10,"deadcode":7,"shell":10,"duration_s":23}
+{"ts":"2026-05-16T10:30:00.000Z","branch":"dev","score":9.1,"typecheck":10,"lint":8,"test":10,"deadcode":7,"shell":10,"hallucination":10,"duration_s":23}
 ```
 
 One JSON object per line. No flushing needed — append is atomic on POSIX.
@@ -176,6 +184,7 @@ Ranked by `weight × (10 - score)` descending (highest impact first):
 Top recommendations:
 1. [Lint] — 3 warnings in apps/api/src/ — clean these up to reach 10/10 (weight 18%)
 2. [Dead code] — 4 unused exports — review for removal or export (weight 13%)
+3. [Halluc. Guard] — N violations — self-critique check: verify every claim has file:line citation before output (weight 10%)
 ```
 
 Only recommend, never act. HARD GATE: `/health` diagnoses, it does not treat.
@@ -223,5 +232,6 @@ Run /health again later to see the trend.
 - `/review` — runs parallel AI review (correctness, security, performance)
 - `/investigate` — root cause debugging for bugs
 - `/gen-tests` — generates test suites for features
+- `/lessons` — queries past root causes and debugging lessons
 
-`/health` tracks the health metrics; `/review` and `/investigate` address specific findings.
+`/health` tracks health metrics; `/review` and `/investigate` address specific findings.

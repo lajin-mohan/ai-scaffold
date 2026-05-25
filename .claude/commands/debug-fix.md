@@ -1,12 +1,12 @@
 # /debug-fix
 
-Systematically reproduce, root-cause, fix, test, and verify an Engyne bug.
+Systematically reproduce, root-cause, fix, test, and verify a bug.
 
 Before changing code, produce a short debugging plan and wait for one explicit approval. After approval, continue through reproduction, root cause, fix, and verification without asking again unless a stop condition occurs.
 
 Use this command for:
 - login, OAuth, redirect, CORS, auth, and protected-route bugs
-- Laravel API errors
+- API errors
 - React UI defects
 - Playwright/e2e failures
 - Docker development environment issues
@@ -77,7 +77,7 @@ Reply `go` once. After approval, I will continue through reproduce → root caus
 
 - **Frontend/full-stack:** browser verification is required with Playwright or a documented approved exception.
 - **API:** verify request/response status, body, auth, tenant/organization scope, and error handling.
-- **Laravel config/routing:** verify syntax/config/routes and relevant API behavior.
+- **API config/routing:** verify syntax/config/routes and relevant API behavior.
 - **Database:** verify migration/schema/data state and tenant isolation.
 - **Docker/local environment:** verify relevant services are healthy and logs no longer show the original failure.
 

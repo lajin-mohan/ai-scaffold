@@ -112,7 +112,18 @@ Reply `go` once to proceed. After approval, I will execute the plan autonomously
 
 ### Phase 4 — Execute
 
-Follow the plan as written. Continue without asking for routine implementation choices. If during execution any of these happen:
+Follow the plan as written. Before writing **any** code, configuration, or test — run the self-critique check:
+
+**Self-Critique Check (mandatory before every code output)**
+1. **Imports resolve?** — Every import/extern is in package.json/composer.json/requirements.txt, no phantom deps.
+2. **Types match?** — Function signatures, return types, generic parameters — all consistent with adjacent code.
+3. **Error paths handled?** — Every throw/catch/reject has a counterpart; no naked `throw new Error()` without typed error.
+4. **"I don't know" respected?** — If this step involves something I'm uncertain about, I state it before acting — not after.
+5. **H1-H8 guards applied?** — No unverified claim about code; every reference is file:line; no invented APIs.
+
+If any check fails: state the failure, fix it, re-check. Do not present broken code as done.
+
+If during execution any of these happen:
 
 - A file isn't where the plan said it would be
 - An assumption proves wrong
