@@ -191,6 +191,42 @@ Only recommend, never act. HARD GATE: `/health` diagnoses, it does not treat.
 
 ---
 
+## Session Metrics (Token Efficiency)
+
+After presenting the code quality dashboard, read `.claude/memory/audit-log.jsonl` and `.claude/MEMORY.md` to show token efficiency metrics. These are informational only — no score impact on the composite.
+
+### Metrics to Compute
+
+| Metric | Source | Calculation |
+|---|---|---|
+| Sessions this week | audit-log.jsonl | Count entries with `event=session_start` in last 7 days |
+| `/compact` runs this week | audit-log.jsonl | Count `event=compact` entries in last 7 days |
+| Lessons added this week | audit-log.jsonl | Count `event=reflect` entries in last 7 days |
+| Average decisions per session | audit-log.jsonl | Avg `decisions` field on `event=compact` entries |
+| Compaction rate | audit-log.jsonl | `compact_runs / sessions` ratio |
+
+### When Token Count Is High
+
+If the current session has consumed significant tokens (estimated from message count × avg size), append a compaction recommendation to the dashboard:
+
+```
+TOKEN EFFICIENCY
+Sessions (7d):    12      /compact runs: 3
+Lessons added:     2      Compaction rate: 25%
+─────────────────────────────────────────────────
+⚡ Token count elevated — run /compact before continuing
+    or use /compact --deep for monthly cleanup
+```
+
+### Display Rules
+
+- Show session metrics only when `.claude/memory/audit-log.jsonl` exists
+- If no audit log exists yet, skip this section silently
+- If no compactions have been run yet, show `Compaction rate: —`
+- Always append `/compact?` recommendation when token count is elevated
+
+---
+
 ## First Run
 
 On first run (no history), skip trend analysis and say:

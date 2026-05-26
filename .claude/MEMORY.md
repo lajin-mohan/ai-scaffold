@@ -41,7 +41,48 @@ Append-only log of session compactions. Each entry captures: stage, decisions ma
 
 ### Compact History
 
-*(No entries yet — /compact has not been run)*
+### 2026-05-25 14:30 — Phase 2 Complete + Revised Roadmap Adopted
+
+**Session duration:** ~45 minutes
+**Stage:** ai-scaffold — Phase 2 (Token & Memory) just pushed to dev; full 6-phase roadmap revised
+**Reason:** Phase 2 complete, user feedback on Phases 4–6 incorporated, adjusted plan approved
+
+### Decisions Made
+- Phase 2 token budget hooks in `settings.json` skipped — `tokenBudget` field not in Claude Code settings schema; governance thresholds operationalized via `/compact` and `/what-next --brief` instead
+- `/bootstrap` split dropped — highly stateful, fragile inter-dependencies; 12.8KB size acceptable
+- Phase 6 (stack-aware scripts) deferred — utility, not core OS; nice-to-have post-MVP
+- Phase 4.5 (Agent System) inserted as highest priority gap — closes "nothing that orchestrates across rules" gap
+- Phase 5 skills files capped at ~200 lines — token efficiency constraint confirmed by user review
+
+### Open Questions
+- Phase 4.5 Supervisor + Critic agent templates — user said "Go" and then called `/compact` before I could generate these
+- Phase 3 observability files not yet built (audit-log.jsonl, `/reflect`, session metrics in `/health`)
+- Phase 4 enhanced rules not yet built (ai-coding-rules §8-10, dod-rules UX gates, handoff protocol)
+
+### Files Touched
+- `.claude/commands/compact.md` — Phase 2 delivered
+- `.claude/MEMORY.md` — Phase 2 delivered
+- `.claude/commands/what-next.md` — Phase 2 delivered
+- `.claude/rules/governance.md` — Phase 2 delivered
+- `CLAUDE.md` — Phase 2 delivered
+- Committed: `72a8863` — pushed to origin/dev
+
+### Current State
+- Phase 1 (Governance + Anti-Hallucination) — ✓ complete, pushed
+- Phase 2 (Token & Memory) — ✓ complete, pushed to dev
+- Phase 3 (Observability) — next: audit-log.jsonl, `/reflect`, session metrics in `/health`
+- Phase 4 (Enhanced Rules + Handoff) — queued: ai-coding-rules §8-10, dod-rules UX gates, agent-handoff-protocol.md
+- Phase 4.5 (Agent System) — queued: Supervisor Agent, Critic Agent
+- Phase 5 (Skills) — deferred: ux-system/ (5 files), systematic-debugging, ux-review, design-system update
+- Phase 6 (Scripts) — deferred indefinitely
+
+### Next Session Brief
+ai-scaffold now has governance engine and memory hygiene. Next priority is Phase 3 observability: build the audit log, `/reflect` command, and session metrics in `/health`. After that, Phase 4 adds formal rules sections and the agent handoff protocol. Then Phase 4.5 (Supervisor + Critic agents) closes the biggest remaining gap — the scaffold has rules but nothing that orchestrates across them. Phase 5 and 6 can follow in order.
+
+### Lessons Captured
+- `tokenBudget` not in Claude Code settings schema — don't try to add governance thresholds there; operationalize via commands and output instead
+
+---
 
 ---
 

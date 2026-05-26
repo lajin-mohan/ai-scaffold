@@ -40,14 +40,14 @@ Every user story must satisfy all of the following before being marked Done in J
 - [ ] Human peer review approved
 
 ### Frontend / UX
-- [ ] Changed frontend screens/components pass `/ux-review`
-- [ ] Mobile workflow verified at approximately 390px width
-- [ ] Desktop light theme verified
-- [ ] Desktop dark theme verified
-- [ ] Mobile light theme verified
-- [ ] Mobile dark theme verified
-- [ ] All colors use organization-overridable tokens so light/dark theme switching and branding overrides do not break contrast or state
-- [ ] No page/component hardcodes brand hex values outside centralized token/default-branding definitions
+- [ ] **BLOCK** Changed frontend screens/components pass `/ux-review`
+- [ ] **BLOCK** Mobile workflow verified at approximately 390px width
+- [ ] **BLOCK** Desktop light theme verified
+- [ ] **BLOCK** Desktop dark theme verified
+- [ ] **BLOCK** Mobile light theme verified
+- [ ] **BLOCK** Mobile dark theme verified
+- [ ] **BLOCK** All colors use organization-overridable tokens so light/dark theme switching and branding overrides do not break contrast or state
+- [ ] **BLOCK** No page/component hardcodes brand hex values outside centralized token/default-branding definitions
 
 ### Documentation
 - [ ] Public API endpoints documented (or existing API contract updated)
