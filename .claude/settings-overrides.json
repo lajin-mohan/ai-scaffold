@@ -1,38 +1,38 @@
 {
   "project": {
-    "name": "engyne",
-    "displayName": "Engyne",
-    "purpose": "AI-powered engineering delivery intelligence platform for engineering organizations, combining sprint visibility, time tracking, governance, and executive analytics",
-    "type": "production-saas",
-    "status": "Active Development",
-    "multiTenant": true,
-    "complianceScope": "GDPR, ISO27001",
-    "owner": "lajinmj@gmail.com",
-    "firstEpic": "Foundation: Project bootstrap with PostgreSQL, Laravel backend, and React frontend"
+    "name": "{{PROJECT_NAME}}",
+    "displayName": "{{PROJECT_DISPLAY_NAME}}",
+    "purpose": "{{ONE_LINE_PURPOSE}}",
+    "type": "{{SaaS / Internal Tool / API / Platform}}",
+    "status": "{{Active Development / MVP / Production}}",
+    "multiTenant": "{{true / false}}",
+    "complianceScope": "{{COMPLIANCE_SCOPE}}",
+    "owner": "{{OWNER_EMAIL}}",
+    "firstEpic": "{{EPIC_NAME}}"
   },
   "techStack": {
-    "backend": "PHP + Laravel",
-    "frontend": "React",
-    "database": "PostgreSQL",
-    "cacheQueue": null,
-    "auth": null,
-    "email": null,
-    "storage": null,
-    "cloud": null,
-    "iac": null,
-    "cicd": "GitHub Actions",
-    "projectMgmt": null
+    "backend": "{{BACKEND_STACK}}",
+    "frontend": "{{FRONTEND_STACK}}",
+    "database": "{{DATABASE}}",
+    "cacheQueue": "{{CACHE_QUEUE}}",
+    "auth": "{{AUTH_STRATEGY}}",
+    "email": "{{EMAIL_PROVIDER}}",
+    "storage": "{{STORAGE}}",
+    "cloud": "{{CLOUD_PROVIDER}}",
+    "iac": "{{IAC_TOOL}}",
+    "cicd": "{{CICD_PLATFORM}}",
+    "projectMgmt": "{{PM_TOOL}}"
   },
   "features": {
-    "accessibility": true,
-    "gdpr": true,
-    "iso27001": true,
-    "sast": true,
-    "preCommitFull": true,
-    "iac": true,
-    "cicd": "full",
-    "mfa": true,
-    "auditLog": true,
-    "asyncJobs": true
+    "accessibility": "{{true / false}}",
+    "gdpr": "{{true / false}}",
+    "iso27001": "{{true / false}}",
+    "sast": "{{true / false}}",
+    "preCommitFull": "{{true / false}}",
+    "iac": "{{true / false}}",
+    "cicd": "{{off / basic / full}}",
+    "mfa": "{{true / false}}",
+    "auditLog": "{{true / false}}",
+    "asyncJobs": "{{true / false}}"
   }
 }
