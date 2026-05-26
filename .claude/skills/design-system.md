@@ -9,7 +9,7 @@ Brand direction: **WorkOS Minimal** — Jira-like simplicity and density with co
 ### Core Palette
 | Token | Hex | Usage |
 |---|---|---|
-| `--color-engyne-green` | `#00C875` | Primary action, links, active navigation, focus, success |
+| `--color-primary` | `#00C875` | Primary action, links, active navigation, focus, success |
 | `--color-green-hover` | `#00A866` | Primary hover/pressed state |
 | `--color-green-soft` | `#E6FAF1` | Primary/action backgrounds, success badge background |
 | `--color-deep-green` | `#007A4D` | Green text on light backgrounds |
@@ -74,7 +74,7 @@ Theme colors are organization-configurable. The values in this document are the 
 
 | Light Token | Dark Value | Notes |
 |---|---|---|
-| `--color-engyne-green` | `#21D789` | Primary action, success, productive on dark surfaces |
+| `--color-primary` | `#21D789` | Primary action, success, productive on dark surfaces |
 | `--color-green-soft` | `#123F2F` | Subtle green background on dark surfaces |
 | `--color-deep-green` | `#7BE7B7` | Green text on dark backgrounds |
 | `--color-focus-yellow` | `#FFD84D` | Warning/attention on dark surfaces |

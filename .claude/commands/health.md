@@ -100,8 +100,6 @@ Scans current session text for unverified claims — any statement about code wi
 
 **Note:** This is a self-assessment proxy, not a perfect measurement. It captures the AI's own check of H1-H8 adherence during this session. Past sessions are not retroactively scored.
 
-**GBrain sub-score removed.** GBrain is Engyne-specific and not in scope for this scaffold.
-
 ### Composite Score
 
 ```

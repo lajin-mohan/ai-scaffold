@@ -23,7 +23,7 @@ User-specific preferences persist here — loaded at session start for personali
 |---|---|
 | [user_preferences.md](memory/user_preferences.md) | User role, collaboration style, token budget preference |
 | [feedback_per_phase_snapshots.md](memory/feedback_per_phase_snapshots.md) | Per-phase approval snapshots — before executing each major action, present a 1-2 sentence rationale and wait for explicit "go" |
-| [engyne-to-scaffold-adoption.md](memory/engyne-to-scaffold-adoption-2026-05-22.md) | Phase 1 execution plan for Engyne→ai-scaffold adoption |
+| [scaffold-adoption-2026-05-22.md](memory/scaffold-adoption-2026-05-22.md) | Phase 1 execution plan for ai-scaffold initial adoption |
 
 ---
 

@@ -73,6 +73,11 @@ Append to `.claude/memory/audit-log.jsonl`:
 {"ts":"{{ISO8601}}","event":"reflect","session_type":"{{type}}","lessons":{{N}},"open_questions":{{N}}}
 ```
 
+For commands that support an init step (e.g., `/weather`), also write a session_start event at session init:
+```json
+{"ts":"{{ISO8601}}","event":"session_start","purpose":"{{brief one-line purpose}}"}
+```
+
 ### Step 5 — Report
 
 ```

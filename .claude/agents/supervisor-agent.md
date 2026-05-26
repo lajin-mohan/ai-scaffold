@@ -118,7 +118,7 @@ When governance is violated: **BLOCK, don't proceed**. Log the violation to `tas
 
 ## Handoff Protocol
 
-When routing to another agent, use the handoff format in [agent-handoff-protocol.md](./agent-handoff-protocol.md):
+When routing to another agent, use the handoff format in [agent-handoff-protocol.md](../rules/agent-handoff-protocol.md):
 - Required context: summary, decisions, open questions, files in scope, governance status, phase, stop condition
 - Never hand off mid-decision
 - The Supervisor owns the handoff quality
@@ -178,8 +178,8 @@ For orientation requests, output:
 
 ## Related
 
-- [governance.md](./governance.md) — enforcement chain and escalation paths
-- [agent-handoff-protocol.md](./agent-handoff-protocol.md) — handoff format and rules
-- [ai-coding-rules.md](./ai-coding-rules.md) — H1-H8 hallucination guards
-- [MEMORY.md](./MEMORY.md) — state tracking index
+- [governance.md](../rules/governance.md) — enforcement chain and escalation paths
+- [agent-handoff-protocol.md](../rules/agent-handoff-protocol.md) — handoff format and rules
+- [ai-coding-rules.md](../rules/ai-coding-rules.md) — H1-H8 hallucination guards
+- [MEMORY.md](../MEMORY.md) — state tracking index
 - `@critic` — invoke for self-verification before any output
