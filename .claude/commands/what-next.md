@@ -11,7 +11,22 @@ Nobody needs to remember the workflow. Nobody skips a gate. Run this at any poin
 ```
 /what-next
 /what-next "{{feature or sprint name}}"
+/what-next --brief
 ```
+
+---
+
+## --brief Mode
+
+Single-line status for quick checks — minimizes token usage for fast orientation.
+
+```
+Stage: {{N}} ({{stage name}}) | {{status emoji}} {{status text}} | Next: {{one-line next action}} | Tokens: {{current}}/{{warningThreshold}} | /compact?
+```
+
+Example: `Stage: 3 (Arch) | 🔴 BLOCKED | Next: Resolve auth schema gap | Tokens: 248k/300k | /compact?`
+
+When token count ≥ `tokenBudget.warningThreshold` (from `settings.json`), append `/compact?` to signal the threshold is near.
 
 ---
 
@@ -394,6 +409,8 @@ before proceeding to Stage 6.
 - Fast lane paths are the only valid exception to stage skipping — and only when the work genuinely qualifies
 - If an artifact exists but appears incomplete or has open questions, mark it ⚠️ not ✅
 - The "Next Action" must be a single, concrete instruction — not a list of options
+- `--brief` output is for quick orientation only — use the full output for planning or detailed blockers
+- `--brief` mode skips all artifact validation; it reads only the current stage and blockers from CLAUDE.md and memory files
 
 ---
 

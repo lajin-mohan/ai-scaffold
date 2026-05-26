@@ -1,6 +1,6 @@
 # Skill: ux-audit
 
-Legacy framework for auditing existing UI screens against Engyne WorkOS Minimal design principles. Prefer `ux-review` for all new work.
+Legacy framework for auditing existing UI screens against WorkOS Minimal design principles. Prefer `ux-review` for all new work.
 
 ---
 

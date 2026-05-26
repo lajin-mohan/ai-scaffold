@@ -6,6 +6,7 @@ Welcome. This project follows the Techversant AI development workflow — every 
 1. [CLAUDE.md](./CLAUDE.md) — the master rules for AI collaboration and the 10-stage workflow
 2. [HOW-TO-USE.md](./HOW-TO-USE.md) — stage-by-stage guide for every role
 3. [.claude/rules/ai-coding-rules.md](./.claude/rules/ai-coding-rules.md) — non-negotiable rules for any AI tool generating code
+4. [.claude/rules/governance.md](./.claude/rules/governance.md) — enforcement chain, escalation paths, authority limits, and human-in-the-loop gates
 
 ---
 
@@ -94,6 +95,7 @@ Before requesting any review, complete the self-review checklist in [.claude/rul
 - [ ] `/review` (Stage 6 AI review) run, all BLOCK findings resolved
 - [ ] CI green locally (`npm run lint`, `npm run typecheck`, `npm test`)
 - [ ] PR description references the ticket, screenshots for UI, test plan
+- [ ] Run `/lessons` to check if a similar mistake has been recorded — don't repeat the same root cause twice
 
 ---
 

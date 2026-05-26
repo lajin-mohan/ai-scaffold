@@ -122,7 +122,7 @@ function UserForm({ onSubmit }: { onSubmit: (data: UserFormData) => Promise<void
 
 Always use tokens. Never hardcode page or brand colors.
 
-Brand/theme color tokens must be populated from organization branding settings when available, with Engyne defaults only as centralized fallbacks. Feature code, page code, and component code should reference semantic tokens/CSS variables instead of literal brand hex values.
+Brand/theme color tokens must be populated from organization branding settings when available, with project defaults only as centralized fallbacks. Feature code, page code, and component code should reference semantic tokens/CSS variables instead of literal brand hex values.
 
 ```tsx
 // WRONG

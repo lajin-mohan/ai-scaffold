@@ -50,7 +50,7 @@ Full UX system source of truth lives in `.codex/skills/ux-system/`. Use `/ux-cre
 
 ### Colors
 ```
-Primary:    #00C875  Engyne Green    Surface: #FFFFFF
+Primary:    #00C875  Primary Green    Surface: #FFFFFF
 Success:    #00C875  Work Green      Insight: #FFCB00 Focus Yellow
 Warning:    #FFCB00  Focus Yellow    Error:   #FF3B30 Alert Red
 Text:       #172B4D (Ink) · #44546F (Slate) · #626F86 (muted)

@@ -53,3 +53,4 @@ tasks/todo.md
 .claude/memory/health-history.jsonl
 .claude/memory/health-stack.json
 .claude/memory/investigate-scope.txt
+.claude/memory/audit-log.jsonl

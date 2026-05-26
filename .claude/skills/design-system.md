@@ -1,6 +1,6 @@
-# Design System — Engyne WorkOS Minimal
+# Design System — WorkOS Minimal
 
-Brand direction: **WorkOS Minimal** — Jira-like simplicity and density with controlled Monday.com-inspired color energy. The interface should feel structured, fast, and operational: high signal, low clutter, clear actions, and color used as status/meaning rather than decoration. Engyne's preferred color language is green, yellow, and red over common blue SaaS accents.
+Brand direction: **WorkOS Minimal** — Jira-like simplicity and density with controlled color energy. The interface should feel structured, fast, and operational: high signal, low clutter, clear actions, and color used as status/meaning rather than decoration. Projects using this scaffold default to green, yellow, and red over common blue SaaS accents.
 
 ---
 
@@ -9,7 +9,7 @@ Brand direction: **WorkOS Minimal** — Jira-like simplicity and density with co
 ### Core Palette
 | Token | Hex | Usage |
 |---|---|---|
-| `--color-engyne-green` | `#00C875` | Primary action, links, active navigation, focus, success |
+| `--color-primary` | `#00C875` | Primary action, links, active navigation, focus, success |
 | `--color-green-hover` | `#00A866` | Primary hover/pressed state |
 | `--color-green-soft` | `#E6FAF1` | Primary/action backgrounds, success badge background |
 | `--color-deep-green` | `#007A4D` | Green text on light backgrounds |
@@ -70,11 +70,11 @@ Activated via `.dark` class on `<html>` or `prefers-color-scheme: dark`.
 
 Every page, component, chart, form, table, modal, drawer, and empty/loading/error state must support both light and dark themes. Use semantic tokens for backgrounds, text, borders, focus rings, status colors, and shadows; do not hardcode page-level colors that break theme switching.
 
-Theme colors are organization-configurable. The values in this document are the default Engyne fallback palette only. Product UI must consume CSS variables/design tokens resolved from organization branding settings, so each organization can override brand colors, logo, and theme choices without code changes. Hardcoded brand hex values are allowed only in the centralized token/default-branding definition, tests for that definition, and documentation examples.
+Theme colors are organization-configurable. The values in this document are the project default palette only. Product UI must consume CSS variables/design tokens resolved from organization branding settings, so each organization can override brand colors, logo, and theme choices without code changes. Hardcoded brand hex values are allowed only in the centralized token/default-branding definition, tests for that definition, and documentation examples.
 
 | Light Token | Dark Value | Notes |
 |---|---|---|
-| `--color-engyne-green` | `#21D789` | Primary action, success, productive on dark surfaces |
+| `--color-primary` | `#21D789` | Primary action, success, productive on dark surfaces |
 | `--color-green-soft` | `#123F2F` | Subtle green background on dark surfaces |
 | `--color-deep-green` | `#7BE7B7` | Green text on dark backgrounds |
 | `--color-focus-yellow` | `#FFD84D` | Warning/attention on dark surfaces |
