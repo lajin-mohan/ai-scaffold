@@ -94,7 +94,18 @@ feature/* → dev       ← PR required, AI review + 1 human approval
 dev → release/*       ← QA sign-off required
 release/* → main      ← team lead approval + smoke test pass
 hotfix/* → main       ← team lead approval, then cherry-pick or merge to dev
+main → dev            ← PR via GitHub UI, admin bypass required (recovery only)
 ```
+
+### Cross-branch merge rule
+
+**Never merge a branch where the source is a descendant of the target.**
+
+This prevents: `main → dev` (skips integration), `dev → main` (bypasses release gate), or any merge that flows "downhill" to a lower tier without a PR.
+
+**Recovery from broken state:** If `dev` falls behind `main`, restore via GitHub PR `main → dev` with admin bypass — not a CLI merge. Document the recovery in the PR description.
+
+**AI enforcement:** Before any `git merge` or `git push` that targets a protected branch, check whether the source is ahead of the target in the hierarchy. Block and surface the correct path if violated.
 
 ## PR Rules
 
