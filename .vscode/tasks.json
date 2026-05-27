@@ -5,7 +5,7 @@
       "label": "AI: Health Check",
       "type": "shell",
       "command": "claude",
-      "args": ["/health"],
+      "args": ["-p", "/health"],
       "problemMatcher": [],
       "presentation": { "reveal": "always", "panel": "new" }
     },
@@ -13,7 +13,7 @@
       "label": "AI: What Next",
       "type": "shell",
       "command": "claude",
-      "args": ["/what-next"],
+      "args": ["-p", "/what-next"],
       "problemMatcher": [],
       "presentation": { "reveal": "always", "panel": "new" }
     },
@@ -21,7 +21,7 @@
       "label": "AI: Review",
       "type": "shell",
       "command": "claude",
-      "args": ["/review"],
+      "args": ["-p", "/review"],
       "problemMatcher": [],
       "presentation": { "reveal": "always", "panel": "new" }
     },
@@ -29,7 +29,7 @@
       "label": "AI: Lessons",
       "type": "shell",
       "command": "claude",
-      "args": ["/lessons"],
+      "args": ["-p", "/lessons"],
       "problemMatcher": [],
       "presentation": { "reveal": "always", "panel": "new" }
     }
