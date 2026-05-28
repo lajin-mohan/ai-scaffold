@@ -393,7 +393,7 @@ For escalations:
 | `/health` | Any time (weekly recommended) | Code quality dashboard with hallucination guard sub-score. HARD GATE: show only, never fix. |
 | `/lessons` | Any time — query past mistakes | Search `tasks/lessons.md` by keyword or tag. Read-only. |
 | `/qa` | Stage 8 — live-site QA | Live browser testing: walk feature flow, find rendering/interaction issues, fix and re-verify. |
-| `/qa-plan` | Stage 8 — QA automation planning | Traceability matrix (Requirement → Scenario → Test → Result) via qa-automation-engineer agent |
+| `/qa-plan` | Stage 8 — QA automation planning | Traceability matrix (Requirement → Scenario → Test → Result) via qa-reviewer agent |
 | `/qa-review` | Stage 8 — QA coverage review | Validates traceability, independence, data isolation, CI commands. Severity: BLOCK/HIGH/MEDIUM/LOW |
 | `/qa-auth` | Stage 8 — auth-specific test planning | Auth test matrix for login, logout, session, token, protected routes, tenant isolation |
 | `/commit-changes` | Any time — before commit/merge | Branch safety check, unrelated-changes detection, verification evidence requirement, optional dev/main promotion |
