@@ -416,7 +416,7 @@ before proceeding to Stage 6.
 
 ## Settings Reference
 
-Commands read feature flags from `.claude/settings-overrides.json` (committed) and `.claude/settings-local.json` (gitignored, local overrides).
+Commands read feature flags from `.claude/settings-overrides.json` (committed) and `.claude/settings.local.json` (gitignored, local overrides).
 
 ### Active Features
 Based on `settings-overrides.json` `features` section:

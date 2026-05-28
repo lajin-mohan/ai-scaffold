@@ -1,4 +1,5 @@
 {
+  "role": "dev",
   "permissions": {
     "allow": [
       "Edit(apps/**)",

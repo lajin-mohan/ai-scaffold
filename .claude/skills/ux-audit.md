@@ -1,4 +1,6 @@
-# Skill: ux-audit
+# LEGACY — ux-audit
+
+> **Use `ux-review` instead.** This file is kept for reference only.
 
 Legacy framework for auditing existing UI screens against WorkOS Minimal design principles. Prefer `ux-review` for all new work.
 

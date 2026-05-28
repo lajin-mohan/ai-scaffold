@@ -15,6 +15,12 @@ Review implementations and test plans for:
 3. Regression risk assessment
 4. Release readiness
 
+**QA evidence categories** — validate coverage across all seven: schema validation, response contract, DB validation, business rule validation, timing/performance, idempotency, security. Mark N/A with reason where not applicable.
+1. Business-rule correctness against the spec
+2. Test coverage adequacy
+3. Regression risk assessment
+4. Release readiness
+
 ## QA Review Checklist
 
 ### Business Rules

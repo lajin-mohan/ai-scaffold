@@ -26,6 +26,10 @@ QA coverage and quality review. Validates that tests provide genuine coverage, n
 
 ## Review Dimensions
 
+### QA Evidence Framework
+
+Every QA review must verify or explicitly mark N/A for these 7 evidence categories: schema validation, response contract, DB validation, business rule validation, timing/performance, idempotency, and security.
+
 ### 1. Traceability
 
 Every test maps to a requirement or acceptance criterion.
@@ -145,6 +149,7 @@ General:    74% (target 70%) ✅
 
 ## Rules
 
+- **QA evidence categories** — every review must validate coverage across: schema validation, response contract, DB validation, business rule validation, timing/performance, idempotency, security. Mark N/A with reason where not applicable.
 - **No test = no coverage claim.** If a test file doesn't exist for a requirement, it's a BLOCK.
 - **Independence is non-negotiable.** If a test needs another test to run first, it's a bug.
 - **Data isolation is non-negotiable.** Shared DB state between tests is a BLOCK.

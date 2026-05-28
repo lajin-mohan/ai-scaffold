@@ -1,8 +1,8 @@
-# Project Memory
+# Project Memory Template
 
-This file is the local project memory index for an adopted application.
+Living index for project memory and session compactions.
 
-For a new application, initialize it from `.claude/MEMORY.template.md` during `/bootstrap`, then replace bracketed placeholders with the application's real context. Do not carry ai-scaffold build history into product repositories.
+Copy this file to `.claude/MEMORY.md` during `/bootstrap`, then replace the bracketed values with the adopting application's real context. Do not copy ai-scaffold build history into application repositories.
 
 ---
 
@@ -10,11 +10,11 @@ For a new application, initialize it from `.claude/MEMORY.template.md` during `/
 
 | Field | Value |
 |---|---|
-| Project | ai-scaffold |
-| Purpose | Reusable AI coding scaffold |
-| Current epic | Role-based orchestration and cleanup |
-| Active role | Not configured |
-| Last updated | 2026-05-28 |
+| Project | [PROJECT_NAME] |
+| Purpose | [ONE_LINE_PURPOSE] |
+| Current epic | [CURRENT_EPIC] |
+| Active role | [dev/qa/architect/ux/owner or not configured] |
+| Last updated | [DATE] |
 
 ---
 
@@ -31,9 +31,27 @@ For a new application, initialize it from `.claude/MEMORY.template.md` during `/
 
 ## Session Compaction History
 
-Application-specific session compactions belong here after `/bootstrap`.
+Append-only log of session compactions. Each entry captures: stage, decisions made, open questions, files touched, and a next-session brief.
 
-ai-scaffold build history was moved to `docs/process/scaffold-build-history.md` so this memory file can stay safe to copy into new repositories.
+### [DATE] - Initial Bootstrap
+
+**Stage:** Project bootstrap
+**Reason:** Scaffold adopted for [PROJECT_NAME]
+
+### Decisions Made
+- [Initial project setup decisions]
+
+### Open Questions
+- [Open project questions]
+
+### Files Touched
+- [Files initialized or changed]
+
+### Current State
+- [Current project state]
+
+### Next Session Brief
+[Brief handoff for the next AI session.]
 
 ---
 
