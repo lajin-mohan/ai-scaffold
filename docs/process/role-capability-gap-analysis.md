@@ -48,8 +48,8 @@ If the role can be served by routing to existing commands/agents, use routing.
 | `dev` | `debugging-agent`, `backend-reviewer`, `frontend-reviewer`, `critic` | `/start-task`, `/loop`, `/review`, `/gen-tests`, `/debug-fix`, `/investigate`, `/commit-changes` | Strong |
 | `qa` | `qa-reviewer`, `debugging-agent` | `/qa-plan`, `/gen-tests`, `/qa-review`, `/qa-auth`, `/qa` | Strong, needs evidence consistency |
 | `architect` | `architect`, `api-architect`, `backend-reviewer`, `security-reviewer` | `/create-api`, `/architecture-review`, `/review`, `/health` | Strong |
-| `ux` | `ux-designer`, `frontend-reviewer` | `/ux-create`, `/ux-review`, `/qa` | Strong |
-| `owner` | `supervisor`, `critic`, all specialist agents via routing | `/what-next`, `/supervisor`, `/health`, `/loop`, `/review`, `/qa-review`, `/deployment-review`, `/reflect`, `/compact` | Strong, needs role routing |
+| `ux` | `ux-requirement-analyst`, `ux-flow-designer`, `ux-designer`, `frontend-reviewer` | `/ux-analyze`, `/ux-flow`, `/ux-screen-spec`, `/ux-figma-spec`, `/ux-review`, `/ux-handoff`, `/qa` | Strong |
+| `owner` | `supervisor`, `critic`, all specialist agents via routing | `/what-next`, `/health`, `/loop`, `/review`, `/qa-review`, `/deployment-review`, `/reflect`, `/compact` | Strong, needs AI role routing |
 | `pm` | `pm`, `estimator`, `solution-analyst` | `/what-next`, `/kickoff`, `/estimate`, `/create-brd` | Good, V2 |
 | `ba` | `solution-analyst`, `documentation-writer`, `pm` | `/create-brd`, `/what-next`, `/reflect` | Good, V2 |
 | `security` | `security-reviewer`, `architect` | `/review --security-only`, `/qa-auth`, `/deployment-review` | Good, V2 |
@@ -61,12 +61,12 @@ If the role can be served by routing to existing commands/agents, use routing.
 
 | Gap | Type | Applies To | Recommendation |
 |---|---|---|---|
-| Role config files do not exist | Config | all V1 roles | Add `.claude/roles/dev.yaml`, `qa.yaml`, `architect.yaml`, `ux.yaml`, `owner.yaml` |
-| Local role setting is not documented in config examples | Config | all | Add `"role": "dev"` to `.claude/settings.local.example.json` |
+| AI role config files do not exist | Config | all V1 AI roles | Add `.claude/roles/dev.yaml`, `qa.yaml`, `architect.yaml`, `ux.yaml`, `owner.yaml` |
+| Local AI role setting is not documented in config examples | Config | all | Add `"role": "dev"` to `.claude/settings.local.example.json` |
 | `/qa-plan` must not rely on missing agent | Command | `qa` | Use existing `qa-reviewer` in V1 |
 | QA evidence categories are not consistently applied | Rules/Commands/Templates | `qa`, `dev` | Update `/qa-plan`, `/gen-tests`, `/qa-review`, `qa-reviewer`, `testing-rules`, `test-case-template` |
-| Public docs are not role-aware | Docs | all | Update `CLAUDE.md`, `HOW-TO-USE.md`, `CONTRIBUTING.md` |
-| Role routing is not documented in command guidance | Commands | all | Update `/what-next`, `/supervisor`, `/loop`, `/commit-changes` docs |
+| Public docs are not AI-role-aware | Docs | all | Update `CLAUDE.md`, `HOW-TO-USE.md`, `CONTRIBUTING.md` |
+| AI role routing is not documented in command guidance | Commands | all | Update `/what-next`, `/loop`, `/commit-changes` docs |
 
 ---
 
@@ -75,10 +75,10 @@ If the role can be served by routing to existing commands/agents, use routing.
 | Proposed Capability | Decision | Reason |
 |---|---|---|
 | `qa-automation-engineer` agent | Do not add in V1 | `qa-reviewer` can plan/review; `/gen-tests` generates tests |
-| `/owner` or `/role` command | Defer | Local settings docs are enough for first rollout |
-| Runtime graph engine | Defer | Role configs must prove useful first |
-| Role-specific command families | Do not add | Existing commands should be routed by role |
-| Wrapper agents per role | Do not add | Adds names without new behavior |
+| `/owner` or `/ai-role` command | Defer | Local settings docs are enough for first rollout |
+| Runtime graph engine | Defer | AI role configs must prove useful first |
+| AI-role-specific command families | Do not add | Existing commands should be routed by AI role |
+| Wrapper agents per AI role | Do not add | Adds names without new behavior |
 
 ---
 

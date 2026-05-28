@@ -1,22 +1,24 @@
-# Roles
+# AI Roles
 
-Role-based configuration for the AI OS. Each role is a lightweight YAML file that maps to existing commands and agents — no new capabilities added.
+AI role configuration for the AI OS. Each AI role is a lightweight YAML file that maps to existing commands and agents — no new capabilities added.
+
+Use **AI role** for workflow modes such as `dev`, `qa`, `architect`, `ux`, and `owner`. Use **user role** for application roles such as admin, recruiter, manager, candidate, or approver.
 
 ## Quick Start
 
-Pick your role and use the default entry command to start:
+Pick your AI role and use the default entry command to start:
 
-| Role | Default Entry |
+| AI Role | Default Entry |
 |---|---|
 | `dev` | `/start-task` |
 | `qa` | `/qa-plan` |
 | `architect` | `/architecture-review` |
-| `ux` | `/ux-create` |
-| `owner` | `/supervisor` |
+| `ux` | `/ux-analyze` |
+| `owner` | `/what-next` |
 
-## Setting Your Role
+## Setting Your AI Role
 
-Store your active role locally:
+Store your active AI role locally:
 
 ```json
 {
@@ -34,8 +36,8 @@ Edit `.claude/settings.local.json` and set the `role` key. This file is gitignor
   dev.yaml           — implementation role
   qa.yaml            — QA planning and verification role
   architect.yaml     — architecture and API design role
-  ux.yaml            — UX creation and review role
-  owner.yaml         — project orchestration role
+  ux.yaml            — UX creation and review AI role
+  owner.yaml         — project orchestration AI role
 ```
 
 ## Config Schema
@@ -44,7 +46,7 @@ Each role YAML uses the same schema:
 
 | Field | Description |
 |---|---|
-| `name` | Role identifier (dev, qa, architect, ux, owner) |
+| `name` | AI role identifier (dev, qa, architect, ux, owner) |
 | `description` | One-sentence purpose description |
 | `default_entry` | Recommended command to start with |
 | `allowed_commands` | Commands relevant to this role |
@@ -53,16 +55,17 @@ Each role YAML uses the same schema:
 | `blocked_actions` | Actions that require human approval regardless of role |
 | `output_style` | Preferred output format and severity model |
 
-## V2 Roles
+## V2 AI Roles
 
 `pm`, `ba`, `security`, and `devops` are documented in `docs/brd/role-based-orchestration-brd.md`. They are not routed until V1 is validated through real usage.
 
 ## Commands
 
-Role routing for `/what-next`, `/supervisor`, and `/loop` is planned for Phase 3 — after V1 role configs are live and usage patterns are understood.
+AI role routing for `/what-next` and `/loop` is planned for Phase 3 — after V1 role configs are live and usage patterns are understood.
 
 ## See Also
 
 - BRD: `docs/brd/role-based-orchestration-brd.md`
+- Human guide: `docs/ai-role/README.md`
 - Decisions: `.claude/memory/role-based-orchestration.md`
 - Cleanup plan: `docs/process/scaffold-cleanup-review-plan.md`

@@ -13,7 +13,7 @@ Copy this file to `.claude/MEMORY.md` during `/bootstrap`, then replace the brac
 | Project | [PROJECT_NAME] |
 | Purpose | [ONE_LINE_PURPOSE] |
 | Current epic | [CURRENT_EPIC] |
-| Active role | [dev/qa/architect/ux/owner or not configured] |
+| Active AI role | [dev/qa/architect/ux/owner or not configured] |
 | Last updated | [DATE] |
 
 ---

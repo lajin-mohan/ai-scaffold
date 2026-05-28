@@ -9,7 +9,7 @@
 
 ## 1. Summary
 
-Implement role-based routing as a thin configuration layer over the existing AI OS. V1 should not add duplicate role-specific agents or commands. It should add role configs, document local role persistence, and update existing command guidance so team members get relevant next actions without losing governance.
+Implement AI-role-based routing as a thin configuration layer over the existing AI OS. V1 should not add duplicate AI-role-specific agents or commands. It should add AI role configs, document local AI role persistence, and update existing command guidance so team members get relevant next actions without losing governance.
 
 ---
 
@@ -17,20 +17,20 @@ Implement role-based routing as a thin configuration layer over the existing AI 
 
 | Decision | Final Direction |
 |---|---|
-| Terminology | Use `role`, not `ownerType` or owner type |
+| Terminology | Use "AI role" in documentation for AI workflow mode; reserve "user role" for product/application roles |
 | V1 roles | `dev`, `qa`, `architect`, `ux`, `owner` |
 | V2 roles | `pm`, `ba`, `security`, `devops` |
 | QA planning agent | Use existing `qa-reviewer` in V1 |
 | Test generation | Keep actual test generation in `/gen-tests` |
-| Local persistence | Store active role in `.claude/settings.local.json` as `role` |
+| Local persistence | Store active AI role in `.claude/settings.local.json` as `role` |
 | Graph orchestration | Defer to later advisory phase |
-| New commands | No new commands in V1; optional `/role` in V1.5/V2 |
+| New commands | No new commands in V1; optional `/ai-role` in V1.5/V2 |
 
 ---
 
-## 3. Local Role Settings
+## 3. Local AI Role Settings
 
-The active role should be local to each developer/QA/architect machine.
+The active AI role should be local to each developer/QA/architect machine.
 
 File:
 
@@ -48,10 +48,10 @@ Shape:
 
 Rules:
 - `settings.local.json` stays gitignored.
-- If no role is configured, default to `dev` for implementation work.
+- If no AI role is configured, default to `dev` for implementation work.
 - For status/orchestration requests, default to `owner`.
-- A future `/role qa` command may update this file.
-- Commands should eventually support a session override such as `/what-next --role qa`.
+- A future `/ai-role qa` command may update this file.
+- Commands should eventually support a session override such as `/what-next --ai-role qa`.
 
 ---
 
@@ -70,7 +70,7 @@ Add:
     owner.yaml
 ```
 
-Do not add V2 role configs until V1 has been dogfooded.
+Do not add V2 AI role configs until V1 has been dogfooded.
 
 ---
 
@@ -155,23 +155,23 @@ Tasks:
 - Update `CLAUDE.md` with role table and local setting guidance.
 - Update `HOW-TO-USE.md` with "Start by role" section.
 - Update `CONTRIBUTING.md` with short contributor role guidance.
-- Update `/what-next`, `/supervisor`, `/loop`, and `/commit-changes` docs to mention active role routing.
+- Update `/what-next`, `/loop`, and `/commit-changes` docs to mention active AI role routing.
 
 Acceptance:
-- New team member can identify the right role in under one minute.
+- New team member can identify the right AI role in under one minute.
 - Docs do not repeat the full workflow in three places.
 - `CONTRIBUTING.md` stays short and checklist-oriented.
 
-### Phase 4 - Optional `/role` Command
+### Phase 4 - Optional `/ai-role` Command
 
 Only build this after V1 configs are used in real sessions.
 
 Potential behavior:
 
 ```text
-/role                  # show active role and available roles
-/role qa               # update .claude/settings.local.json role to qa
-/role --reset          # remove local role and return to default behavior
+/ai-role                  # show active AI role and available AI roles
+/ai-role qa               # update .claude/settings.local.json role to qa
+/ai-role --reset          # remove local AI role and return to default behavior
 ```
 
 Acceptance:
@@ -180,7 +180,7 @@ Acceptance:
 
 ### Phase 5 - Advisory Workflow Graph
 
-Defer graph orchestration until role configs are stable.
+Defer graph orchestration until AI role configs are stable.
 
 Potential files:
 
@@ -225,10 +225,10 @@ Document now, implement later.
 
 ## 9. Do Not Build in V1
 
-- Do not add wrapper agents for each role.
+- Do not add wrapper agents for each AI role.
 - Do not add `/dev-*`, `/qa-*`, `/ux-*` command families.
 - Do not build a graph runtime engine.
-- Do not persist active role in shared committed settings.
+- Do not persist active AI role in shared committed settings.
 - Do not add V2 roles until V1 is dogfooded.
 
 ---
@@ -240,7 +240,7 @@ Document now, implement later.
 - [ ] `qa-automation-engineer` is not referenced unless the agent exists
 - [ ] V1 role YAML files exist
 - [ ] Role YAML references only existing commands and agents
-- [ ] Local role setting is documented as `.claude/settings.local.json` key `role`
+- [ ] Local AI role setting is documented as `.claude/settings.local.json` key `role`
 - [ ] QA evidence categories are present across QA paths
-- [ ] Public docs explain role usage without duplicating the full workflow
+- [ ] Public docs explain AI role usage without duplicating the full workflow
 - [ ] Graph orchestration is documented as deferred

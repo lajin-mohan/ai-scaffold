@@ -36,15 +36,20 @@ For each gate, mark:
 
 ## Gate 2 — UX / Design
 
-- [ ] Wireframes or Figma designs completed for all primary flows
-- [ ] UX reviewed and approved by PM and stakeholder
-- [ ] Component spec produced (check `docs/ux/`)
-- [ ] `/ux-create` output exists for frontend work
-- [ ] `/ux-review` completed with no unresolved BLOCK findings
+- [ ] UX requirements produced via `/ux-analyze` (`docs/ux/<feature>/01-requirements.md`)
+- [ ] User flows approved via `/ux-flow` (`docs/ux/<feature>/02-flows.md`)
+- [ ] Screen specs produced one screen at a time via `/ux-screen-spec` (`docs/ux/<feature>/05-screen-specs.md`)
+- [ ] Design tokens applied via `/ux-figma-spec` (`04-design-system-notes.md` + `06-figma-spec.md`)
+- [ ] Human designer approved the full design package (Figma review)
+- [ ] `/ux-review` completed with all BLOCK findings resolved
+- [ ] `/ux-handoff` complete (`docs/ux/<feature>/08-dev-handoff.md`) — hard gate before Stage 5
 - [ ] Desktop-first layout defined for primary enterprise workflows
 - [ ] Tablet/mobile adaptations defined, including approximately 390px mobile behavior
 - [ ] Light and dark theme behavior defined for every page/screen
-- [ ] Empty, loading, and error states designed
+- [ ] All 7 states defined per screen (loading, empty, empty-filtered, error, permission denied, success, form validation)
+- [ ] `/ux-create` may be used directly only for quick fixes and spikes — not as primary UX path
+
+**Quick reference:** Staged UX workflow → `/ux-analyze` → `/ux-flow` → `/ux-screen-spec` (×N) → `/ux-figma-spec` → human review → `/ux-review` → `/ux-handoff`. See `.claude/rules/ux-rules.md`.
 
 ## Gate 3 — Architecture
 
