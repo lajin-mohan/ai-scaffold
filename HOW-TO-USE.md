@@ -22,6 +22,20 @@ Stage 10: Deploy           -> /deployment-review + release-notes template
 
 **Gate rule:** Each stage gates the next. No skipping.
 
+## Start by Role
+
+Not sure where to begin? Pick your role and use the default entry:
+
+| Role | Default Entry | When to use |
+|---|---|---|
+| **dev** | `/start-task` | Building features, fixing bugs, committing code |
+| **qa** | `/qa-plan` | Planning tests, reviewing coverage, verifying releases |
+| **architect** | `/architecture-review` | Designing systems, reviewing APIs, evaluating trade-offs |
+| **ux** | `/ux-create` | Creating screens, reviewing UX, checking accessibility |
+| **owner** | `/supervisor` | Project status, orchestration, cross-cutting view |
+
+Set your active role in `.claude/settings.local.json` as `{"role": "dev"}`. Role configs at `.claude/roles/`.
+
 ---
 
 ## Who Does What
