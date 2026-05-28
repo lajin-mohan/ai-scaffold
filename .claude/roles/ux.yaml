@@ -1,7 +1,7 @@
 ---
 name: ux
 description: UX creation, UX review, accessibility, and responsive behavior. Use this role when designing screens, reviewing UX artifacts, or verifying frontend implementation.
-default_entry: /ux-create
+default_entry: /ux-analyze
 
 allowed_commands:
   - /ux-create

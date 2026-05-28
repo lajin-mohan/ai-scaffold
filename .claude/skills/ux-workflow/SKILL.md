@@ -138,7 +138,7 @@ Before any AI review:
 - CTA placement (primary action obvious, secondary not competing)
 - Token enforcement (no hardcoded brand hex values in implementation)
 
-**Invoke:** `@ux-reviewer` agent + `/ux-review` command
+**Invoke:** `/ux-review` command + `.claude/skills/ux-review/SKILL.md`
 
 **Gate:** All BLOCK findings resolved before handoff.
 
