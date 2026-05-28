@@ -1,6 +1,6 @@
 # Command: /settings
 
-View and update project feature flags. All settings are stored in `.claude/settings-overrides.json` (committed, shared team baseline). Local overrides go in `.claude/settings-local.json` (gitignored).
+View and update project feature flags. All settings are stored in `.claude/settings-overrides.json` (committed, shared team baseline). Local overrides go in `.claude/settings.local.json` (gitignored).
 
 ## Usage
 
@@ -54,7 +54,7 @@ View and update project feature flags. All settings are stored in `.claude/setti
 
 ## How Commands Use These Settings
 
-Commands read from `.claude/settings-overrides.json` and `.claude/settings-local.json`:
+Commands read from `.claude/settings-overrides.json` and `.claude/settings.local.json`:
 
 - `/review` — skips `qa-reviewer` checks for disabled compliance features
 - `/what-next` — shows disabled features as "disabled by project settings"
@@ -63,10 +63,11 @@ Commands read from `.claude/settings-overrides.json` and `.claude/settings-local
 
 ## Local Overrides
 
-Create `.claude/settings-local.json` to experiment locally without affecting the team:
+Create `.claude/settings.local.json` to experiment locally without affecting the team:
 
 ```json
 {
+  "role": "dev",
   "features": {
     "preCommitFull": false,
     "auditLog": true
@@ -85,6 +86,6 @@ After changing settings, run `/what-next` to see updated stage recommendations.
 ## Notes
 
 - Changes to `settings-overrides.json` affect the entire team — commit and PR review required.
-- Changes to `settings-local.json` are local only — no git tracking.
+- Changes to `settings.local.json` are local only — no git tracking.
 - `/bootstrap --check` reports any features left as `{{TBD}}`.
 - To change project type, edit `settings-overrides.json` directly (no command for this — it's a deliberate choice).

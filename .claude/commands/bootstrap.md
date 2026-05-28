@@ -90,7 +90,8 @@ Files to write/modify:
   - CLAUDE.md (project identity + tech stack placeholders resolved)
   - .cursorrules, .github/copilot-instructions.md, README.md
   - .claude/settings-overrides.json (identity + features)
-  - .gitignore (add settings-local.json)
+  - .claude/MEMORY.md (initialized from MEMORY.template.md; no scaffold build history)
+  - .gitignore (add settings.local.json)
 
 Reply 'confirm' to proceed.
 ```
@@ -103,7 +104,9 @@ On `confirm`, write in this order:
 
 1. **`.claude/settings-overrides.json`** — the single source of truth. Contains project identity + all feature flags. This file is committed and shared.
 
-2. **`CLAUDE.md`** — replace all `{{PLACEHOLDER}}` tokens with values from settings-overrides.json. Sections updated:
+2. **`.claude/MEMORY.md`** — initialize from `.claude/MEMORY.template.md` and replace project snapshot placeholders. Do not copy ai-scaffold build history into the adopted application.
+
+3. **`CLAUDE.md`** — replace all `{{PLACEHOLDER}}` tokens with values from settings-overrides.json. Sections updated:
    - Project Identity (name, display, purpose, type, status, owner, multi-tenant)
    - Tech Stack (backend, frontend, DB, etc. — from techStack in settings-overrides.json)
    - Current State (firstEpic)
@@ -116,50 +119,50 @@ On `confirm`, write in this order:
      - .claude/rules/stacks/frontend-<STACK>.md  ← based on detected frontend
      ```
 
-3. **`HOW-TO-USE.md`** — replace runtime template tokens:
+4. **`HOW-TO-USE.md`** — replace runtime template tokens:
    - `{{PROJECT_NAME}}` → project name
    - `{{N}}` / `{{SPRINT_NUMBER}}` → placeholder form `[SPRINT_N]`
    - `{{DATE}}` → `[DATE]`
    These are runtime placeholders — the values are filled when the command is used, not at bootstrap time.
 
-4. **`README.md`**, **`.cursorrules`**, **`.github/copilot-instructions.md`** — replace identity placeholders (`{{PROJECT_NAME}}`, `{{ONE_LINE_PURPOSE}}`, `{{OWNER_EMAIL}}`) with values from settings-overrides.json.
+5. **`README.md`**, **`.cursorrules`**, **`.github/copilot-instructions.md`** — replace identity placeholders (`{{PROJECT_NAME}}`, `{{ONE_LINE_PURPOSE}}`, `{{OWNER_EMAIL}}`) with values from settings-overrides.json.
 
-5. **`.claude/memory/project-context.md`** — replace runtime template tokens:
+6. **`.claude/memory/project-context.md`** — replace runtime template tokens:
    - `{{CURRENT_EPIC}}` → `[EPIC_NAME]`
    - `{{SPRINT_NUMBER}}` → `[SPRINT_N]`
    - `{{DATE}}` → `[DATE]`
 
-6. **`.claude/agents/solution-analyst.md`**, **`.claude/agents/pm.md`** — replace runtime template tokens:
+7. **`.claude/agents/solution-analyst.md`**, **`.claude/agents/pm.md`** — replace runtime template tokens:
    - `{{FEATURE_NAME}}` → `[FEATURE_NAME]`
    - `{{PROJECT_NAME}}` → project name
    - `{{DATE}}` → `[DATE]`
    - `{{PM_NAME}}`, `{{PM}}`, `{{TECH_LEAD}}`, `{{CLIENT}}`, `{{NAME}}`, `{{TEAM_NAME}}`, `{{START}}`, `{{END}}` → `[NAME]` form
    - `{{SPRINT or EPIC}}` → `[SPRINT_OR_EPIC]`
 
-7. **`.claude/hooks/notify-review.py`** — replace runtime template tokens:
+8. **`.claude/hooks/notify-review.py`** — replace runtime template tokens:
    - `{{PROJECT_NAME}}` → project name
    - `{{REPO_URL}}` → `[REPO_URL]`
 
-8. **`docs/qa/README.md`** — replace runtime template tokens:
+9. **`docs/qa/README.md`** — replace runtime template tokens:
    - `{{DATE}}` → `[DATE]`
    - `{{NAME}}` → `[NAME]`
    - `{{COMMIT_SHA}}` → `[COMMIT_SHA]`
 
-9. **`docs/architecture/adr/001-template.md`** — replace runtime template tokens:
+10. **`docs/architecture/adr/001-template.md`** — replace runtime template tokens:
    - `{{}}` → `[VALUE]` form
 
-10. **`.claude/lib/settings.ts`** — replace identity placeholders (`{{PROJECT_NAME}}`, `{{ONE_LINE_PURPOSE}}`, `{{OWNER_EMAIL}}`, `{{EPIC_NAME}}`) with values from settings-overrides.json.
+11. **`.claude/lib/settings.ts`** — replace identity placeholders (`{{PROJECT_NAME}}`, `{{ONE_LINE_PURPOSE}}`, `{{OWNER_EMAIL}}`, `{{EPIC_NAME}}`) with values from settings-overrides.json.
 
-11. **`.cursorrules`**, **`.github/copilot-instructions.md`**, **`README.md`** — identity sections updated (step 4 above handles these)
+12. **`.cursorrules`**, **`.github/copilot-instructions.md`**, **`README.md`** — identity sections updated (step 5 above handles these)
 
-12. **`.gitignore`** — ensure `settings-local.json` is gitignored
+13. **`.gitignore`** — ensure `settings.local.json`, `.claude/MEMORY.md`, and local memory files are gitignored
 
-13. **Compliance docs** — only created if their feature flag is `true`:
+14. **Compliance docs** — only created if their feature flag is `true`:
     - `accessibility: true` → create `docs/compliance/accessibility.md`
     - `gdpr: true` → ensure GDPR section in `compliance-rules.md` is active
     - `iso27001: true` → ensure ISO 27001 section in `compliance-rules.md` is active
 
-14. **`settings-local.example.json`** — add reference showing local override format
+15. **`settings.local.example.json`** — add reference showing local override format
 
 ---
 
@@ -268,7 +271,7 @@ Run /bootstrap to initialize the scaffold for a real project.
 
 ✅ Project identity written: CLAUDE.md, .cursorrules, README.md
 ✅ Feature flags written: .claude/settings-overrides.json
-✅ Gitignore updated: settings-local.json gitignored
+✅ Gitignore updated: settings.local.json and local memory files gitignored
 ✅ Compliance docs created: [list, if any]
 
 Next: run /what-next — it will evaluate Stage 1 (Analysis) with your feature flags active.

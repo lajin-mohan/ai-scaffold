@@ -39,6 +39,10 @@ _ai/experiments/
 # AI ephemera — planning, scratch, intermediate outputs (per-clone working state)
 .claude/work/
 
+# Local project memory — generated per adopted application from MEMORY.template.md
+.claude/MEMORY.md
+.claude/memory/*.local.md
+
 # Legacy tracked file — replaced by tasks/todo/ per-ticket files + CHANGELOG.md.
 # Untracked via `git rm --cached tasks/todo.md`. Kept locally; new edits stay local.
 tasks/todo.md

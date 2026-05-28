@@ -1,8 +1,8 @@
 // Settings reader — single source of truth for project configuration.
 // Reads settings-overrides.json (committed, shared team baseline) and
-// settings-local.json (gitignored, local dev overrides).
+// settings.local.json (gitignored, local dev overrides).
 //
-// Precedence: settings-local.json > settings-overrides.json > defaults
+// Precedence: settings.local.json > settings-overrides.json > defaults
 
 import { readFileSync, existsSync } from 'fs'
 import { resolve, dirname } from 'path'
@@ -16,6 +16,8 @@ const ROOT = resolve(__dirname, '../..')
 // ─────────────────────────────────────────────────────────────────────────────
 
 export type ProjectType = 'mvp' | 'production-saas' | 'internal-tool' | 'public-api'
+
+export type Role = 'dev' | 'qa' | 'architect' | 'ux' | 'owner'
 
 export type CicdMode = 'minimal' | 'full'
 
@@ -47,6 +49,7 @@ export interface ProjectIdentity {
 export interface Settings {
   project: ProjectIdentity
   features: FeatureFlags
+  role?: Role
   _source: 'overrides' | 'local'  // which file provided each field (for display)
 }
 
@@ -127,7 +130,7 @@ export function clearSettingsCache(): void {
 
 function _readSettings(): Settings {
   const overridesPath = resolve(ROOT, '.claude/settings-overrides.json')
-  const localPath = resolve(ROOT, '.claude/settings-local.json')
+  const localPath = resolve(ROOT, '.claude/settings.local.json')
 
   const hasOverrides = existsSync(overridesPath)
   const hasLocal = existsSync(localPath)
