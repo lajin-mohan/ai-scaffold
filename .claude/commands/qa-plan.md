@@ -1,6 +1,6 @@
 # /qa-plan
 
-QA automation planning. Uses the `qa-automation-engineer` agent to design a full automation strategy and coverage matrix for a feature. Produces a traceable test plan: Requirement → Scenario → Test → Result format.
+QA automation planning. Uses the `qa-reviewer` agent to design a full automation strategy and coverage matrix for a feature. Produces a traceable test plan: Requirement → Scenario → Test → Result format.
 
 ---
 
@@ -35,10 +35,10 @@ Identify:
 - Auth and tenant isolation paths (if multi-tenant)
 - Non-functional requirements (performance, accessibility)
 
-### Step 2 — Invoke qa-automation-engineer Agent
+### Step 2 — Invoke qa-reviewer Agent
 
 ```
-Use the qa-automation-engineer agent with this input:
+Use the qa-reviewer agent with this input:
 
 Feature: {{name}}
 Spec: {{path or description}}
@@ -103,4 +103,4 @@ Run `/gen-tests` to implement this plan.
 - `/qa-auth` — auth-specific test planning (deeper auth analysis)
 - `/gen-tests` — implements the test plan
 - `/qa` — live-site browser verification
-- `qa-automation-engineer` agent — generates the strategy
+- `qa-reviewer` agent — generates the strategy

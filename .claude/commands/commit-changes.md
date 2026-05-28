@@ -140,13 +140,34 @@ BLOCK: main promotion blocked.
 
 ---
 
-## Rules
+## Cross-Branch Merge Prevention
 
-- **Never force-push to main or dev.**
-- **Never delete the main branch.**
-- **Never merge a PR without human approval.**
-- **Never skip CI for expediency.**
-- Co-Authored-By must be removed from any commit message that contains it.
+**Rule:** Never merge a branch into a protected branch where the source is a descendant of the target. This is the core bypass that happened — `main` (higher tier) merged directly into `dev` (lower tier) from CLI.
+
+### The correct path
+
+```
+feature/* → dev  ← feature branch promoted to integration
+dev → main       ← integration promoted to stable (release gate)
+
+Never:
+  main → dev      ← WRONG: skips integration, bypasses CI, bypasses review
+  dev → main (direct push/merge) ← WRONG: must use PR for main promotion
+```
+
+### Cross-branch merge pattern
+
+If the target is `dev` and the source is `main` or a descendant of `main`:
+```
+BLOCK: Cross-branch promotion blocked.
+  Source: main
+  Target: dev
+  Pattern: merging "higher" tier into "lower" tier.
+
+Correct path: Create a PR main → dev via GitHub UI.
+This requires admin bypass of branch protection — intentional and auditable.
+```
+
 
 ---
 

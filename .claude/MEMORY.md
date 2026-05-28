@@ -41,6 +41,41 @@ Append-only log of session compactions. Each entry captures: stage, decisions ma
 
 ### Compact History
 
+### 2026-05-28 06:55 — Publish-ready final pass
+
+**Session duration:** ~25 minutes
+**Stage:** ai-scaffold — Phase 1-5 complete, publish-ready on dev
+**Reason:** Session milestone — final reviewer findings resolved before PR to main
+
+### Decisions Made
+- `.Claude/` (uppercase) duplicate directory deleted — only `.claude/` (lowercase) is correct
+- `qa-automation-engineer` agent reference changed to `qa-reviewer` in qa-plan.md, CLAUDE.md, HOW-TO-USE.md (agent doesn't exist)
+- VS Code tasks `-p` flag and eslint settings already confirmed correct
+- QA automation expansion (schema validation, response contract, DB, etc.) deferred to future phase
+
+### Open Questions
+- QA automation features to be implemented as separate phase if needed
+
+### Files Touched
+- `.Claude/` (deleted entire directory)
+- `.claude/commands/qa-plan.md` — qa-automation-engineer → qa-reviewer
+- `CLAUDE.md` — qa-automation-engineer → qa-reviewer
+- `HOW-TO-USE.md` — qa-automation-engineer → qa-reviewer
+- Committed: `f002073` — pushed to origin/dev
+
+### Current State
+- dev = f002073 (4 commits ahead of main)
+- All publish-ready findings resolved (~9.3/10 score)
+- PR to main ready via GitHub UI
+
+### Next Session Brief
+ai-scaffold Phase 1-5 is publish-ready on dev. Merge PR to main via GitHub UI (owner bypass for initial publish). After main merge, consider `/bootstrap` to fill project placeholders, or implement QA automation as a follow-on phase.
+
+### Lessons Captured
+- `.Claude/` vs `.claude/` case-sensitivity: Windows preserves case of created directories but git tracks lowercase; never create duplicate case-conflicting directories
+
+---
+
 ### 2026-05-25 14:30 — Phase 2 Complete + Revised Roadmap Adopted
 
 **Session duration:** ~45 minutes

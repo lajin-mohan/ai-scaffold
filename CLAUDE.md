@@ -222,7 +222,7 @@ Run via `/command-name` in Claude Code.
 | `/qa` | Live-site QA with headless browser: walk the feature flow, detect rendering/interaction/console issues, fix and re-verify. | Stage 8 |
 | `/loop` | Autonomous task queue: execute a numbered task list with one-approval contract. Generates tests via `/gen-tests` per task. Stop conditions prevent scope creep. | Stage 5 |
 | `/commit-changes` | Git workflow enforcement: branch safety check, unrelated-changes detection, verification evidence requirement. Optional `--dev` / `--main` merge promotion. No Co-Authored-By ever. | Any time |
-| `/qa-plan` | QA automation planning via qa-automation-engineer agent. Coverage matrix: Requirement → Scenario → Test → Result. | Stage 8 |
+| `/qa-plan` | QA automation planning via qa-reviewer agent. Coverage matrix: Requirement → Scenario → Test → Result. | Stage 8 |
 | `/qa-review` | QA coverage and quality review. Validates traceability, independence, data isolation, CI commands. Severity: BLOCK / HIGH / MEDIUM / LOW. | Stage 8 |
 | `/qa-auth` | Auth-specific test planning: login, logout, session, token, protected routes, tenant isolation. Framework-agnostic. | Stage 8 |
 | `/ux-create` | UX solution creator: uses `skills/ux-system/`, desktop-first design, 390px mobile check, light/dark theme, organization-overridable tokens. | Stage 4 |
