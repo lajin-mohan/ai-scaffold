@@ -5,6 +5,11 @@ default_entry: /ux-create
 
 allowed_commands:
   - /ux-create
+  - /ux-analyze
+  - /ux-flow
+  - /ux-screen-spec
+  - /ux-figma-spec
+  - /ux-handoff
   - /ux-review
   - /qa
   - /lessons

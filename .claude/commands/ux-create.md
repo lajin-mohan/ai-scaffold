@@ -2,6 +2,20 @@
 
 Create a production-grade enterprise UX solution using the centralized UX system.
 
+## When to use /ux-create vs staged workflow
+
+**Quick fixes and spikes** → `/ux-create` directly. Use when:
+- Single screen or component improvement (color, spacing, layout change)
+- Exploring a UX concept before committing to a full feature
+- Ad-hoc UI feedback or design iteration
+
+**New feature with full UX design** → Use the staged workflow:
+```
+BRD approved → /ux-analyze → /ux-flow → /ux-screen-spec (one screen at a time)
+→ /ux-figma-spec → human designer reviews → /ux-review → /ux-handoff → Stage 5
+```
+This path produces requirements, flows, screen specs, design tokens, and a developer-ready handoff in sequence — each stage gates the next. See `.claude/rules/ux-rules.md` for all hard gates.
+
 ## Usage
 
 ```text
@@ -13,7 +27,7 @@ Create a production-grade enterprise UX solution using the centralized UX system
 ## Process
 
 1. Read the relevant BRD/spec/task.
-2. Use `.codex/skills/ux-system/SKILL.md`.
+2. Use `.claude/skills/ux-system/SKILL.md`.
 3. Load `DESIGN_SYSTEM.md`, `DESIGN_TOKENS.md`, `COMPONENT_RULES.md`, or `UX_PATTERNS.md` only as needed.
 4. Define role, business goal, workflow, and data density.
 5. Produce UX architecture, component hierarchy, interactions, states, responsiveness, mobile behavior, theme behavior, and accessibility guidance.

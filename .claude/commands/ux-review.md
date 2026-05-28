@@ -13,8 +13,8 @@ Review a UI implementation or UX artifact against the centralized UX system.
 ## Process
 
 1. Read the target implementation/artifact.
-2. Use `.codex/skills/ux-review/SKILL.md`.
-3. Reference `.codex/skills/ux-system/` for design-system rules.
+2. Use `.claude/skills/ux-review/SKILL.md`.
+3. Reference `.claude/skills/ux-system/` for design-system rules.
 4. Validate enterprise UX quality, accessibility, responsiveness, mobile behavior, theme behavior, density, hierarchy, and component consistency.
 5. For frontend implementation, require browser verification evidence before DONE.
 
