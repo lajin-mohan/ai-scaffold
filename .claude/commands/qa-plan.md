@@ -25,6 +25,10 @@ QA automation planning. Uses the `qa-reviewer` agent to design a full automation
 
 ## Process
 
+### QA Evidence Framework
+
+Every QA plan must cover or explicitly mark N/A for these 7 evidence categories: schema validation, response contract, DB validation, business rule validation, timing/performance, idempotency, and security.
+
 ### Step 1 — Understand the Feature
 
 Read the linked ticket, spec, or BRD. If none given, ask the user.
@@ -89,6 +93,7 @@ Run `/gen-tests` to implement this plan.
 
 ## Rules
 
+- **QA evidence categories** — every plan must cover or explicitly mark N/A: schema validation, response contract, DB validation, business rule validation, timing/performance, idempotency, security.
 - **Traceability is mandatory.** Every requirement must map to at least one test.
 - **Auth failures are non-negotiable.** Every protected endpoint needs 401 and 403 tests.
 - **Tenant isolation is non-negotiable** for multi-tenant projects.
