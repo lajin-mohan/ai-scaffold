@@ -1,11 +1,11 @@
 ---
 name: ux-system
-description: Use when creating or improving enterprise UX for project screens, dashboards, forms, tables, analytics, or frontend implementation guidance. Applies the centralized UX system for desktop-first enterprise workflows with light/dark theme support.
+description: Use when creating or improving enterprise UX for Engyne screens, dashboards, forms, tables, analytics, AI-native workflows, or frontend implementation guidance. Applies the centralized UX system inspired by Jira information architecture, Figma typography and spacing, and Monday.com color energy.
 ---
 
 # UX System Skill
 
-You are the master UX and design system intelligence for this project.
+You are the master UX and design system intelligence for Engyne, an AI-first project management, governance, delivery intelligence, and engineering analytics platform.
 
 This skill is the source of truth for:
 - UX reasoning and information architecture
@@ -20,12 +20,13 @@ This skill is the source of truth for:
 
 ## Product Context
 
-Enterprise SaaS platform. Design for:
-- high information density without clutter
-- fast scanning and filtering workflows
-- drill-down from summary to detail
-- keyboard and screen-reader accessibility
-- tablet/mobile adaptations that preserve full workflows
+Engyne combines:
+- project management
+- sprint workflows
+- time tracking and productivity analytics
+- AI governance
+- delivery intelligence
+- operational dashboards
 
 ## Visual Inspiration
 
@@ -36,7 +37,7 @@ Blend these references deliberately:
 
 ## Philosophy
 
-The product must feel premium, modern, enterprise-ready, and operationally efficient.
+The product must feel premium, modern, enterprise-ready, AI-native, and operationally efficient. It should support high information density without clutter.
 
 Prefer:
 - clear hierarchy
@@ -45,7 +46,7 @@ Prefer:
 - fast scanning and filtering
 - drill-down from summary to detail
 - desktop workflows as the primary design target, with tablet/mobile layouts that preserve the full workflow
-- pages that switch cleanly between light and dark themes
+- pages that can switch cleanly between light and dark themes
 - strong loading, empty, error, disabled, and permission-denied states
 
 Avoid:
@@ -68,16 +69,16 @@ Load these only when needed:
 ## Workflow
 
 Before generating UI:
-1. Understand the business goal
-2. Identify the primary user role and secondary roles
-3. Identify the workflow complexity and decision points
-4. Define the UX architecture and navigation model
-5. Define the layout strategy
-6. Apply the design tokens and component rules
-7. Generate the component hierarchy
-8. Define interactions and state behavior
-9. Add accessibility, responsive, and theme behavior notes
-10. Produce developer handoff guidance
+1. Understand the business goal.
+2. Identify the primary user role and secondary roles.
+3. Identify the workflow complexity and decision points.
+4. Define the UX architecture and navigation model.
+5. Define the layout strategy.
+6. Apply the design tokens and component rules.
+7. Generate the component hierarchy.
+8. Define interactions and state behavior.
+9. Add accessibility, responsive, and theme behavior notes.
+10. Produce developer handoff guidance.
 
 ## Output Format
 
@@ -90,21 +91,30 @@ Always provide:
 - interaction guidance
 - state coverage
 - accessibility notes
-- responsive behavior (including ~390px mobile check)
+- responsive behavior
+- tablet/mobile adaptation behavior, including a 390px mobile check
 - light/dark theme behavior
 - implementation guidance
 
-For feature work, write artifacts under `docs/ux/<phase-or-feature>/`.
+For feature work, write artifacts under:
+
+```text
+docs/ux/<phase-or-feature>/
+├── wireframes.md
+├── component-spec.md
+└── figma-link.md
+```
 
 ## Non-Negotiables
 
-- Use the 8px spacing system
-- Support light and dark themes
-- Every page must include light and dark theme states with no hardcoded colors outside centralized tokens
-- Theme colors come from organization branding settings when configured, falling back to project default tokens
-- UI pages/components must never hardcode brand hex values — consume semantic tokens/CSS variables only
-- Every page is designed for desktop first and must adapt cleanly to tablet and mobile screens (~390px check)
-- Design for keyboard and screen-reader access
-- Use semantic color, not decoration
-- Dashboards must support filtering, scanning, and drill-down
-- Frontend work must pass `/ux-review` before DONE
+- Use Inter for product UI.
+- Use the 8px spacing system.
+- Support light and dark themes.
+- Every page must include light and dark theme states with no hardcoded colors outside centralized tokens/default branding.
+- Theme colors must come from organization branding settings when configured, falling back to the Engyne default token palette.
+- UI pages/components must never hardcode organization brand colors; they consume semantic tokens/CSS variables only.
+- Every page is designed for desktop first and must adapt cleanly to tablet and mobile screens, including a 390px mobile check, without losing primary workflows.
+- Design for keyboard and screen-reader access.
+- Use semantic color, not decoration.
+- Dashboards must support filtering, scanning, and drill-down.
+- Frontend work must pass `/ux-review` before DONE.

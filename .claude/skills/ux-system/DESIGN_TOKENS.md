@@ -10,11 +10,11 @@
 
 ## Core Palette
 
-These are project default fallback tokens. Runtime UI must resolve theme values from organization branding settings when available, then fall back to these defaults. Do not hardcode these hex values in pages, components, charts, or feature code.
+These are Engyne default fallback tokens. Runtime UI must resolve theme values from organization branding settings when available, then fall back to these defaults. Do not hardcode these hex values in pages, components, charts, or feature code.
 
 | Token | Hex | Usage |
 |---|---|---|
-| Primary Green | `#00C875` | Primary actions, focused states, selected states, success |
+| Engyne Green | `#00C875` | Primary actions, focused states, selected states, success |
 | Green Hover | `#00A866` | Primary hover and pressed states |
 | Green Soft | `#E6FAF1` | Subtle active states, success backgrounds |
 | Deep Green | `#007A4D` | Green text on light backgrounds |
@@ -42,7 +42,7 @@ Avoid common blue SaaS accents as the dominant visual language. Blue may appear 
 
 | Token | Dark Value |
 |---|---|
-| Primary Green | `#21D789` |
+| Engyne Green | `#21D789` |
 | Green Soft | `#123F2F` |
 | Deep Green | `#7BE7B7` |
 | Focus Yellow | `#FFD84D` |

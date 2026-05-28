@@ -1,6 +1,6 @@
 ---
 name: ux-review
-description: Use when reviewing UI implementation, generated UX artifacts, dashboards, forms, tables, or screens against the centralized UX system. Validates enterprise UX quality, accessibility, density, hierarchy, responsiveness, and design-system compliance.
+description: Use when reviewing UI implementation, generated UX artifacts, dashboards, forms, tables, or screens against the centralized Engyne UX system. Validates enterprise UX quality, accessibility, density, hierarchy, responsiveness, and design-system compliance.
 ---
 
 # UX Review Skill

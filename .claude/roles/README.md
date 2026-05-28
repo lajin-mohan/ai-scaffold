@@ -28,16 +28,34 @@ Store your active AI role locally:
 
 Edit `.claude/settings.local.json` and set the `role` key. This file is gitignored and per-user.
 
+## Role Tutorials
+
+Each role has a detailed tutorial with step-by-step workflows, command reference, common scenarios, and troubleshooting:
+
+| Role | Tutorial |
+|---|---|
+| `dev` | [dev-role-tutorial.md](tutorials/dev-role-tutorial.md) |
+| `qa` | [qa-role-tutorial.md](tutorials/qa-role-tutorial.md) |
+| `architect` | [architect-role-tutorial.md](tutorials/architect-role-tutorial.md) |
+| `ux` | [ux-role-tutorial.md](tutorials/ux-role-tutorial.md) |
+| `owner` | [owner-role-tutorial.md](tutorials/owner-role-tutorial.md) |
+
 ## Files
 
 ```
 .claude/roles/
-  README.md          — this file
-  dev.yaml           — implementation role
-  qa.yaml            — QA planning and verification role
-  architect.yaml     — architecture and API design role
-  ux.yaml            — UX creation and review AI role
-  owner.yaml         — project orchestration AI role
+  README.md              — this file
+  dev.yaml               — implementation role
+  qa.yaml                — QA planning and verification role
+  architect.yaml         — architecture and API design role
+  ux.yaml                — UX creation and review AI role
+  owner.yaml             — project orchestration AI role
+  tutorials/             — step-by-step role tutorials
+    dev-role-tutorial.md
+    qa-role-tutorial.md
+    architect-role-tutorial.md
+    ux-role-tutorial.md
+    owner-role-tutorial.md
 ```
 
 ## Config Schema
