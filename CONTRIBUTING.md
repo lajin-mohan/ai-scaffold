@@ -16,8 +16,9 @@ Welcome. This project follows the Techversant AI development workflow — every 
 # 1. Bootstrap the scaffold (first time on a fresh clone)
 /bootstrap
 
-# 2. Set your role in .claude/settings.local.json
+# 2. Set your AI role in .claude/settings.local.json
 #    {"role": "dev"}  # dev | qa | architect | ux | owner
+#    Guide: docs/ai-role/
 
 # 3. See where the project stands
 /what-next

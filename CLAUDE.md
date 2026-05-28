@@ -159,19 +159,19 @@ Full rules: `.claude/rules/security-rules.md`
 | **Codex / Cursor** | Executor - writes code against approved specs |
 | **Human** | Approves plans, specs, merges; owns production decisions |
 
-### Role-Based Operating Mode
+### AI Role-Based Operating Mode
 
-Pick a role to get relevant commands, evidence requirements, and output styles. Set your active role in `.claude/settings.local.json` as `{"role": "dev"}`.
+Pick an AI role to get relevant commands, evidence requirements, and output styles. Set your active AI role in `.claude/settings.local.json` as `{"role": "dev"}`.
 
-| Role | Purpose | Default Entry |
+| AI Role | Purpose | Default Entry |
 |---|---|---|
 | `dev` | Implementation, bug fixes, commits | `/start-task` |
 | `qa` | Test planning, QA review, verification | `/qa-plan` |
 | `architect` | Architecture, API contracts, system review | `/architecture-review` |
-| `ux` | UX creation, review, accessibility | `/ux-create` |
-| `owner` | Project orchestration, status, risk | `/supervisor` |
+| `ux` | UX creation, review, accessibility | `/ux-analyze` |
+| `owner` | Project orchestration, status, risk | `/what-next` |
 
-Role configs at `.claude/roles/`. Role routing for `/what-next`, `/supervisor`, and `/loop` planned for Phase 3.
+AI role configs live at `.claude/roles/`. Human-facing AI role docs live at `docs/ai-role/`. AI role routing for `/what-next` and `/loop` is planned for Phase 3.
 
 ### Claude's Operating Rules
 

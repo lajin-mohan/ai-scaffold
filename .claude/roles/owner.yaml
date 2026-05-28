@@ -1,10 +1,9 @@
 ---
 name: owner
 description: All-inclusive project view and orchestration. Use this role when reviewing project-wide status, risks, blockers, or orchestrating across multiple workstreams.
-default_entry: /supervisor
+default_entry: /what-next
 
 allowed_commands:
-  - /supervisor
   - /what-next
   - /health
   - /review

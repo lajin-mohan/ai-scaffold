@@ -16,8 +16,8 @@ Captured from `docs/brd/role-based-orchestration-brd.md` v1.1 (2026-05-28).
 | `dev` | Feature implementation, bug fixing, review fixes, commits | `/start-task` |
 | `qa` | Test planning, test generation, QA review, live verification | `/qa-plan` |
 | `architect` | Architecture, API contracts, code review, system risk | `/architecture-review` |
-| `ux` | UX creation, UX review, accessibility, responsive behavior | `/ux-create` |
-| `owner` | All-inclusive project view and orchestration | `/supervisor` |
+| `ux` | UX creation, UX review, accessibility, responsive behavior | `/ux-analyze` |
+| `owner` | All-inclusive project view and orchestration | `/what-next` |
 
 ## V2 Roles (documented, not yet routed)
 
@@ -25,9 +25,9 @@ Captured from `docs/brd/role-based-orchestration-brd.md` v1.1 (2026-05-28).
 
 ## Key Decisions
 
-- **DEC-01:** Use `role`, not `ownerType` or owner type — shorter, clearer
+- **DEC-01:** Use "AI role" in documentation for AI workflow mode — avoids conflict with product user roles in BRDs, UX specs, and permission docs
 - **DEC-02:** Use existing `qa-reviewer` for QA planning/review; keep `/gen-tests` responsible for generation — no new wrapper agents
-- **DEC-03:** Persist role locally in `.claude/settings.local.json` as `role` key — gitignored, per-user
+- **DEC-03:** Persist AI role locally in `.claude/settings.local.json` as `role` key — gitignored, per-user
 - **DEC-04:** Defer graph orchestration to advisory phase — role config must prove useful first
 - **DEC-05:** V1 = 5 roles, V2 = 4 roles — keeps first rollout small
 
@@ -61,7 +61,7 @@ Every QA plan must cover or explicitly mark N/A:
 - Runtime graph engine
 - Role-specific command families (`/dev-*`, `/qa-*`, etc.)
 - Wrapper agents per role
-- Shared committed settings for active role
+- Shared committed settings for active AI role
 - V2 roles until V1 is dogfooded
 
 ## Related
