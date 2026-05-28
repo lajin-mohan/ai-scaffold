@@ -159,6 +159,20 @@ Full rules: `.claude/rules/security-rules.md`
 | **Codex / Cursor** | Executor - writes code against approved specs |
 | **Human** | Approves plans, specs, merges; owns production decisions |
 
+### Role-Based Operating Mode
+
+Pick a role to get relevant commands, evidence requirements, and output styles. Set your active role in `.claude/settings.local.json` as `{"role": "dev"}`.
+
+| Role | Purpose | Default Entry |
+|---|---|---|
+| `dev` | Implementation, bug fixes, commits | `/start-task` |
+| `qa` | Test planning, QA review, verification | `/qa-plan` |
+| `architect` | Architecture, API contracts, system review | `/architecture-review` |
+| `ux` | UX creation, review, accessibility | `/ux-create` |
+| `owner` | Project orchestration, status, risk | `/supervisor` |
+
+Role configs at `.claude/roles/`. Role routing for `/what-next`, `/supervisor`, and `/loop` planned for Phase 3.
+
 ### Claude's Operating Rules
 
 1. **Follow `.claude/rules/ai-coding-rules.md` above all else** — it codifies hallucination guards, plan-and-confirm protocol, production-grade mandate, AI-readability limits, and verification mandate. When this conflicts with another rule file, this wins.
