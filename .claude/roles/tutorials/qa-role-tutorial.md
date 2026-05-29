@@ -244,7 +244,7 @@ Invoke these for deep analysis:
 
 ## Related Files
 
-- Role config: [qa.yaml](qa.yaml)
-- Testing rules: [.claude/rules/testing-rules.md](../rules/testing-rules.md)
-- Test case template: [.claude/templates/test-case-template.md](../templates/test-case-template.md)
-- DoD rules: [.claude/rules/dod-rules.md](../rules/dod-rules.md)
+- Role config: [qa.yaml](../qa.yaml)
+- Testing rules: [.claude/rules/testing-rules.md](../../rules/testing-rules.md)
+- Test case template: [.claude/templates/test-case-template.md](../../templates/test-case-template.md)
+- DoD rules: [.claude/rules/dod-rules.md](../../rules/dod-rules.md)

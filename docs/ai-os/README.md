@@ -38,11 +38,11 @@ Detailed step-by-step tutorials for each role are in `.claude/roles/tutorials/`:
 
 | Role | Tutorial |
 |---|---|
-| `dev` | [.claude/roles/tutorials/dev-role-tutorial.md](../.claude/roles/tutorials/dev-role-tutorial.md) |
-| `qa` | [.claude/roles/tutorials/qa-role-tutorial.md](../.claude/roles/tutorials/qa-role-tutorial.md) |
-| `architect` | [.claude/roles/tutorials/architect-role-tutorial.md](../.claude/roles/tutorials/architect-role-tutorial.md) |
-| `ux` | [.claude/roles/tutorials/ux-role-tutorial.md](../.claude/roles/tutorials/ux-role-tutorial.md) |
-| `owner` | [.claude/roles/tutorials/owner-role-tutorial.md](../.claude/roles/tutorials/owner-role-tutorial.md) |
+| `dev` | [.claude/roles/tutorials/dev-role-tutorial.md](../../.claude/roles/tutorials/dev-role-tutorial.md) |
+| `qa` | [.claude/roles/tutorials/qa-role-tutorial.md](../../.claude/roles/tutorials/qa-role-tutorial.md) |
+| `architect` | [.claude/roles/tutorials/architect-role-tutorial.md](../../.claude/roles/tutorials/architect-role-tutorial.md) |
+| `ux` | [.claude/roles/tutorials/ux-role-tutorial.md](../../.claude/roles/tutorials/ux-role-tutorial.md) |
+| `owner` | [.claude/roles/tutorials/owner-role-tutorial.md](../../.claude/roles/tutorials/owner-role-tutorial.md) |
 
 ## Source of Truth
 

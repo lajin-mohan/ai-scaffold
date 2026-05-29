@@ -1,6 +1,6 @@
-# UX System — Engyne
+# UX System — Techversant
 
-Engyne uses a WorkOS Minimal product language: Jira-like structure, Figma-like precision, and controlled Monday.com-inspired energy. Its core color language is green, yellow, and red rather than blue-heavy SaaS styling.
+Techversant uses a WorkOS Minimal product language: Jira-like structure, Figma-like precision, and controlled Monday.com-inspired energy. Its core color language is green, yellow, and red rather than blue-heavy SaaS styling.
 
 ## Design Principles
 

@@ -229,7 +229,7 @@ User: "We need to integrate Stripe for payments"
 
 ## Related Files
 
-- Role config: [architect.yaml](architect.yaml)
-- API standards: [.claude/rules/api-standards.md](../rules/api-standards.md)
-- Security rules: [.claude/rules/security-rules.md](../rules/security-rules.md)
-- ADR template: [.claude/templates/adr-template.md](../templates/adr-template.md)
+- Role config: [architect.yaml](../architect.yaml)
+- API standards: [.claude/rules/api-standards.md](../../rules/api-standards.md)
+- Security rules: [.claude/rules/security-rules.md](../../rules/security-rules.md)
+- ADR template: [.claude/templates/adr-template.md](../../templates/adr-template.md)

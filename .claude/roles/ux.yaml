@@ -16,6 +16,8 @@ allowed_commands:
   - /reflect
 
 recommended_agents:
+  - ux-requirement-analyst
+  - ux-flow-designer
   - ux-designer
   - frontend-reviewer
 

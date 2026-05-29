@@ -1,38 +1,67 @@
-# UX / Design System
+# UX Design
 
-The default design system for all projects is **Techversant Precision Minimal**, defined in `.claude/skills/design-system.md`. This file is the single source of truth for color tokens, typography, spacing, components, motion, z-index, and layout — referenced by all frontend stack overlays.
-
-Wireframes, user flows, component specs, and Figma links live here when a project needs them.
-
-## Design System Layers
+UX work follows a staged workflow. Each command gates the next — no skipping:
 
 ```
-1. Scaffold baseline (default for all projects)
-   .claude/skills/design-system.md
-
-2. Project-level override (optional — created when brand diverges)
-   apps/web/src/design-system/
-   ├── tokens.css          ← overrides scaffold tokens only
-   ├── components/         ← project-specific component library (optional)
-   └── figma-link.md       ← link to project Figma library (optional)
+BRD approved
+  ↓
+/ux-analyze     → 01-requirements.md   (user roles, screen inventory, risks, open questions)
+  ↓
+/ux-flow        → 02-flows.md           (happy path, error/empty/permission paths, screen transitions)
+  ↓
+/ux-screen-spec → 05-screen-specs.md     (one screen at a time)
+  ↓
+/ux-figma-spec  → 04-design-system-notes.md + 06-figma-spec.md
+  ↓
+Human review    → designer approves Figma frames
+  ↓
+/ux-review      → 07-review.md          (32-item check + 4-viewport browser verification)
+  ↓
+/ux-handoff     → 08-dev-handoff.md     (hard gate before Stage 5)
+  ↓
+Stage 5 execution
 ```
 
-**Rule:** Use the scaffold design system by default. Override only at the project level and only when the product brand genuinely diverges. Do not create ad-hoc styles to fill gaps — if a token is missing from the design system, add it to the design system.
+**Quick fixes and spikes:** Use `/ux-create` directly — single screen, color/spacing changes, UX exploration. Bypasses the staged path.
 
-## Structure
+**Rules:** See `.claude/rules/ux-rules.md` for all 10 hard gates (GH-01 through GH-10).
+
+## Folder Structure
 
 ```
-ux/
+docs/ux/
 ├── README.md              ← this file
-├── {{feature-name}}/
-│   ├── wireframes.md       ← Text-based wireframes from ux-designer agent
-│   ├── component-spec.md   ← Component states and interactions
-│   └── figma-link.md       ← Link to Figma frames
+└── <feature>/
+    ├── 01-requirements.md      ← /ux-analyze output
+    ├── 02-flows.md             ← /ux-flow output
+    ├── 03-screen-inventory.md  ← /ux-analyze output (screen quick-reference)
+    ├── 04-design-system-notes.md ← /ux-figma-spec output
+    ├── 05-screen-specs.md      ← /ux-screen-spec output (one section per screen)
+    ├── 06-figma-spec.md        ← /ux-figma-spec output
+    ├── 07-review.md           ← /ux-review output
+    └── 08-dev-handoff.md       ← /ux-handoff output (hard gate before coding)
 ```
 
-## Process
+## Who Does What
 
-1. UX design phase begins after architecture is approved
-2. Run `/ux-design "feature brief"` or use `@ux-designer` agent
-3. Get stakeholder approval on wireframes before frontend implementation
-4. Link Figma frames here for developer reference
+| Command | Who runs it |
+|---|---|
+| `/ux-analyze` | UX Designer / BA |
+| `/ux-flow` | UX Designer |
+| `/ux-screen-spec` | UX Designer (one screen at a time) |
+| `/ux-figma-spec` | UX Designer |
+| `/ux-review` | UX Designer / Tech Lead |
+| `/ux-handoff` | UX Designer |
+
+PM and stakeholder approval required at each gate before proceeding.
+
+## Design System
+
+Design tokens, component rules, and typography are in `.claude/skills/ux-system/`. All colors come from CSS tokens — no hardcoded brand hex values. Token names match `.claude/skills/design-system.md`.
+
+## Responsive
+
+- Desktop is the primary canvas — enterprise workflows designed for 1280px+
+- Tablet: condensed sidebar at 768px
+- Mobile: approximately 390px — primary workflows must work, no hiding actions behind desktop-only controls
+- Light and dark theme on every page — CSS tokens only, no hardcoded colors

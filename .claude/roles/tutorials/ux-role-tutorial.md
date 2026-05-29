@@ -266,7 +266,7 @@ Invoke these for deep analysis:
 
 ## Related Files
 
-- Role config: [ux.yaml](ux.yaml)
-- Design system: [.claude/skills/design-system.md](../skills/design-system.md)
-- UX system skill: [.claude/skills/ux-system/SKILL.md](../skills/ux-system/SKILL.md)
-- UX rules: [.claude/rules/ux-rules.md](../rules/ux-rules.md)
+- Role config: [ux.yaml](../ux.yaml)
+- Design system: [.claude/skills/design-system.md](../../skills/design-system.md)
+- UX system skill: [.claude/skills/ux-system/SKILL.md](../../skills/ux-system/SKILL.md)
+- UX rules: [.claude/rules/ux-rules.md](../../rules/ux-rules.md)

@@ -44,7 +44,7 @@
 
 ## Navigation
 
-- Top navigation is the primary app navigation for the current Engyne MVP shell.
+- Top navigation is the primary app navigation for the current Techversant MVP shell.
 - Top navigation should use icon + label items where an established icon exists. Keep icons neutral and 20px unless the active state requires stronger hierarchy.
 - Tabs are for peer views inside one page.
 - Breadcrumbs appear at depth greater than one.
@@ -58,7 +58,7 @@
 
 - All components must work in light and dark themes.
 - Use design tokens, CSS variables, or semantic Tailwind classes only; avoid hardcoded page colors.
-- Theme tokens must be resolved from organization branding settings when available, with the Engyne default palette only as fallback.
+- Theme tokens must be resolved from organization branding settings when available, with the Techversant default palette only as fallback.
 - Components must not hardcode organization brand colors, logo colors, chart colors, or focus colors.
 - Icons, borders, focus rings, shadows, chart colors, badges, and empty states must remain readable in both themes.
 - Theme switching must not reset page state, filters, form input, or active selection.
