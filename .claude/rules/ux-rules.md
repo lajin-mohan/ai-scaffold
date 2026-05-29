@@ -18,7 +18,7 @@ Every design decision must justify itself by making the user faster or less conf
 
 ### Color Usage
 
-Use the green/yellow/red palette semantically via semantic tokens. Do not make every active, role, avatar, link, and badge green. All colors come from CSS tokens — never hardcode brand hex values in screens, specs, or components.
+Use semantic tokens (action-primary / success / warning / danger) for meaning. Do not use brand colors directly. All colors come from CSS tokens — never hardcode brand hex values in screens, specs, or components.
 
 | Token | Usage |
 |---|---|

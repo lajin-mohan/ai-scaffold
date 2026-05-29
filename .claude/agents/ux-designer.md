@@ -54,16 +54,29 @@ Convert UX briefs and feature specs into:
 
 Full UX system source of truth lives in `.claude/skills/ux-system/`. Use `/ux-create` for generation workflows and `/ux-review` for validation. Key values:
 
-### Colors
-```
-Primary:    #00C875  Primary Green    Surface: #FFFFFF
-Success:    #00C875  Work Green      Insight: #FFCB00 Focus Yellow
-Warning:    #FFCB00  Focus Yellow    Error:   #FF3B30 Alert Red
-Text:       #172B4D (Ink) · #44546F (Slate) · #626F86 (muted)
-Background: #F4F5F7 Mist             Border:  #DFE1E6 default · #00C875 focus
-```
+### Colors (semantic tokens)
 
-Use the green/yellow/red palette semantically. Do not make every active, role, avatar, link, and badge green. Green is for primary action, focus/selection, and success/active status; yellow is for pending/review/attention; red is for blocked/error/destructive. Role badges are neutral by default.
+Use semantic tokens only — never brand names or hardcoded hex values in screens, specs, or components.
+
+| Token | Default | Usage |
+|---|---|---|
+| `--color-action-primary` | `#00C875` | Primary action, links, focus/selection |
+| `--color-action-primary-hover` | `#00A866` | Primary hover/pressed |
+| `--color-action-primary-soft` | `#E6FAF1` | Subtle active backgrounds |
+| `--color-success` | `#00C875` | Active/approved status |
+| `--color-warning` | `#FFCB00` | Pending/review/attention |
+| `--color-danger` | `#FF3B30` | Blocked/error/destructive |
+| `--color-bg-app` | `#F4F5F7` | App background |
+| `--color-bg-surface` | `#FFFFFF` | Cards, panels, inputs |
+| `--color-bg-muted` | `#F4F5F7` | Table headers, subtle areas |
+| `--color-text-primary` | `#172B4D` | Headings, primary text |
+| `--color-text-secondary` | `#44546F` | Labels, captions |
+| `--color-text-muted` | `#626F86` | Placeholder, disabled |
+| `--color-border` | `#DFE1E6` | Borders, dividers |
+| `--color-border-strong` | `#C1C7D0` | Emphasized borders |
+| `--color-border-focus` | `#00C875` | Focus rings |
+
+Role badges are neutral by default — semantic color only when status is the message.
 
 ### Typography
 ```

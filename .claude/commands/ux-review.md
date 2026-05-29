@@ -33,7 +33,7 @@ Review a UI implementation or UX artifact against the centralized UX system.
 - dark/light theme support
 - token-based colors for theme switching
 - organization branding override compatibility
-- semantic use of green/yellow/red without overusing green as decoration
+- semantic color tokens (action-primary / success / warning / danger) without overusing action-primary as decoration
 - top navigation icon + label clarity, restrained active underline, and neutral inactive states
 - shell theme toggle accessibility and state preservation
 

@@ -181,7 +181,7 @@ Every screen must define all seven states:
 ## Design System Reference
 
 Reference `.claude/skills/ux-system/SKILL.md` for:
-- Color tokens (green/yellow/red semantic usage)
+- Semantic color tokens (action-primary / success / warning / danger)
 - Typography scale (Inter 400/500/600/700)
 - Spacing (8pt grid)
 - Key component specs (input, button, card, table, badge, modal, toast, nav)

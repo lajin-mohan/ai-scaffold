@@ -84,7 +84,7 @@
 - Use semantic color plus text/icon.
 - Status badges should be consistent across the product.
 - Do not invent per-screen status names unless domain requires it.
-- Role badges default to neutral. Use green/yellow/red role styling only when it communicates a meaningful operational state, risk, or approval concept.
+- Role badges default to neutral. Use semantic color tokens (action-primary / success / warning / danger) only when it communicates a meaningful operational state, risk, or approval concept.
 
 ## Accessibility
 

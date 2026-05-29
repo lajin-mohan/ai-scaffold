@@ -76,6 +76,6 @@ Dashboards must:
 
 ## Visual Tone
 
-Base surfaces are calm and neutral. Accent colors create energy only where they carry meaning: selected state, primary action, success, warning, insight, risk, or destructive action. Do not overuse green as generic decoration; if navigation uses green/primary, cards and badges should usually stay neutral unless they represent real status. Avoid blue as a dominant accent; use it only for external brand requirements or unavoidable third-party conventions.
+Base surfaces are calm and neutral. Accent colors create energy only where they carry meaning: selected state, primary action, success, warning, insight, risk, or destructive action. Do not overuse action-primary/semantic tokens as generic decoration; if navigation uses action-primary, cards and badges should usually stay neutral unless they represent real status. Avoid blue as a dominant accent; use it only for external brand requirements or unavoidable third-party conventions.
 
 Brand and theme colors are tenant/organization configurable. Designs must specify token roles and semantic usage, not fixed brand hex values inside screens. Organization branding may override the default palette for primary/action colors, logos, and theme values; the UI must continue to meet contrast and state clarity requirements after overrides.

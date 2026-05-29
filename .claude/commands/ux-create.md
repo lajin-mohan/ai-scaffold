@@ -39,7 +39,7 @@ This path produces requirements, flows, screen specs, design tokens, and a devel
 - Use Figma-inspired typography and spacing.
 - Use Jira-inspired layout efficiency.
 - Use Monday-inspired visual energy carefully.
-- Use the green/yellow/red palette semantically; avoid overusing green across navigation, avatars, role badges, action links, and status chips on the same screen.
+- Use semantic tokens (action-primary / success / warning / danger) for meaning. Do not use brand colors directly; all colors come from CSS variables. Avoid overusing action-primary across navigation, avatars, role badges, action links, and status chips on the same screen.
 - Maintain enterprise readability and operational clarity.
 - Support responsive layouts and accessibility.
 - Include dark/light theme considerations.

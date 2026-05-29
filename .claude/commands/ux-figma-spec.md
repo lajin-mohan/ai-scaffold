@@ -38,7 +38,7 @@ Read `docs/ux/<feature>/05-screen-specs.md` in full.
 ### Step 2 — Read Design System
 
 Reference `.claude/skills/ux-system/SKILL.md` for:
-- Color tokens (green/yellow/red semantic usage)
+- Semantic color tokens (action-primary / success / warning / danger)
 - Typography scale (Inter 400/500/600/700)
 - Spacing (8pt grid)
 - Key component specs
