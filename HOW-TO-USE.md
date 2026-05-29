@@ -34,7 +34,7 @@ Not sure where to begin? Pick your AI role and use the default entry:
 | **ux** | `/ux-analyze` | Creating full UX flows, reviewing UX, checking accessibility |
 | **owner** | `/what-next` | Project status, orchestration, cross-cutting view |
 
-Set your active AI role in `.claude/settings.local.json` as `{"role": "dev"}`. Human guide: `docs/ai-role/`. Configs: `.claude/roles/`.
+Set your active AI role in `.claude/settings.local.json` as `{"role": "dev"}`. Role tutorials: `.claude/roles/tutorials/`. Human overview: `docs/ai-os/`.
 
 ---
 
@@ -167,16 +167,26 @@ Validates the design against project invariants. Address all BLOCK findings befo
 
 ### Stage 4 — UX Design
 
-**Goal:** Wireframes, component specs, Figma handoff. No coding until UX is approved.
+**Goal:** Requirements → flows → screen specs → design tokens → Figma → review → handoff. No coding until UX is approved and `/ux-handoff` exists.
 **Who:** UX Designer / PM
 
+UX work follows a staged path. Each command gates the next — no skipping:
+
 ```
-@ux-designer Design the UI for: [feature from approved architecture]
+1. /ux-analyze     → docs/ux/<feature>/01-requirements.md  (user roles, screen inventory, risks)
+2. /ux-flow        → docs/ux/<feature>/02-flows.md          (happy path, error/empty/permission paths)
+3. /ux-screen-spec → docs/ux/<feature>/05-screen-specs.md   (one screen at a time)
+4. /ux-figma-spec  → 04-design-system-notes.md + 06-figma-spec.md  (tokens, frame structure)
+5. Human review    → designer approves Figma frames
+6. /ux-review      → 32-item check + 4-viewport browser verification
+7. /ux-handoff    → docs/ux/<feature>/08-dev-handoff.md     (hard gate before Stage 5)
 ```
 
-Produces: text wireframes, component spec, responsive behaviour, empty/loading/error states.
+For quick fixes and spikes (single screen, color/spacing), use `/ux-create` directly — bypass the staged path.
 
-**Gate 4 exit:** UX approved by PM + stakeholder.
+See `.claude/rules/ux-rules.md` for all 10 hard gates. UX role tutorials: `.claude/roles/tutorials/ux-role-tutorial.md`.
+
+**Gate 4 exit:** `/ux-handoff` exists + `/ux-review` passed + PM/stakeholder approved.
 
 ---
 
@@ -411,8 +421,13 @@ For escalations:
 | `/qa-review` | Stage 8 — QA coverage review | Validates traceability, independence, data isolation, CI commands. Severity: BLOCK/HIGH/MEDIUM/LOW |
 | `/qa-auth` | Stage 8 — auth-specific test planning | Auth test matrix for login, logout, session, token, protected routes, tenant isolation |
 | `/commit-changes` | Any time — before commit/merge | Branch safety check, unrelated-changes detection, verification evidence requirement, optional dev/main promotion |
-| `/ux-create` | Stage 4 — UX design | Enterprise UX design via ux-system skills, desktop-first, 390px mobile check, light/dark theme |
-| `/ux-review` | Stage 6 — UX verification | 32-item check + 4-viewport browser verification (desktop L/D + mobile L/D at 390px) |
+| `/ux-create` | Stage 4 — quick fixes/spikes | Single-screen UX improvements, color/spacing changes, UX exploration (not the primary path) |
+| `/ux-analyze` | Stage 4 — UX requirements | Extracts UX requirements from BRD: user roles, screen inventory, risks, open questions |
+| `/ux-flow` | Stage 4 — UX flows | Happy path, error/empty/permission flows, screen-to-screen transitions |
+| `/ux-screen-spec` | Stage 4 — screen specs | One screen at a time: layout, component hierarchy, CTA, states, responsive, Figma notes |
+| `/ux-figma-spec` | Stage 4 — design tokens | CSS token mapping, component library, spacing/type/grid rules, Figma frame structure |
+| `/ux-review` | Stage 4/6 — UX verification | 32-item check + 4-viewport browser verification (desktop L/D + mobile L/D at 390px) |
+| `/ux-handoff` | Stage 4 — dev handoff | Developer-ready checklist: components, state matrix, tokens, responsive, Figma link (hard gate before Stage 5) |
 | `/loop` | Stage 5 — autonomous task queue | Execute numbered task list with one-approval contract. Stop conditions prevent scope creep. |
 
 ---
@@ -424,7 +439,9 @@ For escalations:
 | `solution-analyst` | Before writing BRD — when a feature request arrives | `@solution-analyst [request]` |
 | `architect` | Stage 3 — system design, HLD, LLD | `@architect [feature/question]` |
 | `api-architect` | Stage 3 — new endpoints | `@api-architect [endpoint spec]` |
-| `ux-designer` | Stage 4 — wireframes | `@ux-designer [feature]` |
+| `ux-requirement-analyst` | Stage 4 — UX requirements | `@ux-requirement-analyst [feature]` — produces 01-requirements.md |
+| `ux-flow-designer` | Stage 4 — UX flows | `@ux-flow-designer [feature]` — produces 02-flows.md |
+| `ux-designer` | Stage 4 — screen specs | `@ux-designer [screen]` — produces screen-level layout, states, Figma notes |
 | `estimator` | Stage 2/3 — sizing | `@estimator [scope]` |
 | `pm` | Cross-cutting — comms, CRs, sprint health | `@pm [task]` |
 | `backend-reviewer` | Stage 6 — code review | via `/review` or `@backend-reviewer` |

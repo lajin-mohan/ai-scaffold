@@ -84,6 +84,6 @@ AI role routing for `/what-next` and `/loop` is planned for Phase 3 — after V1
 ## See Also
 
 - BRD: `docs/brd/role-based-orchestration-brd.md`
-- Human guide: `docs/ai-role/README.md`
+- Human guide: `docs/ai-os/README.md`
 - Decisions: `.claude/memory/role-based-orchestration.md`
 - Cleanup plan: `docs/process/scaffold-cleanup-review-plan.md`

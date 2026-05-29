@@ -32,11 +32,21 @@ File:
 
 This file is gitignored and per-user.
 
+## Role Tutorials
+
+Detailed step-by-step tutorials for each role are in `.claude/roles/tutorials/`:
+
+| Role | Tutorial |
+|---|---|
+| `dev` | [.claude/roles/tutorials/dev-role-tutorial.md](../.claude/roles/tutorials/dev-role-tutorial.md) |
+| `qa` | [.claude/roles/tutorials/qa-role-tutorial.md](../.claude/roles/tutorials/qa-role-tutorial.md) |
+| `architect` | [.claude/roles/tutorials/architect-role-tutorial.md](../.claude/roles/tutorials/architect-role-tutorial.md) |
+| `ux` | [.claude/roles/tutorials/ux-role-tutorial.md](../.claude/roles/tutorials/ux-role-tutorial.md) |
+| `owner` | [.claude/roles/tutorials/owner-role-tutorial.md](../.claude/roles/tutorials/owner-role-tutorial.md) |
+
 ## Source of Truth
 
-Machine-readable AI role configs live in `.claude/roles/`.
-
-This folder is the human-readable guide layer. Keep it short and link to command docs instead of duplicating every workflow.
+Machine-readable AI role configs (allowed commands, blocked actions, evidence gates) live in `.claude/roles/*.yaml`. This folder is the human-readable guide layer — short and linking to the details, not duplicating them.
 
 ## Naming Rule
 

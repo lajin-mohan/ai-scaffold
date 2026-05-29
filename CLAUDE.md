@@ -171,7 +171,7 @@ Pick an AI role to get relevant commands, evidence requirements, and output styl
 | `ux` | UX creation, review, accessibility | `/ux-analyze` |
 | `owner` | Project orchestration, status, risk | `/what-next` |
 
-AI role configs live at `.claude/roles/`. Human-facing AI role docs live at `docs/ai-role/`. AI role routing for `/what-next` and `/loop` is planned for Phase 3.
+AI role configs live at `.claude/roles/`. Human-facing AI role docs live at `docs/ai-os/`. AI role routing for `/what-next` and `/loop` is planned for Phase 3.
 
 ### Claude's Operating Rules
 

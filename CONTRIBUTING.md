@@ -18,7 +18,7 @@ Welcome. This project follows the Techversant AI development workflow — every 
 
 # 2. Set your AI role in .claude/settings.local.json
 #    {"role": "dev"}  # dev | qa | architect | ux | owner
-#    Guide: docs/ai-role/
+#    Guide: docs/ai-os/
 
 # 3. See where the project stands
 /what-next
