@@ -54,8 +54,8 @@ Create `docs/ux/<feature>/04-design-system-notes.md`:
 ## Token Usage
 | Token | Used On | Reason |
 |---|---|---|
-| --color-primary | primary buttons, links | semantic |
-| --color-surface | cards, modals, inputs | base surface |
+| `--color-action-primary` | primary buttons, links | semantic |
+| `--color-bg-surface` | cards, modals, inputs | base surface |
 
 ## Component Library Mapping
 | Screen Component | Library Component | Token Override |

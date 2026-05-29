@@ -7,53 +7,42 @@ Brand direction: **WorkOS Minimal** — Jira-like simplicity and density with co
 ## Color Tokens
 
 ### Core Palette
-| Token | Hex | Usage |
-|---|---|---|
-| `--color-primary` | `#00C875` | Primary action, links, active navigation, focus, success |
-| `--color-green-hover` | `#00A866` | Primary hover/pressed state |
-| `--color-green-soft` | `#E6FAF1` | Primary/action backgrounds, success badge background |
-| `--color-deep-green` | `#007A4D` | Green text on light backgrounds |
-| `--color-focus-yellow` | `#FFCB00` | Warnings, attention, pending review |
-| `--color-alert-red` | `#FF3B30` | Error, destructive, blocked, overdue |
-| `--color-ink` | `#172B4D` | Primary text, headings |
-| `--color-slate` | `#44546F` | Secondary text, labels, icons |
-| `--color-mist` | `#F4F5F7` | App background, table headers, subtle surfaces |
-| `--color-surface` | `#FFFFFF` | Cards, panels, inputs |
-| `--color-white` | `#FFFFFF` | Alias for surface where needed |
-| `--color-primary` | `#00C875` | Alias for primary action |
-| `--color-primary-hover` | `#00A866` | Primary hover/pressed state |
 
-### Semantic Colors — Full Scale
+Scaffold projects use a **3-layer token model**:
+- **Brand/Base tokens** — raw palette values set in the centralized default theme file
+- **Semantic tokens** — purpose-driven names used in all screens, specs, and components
+- **Component tokens** — optional stable internal aliases for components
+
+**Always use semantic tokens in components.** Never use brand names or hex literals directly.
+
+### Semantic Tokens (use these)
 | Token | Hex | Usage |
 |---|---|---|
-| `--color-success-50` | `#E6FCF2` | Success alert/badge background |
-| `--color-success-200` | `#9AF0C9` | Success border |
-| `--color-success-500` | `#00C875` | Success icon, indicator |
-| `--color-success-700` | `#008F56` | Success text on light background |
-| `--color-warning-50` | `#FFF7CC` | Warning alert/badge background |
-| `--color-warning-200` | `#FFE680` | Warning border |
-| `--color-warning-500` | `#FFCB00` | Warning icon, indicator |
-| `--color-warning-700` | `#946F00` | Warning text on light background |
-| `--color-error-50` | `#FFECEB` | Error alert/badge background |
-| `--color-error-200` | `#FFB8B3` | Error border |
-| `--color-error-500` | `#FF3B30` | Error icon, indicator, destructive button |
-| `--color-error-700` | `#BF1D15` | Error text on light background |
-| `--color-info-50` | `#E6FAF1` | Info alert/badge background |
-| `--color-info-200` | `#9AF0C9` | Info border |
-| `--color-info-500` | `#00C875` | Info icon, indicator |
-| `--color-info-700` | `#007A4D` | Info text on light background |
-| `--color-insight-50` | `#FFF7CC` | AI/insight badge background |
-| `--color-insight-200` | `#FFE680` | AI/insight border |
-| `--color-insight-500` | `#FFCB00` | AI/insight icon, indicator |
-| `--color-insight-700` | `#946F00` | AI/insight text on light background |
+| `--color-action-primary` | `#00C875` | Primary action, links, focus, selection |
+| `--color-action-primary-hover` | `#00A866` | Primary hover/pressed state |
+| `--color-action-primary-soft` | `#E6FAF1` | Subtle active backgrounds |
+| `--color-success` | `#00C875` | Active/approved status (same as action-primary) |
+| `--color-warning` | `#FFCB00` | Pending/review/attention |
+| `--color-danger` | `#FF3B30` | Error/blocked/destructive |
+| `--color-bg-app` | `#F4F5F7` | App background |
+| `--color-bg-surface` | `#FFFFFF` | Cards, panels, inputs |
+| `--color-bg-muted` | `#F4F5F7` | Table headers, subtle areas |
+| `--color-text-primary` | `#172B4D` | Primary text, headings |
+| `--color-text-secondary` | `#44546F` | Secondary text, labels |
+| `--color-text-muted` | `#626F86` | Placeholder, disabled |
+| `--color-border` | `#DFE1E6` | Default borders, dividers |
+| `--color-border-strong` | `#C1C7D0` | Emphasized borders |
+| `--color-border-focus` | `#00C875` | Focus rings |
+
+For the complete token system including dark mode values, brand/base token definitions, and component-level token aliases, see [.claude/skills/ux-system/DESIGN_TOKENS.md](.claude/skills/ux-system/DESIGN_TOKENS.md).
+
+### Status Color Scale
+
+Full scale with background/border/text variants for success, warning, danger states. See [DESIGN_TOKENS.md](.claude/skills/ux-system/DESIGN_TOKENS.md) for the complete 50/200/500/700 status scale.
 
 ### Text Colors
-| Token | Hex | Usage |
-|---|---|---|
-| `--color-text-primary` | `#172B4D` | Primary body text, headings |
-| `--color-text-secondary` | `#44546F` | Secondary text, labels, captions |
-| `--color-text-muted` | `#626F86` | Placeholder text, disabled states |
-| `--color-text-inverse` | `#FFFFFF` | Text on dark backgrounds |
+
+Text colors are covered by the semantic tokens above. For component-specific text treatment, see the component patterns below.
 
 ### Border Colors
 | Token | Hex | Usage |
@@ -70,34 +59,46 @@ Activated via `.dark` class on `<html>` or `prefers-color-scheme: dark`.
 
 Every page, component, chart, form, table, modal, drawer, and empty/loading/error state must support both light and dark themes. Use semantic tokens for backgrounds, text, borders, focus rings, status colors, and shadows; do not hardcode page-level colors that break theme switching.
 
-Theme colors are organization-configurable. The values in this document are the project default palette only. Product UI must consume CSS variables/design tokens resolved from organization branding settings, so each organization can override brand colors, logo, and theme choices without code changes. Hardcoded brand hex values are allowed only in the centralized token/default-branding definition, tests for that definition, and documentation examples.
+Theme colors are organization-configurable. The values in this document are the project default palette only. Product UI must consume CSS variables/design tokens resolved from organization branding settings, so each organization can override brand colors, logo, and theme choices without code changes.
 
-| Light Token | Dark Value | Notes |
+| Semantic Token | Light | Dark |
 |---|---|---|
-| `--color-primary` | `#21D789` | Primary action, success, productive on dark surfaces |
-| `--color-green-soft` | `#123F2F` | Subtle green background on dark surfaces |
-| `--color-deep-green` | `#7BE7B7` | Green text on dark backgrounds |
-| `--color-focus-yellow` | `#FFD84D` | Warning/attention on dark surfaces |
-| `--color-alert-red` | `#FF6B63` | Error/destructive on dark surfaces |
-| `--color-ink` | `#E6EDF7` | Primary text inverts |
-| `--color-slate` | `#A9B4C5` | Secondary text |
-| `--color-mist` | `#0F1724` | App background |
-| `--color-surface` | `#161E2E` | Cards, panels, inputs |
-| `--color-white` | `#161E2E` | Alias for dark surface |
-| `--color-primary` | `#21D789` | Primary action |
-| `--color-primary-hover` | `#57E5A3` | Primary hover/pressed |
-| `--color-text-primary` | `#E6EDF7` | |
-| `--color-text-secondary` | `#A9B4C5` | |
-| `--color-text-muted` | `#7A869A` | |
-| `--color-border` | `#2B3445` | Subtle dark border |
-| `--color-border-strong` | `#44546F` | |
+| `--color-action-primary` | `#00C875` | `#21D789` |
+| `--color-action-primary-hover` | `#00A866` | `#57E5A3` |
+| `--color-action-primary-soft` | `#E6FAF1` | `#123F2F` |
+| `--color-success` | `#00C875` | `#21D789` |
+| `--color-warning` | `#FFCB00` | `#FFD84D` |
+| `--color-danger` | `#FF3B30` | `#FF6B63` |
+| `--color-bg-app` | `#F4F5F7` | `#0F1724` |
+| `--color-bg-surface` | `#FFFFFF` | `#161E2E` |
+| `--color-bg-muted` | `#F4F5F7` | `#0F1724` |
+| `--color-text-primary` | `#172B4D` | `#E6EDF7` |
+| `--color-text-secondary` | `#44546F` | `#A9B4C5` |
+| `--color-text-muted` | `#626F86` | `#7A869A` |
+| `--color-border` | `#DFE1E6` | `#2B3445` |
+| `--color-border-strong` | `#C1C7D0` | `#44546F` |
+| `--color-border-focus` | `#00C875` | `#21D789` |
+
+For full dark mode implementation pattern and the complete token system including status scale, see [DESIGN_TOKENS.md](.claude/skills/ux-system/DESIGN_TOKENS.md).
 
 ```css
 /* Implementation pattern */
-:root { --color-mist: #F4F5F7; --color-surface: #FFFFFF; }
-.dark { --color-mist: #0F1724; --color-surface: #161E2E; }
+:root {
+  --color-bg-app: #F4F5F7;
+  --color-bg-surface: #FFFFFF;
+  --color-text-primary: #172B4D;
+}
+.dark {
+  --color-bg-app: #0F1724;
+  --color-bg-surface: #161E2E;
+  --color-text-primary: #E6EDF7;
+}
 @media (prefers-color-scheme: dark) {
-  :root:not(.light) { --color-mist: #0F1724; --color-surface: #161E2E; }
+  :root:not(.light) {
+    --color-bg-app: #0F1724;
+    --color-bg-surface: #161E2E;
+    --color-text-primary: #E6EDF7;
+  }
 }
 ```
 
@@ -217,9 +218,9 @@ Theme colors are organization-configurable. The values in this document are the 
 - States:
   - Default: border `--color-border`
   - Focus: border `--color-border-focus` + `--shadow-focus`
-  - Error: border `--color-error-500` + `--shadow-focus-error`
-  - Disabled: 50% opacity, `cursor: not-allowed`, bg `--color-surface`
-  - Read-only: bg `--color-surface`, no focus ring
+  - Error: border `--color-danger` + `--shadow-focus-error`
+  - Disabled: 50% opacity, `cursor: not-allowed`, bg `--color-bg-surface`
+  - Read-only: bg `--color-bg-surface`, no focus ring
 
 ### Textarea
 - Same as Input, min-height: 80px, padding: 8px 12px, resize: vertical
@@ -228,17 +229,17 @@ Theme colors are organization-configurable. The values in this document are the 
 ### Select / Dropdown
 - Same height and border as Input
 - Custom chevron icon (Lucide `ChevronDown` 16px, `--color-text-secondary`)
-- Dropdown panel: bg `--color-white`, border `--color-border`, `--shadow-md`, `--radius-lg`, `--z-dropdown`
+- Dropdown panel: bg `--color-bg-surface`, border `--color-border`, `--shadow-md`, `--radius-lg`, `--z-dropdown`
 - Option height: 36px, padding: 0 12px
-- Option hover: bg `--color-surface`
-- Option selected: bg `--color-info-50`, text `--color-info-700`, checkmark icon right-aligned
+- Option hover: bg `--color-bg-surface`
+- Option selected: bg `--color-action-primary-soft`, text `--color-action-primary`, checkmark icon right-aligned
 - Max visible options: 6 (scroll beyond)
 
 ### Checkbox
 - Size: 16×16px, border-radius: `--radius-sm` (4px)
 - Unchecked: border 1.5px `--color-border-strong`
-- Checked: bg `--color-primary`, border `--color-primary`, white checkmark icon
-- Indeterminate: bg `--color-primary`, horizontal dash
+- Checked: bg `--color-action-primary`, border `--color-action-primary`, white checkmark icon
+- Indeterminate: bg `--color-action-primary`, horizontal dash
 - Focus: `--shadow-focus`
 - Disabled: 50% opacity
 - Label: Inter 14px, 8px gap from checkbox
@@ -246,39 +247,39 @@ Theme colors are organization-configurable. The values in this document are the 
 ### Radio
 - Size: 16×16px, border-radius: `--radius-full`
 - Unchecked: border 1.5px `--color-border-strong`
-- Checked: outer border `--color-primary`, inner fill circle 8px `--color-primary`
+- Checked: outer border `--color-action-primary`, inner fill circle 8px `--color-action-primary`
 - Focus: `--shadow-focus`
 
 ### Toggle / Switch
 - Track: 36×20px, border-radius: `--radius-full`
 - Off: track bg `--color-border-strong`
-- On: track bg `--color-primary`
-- Thumb: 16px circle, bg `--color-white`, `--shadow-xs`
+- On: track bg `--color-action-primary`
+- Thumb: 16px circle, bg `--color-bg-surface`, `--shadow-xs`
 - Transition: `--motion-fast`
 - Size sm: 28×16px, thumb 12px
 
 ### Button — Primary
-- Background: `--color-primary`
-- Text: `--color-white`, Inter 600 14px
+- Background: `--color-action-primary`
+- Text: `--color-bg-surface`, Inter 600 14px
 - Height: 40px, padding: 0 16px, radius: `--radius-md`
-- Hover: bg `--color-primary-hover`
+- Hover: bg `--color-action-primary-hover`
 - Active: bg `#0055CC`
 - Disabled: 40% opacity, `cursor: not-allowed`
 - Loading: spinner replaces or precedes label
 
 ### Button — Secondary
 - Border: 1px solid `--color-border`, bg transparent, text `--color-text-primary`
-- Hover: bg `--color-surface`
+- Hover: bg `--color-bg-surface`
 - Active: bg `--color-border`
 
 ### Button — Ghost
 - No border, no background, text `--color-text-primary`
-- Hover: bg `--color-surface`
+- Hover: bg `--color-bg-surface`
 - Use for: tertiary actions, icon buttons in toolbars
 
 ### Button — Destructive
-- Background: `--color-error-500`, text `--color-white`
-- Hover: bg `--color-error-700`
+- Background: `--color-danger`, text `--color-bg-surface`
+- Hover: bg `#BF1D15`
 
 ### Button Sizes
 | Size | Height | Padding | Font |
@@ -293,7 +294,7 @@ Theme colors are organization-configurable. The values in this document are the 
 - Use for: toggle groups, segmented controls
 
 ### Card
-- Background: `--color-white`
+- Background: `--color-bg-surface`
 - Border: 1px solid `--color-border`
 - Radius: `--radius-lg` (12px)
 - Shadow: `--shadow-sm`
@@ -305,11 +306,11 @@ Theme colors are organization-configurable. The values in this document are the 
   - Interactive (clickable): hover `--shadow-md`, `cursor: pointer`, transition `--motion-fast`
 
 ### Table
-- Header: bg `--color-mist`, text `--color-text-secondary`, Inter 600 12px, letter-spacing 0
+- Header: bg `--color-bg-muted`, text `--color-text-secondary`, Inter 600 12px, letter-spacing 0
 - Row height: 52px
-- Row hover: bg `--color-mist`
+- Row hover: bg `--color-bg-muted`
 - Border: 1px solid `--color-border` between rows
-- Selected row: bg `--color-info-50`
+- Selected row: bg `--color-action-primary-soft`
 - Sticky header: `position: sticky; top: 0; z-index: --z-raised`
 - Empty state: centered illustration + message, full table height
 
@@ -318,36 +319,37 @@ Theme colors are organization-configurable. The values in this document are the 
 - Font: Inter 600 12px
 - Padding: 2px 8px
 - Variants (background / text):
-  - Default: `--color-surface` / `--color-text-secondary`
+  - Default: `--color-bg-surface` / `--color-text-secondary`
   - Success: `--color-success-50` / `--color-success-700`
   - Warning: `--color-warning-50` / `--color-warning-700`
-  - Error: `--color-error-50` / `--color-error-700`
-  - Info: `--color-info-50` / `--color-info-700`
-  - Insight: `--color-purple-50` / `--color-purple-700`
+  - Error: `--color-danger-50` / `--color-danger-700`
+  - Info: `--color-action-primary-soft` / `--color-action-primary`
 - With dot: 6px filled circle, same color as text, 6px left of label
 - Dismissible: ×icon 12px, 4px left margin
+
+Status color scale: `--color-success-50`/`--color-success-700`, `--color-warning-50`/`--color-warning-700`, `--color-danger-50`/`--color-danger-700` are defined in [DESIGN_TOKENS.md](.claude/skills/ux-system/DESIGN_TOKENS.md).
 
 ### Avatar
 - Shape: circle (`--radius-full`)
 - Sizes: 24px (xs) · 32px (sm) · 40px (md) · 48px (lg) · 64px (xl)
 - Image: `object-fit: cover`
-- Fallback — initials: bg `--color-info-50`, text `--color-info-700`, Inter 600
+- Fallback — initials: bg `--color-action-primary-soft`, text `--color-action-primary`, Inter 600
 - Fallback — icon: `User` icon from Lucide, `--color-text-secondary`
 - Avatar group: -8px overlap, white ring 2px
 
 ### Tabs
 - Tab height: 40px
-- Active indicator: 2px bottom border `--color-primary`
+- Active indicator: 2px bottom border `--color-action-primary`
 - Active text: `--color-text-primary`, Inter 600 14px
 - Inactive text: `--color-text-secondary`
 - Hover: text `--color-text-primary`
 - Container border-bottom: 1px solid `--color-border`
-- Variant — Pill tabs: active bg `--color-primary`, text white, radius `--radius-md`, no bottom border
+- Variant — Pill tabs: active bg `--color-action-primary`, text white, radius `--radius-md`, no bottom border
 
 ### Pagination
 - Page button: 32×32px, radius `--radius-md`
-- Active: bg `--color-primary`, text white
-- Inactive: text `--color-text-secondary`, hover bg `--color-surface`
+- Active: bg `--color-action-primary`, text white
+- Inactive: text `--color-text-secondary`, hover bg `--color-bg-surface`
 - Prev/Next arrows: Lucide `ChevronLeft` / `ChevronRight`, 20px
 - Disabled arrows: 40% opacity
 - Show: current page, total pages, items per page select
@@ -359,7 +361,7 @@ Theme colors are organization-configurable. The values in this document are the 
 - Overflow: truncate middle items with `…` when > 4 levels
 
 ### Tooltip
-- Background: `#0F1724` (dark) or `--color-white` with border (light variant)
+- Background: `#0F1724` (dark) or `--color-bg-surface` with border (light variant)
 - Text: Inter 12px, `--color-text-inverse` (dark) or `--color-text-primary` (light)
 - Padding: 6px 10px, radius: `--radius-sm`
 - Arrow: 6px triangle
@@ -380,7 +382,7 @@ Theme colors are organization-configurable. The values in this document are the 
 
 ### Modal / Dialog
 - Backdrop: `rgba(0,0,0,0.5)`, `--z-modal`
-- Panel: bg `--color-white`, radius `--radius-xl`, `--shadow-lg`
+- Panel: bg `--color-bg-surface`, radius `--radius-xl`, `--shadow-lg`
 - Sizes: sm 400px · md 560px · lg 720px · full-screen
 - Header: title Inter 600 16px + optional close button (×)
 - Footer: right-aligned buttons — cancel (secondary) left, confirm (primary or destructive) right
@@ -399,9 +401,9 @@ Theme colors are organization-configurable. The values in this document are the 
 
 ### Sidebar Navigation
 - Width: `--layout-sidebar` (256px), collapsed: `--layout-sidebar-collapsed` (64px)
-- Background: `--color-surface` (light) or `#0F1724` (dark variant)
+- Background: `--color-bg-surface` (light) or `#0F1724` (dark variant)
 - Nav item height: 40px, padding: 0 12px, radius: `--radius-md`
-- Active: bg `--color-primary`, text white, icon white
+- Active: bg `--color-action-primary`, text white, icon white
 - Hover: bg `--color-border`
 - Icon: Lucide 20px, 12px gap to label
 - Group label: Inter 600 11px, `--color-text-muted`, 16px top margin
@@ -410,10 +412,10 @@ Theme colors are organization-configurable. The values in this document are the 
 
 ### Stepper / Progress
 - Step indicator: circle 32px, Inter 600 14px
-- Complete: filled `--color-primary`, white checkmark
-- Active: border 2px `--color-primary`, `--color-primary` number
+- Complete: filled `--color-action-primary`, white checkmark
+- Active: border 2px `--color-action-primary`, `--color-action-primary` number
 - Inactive: border 1px `--color-border`, `--color-text-muted` number
-- Connector: 1px line `--color-border`, filled `--color-primary` when step complete
+- Connector: 1px line `--color-border`, filled `--color-action-primary` when step complete
 - Label below: Inter 12px
 - Vertical variant: for sidebars and complex flows
 
@@ -433,7 +435,7 @@ Theme colors are organization-configurable. The values in this document are the 
 
 ### Helper Text
 - Placed below the input, 4px gap, `body-sm` 12px, `--color-text-secondary`
-- Error text: replaces helper text, `--color-error-700`, with error icon 14px
+- Error text: replaces helper text, `--color-danger-700`, with error icon 14px
 - Always associate with input via `aria-describedby`
 
 ### Field Grouping

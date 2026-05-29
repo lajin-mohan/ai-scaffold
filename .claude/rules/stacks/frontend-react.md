@@ -89,7 +89,7 @@ return <UserCard user={user} />
 - **Use CSS Variables for theming** — this is the preferred pattern for all color work:
   ```tsx
   // CORRECT — CSS variable pattern (auto dark mode support)
-  className="bg-[var(--color-surface)] text-[var(--color-text-primary)] border-[var(--color-border)]"
+  className="bg-[var(--color-bg-surface)] text-[var(--color-text-primary)] border-[var(--color-border)]"
 
   // DEPRECATED — Tailwind dark: variants (being phased out)
   className="bg-surface dark:bg-surface-dark text-ink dark:text-ink-light"
@@ -97,12 +97,18 @@ return <UserCard user={user} />
 - **Design system tokens only** — no hardcoded colors, spacing, or font sizes.
 - **Organization branding aware** — brand/theme colors come from organization settings through CSS variables, with defaults only in centralized `index.css` files.
 - **Available tokens** (defined in `apps/web/src/index.css`):
-  - `--color-surface` — cards, modals, inputs, header
-  - `--color-surface-muted` — subtle nested areas, table headers, filter bars
+  - `--color-action-primary` — primary actions, links, focus
+  - `--color-action-primary-hover` — primary hover/pressed
+  - `--color-action-primary-soft` — subtle active backgrounds
+  - `--color-bg-surface` — cards, modals, inputs, header
+  - `--color-bg-muted` — subtle nested areas, table headers, filter bars
   - `--color-text-primary` — headings, body text
   - `--color-text-secondary` — labels, captions, muted text
+  - `--color-text-muted` — placeholder, disabled
   - `--color-border` — borders
-  - `--color-primary/success/warning/danger` — semantic colors
+  - `--color-border-strong` — emphasized borders
+  - `--color-border-focus` — focus rings
+  - `--color-success/warning/danger` — semantic status colors
 - **CSS modules, Tailwind, or styled-components** — not raw `style={{}}` props.
 - **Desktop-first product experience** — enterprise workflows are designed for desktop first, then adapted cleanly to tablet and mobile.
 - **Responsive verification** — validate tablet and mobile layouts, including an approximately 390px mobile viewport.

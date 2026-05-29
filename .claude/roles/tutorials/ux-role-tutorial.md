@@ -122,12 +122,17 @@ Use only these tokens — no hardcoded colors:
 
 | Token | Usage |
 |---|---|
-| `--color-surface` | Cards, modals, inputs, header |
-| `--color-surface-muted` | Table headers, filter bars, nested areas |
+| `--color-action-primary` | Primary actions, links, focus/selection |
+| `--color-action-primary-hover` | Primary hover/pressed |
+| `--color-action-primary-soft` | Subtle active backgrounds |
+| `--color-bg-surface` | Cards, modals, inputs, header |
+| `--color-bg-muted` | Table headers, filter bars, nested areas |
 | `--color-text-primary` | Headings, body text |
 | `--color-text-secondary` | Labels, captions, muted text |
+| `--color-text-muted` | Placeholder, disabled |
 | `--color-border` | Borders |
-| `--color-primary` | Primary actions |
+| `--color-border-strong` | Emphasized borders |
+| `--color-border-focus` | Focus rings |
 | `--color-success` | Success states |
 | `--color-warning` | Warning states |
 | `--color-danger` | Danger/error states |

@@ -18,13 +18,22 @@ Every design decision must justify itself by making the user faster or less conf
 
 ### Color Usage
 
-Use the green/yellow/red palette semantically. Do not make every active, role, avatar, link, and badge green.
+Use the green/yellow/red palette semantically via semantic tokens. Do not make every active, role, avatar, link, and badge green. All colors come from CSS tokens — never hardcode brand hex values in screens, specs, or components.
 
-- **Green** (`#00C875`) — primary action, focus/selection, success/active status
-- **Yellow** (`#FFCB00`) — pending/review/attention
-- **Red** (`#FF3B30`) — blocked/error/destructive
-- **Role badges** — neutral by default, semantic color only when status is the message
-- **Text** — `#172B4D` Ink primary · `#44546F` Slate secondary · `#626F86` muted
+| Token | Usage |
+|---|---|
+| `--color-action-primary` | Primary action, focus/selection, success/active status |
+| `--color-warning` | Pending/review/attention |
+| `--color-danger` | Blocked/error/destructive |
+| `--color-bg-surface` | Cards, panels, inputs, surface backgrounds |
+| `--color-bg-muted` | Table headers, subtle areas |
+| `--color-text-primary` | Primary text, headings |
+| `--color-text-secondary` | Labels, captions, muted text |
+| `--color-border` | Borders, dividers |
+
+Role badges are neutral by default — semantic color only when status is the message.
+
+See [.claude/skills/ux-system/DESIGN_TOKENS.md](../../skills/ux-system/DESIGN_TOKENS.md) for the complete token system including dark mode values and status color scale.
 
 ### Typography
 
@@ -39,12 +48,12 @@ Use the green/yellow/red palette semantically. Do not make every active, role, a
 
 | Component | Spec |
 |---|---|
-| Input | 40px height, 8px radius, border `#DFE1E6`, focus border `#00C875` |
-| Button | primary bg `#00C875` · secondary border only · destructive bg `#FF3B30` |
-| Card | bg white, border `#DFE1E6`, 12px radius, shadow-sm, 24px padding |
-| Table | header bg `#F4F5F7`, row 52px, hover bg `#F4F5F7` |
+| Input | 40px height, 8px radius, border `--color-border`, focus border `--color-border-focus` |
+| Button | primary bg `--color-action-primary` · secondary border only · destructive bg `--color-danger` |
+| Card | bg `--color-bg-surface`, border `--color-border`, 12px radius, shadow-sm, 24px padding |
+| Table | header bg `--color-bg-muted`, row 52px, hover bg `--color-bg-muted` |
 | Badge | pill shape, semantic color scale (50 bg / 700 text) |
-| Modal | white panel, xl radius, shadow-lg, focus trap, Escape closes |
+| Modal | surface panel, xl radius, shadow-lg, focus trap, Escape closes |
 | Toast | bottom-right, 360px wide, auto-dismiss 4s (success) / manual (error) |
 | Top nav | 44px target height, neutral inactive items, one clear active treatment |
 
@@ -156,8 +165,8 @@ Every screen spec must include mobile behavior for approximately 390px viewport.
 ### Token Usage
 | Token | Used On |
 |---|---|
-| `--color-primary` | primary buttons, links |
-| `--color-surface` | cards, modals |
+| `--color-action-primary` | primary buttons, links |
+| `--color-bg-surface` | cards, modals |
 
 ### Responsive Behavior
 | Viewport | Layout Change |

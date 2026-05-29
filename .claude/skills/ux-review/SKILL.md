@@ -87,7 +87,7 @@ The project uses **CSS Variables + Tailwind arbitrary value syntax** for theming
 ### Correct Pattern (CSS Variables)
 ```tsx
 // Components should use CSS variable syntax for theming
-className="bg-[var(--color-surface)] text-[var(--color-text-primary)] border-[var(--color-border)]"
+className="bg-[var(--color-bg-surface)] text-[var(--color-text-primary)] border-[var(--color-border)]"
 ```
 
 ### Deprecated Pattern (Tailwind dark: variants)
@@ -104,7 +104,7 @@ className="bg-surface dark:bg-surface-dark text-ink dark:text-ink-light"
 
 ### Review Check for Dark Mode
 When reviewing a component, check if:
-1. **CSS variable pattern is used** — `bg-[var(--color-surface)]` ✓ GOOD
+1. **CSS variable pattern is used** — `bg-[var(--color-bg-surface)]` ✓ GOOD
 2. **Tailwind dark: variant is used** — `dark:bg-surface-dark` ⚠️ DEPRECATED
 3. **No dark mode support** — missing both patterns ✗ BAD
 
@@ -118,12 +118,12 @@ When reviewing a component, check if:
 
 ### Token Reference
 Available CSS variables (defined in `apps/web/src/index.css`):
-- `--color-surface` — cards, modals, inputs, header
-- `--color-surface-muted` — subtle nested areas, table headers, filter bars
+- `--color-bg-surface` — cards, modals, inputs, header
+- `--color-bg-muted` — subtle nested areas, table headers, filter bars
 - `--color-text-primary` — headings, body text
 - `--color-text-secondary` — labels, captions, muted text
 - `--color-border` — borders
-- `--color-primary` / `--color-success` / `--color-warning` / `--color-danger` — semantic colors
+- `--color-action-primary` / `--color-success` / `--color-warning` / `--color-danger` — semantic colors
 
 ## Review Rules
 

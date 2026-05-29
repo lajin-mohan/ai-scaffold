@@ -66,8 +66,8 @@ Format as tables only:
 
 | Component | States | Token | Notes |
 |---|---|---|---|
-| PrimaryButton | default, hover, active, disabled, loading | --color-primary | 40px height |
-| TableRow | default, hover, selected | --color-surface | 52px height |
+| PrimaryButton | default, hover, active, disabled, loading | --color-action-primary | 40px height |
+| TableRow | default, hover, selected | --color-bg-surface | 52px height |
 | Badge | success, warning, error, neutral | semantic | pill shape |
 
 ## State Matrix
@@ -83,14 +83,14 @@ All cells must be filled or marked N/A. No empty cells.
 
 | Token | Used On |
 |---|---|
-| --color-primary | primary buttons, active nav, focus rings |
-| --color-surface | cards, modals, inputs, header |
-| --color-text-primary | headings, body text |
-| --color-text-secondary | labels, captions, muted |
-| --color-border | borders, dividers |
-| --color-success | success badge bg, active status |
-| --color-warning | warning badge bg, pending status |
-| --color-danger | error badge bg, destructive button |
+| `--color-action-primary` | primary buttons, active nav, focus rings |
+| `--color-bg-surface` | cards, modals, inputs, header |
+| `--color-text-primary` | headings, body text |
+| `--color-text-secondary` | labels, captions, muted |
+| `--color-border` | borders, dividers |
+| `--color-success` | success badge bg, active status |
+| `--color-warning` | warning badge bg, pending status |
+| `--color-danger` | error badge bg, destructive button |
 
 ## Responsive Behavior
 
