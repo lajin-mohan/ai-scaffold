@@ -204,13 +204,13 @@ Evaluate each stage in order. The **current stage** is the earliest stage with i
 
 ### Stage 4 — UX Design
 **Required artifacts:**
-- UX requirements exist (`docs/ux/<feature>/01-requirements.md` via `/ux-analyze`)
-- User flows approved (`docs/ux/<feature>/02-flows.md` via `/ux-flow`)
-- Screen specs produced one screen at a time (`docs/ux/<feature>/05-screen-specs.md` via `/ux-screen-spec`)
-- Design system notes applied (`docs/ux/<feature>/04-design-system-notes.md` via `/ux-figma-spec`)
-- Figma frame structure documented (`docs/ux/<feature>/06-figma-spec.md` via `/ux-figma-spec`)
+- UX analysis exists (`docs/ux/<module>/tasks/<task-id>/01-analysis.md` via `/ux-analysis`)
+- Open questions tracked (`docs/ux/<module>/tasks/<task-id>/02-open-questions.md`)
+- Design prompt exists (`docs/ux/<module>/tasks/<task-id>/03-design-prompt.md` via `/ux-design-prompt`)
+- Manual Figma/Claude build notes recorded (`docs/ux/<module>/tasks/<task-id>/04-figma-build-notes.md`)
+- UX Lead approval and Figma frame links documented in build notes
 - `/ux-review` passed with all BLOCK findings resolved
-- `/ux-handoff` complete (`docs/ux/<feature>/08-dev-handoff.md`) — hard gate: no Stage 5 without this
+- `/ux-handoff` complete (`docs/ux/<module>/tasks/<task-id>/06-dev-handoff.md`) — hard gate: no Stage 5 without this
 - All 7 states defined per screen: loading, empty, empty (filtered), error, permission denied, success, form validation
 - Desktop-first layout specified for the primary enterprise workflow
 - Tablet/mobile adaptations specified and reviewed, including approximately 390px mobile width
@@ -221,7 +221,7 @@ Evaluate each stage in order. The **current stage** is the earliest stage with i
 
 **Blocked by:** Unapproved architecture from Stage 3
 
-**UX workflow commands:** `/ux-analyze` → `/ux-flow` → `/ux-screen-spec` (×N screens) → `/ux-figma-spec` → human review → `/ux-review` → `/ux-handoff`. See `.claude/rules/ux-rules.md` for all hard gates. Use `/ux-create` only for quick fixes and spikes — not as the primary path for new feature UX.
+**UX workflow commands:** `/ux-analysis` → `/ux-design-prompt` → manual Figma/Claude build + UX Lead approval → `/ux-review` → `/ux-handoff`. See `.claude/rules/ux-rules.md` for all hard gates. Use `/ux-create` only for quick fixes and spikes — not as the primary path for new feature UX.
 
 ---
 
