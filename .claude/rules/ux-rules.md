@@ -66,73 +66,101 @@ See [.claude/skills/ux-system/DESIGN_TOKENS.md](../../skills/ux-system/DESIGN_TO
 
 ---
 
-## 2. AI Governance Rules
+## 2. Canonical UX Workflow
 
-### UX Workflow Order (non-negotiable)
+Use the simplified task-based workflow:
 
-```
+```text
 BRD / Feature Spec
-  ↓
-/ux-analyze        → 01-requirements.md
-  ↓
-/ux-flow           → 02-flows.md
-  ↓
-/ux-screen-spec   → 05-screen-specs.md (one screen per invocation)
-  ↓
-/ux-figma-spec    → 06-figma-spec.md
-  ↓
-Human review
-  ↓
-/ux-review        → 07-review.md
-  ↓
-/ux-handoff       → 08-dev-handoff.md
+  -> /ux-analysis
+  -> /ux-design-prompt
+  -> manual Figma/Claude build + human adjustment + UX Lead approval
+  -> /ux-review
+  -> /ux-handoff
+  -> implementation
 ```
 
-**Skip order is a BLOCK.** Do not produce screen specs without flows. Do not produce flows without requirements.
+Legacy command mapping:
 
-### Staged Output Rules
-
-- `/ux-analyze` — reads BRD/client notes, outputs UX requirements, screen inventory, user role matrix, flow inventory, risks, open questions
-- `/ux-flow` — designs user journeys: happy path, error path, empty state path, permission path, multi-role path, screen-to-screen transition map
-- `/ux-screen-spec` — one screen per invocation. Produces layout structure, component hierarchy, CTA placement, form fields, validations, responsive behavior, state matrix
-- `/ux-figma-spec` — design token usage, component library mapping, spacing/type/grid rules, table/form/modal/card rules
-- `/ux-handoff` — developer-ready checklist: component list, state matrix, token usage, responsive rules, Figma link
-
-### Artifact Structure
-
-```
-docs/ux/<feature>/
-  01-requirements.md      ← /ux-analyze
-  02-flows.md             ← /ux-flow
-  03-screen-inventory.md  ← /ux-analyze (screen list)
-  04-design-system-notes.md ← /ux-figma-spec
-  05-screen-specs.md      ← /ux-screen-spec (one per screen)
-  06-figma-spec.md        ← /ux-figma-spec
-  07-review.md            ← /ux-review
-  08-dev-handoff.md       ← /ux-handoff
+```text
+/ux-analyze      -> /ux-analysis
+/ux-flow         -> included in /ux-analysis
+/ux-screen-spec  -> included in /ux-design-prompt
+/ux-figma-spec   -> included in /ux-design-prompt
 ```
 
-### State Coverage
+Stage outputs:
 
-Every screen spec must define all states:
+- `/ux-analysis`: requirements, assumptions, open questions, scope, roles, permissions, flows, task/screen candidates, risks.
+- `/ux-design-prompt`: complete Figma/Claude prompt with context, tokens, components, states, responsive behavior, exclusions, and review checklist.
+- Manual Figma stage: paste prompt, generate design, human adjust, record build notes, UX Lead approval.
+- `/ux-review`: validates design artifacts or implementation.
+- `/ux-handoff`: final developer-ready package.
 
-| State | Required? |
+Every UX command must end with:
+
+```text
+Task:
+Module:
+Stage completed:
+Summary:
+Open questions:
+Files created or updated:
+Next step:
+Proceed? yes/no
+```
+
+## 3. Artifact Structure
+
+Use module/task folders:
+
+```text
+docs/ux/<module>/
+  00-index.md
+  module.json
+  state.json
+  tasks/
+    UX-<MODULE>-001-<slug>/
+      00-task-index.md
+      01-analysis.md
+      02-open-questions.md
+      03-design-prompt.md
+      04-figma-build-notes.md
+      05-ux-review.md
+      06-dev-handoff.md
+  archive/
+```
+
+Each module has one start-here file: `00-index.md`.
+
+## 4. State Coverage
+
+Every design prompt and handoff must define relevant states:
+
+| State | Required |
 |---|---|
-| Loading | Yes — skeleton screens, not spinners |
-| Empty (no data) | Yes — illustration + guidance + action |
-| Empty (filtered) | Yes — clear filters option |
-| Error | Yes — banner with retry |
-| Permission denied | Yes — appropriate message |
-| Success confirmation | Yes — clear feedback |
-| Form validation | Yes — field-level and form-level |
+| Loading | Yes |
+| Empty (no data) | Yes where data can be absent |
+| Empty (filtered) | Yes where filters/search exist |
+| Error | Yes |
+| Permission denied | Yes where roles differ |
+| Success confirmation | Yes where actions mutate state |
+| Form validation | Yes where forms exist |
+| Mobile | Yes for primary workflows |
 
-### Mobile Behavior
+## 5. Token Hygiene
 
-Every screen spec must include mobile behavior for approximately 390px viewport.
+A UX artifact must not reference a token that is not defined in `.claude/skills/ux-system/DESIGN_TOKENS.md`.
+
+Before writing a design prompt or handoff:
+
+1. Confirm every semantic/component token exists.
+2. If a new token is needed, flag it first.
+3. Never invent token names, hex values, or raw `rgba(...)` values.
 
 ---
 
-## 3. Figma Rules
+## 6. Figma Rules
 
 - Frame name: `{ScreenName}/Desktop`, `{ScreenName}/Mobile`
 - Auto-layout: vertical, 0 gap on main frame
@@ -144,7 +172,7 @@ Every screen spec must include mobile behavior for approximately 390px viewport.
 
 ---
 
-## 4. Developer Handoff Rules
+## 7. Developer Handoff Rules
 
 ### Handoff Checklist
 
@@ -196,26 +224,25 @@ All colors in implementation must come from CSS tokens. No hardcoded page or bra
 
 | Gate | Rule | Severity |
 |---|---|---|
-| GH-01 | No `/ux-screen-spec` before `/ux-flow` output exists | BLOCK |
-| GH-02 | No `/ux-flow` before `/ux-analyze` output exists | BLOCK |
-| GH-03 | Every screen spec must include all seven states (loading, empty, error, permission denied, success, form validation, mobile) | BLOCK |
+| GH-01 | No `/ux-design-prompt` before `/ux-analysis` exists | BLOCK |
+| GH-02 | Blocking open questions must be resolved or explicitly defaulted before design prompting | BLOCK |
+| GH-03 | Every relevant state must be covered or marked N/A | BLOCK |
 | GH-04 | Every form must define validation and feedback behavior | BLOCK |
 | GH-05 | Every table/list must define search/filter/sort/pagination/empty behavior or mark N/A | BLOCK |
-| GH-06 | Every screen must define mobile behavior at ~390px | BLOCK |
-| GH-07 | `/ux-review` required before frontend implementation is marked DONE | BLOCK |
-| GH-08 | `/ux-handoff` required before Stage 5 (implementation) on any UX feature | BLOCK |
-| GH-09 | All colors in implementation must use CSS tokens — no hardcoded hex values | BLOCK |
-| GH-10 | Staged workflow commands must not be skipped — requirements → flows → screens → handoff | BLOCK |
+| GH-06 | Every primary workflow must define mobile behavior at 375/390px | BLOCK |
+| GH-07 | Manual Figma/design adjustment and UX Lead approval are required before `/ux-review` | BLOCK |
+| GH-08 | `/ux-review` required before `/ux-handoff` | BLOCK |
+| GH-09 | `/ux-handoff` required before Stage 5 implementation | BLOCK |
+| GH-10 | All colors must use defined CSS/design tokens | BLOCK |
+| GH-11 | UX artifacts must not reference undefined tokens | BLOCK |
 
 ---
 
 ## Related
 
-- `/ux-analyze` — requirements extraction
-- `/ux-flow` — user journey design
-- `/ux-screen-spec` — screen-level specs
-- `/ux-figma-spec` — design system application
-- `/ux-review` — UX artifact and implementation review
-- `/ux-handoff` — developer-ready handoff
-- `.claude/skills/ux-workflow/SKILL.md` — staged UX workflow guidance
-- `.claude/skills/ux-system/` — design system source of truth
+- `/ux-analysis`
+- `/ux-design-prompt`
+- `/ux-review`
+- `/ux-handoff`
+- `.claude/skills/ux-workflow/SKILL.md`
+- `.claude/skills/ux-system/`

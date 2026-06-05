@@ -49,12 +49,13 @@ When estimation complete:
 
 ### Stage 4 — UX Design
 When architecture approved:
-→ Invoke `/ux-analyze` → `/ux-flow` → `/ux-screen-spec` (one per screen) → `/ux-figma-spec`
-→ Human designer reviews Figma frames
+→ Invoke `/ux-analysis`
+→ Invoke `/ux-design-prompt` for each approved UX task/package
+→ Human designer pastes the prompt into Figma/Claude, adjusts the output, and gets UX Lead approval
 → Run `/ux-review` — pass required before `/ux-handoff`
 → Invoke `/ux-handoff` — hard gate before Stage 5
 
-**Canonical path:** BRD → /ux-analyze → /ux-flow → /ux-screen-spec (×N) → /ux-figma-spec → human review → /ux-review → /ux-handoff → Stage 5. See `.claude/rules/ux-rules.md`.
+**Canonical path:** BRD → /ux-analysis → /ux-design-prompt → manual Figma/Claude build + UX Lead approval → /ux-review → /ux-handoff → Stage 5. See `.claude/rules/ux-rules.md`.
 
 ### Stage 5 — Execution
 When `/kickoff` passes all 6 gates:

@@ -11,8 +11,8 @@ Create a production-grade enterprise UX solution using the centralized UX system
 
 **New feature with full UX design** → Use the staged workflow:
 ```
-BRD approved → /ux-analyze → /ux-flow → /ux-screen-spec (one screen at a time)
-→ /ux-figma-spec → human designer reviews → /ux-review → /ux-handoff → Stage 5
+BRD approved -> /ux-analysis -> /ux-design-prompt
+-> manual Figma/Claude build + UX Lead approval -> /ux-review -> /ux-handoff -> Stage 5
 ```
 This path produces requirements, flows, screen specs, design tokens, and a developer-ready handoff in sequence — each stage gates the next. See `.claude/rules/ux-rules.md` for all hard gates.
 

@@ -7,6 +7,7 @@ Welcome. This project follows the Techversant AI development workflow — every 
 2. [HOW-TO-USE.md](./HOW-TO-USE.md) — stage-by-stage guide for every role
 3. [.claude/rules/ai-coding-rules.md](./.claude/rules/ai-coding-rules.md) — non-negotiable rules for any AI tool generating code
 4. [.claude/rules/governance.md](./.claude/rules/governance.md) — enforcement chain, escalation paths, authority limits, and human-in-the-loop gates
+5. [HOW-TO-USE.md Stage 4](./HOW-TO-USE.md#stage-4--ux-design) — UX task-based pipeline (`/ux-analysis` → `/ux-design-prompt` → manual Figma → `/ux-review` → `/ux-handoff`)
 
 ---
 
@@ -43,6 +44,44 @@ Welcome. This project follows the Techversant AI development workflow — every 
 git mv tasks/todo/<TICKET-ID>-<slug>.md tasks/done/
 ```
 
+### UX work (Stage 4) — task-based pipeline
+
+UX work is **task-based** — one UX task = one UX deliverable. The Reporting module is the live reference implementation.
+
+```bash
+# Set role: edit .claude/settings.local.json -> {"role": "ux"}
+
+# Stage 4.1 — UX requirements
+# Creates docs/ux/<module>/tasks/<MODULE>-<NNN>-<slug>/
+#   - 00-task-index.md (stage tracker)
+#   - 01-requirements.md (user roles, screen inventory, risks)
+#   - 02-open-questions.md (OQ list with default-decision proposals)
+# Updates module.json + state.json to status=requirements_ready.
+/ux-analysis <MODULE>-<NNN>
+
+# Stage 4.2 — Figma/Claude design prompt
+#   - 03-design-prompt.md (self-contained — inlines tokens, states, viewports)
+#   - 04-figma-build-notes.md (empty build tracker)
+# Updates state.json to status=design_prompt_ready.
+/ux-design-prompt <MODULE>-<NNN>
+
+# Stage 4.3 — Manual Figma build
+#   - Designer pastes 03-design-prompt.md into Figma Make / Claude Design
+#   - Adjusts and tracks progress in 04-figma-build-notes.md
+#   - UX Lead (Lajin) approves
+# (no AI command — human + Figma tool)
+
+# Stage 4.4 — 32-item review + 4-viewport browser verification
+/ux-review <MODULE>-<NNN>
+
+# Stage 4.5 — Developer handoff (hard gate before Stage 5)
+/ux-handoff <MODULE>-<NNN>
+```
+
+**UX state coverage requirement (hard gate):** every data-rendering screen must cover all **7** states — loading, empty, error, permission-denied, success, form-validation, mobile. Token-only colors enforced (GH-11 — Token Hygiene Reference-Only Rule).
+
+**Live reference:** see [docs/ux/reporting/00-index.md](./docs/ux/reporting/00-index.md) and [docs/ux/reporting/tasks/UX-REP-003-combined-figma-package/03-design-prompt.md](./docs/ux/reporting/tasks/UX-REP-003-combined-figma-package/03-design-prompt.md) for an end-to-end example.
+
 ### Where work-state lives
 
 | Location | Purpose | Tracked? |
@@ -52,8 +91,12 @@ git mv tasks/todo/<TICKET-ID>-<slug>.md tasks/done/
 | `tasks/done/<ID>-<slug>.md` | Archived completed tickets | Yes |
 | `tasks/lessons.md` | Append-only correction log (auto-resolves via `merge=union`) | Yes |
 | `CHANGELOG.md` | Permanent record of what shipped (auto-resolves via `merge=union`) | Yes |
+| `docs/ux/<module>/` | UX module work — `module.json`, `state.json`, `00-index.md`, `tasks/<MODULE>-<NNN>-<slug>/` | Yes |
+| `docs/ux/<module>/archive/legacy-*/` | Preserved old flat docs (read-only source material, never the active source of truth) | Yes |
 
 The legacy single `tasks/todo.md` file is **deprecated** and gitignored — see [CHANGELOG.md](./CHANGELOG.md) `[Unreleased]` for the migration note.
+
+The legacy `docs/ux/<module>/01-requirements.md`, `02-flows.md`, `05-screen-specs.md` flat-numbering scheme is **superseded** by the task-based scheme (`tasks/<MODULE>-<NNN>-<slug>/01-task-index.md`, `03-design-prompt.md`, etc.). Old flat docs are preserved under `archive/legacy-*/` for source material only.
 
 ---
 
