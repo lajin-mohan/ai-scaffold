@@ -65,6 +65,7 @@ Produce a plan in the exact format below. **Do not write any code yet.**
 ## Plan — {{TASK_NAME}}
 **Linked spec:** {{path or ticket}}
 **Estimated time:** {{minutes}}
+**Intensity:** {{omitted | lite | full | ultra}}  ← only present when --intensity was passed; otherwise omit this line
 
 ### Goal
 {{One sentence — what the user gets when this is done.}}
@@ -164,6 +165,9 @@ When the implementation is done, run the verification suite and produce the repo
 ✅ Browser: `npm run test:e2e` — passing (required for frontend/full-stack tasks)
 ✅ Desktop themes: light + dark verified (required for frontend/full-stack tasks)
 ✅ Mobile themes: light + dark verified at ~390px (required for frontend/full-stack tasks)
+{{#if Intensity set}}
+✅ Ladder compliance (intensity: {{level}}): stopped at rung <N> per code unit; higher rungs rejected because {{one-line reason per code unit — e.g., "stdlib sufficient", "no third caller", "premature generalization"}}
+{{/if}}
 ✅ Acceptance criteria:
    - AC-01: {{description}} — verified, returns 201
    - AC-02: {{description}} — verified, returns 409 CONFLICT

@@ -20,7 +20,7 @@ This rule is a **pressure layer** that sits *below* the scaffold's gates, DoD, l
 
 Before writing code, stop at the first rung that holds. Don't run all six — take the first one that answers the question.
 
-1. **Does this need to exist at all?** Speculative need → skip it. State the skip in one line: `// ponytail: deferred, see <reason>` or surface it in the plan as `not built: X (no current need)`. *(YAGNI)*
+1. **Does this need to exist at all?** Speculative need → skip it. Surface the skip in the plan as `not built: X (no current need)`. If the skip is conditional on a future trigger, mark it in the plan as a `[deferred]` item that becomes a `// TODO(<TICKET-ID>):` only when a real ticket exists. *(YAGNI)*
 2. **Does the standard library do it?** Use it.
 3. **Does a native platform feature cover it?** Browser `<input type="date">` over a picker lib. CSS over JS. DB constraint over app code.
 4. **Does an already-installed dependency solve it?** Use it. New dependency must justify itself against the few lines it replaces.

@@ -2,6 +2,8 @@
 Adapted from DietrichGebert/ponytail (MIT), v4.7.0
 Source command: https://github.com/DietrichGebert/ponytail/blob/main/commands/ponytail-audit.toml
 Source prompt: "Audit the entire repository for over-engineering only..."
+Upstream repository: https://github.com/DietrichGebert/ponytail
+Upstream license: https://github.com/DietrichGebert/ponytail/blob/main/LICENSE (MIT)
 Adapted: severity labels merged with this scaffold's BLOCK/WARN/NIT system;
 tag taxonomy preserved from upstream.
 -->
@@ -12,7 +14,8 @@ Whole-repo scan for over-engineering. Identifies what can be **deleted**, replac
 
 Invokable by:
 - The user, manually.
-- The `architect` agent at Stage 6 (Architecture Review) **only when over-engineering is suspected** — not on every review.
+- The `architect` agent during Stage 3 Architecture Review (`/architecture-review`) **only when over-engineering is suspected** — not on every review.
+- The `architect` reviewer inside the Stage 6 `/review` parallel review **only when abstract-for-abstractness is one of the findings** — not on every review.
 
 ---
 
@@ -132,8 +135,8 @@ The command ends with the report. No code changes, no commit suggestions, no aut
 | Trigger | Who invokes |
 |---|---|
 | Periodic repo health check (monthly or pre-release) | User, manually |
-| `/review` produced a `WARN` about over-engineering | `architect` agent may run `/ponytail-audit` to confirm scope |
-| Architecture Review (Stage 6) finds abstract-for-abstractness | `architect` agent may run `/ponytail-audit` on the affected module |
+| `/review` produced a `WARN` about over-engineering | `architect` reviewer (Stage 6) may run `/ponytail-audit` to confirm scope |
+| `/architecture-review` (Stage 3) flags abstract-for-abstractness | `architect` agent may run `/ponytail-audit` on the affected module |
 | PR description cites this command | Either party |
 
 Do not run on every review by default — the scan is repo-wide and adds minutes. Use when there's signal.
