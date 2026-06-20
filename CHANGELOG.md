@@ -35,6 +35,13 @@ This file is configured with `merge=union` in `.gitattributes` so parallel addit
 ### Fixed
 - Encoding fragility in code/config files — replaced em-dashes (`—`) and arrows (`→`) with ASCII (`-`, `->`) in `.yml`, `.sh`, `.json`, `.ts`, `.sql`, `.tf` files. Markdown unchanged (renders fine). (Finding 8)
 
+### Added
+- **`/ponytail-audit` and `/ponytail-debt` commands** — curated integration of Dietrich Gebert's `ponytail` YAGNI-pressure toolkit, scoped to the scaffold's actual source-code paths and aligned with `/start-task --intensity`. Source: `https://github.com/DietrichGebert/ponytail` (MIT). See `.claude/rules/ponytail-ladder.md` for the rule and the ladder.
+
+### Changed
+- **Ladder-compliance wording** — verification report line for `Ladder compliance` now reads "stopped at rung `<N>`; higher rungs rejected because `<reason>`" instead of the misleading "walked 6 rungs per code unit". Aligns with the ladder's "first rung that answers, don't run all six" rule.
+- **`/ponytail-debt` allowlist** — harvest now includes `*.sql` and `*.sh` (regex already supported `#` and `--` comment syntax; migrations and scripts are exactly where shortcut markers live). YAML excluded because it's config, not source code.
+
 ---
 
 ## Pre-history (audit Phases 1-4 — merged on 2026-05-08)
