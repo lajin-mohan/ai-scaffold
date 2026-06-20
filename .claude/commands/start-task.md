@@ -14,7 +14,23 @@ This is the command developers and AI tools should invoke for any non-trivial im
 /start-task --ticket HIRE-142                         # link to a Jira/Linear ticket
 /start-task --spec docs/brd/HIRE-142-csv-import.md    # work from a specific spec
 /start-task --resume                                  # continue a paused task
+/start-task --intensity lite|full|ultra              # apply the ponytail ladder at this intensity for this task only
 ```
+
+### `--intensity` flag
+
+Per-call opt-in to the [ponytail ladder](../rules/ponytail-ladder.md). Scoped to this task — does **not** persist across sessions, does **not** modify user-scope config, does **not** write flag files.
+
+| Value | Behaviour |
+|---|---|
+| *(omitted)* | Default scaffold behaviour. Ladder is OFF. No YAGNI pressure applied beyond the existing rules. |
+| `lite` | Build what was asked. Name the lazier alternative in one line at the end. User picks. |
+| `full` | The ladder is enforced. Stdlib and native first. Shortest diff, shortest explanation. |
+| `ultra` | YAGNI extremist. Deletion before addition. Ship the one-liner and challenge the rest of the requirement. |
+
+**Gates always win.** `--intensity ultra` does not bypass Stage 1 (BRD), does not bypass `tenant_id` scoping, does not bypass the test pyramid, and does not bypass lint/typecheck/DoD verification. See [ponytail-ladder.md "What This Rule Does NOT Override"](../rules/ponytail-ladder.md) for the full list.
+
+When the flag is set, the plan header includes `Intensity: <level>` and the verification report includes a `Ladder compliance` section.
 
 ---
 
@@ -200,3 +216,4 @@ If the user interrupts mid-task, save state to `tasks/start-task-state.json` (gi
 - Browser verification is **mandatory** before marking frontend or full-stack tasks `DONE`. Run `npm run test:e2e` and include the result in the verification report. If browser verification cannot run, the task remains not done unless the exception is explicitly approved and documented.
 - A "go" approves the plan **as written**. New scope = new plan.
 - The command leaves the working tree clean OR clearly explains why it doesn't (e.g., "left WIP on branch X for human review").
+- `--intensity` is per-call. Never persist the level, never write a flag file, never modify `.claude/settings.local.json` from this command. The user passes the flag on each invocation they want it for.

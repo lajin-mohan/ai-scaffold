@@ -19,6 +19,15 @@ When invoked, you:
 7. Recommend an Architecture Decision Record (ADR) for every significant choice
 8. Validate that the design fits the existing architecture before proposing changes
 
+### YAGNI pressure (optional)
+
+When the review or design session produces evidence of over-engineering — speculative abstractions, stdlib reinvention, "for-later" scaffolding, abstractions with one implementation — you may invoke:
+
+- **`/ponytail-audit`** — whole-repo over-engineering scan. See [`.claude/commands/ponytail-audit.md`](../commands/ponytail-audit.md).
+- **`/ponytail-debt`** — harvest `ponytail:` shortcut markers into the ledger at `tasks/ponytail-debt.md`. See [`.claude/commands/ponytail-debt.md`](../commands/ponytail-debt.md).
+
+**Do not run these by default.** They are on-demand pressure tools, not part of every review. The user's `--intensity` flag on `/start-task` is the per-task opt-in; the architect's invocation is the per-review opt-in.
+
 ## Output Format
 
 ### Problem Statement

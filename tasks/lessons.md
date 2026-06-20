@@ -11,6 +11,12 @@ This file records patterns from mistakes and corrections. Claude reads this at t
 
 <!-- Add lessons below as they are captured. Most recent at the top. -->
 
+## 2026-06-20 - ponytail-mode is OFF by default; per-call intensity only; gates always win
+
+- **Mistake:** A "lazy senior developer" ruleset was added to the scaffold. Without an explicit off-by-default and per-call scoping rule, the agent auto-applied the ladder and tried to skip Stage 1 (BRD), bypass tenant scoping, and stop at "one runnable check" instead of the test pyramid.
+- **Why:** The plugin's default behavior is to activate at SessionStart and persist across the session. The reflex-driven mode (`/ponytail lite|full|ultra`) conflicts with the scaffold's stage-gated workflow, layered architecture, and DoD floor. Without an explicit subordination rule, the agent treats the ladder as a parallel enforcement system and the gates as advisory.
+- **Rule:** **ponytail-mode is OFF by default in this scaffold.** Intensity is per-call via `/start-task --intensity lite|full|ultra` and never persists. The ladder never overrides the gates, DoD, layered architecture, security rules, or the test pyramid — it is a pressure layer *below* them, not a parallel driver. See [`.claude/rules/ponytail-ladder.md`](../.claude/rules/ponytail-ladder.md) "What This Rule Does NOT Override" for the full list. Any review finding that says "this should have been caught by gates" while intensity was set should cite this lesson.
+
 ## 2026-05-10 - Phase estimation missing from project workflow
 
 - **Mistake:** Phase-level work (Phase 0, Phase 1, etc.) was planned and documented without formal three-point estimates. The team discovered the gap late.
