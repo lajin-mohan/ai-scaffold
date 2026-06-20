@@ -29,6 +29,49 @@ These are non-negotiable on every project. Violations are BLOCK in review.
 
 ---
 
+## Shortcut Markers
+
+Two marker systems exist for code comments. They serve different purposes. Use the right one.
+
+| Marker | Purpose | Required fields |
+|---|---|---|
+| `// TODO(<TICKET-ID>): <reason>` | General deferred work. Must reference a real ticket. Enforced by [ai-coding-rules.md P3](./ai-coding-rules.md). | `<TICKET-ID>`, reason |
+| `// ponytail: <what>. ceiling: <limit>. upgrade: <trigger>.` | Intentional simplification with a known ceiling and a named upgrade trigger. Adapted from [DietrichGebert/ponytail](https://github.com/DietrichGebert/ponytail) (MIT). | `ponytail:`, `ceiling:`, `upgrade:` |
+
+### `ponytail:` convention
+
+A `ponytail:` marker declares "I know this is wrong, here's the tripwire." It is **not** a TODO — the code is shipping. It is a debt marker with a built-in revisit trigger.
+
+```typescript
+// ponytail: O(n²) scan over candidate list. ceiling: ~10k candidates before latency > 500ms.
+// upgrade: switch to indexed lookup when production list size exceeds 1k.
+for (const candidate of candidates) {
+  if (matches(candidate, query)) results.push(candidate)
+}
+```
+
+| Field | Required | What it must contain |
+|---|---|---|
+| `ponytail:` label | Yes | Identifies the marker type |
+| `<what>` (the simplification) | Yes | One-line description of what was simplified |
+| `ceiling:` | Yes | The known limit — what breaks or degrades past this point. A number, a date, or a clear condition. |
+| `upgrade:` | Yes | The trigger that says "revisit this." A metric, a count, a date, or a clear condition. Vague values ("later", "when needed", "TBD") are **no-trigger** and rot silently. |
+
+### Harvesting and review
+
+`/ponytail-debt` harvests every `ponytail:` comment in the tree into `tasks/ponytail-debt.md` and flags `no-trigger` markers. The harvest is part of `/review` at Stage 6 only when the `architect` agent chooses to invoke it.
+
+### Decision aid
+
+| Situation | Use |
+|---|---|
+| Work that needs to happen later but is correctly out of scope now | `TODO(<TICKET-ID>):` |
+| Code that ships today with a known limitation and a clear revisit trigger | `ponytail:` |
+| A bug to fix | `FIXME(<TICKET-ID>):` (introduced if not already) |
+| A question for the reviewer | Code-comment question in the PR description, not in the source |
+
+---
+
 ## Readability
 
 - **Name for what it IS, not what it does.** `userRepository` not `getUserStuff`. `pendingApplications` not `apps`.

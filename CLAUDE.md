@@ -224,7 +224,7 @@ Run via `/command-name` in Claude Code.
 | `/create-api` | Full REST API contract (endpoints, request/response, errors, async pattern, migrations) | Stage 3 |
 | `/architecture-review` | Architecture critique against project invariants and compliance rules | Stage 3 |
 | `/estimate` | Three-point effort estimate with risk weights and phasing recommendation | Stage 2/3 |
-| `/start-task` | Plan-and-confirm execution: read spec → propose numbered plan → wait for approval → execute → verify. Use for any task >3 steps or long-running. | Stage 5 |
+| `/start-task` | Plan-and-confirm execution: read spec → propose numbered plan → wait for approval → execute → verify. Use for any task >3 steps or long-running. Optional `--intensity lite|full|ultra` flag enables the [ponytail ladder](.claude/rules/ponytail-ladder.md) per-call (default OFF; gates always win). | Stage 5 |
 | `/review` | Parallel code review: backend + frontend + security + qa + architect reviewers. After UI/Component/UX findings, run `/qa` for live-site verification. | Stage 6 |
 | `/gen-tests` | Writes complete runnable tests with assertions (unit, integration, component, snapshot) | Stage 5/8 |
 | `/deployment-review` | Deployment readiness checklist, migration plan, smoke tests, rollback procedure | Stage 10 |
@@ -242,6 +242,8 @@ Run via `/command-name` in Claude Code.
 | `/ux-create` | UX solution creator: uses `skills/ux-system/`, desktop-first design, 390px mobile check, light/dark theme, organization-overridable tokens. | Stage 4 |
 | `/ux-review` | UX review: 32-item check, 4-viewport browser verification (desktop L/D + mobile L/D at 390px). Token-based colours enforced as BLOCK. | Stage 6 |
 | `/debug-fix` | Root-cause-first bug fixing: plan → reproduce → analyze → implement → verify → report. 5-status model. Required verification by bug type. | Pre-fix |
+| `/ponytail-audit` | Whole-repo over-engineering scan. Tags: delete / stdlib / native / yagni / shrink. Severity: BLOCK / WARN / NIT. Report only, never modifies. Companion to `/start-task --intensity` — when intensity is set, the `Ladder compliance` step in the verification report feeds the audit's scope. | Any time |
+| `/ponytail-debt` | Harvest every `ponytail:` shortcut marker into `tasks/ponytail-debt.md`. Flags `no-trigger` and `malformed` markers. Read-only by default; `--write` updates the ledger. | Any time |
 
 ---
 

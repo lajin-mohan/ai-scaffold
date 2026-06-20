@@ -432,6 +432,56 @@ For escalations:
 | `/ux-review` | Stage 4/6 — UX verification | 32-item check + 4-viewport browser verification (desktop L/D + mobile L/D at 390px) |
 | `/ux-handoff` | Stage 4 — dev handoff | Developer-ready checklist: components, state matrix, tokens, responsive, Figma link (hard gate before Stage 5) |
 | `/loop` | Stage 5 — autonomous task queue | Execute numbered task list with one-approval contract. Stop conditions prevent scope creep. |
+| `/ponytail-audit` | Any time — periodic YAGNI pressure | Whole-repo over-engineering scan. Tags: delete / stdlib / native / yagni / shrink. Report only, never modifies. |
+| `/ponytail-debt` | Any time — periodic debt sweep | Harvest `ponytail:` shortcut markers into `tasks/ponytail-debt.md`. Flags `no-trigger` markers. Read-only by default. |
+
+---
+
+## Ponytail Integration
+
+A curated set of rules and commands adapted from [DietrichGebert/ponytail](https://github.com/DietrichGebert/ponytail) (MIT). The full plugin is **not** installed — that would conflict with this scaffold's stage gates, layered architecture, and DoD floor. Instead, three pieces are taken; the rest is intentionally left out.
+
+### What was taken
+
+| Asset | Where | Purpose |
+|---|---|---|
+| The 6-rung ladder (YAGNI → stdlib → native → dep → one line → min) | [`.claude/rules/ponytail-ladder.md`](.claude/rules/ponytail-ladder.md) | Single-page decision flow applied per-task when `--intensity` is set |
+| The `ponytail:` shortcut-marker convention | [`.claude/rules/coding-standards.md` "Shortcut Markers"](.claude/rules/coding-standards.md) | Inline self-documentation for deliberate simplifications with a known ceiling and a named upgrade trigger |
+| `/ponytail-audit` (whole-repo over-engineering scan) | [`.claude/commands/ponytail-audit.md`](.claude/commands/ponytail-audit.md) | Periodic YAGNI pressure. Tag taxonomy preserved from upstream; severity labels (BLOCK/WARN/NIT) added to match this scaffold's review system |
+| `/ponytail-debt` (shortcut debt ledger) | [`.claude/commands/ponytail-debt.md`](.claude/commands/ponytail-debt.md) | Harvests `ponytail:` comments into `tasks/ponytail-debt.md`. Flags `no-trigger` markers |
+| `--intensity lite\|full\|ultra` flag on `/start-task` | [`.claude/commands/start-task.md`](.claude/commands/start-task.md) | Per-call opt-in to the ladder. Does not persist across sessions |
+
+### What was explicitly NOT taken
+
+- The JavaScript hooks (`ponytail-activate.js`, `ponytail-mode-tracker.js`, statusline) — they write flag files to user-scope config and persist mode across sessions. We want repo-scoped, per-call, no side effects.
+- The "lazy senior developer" persona and casual voice — conflicts with this scaffold's enforcement-engine voice.
+- The `off` mode default — our scaffold's default stays strict, not lazy.
+- Cross-agent packaging (`.cursor/`, `.windsurf/`, `.clinerules/`, `.kiro/`, `.opencode/`, `.openclaw/`, `gemini-extension.json`, `opencode.json`, `.codex-plugin/`) — we don't ship for those agents.
+- The MCP server, the benchmark scripts, the examples dir, the Spanish README.
+
+### Default state: OFF
+
+The ladder is **off by default**. To apply it for a specific task:
+
+```bash
+/start-task --intensity ultra "rewrite the user-search endpoint"
+```
+
+For an on-demand repo scan:
+
+```bash
+/ponytail-audit                    # whole repo
+/ponytail-audit --path apps/api    # scoped to a subtree
+/ponytail-debt --write             # update tasks/ponytail-debt.md
+```
+
+### Gates always win
+
+`--intensity ultra` does not bypass Stage 1 (BRD), does not bypass `tenant_id` scoping, does not bypass the test pyramid, and does not bypass lint/typecheck/DoD verification. The ladder simplifies; the gates enforce. See [`.claude/rules/ponytail-ladder.md`](.claude/rules/ponytail-ladder.md) "What This Rule Does NOT Override" for the full list.
+
+### Attribution
+
+Ponytail philosophy, ladder structure, tag taxonomy, and `ponytail:` marker convention adapted from [DietrichGebert/ponytail](https://github.com/DietrichGebert/ponytail) (MIT). All rule files and commands adapted under the MIT license. See the file-level preamble in each adapted file for the exact attribution block.
 
 ---
 
