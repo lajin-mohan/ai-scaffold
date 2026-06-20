@@ -55,7 +55,7 @@ The command runs in 5 phases. Phase 2/3 is the approval gate; after approval, co
 2. Read adjacent code — the files in the same module, the same layer, neighbouring tests. Goal: understand local conventions before proposing changes.
 3. Read [ai-coding-rules.md](../rules/ai-coding-rules.md) hard-rule summary.
 4. Verify Definition of Ready criteria are met (see [definition-of-ready.md](../rules/definition-of-ready.md)). If not, **stop** and surface the missing items.
-   For frontend/full-stack tasks: also verify UX handoff is complete (`docs/ux/<feature>/08-dev-handoff.md` exists) — this is a **hard gate** before Stage 5 execution. See `.claude/rules/ux-rules.md`.
+   For frontend/full-stack tasks: also verify UX handoff is complete (`docs/ux/<module>/tasks/<task-id>/06-dev-handoff.md` exists) — this is a **hard gate** before Stage 5 execution. See `.claude/rules/ux-rules.md`.
 
 ### Phase 2 — Plan
 
@@ -161,7 +161,7 @@ When the implementation is done, run the verification suite and produce the repo
 ✅ Typecheck: `npm run typecheck` — passing
 ✅ Tests: `npm run test [target]` — N/N passing (added M new tests)
 ✅ UX: `/ux-review` — passing (required for frontend/full-stack tasks)
-✅ UX Handoff: `/ux-handoff` file exists `docs/ux/<feature>/08-dev-handoff.md` — hard gate before Stage 5
+✅ UX Handoff: `/ux-handoff` file exists `docs/ux/<module>/tasks/<task-id>/06-dev-handoff.md` — hard gate before Stage 5
 ✅ Browser: `npm run test:e2e` — passing (required for frontend/full-stack tasks)
 ✅ Desktop themes: light + dark verified (required for frontend/full-stack tasks)
 ✅ Mobile themes: light + dark verified at ~390px (required for frontend/full-stack tasks)
