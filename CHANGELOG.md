@@ -31,12 +31,13 @@ This file is configured with `merge=union` in `.gitattributes` so parallel addit
 - `docs/architecture/patterns/transactional-outbox.md` — pattern doc for durable side-effects (Finding 6, full pattern).
 - `docs/setup/branch-protection.md` + `scripts/setup-branch-protection.sh` — Track 5 enforcement of branching-rules.md.
 - `merge=union` driver in `.gitattributes` for `CHANGELOG.md`, `tasks/lessons.md`, `docs/architecture/adr/**` (thin Track 4).
+- **Hook-based enforcement for H1-H8 hallucination guards** — three new agent-side hooks wired into `.claude/settings.json`: `pre-write-fact-check.sh` (PreToolUse, warns when an edit targets a file cited as `file:line` but not Read in this session; backing H1/H2/H7), `post-write-console-warn.sh` (PostToolUse, diff-based detection of new `console.log` / `print(` / `println!(` — also scans untracked files), `pre-bash-quality-gate.sh` (PreToolUse, runs `.claude/hooks/pre-commit` inline before `git commit` / `git push` lands). All three fail open in template state and are documented in `ai-coding-rules.md` §1 "Hook Enforcement" and `governance.md` "Enforcement Chain".
+- **`/ponytail-audit` and `/ponytail-debt` commands** — curated integration of Dietrich Gebert's `ponytail` YAGNI-pressure toolkit, scoped to the scaffold's actual source-code paths and aligned with `/start-task --intensity`. Source: `https://github.com/DietrichGebert/ponytail` (MIT). See `.claude/rules/ponytail-ladder.md` for the rule and the ladder.
 
 ### Fixed
 - Encoding fragility in code/config files — replaced em-dashes (`—`) and arrows (`→`) with ASCII (`-`, `->`) in `.yml`, `.sh`, `.json`, `.ts`, `.sql`, `.tf` files. Markdown unchanged (renders fine). (Finding 8)
-
-### Added
-- **`/ponytail-audit` and `/ponytail-debt` commands** — curated integration of Dietrich Gebert's `ponytail` YAGNI-pressure toolkit, scoped to the scaffold's actual source-code paths and aligned with `/start-task --intensity`. Source: `https://github.com/DietrichGebert/ponytail` (MIT). See `.claude/rules/ponytail-ladder.md` for the rule and the ladder.
+- **`pre-write-fact-check.sh` was a no-op** — the transcript path encoding was wrong (URL-encoding `%2F`/`%2E` instead of Claude Code's leading-dash + slash-to-dash rule), so `TRANSCRIPT` was never set and the hook always failed open silently. The Read-detection regex also required `Read` and `file_path` to appear in flat sequence when the actual JSON nests them under `content[].input.file_path`. Both fixed; verified against a real session transcript with positive and negative cases.
+- **`post-write-console-warn.sh` skipped untracked files** — the early `exit 0` when `git diff` was empty ran before the untracked-file fallback, so freshly created untracked files were never scanned. Fixed; verified for TS/Python/Rust untracked files and STRICT mode.
 
 ### Changed
 - **Ladder-compliance wording** — verification report line for `Ladder compliance` now reads "stopped at rung `<N>`; higher rungs rejected because `<reason>`" instead of the misleading "walked 6 rungs per code unit". Aligns with the ladder's "first rung that answers, don't run all six" rule.
