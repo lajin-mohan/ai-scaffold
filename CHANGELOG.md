@@ -20,6 +20,8 @@ This file is configured with `merge=union` in `.gitattributes` so parallel addit
 - **CI gracefully no-ops on the template** — every Node/PHP job in `.github/workflows/ci.yml` is now gated on `hashFiles('package.json')` / `hashFiles('composer.json')` so a fresh template clone passes CI; real checks activate once a stack is bootstrapped.
 - **Template state explicit** — `README.md` and `CLAUDE.md` now carry a TEMPLATE banner so the unbootstrapped state is intentional, not a defect.
 - **`/bootstrap` covers more files** — `.claude/commands/bootstrap.md` now lists `.env.example`, `.github/workflows/ci.yml`, and `.claude/hooks/pre-review.sh` among the files it modifies, so a successful bootstrap leaves the operational scaffold consistent.
+- **Ladder-compliance wording** — verification report line for `Ladder compliance` now reads "stopped at rung `<N>`; higher rungs rejected because `<reason>`" instead of the misleading "walked 6 rungs per code unit". Aligns with the ladder's "first rung that answers, don't run all six" rule.
+- **`/ponytail-debt` allowlist** — harvest now includes `*.sql` and `*.sh` (regex already supported `#` and `--` comment syntax; migrations and scripts are exactly where shortcut markers live). YAML excluded because it's config, not source code.
 
 ### Added
 - `CHANGELOG.md` (this file) — permanent record replacing the tracked `tasks/todo.md`.
@@ -38,10 +40,6 @@ This file is configured with `merge=union` in `.gitattributes` so parallel addit
 - Encoding fragility in code/config files — replaced em-dashes (`—`) and arrows (`→`) with ASCII (`-`, `->`) in `.yml`, `.sh`, `.json`, `.ts`, `.sql`, `.tf` files. Markdown unchanged (renders fine). (Finding 8)
 - **`pre-write-fact-check.sh` was a no-op** — the transcript path encoding was wrong (URL-encoding `%2F`/`%2E` instead of Claude Code's leading-dash + slash-to-dash rule), so `TRANSCRIPT` was never set and the hook always failed open silently. The Read-detection regex also required `Read` and `file_path` to appear in flat sequence when the actual JSON nests them under `content[].input.file_path`. Both fixed; verified against a real session transcript with positive and negative cases.
 - **`post-write-console-warn.sh` skipped untracked files** — the early `exit 0` when `git diff` was empty ran before the untracked-file fallback, so freshly created untracked files were never scanned. Fixed; verified for TS/Python/Rust untracked files and STRICT mode.
-
-### Changed
-- **Ladder-compliance wording** — verification report line for `Ladder compliance` now reads "stopped at rung `<N>`; higher rungs rejected because `<reason>`" instead of the misleading "walked 6 rungs per code unit". Aligns with the ladder's "first rung that answers, don't run all six" rule.
-- **`/ponytail-debt` allowlist** — harvest now includes `*.sql` and `*.sh` (regex already supported `#` and `--` comment syntax; migrations and scripts are exactly where shortcut markers live). YAML excluded because it's config, not source code.
 
 ---
 

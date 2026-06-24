@@ -106,7 +106,7 @@ done
 # created JS/TS files.
 if [ -z "$MATCHES" ] && git status --porcelain -- "$FILE_PATH" 2>/dev/null | grep -q '^??'; then
   for pattern in "${PATTERNS[@]}"; do
-    HITS=$(grep -nE "$pattern" "$FILE_PATH" 2>/dev/null || true)
+    HITS=$(grep -nE -- "$pattern" -- "$FILE_PATH" 2>/dev/null || true)
     if [ -n "$HITS" ]; then
       MATCHES="${MATCHES}${MATCHES:+$'\n'}[new file] ${HITS}"
     fi
