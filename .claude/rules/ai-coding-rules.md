@@ -54,7 +54,7 @@ enforcement layer.
 | Hook | Event | What it catches | Backing rule(s) |
 |---|---|---|---|
 | `.claude/hooks/pre-write-fact-check.sh` | PreToolUse on Edit/Write/MultiEdit | Warns when an edit targets a file cited as `file:line` in this session but not verified by a Read in this session. Strict mode (`ECC_FACT_CHECK_STRICT=1`) blocks instead of warning. | H1, H2, H7 |
-| `.claude/hooks/post-write-console-warn.sh` | PostToolUse on Edit/Write/MultiEdit | Warns on newly-added `console.log` / `print(` / `println!(` to `.ts/.tsx/.js/.jsx/.py/.rs` files (detected via `git diff`, so pre-existing statements are not flagged). | coding-standards "no debug logs" |
+| `.claude/hooks/post-write-console-warn.sh` | PostToolUse on Edit/Write/MultiEdit | Warns on newly-added `console.log` / `print(` / `println!(` / `var_dump(` / `print_r(` / `dd(` / `dump(` / `error_log(` to `.ts/.tsx/.js/.jsx/.mjs/.cjs/.py/.rs/.php` files (detected via `git diff`, so pre-existing statements are not flagged). | coding-standards "no debug logs" |
 | `.claude/hooks/pre-bash-quality-gate.sh` | PreToolUse on Bash | Runs `.claude/hooks/pre-commit` inline before `git commit` / `git push` lands. Blocks the commit if pre-commit fails. Respects `--no-verify`. | coding-standards "lint + typecheck pass before any review" |
 
 All three hooks **fail open** in template state — they exit 0 when the
