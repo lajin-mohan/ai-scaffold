@@ -42,6 +42,30 @@ What does the current codebase actually do here? I can grep [pattern] to find ou
 
 This is the correct response. Not silence, not invention.
 
+### Hook Enforcement
+
+The H1-H8 rules above are prompt-level instructions. They work when the agent
+remembers to follow them and applies them honestly. To make the highest-value
+subset **deterministic**, the scaffold wires three Claude Code hooks into
+`.claude/settings.json` that fire at tool-call time, before or after the agent's
+Edit/Write/Bash call lands. The rules stay authoritative; the hooks are the
+enforcement layer.
+
+| Hook | Event | What it catches | Backing rule(s) |
+|---|---|---|---|
+| `.claude/hooks/pre-write-fact-check.sh` | PreToolUse on Edit/Write/MultiEdit | Warns when an edit targets a file cited as `file:line` in this session but not verified by a Read in this session. Strict mode (`ECC_FACT_CHECK_STRICT=1`) blocks instead of warning. | H1, H2, H7 |
+| `.claude/hooks/post-write-console-warn.sh` | PostToolUse on Edit/Write/MultiEdit | Warns on newly-added `console.log` / `print(` / `println!(` to `.ts/.tsx/.js/.jsx/.py/.rs` files (detected via `git diff`, so pre-existing statements are not flagged). | coding-standards "no debug logs" |
+| `.claude/hooks/pre-bash-quality-gate.sh` | PreToolUse on Bash | Runs `.claude/hooks/pre-commit` inline before `git commit` / `git push` lands. Blocks the commit if pre-commit fails. Respects `--no-verify`. | coding-standards "lint + typecheck pass before any review" |
+
+All three hooks **fail open** in template state — they exit 0 when the
+scaffold itself is being worked on before `/bootstrap` configures the stack.
+This keeps the scaffold working in CI; downstream projects must keep their own
+pre-commit hooks and gate configuration up to date.
+
+Hooks can be disabled or made strict via environment variables (see each
+hook's header comment). The hooks themselves are version-controlled under
+`.claude/hooks/` and become executable via `scripts/install-hooks.sh`.
+
 ---
 
 ## 2. Plan-and-Confirm Protocol

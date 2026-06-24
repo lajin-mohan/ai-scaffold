@@ -19,7 +19,7 @@
       "Write(tasks/**)",
       "Write(.claude/memory/**)",
       "Bash(rm .claude/hooks/pre-commit.sh)",
-      "Bash(chmod +x .claude/hooks/pre-commit .claude/hooks/pre-commit-secrets .claude/hooks/pre-review.sh)",
+      "Bash(chmod +x .claude/hooks/pre-commit .claude/hooks/pre-commit-secrets .claude/hooks/pre-review.sh .claude/hooks/pre-write-fact-check.sh .claude/hooks/post-write-console-warn.sh .claude/hooks/pre-bash-quality-gate.sh)",
       "Bash(git add *)",
       "Bash(git commit -m ' *)"
     ]
@@ -33,6 +33,40 @@
             "type": "command",
             "command": "bash .claude/hooks/pre-review.sh",
             "timeout": 300
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Edit|Write|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/pre-write-fact-check.sh",
+            "timeout": 10
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/pre-bash-quality-gate.sh",
+            "timeout": 60
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/post-write-console-warn.sh",
+            "timeout": 10
           }
         ]
       }
