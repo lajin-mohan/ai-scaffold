@@ -11,12 +11,12 @@
 #   - Reads the hook JSON from stdin ({tool_name, tool_input: {file_path}})
 #   - Runs `git diff` against HEAD to find newly added lines
 #   - Greps those added lines for console.log / console.warn / console.error /
-#     print( / println!(
+#     print( / println!( / var_dump( / print_r( / dd( / dump(
 #   - If found, emit a WARN message identifying the lines
 #   - Exit 0 always (warn, never block)
 #
-# Scope: only .ts/.tsx/.js/.jsx/.mjs/.cjs/.py/.rs files. Other languages are
-# out of scope.
+# Scope: only .ts/.tsx/.js/.jsx/.mjs/.cjs/.py/.rs/.php files. Other languages
+# are out of scope.
 #
 # Fail-open: any unexpected error exits 0. This hook never blocks the agent.
 #
@@ -50,7 +50,7 @@ fi
 
 # Scope filter: only check languages where console-style debug is common
 case "$FILE_PATH" in
-  *.ts|*.tsx|*.js|*.jsx|*.mjs|*.cjs|*.py|*.rs) ;;
+  *.ts|*.tsx|*.js|*.jsx|*.mjs|*.cjs|*.py|*.rs|*.php) ;;
   *) exit 0 ;;
 esac
 
@@ -90,6 +90,17 @@ case "$FILE_PATH" in
   *.rs)
     PATTERNS=('println!\(' 'print!\(' 'eprintln!\(' 'eprint!\(')
     ;;
+  *.php)
+    # PHP debug patterns. var_dump, print_r, var_export are the common
+    # dump-style functions; dd() and dump() are Laravel/Symfony helpers;
+    # error_log() is the built-in logger but is often used as a debug spam
+    # channel. Each pattern uses a word-boundary (`[^a-zA-Z0-9_]` or `^`)
+    # at the start so `var_dump(` doesn't match a `dump(` substring.
+    # Otherwise `var_dump(` would trigger BOTH `var_dump\(` and `dump\(`,
+    # producing duplicate warnings — the same class of substring-matching
+    # bypass we fixed in pre-write-fact-check.sh.
+    PATTERNS=('(^|[^a-zA-Z0-9_])var_dump\(' '(^|[^a-zA-Z0-9_])print_r\(' '(^|[^a-zA-Z0-9_])var_export\(' '(^|[^a-zA-Z0-9_])dd\(' '(^|[^a-zA-Z0-9_])dump\(' '(^|[^a-zA-Z0-9_])error_log\(')
+    ;;
 esac
 
 # Find matches in added lines
@@ -114,6 +125,25 @@ if [ -z "$MATCHES" ] && git status --porcelain -- "$FILE_PATH" 2>/dev/null | gre
 fi
 
 if [ -n "$MATCHES" ]; then
+  # Pick a language-specific guidance line so the message is accurate
+  # for whatever the agent just edited.
+  case "$FILE_PATH" in
+    *.ts|*.tsx|*.js|*.jsx|*.mjs|*.cjs)
+      GUIDANCE="coding-standards.md prefers no console.* in committed code."
+      ;;
+    *.py)
+      GUIDANCE="coding-standards.md prefers no print( in committed code."
+      ;;
+    *.rs)
+      GUIDANCE="coding-standards.md prefers no println!/print! in committed code."
+      ;;
+    *.php)
+      GUIDANCE="coding-standards.md prefers no var_dump/print_r/dd/dump in committed code."
+      ;;
+    *)
+      GUIDANCE="coding-standards.md prefers no debug-log statements in committed code."
+      ;;
+  esac
   if [ "${ECC_CONSOLE_WARN_STRICT:-0}" = "1" ]; then
     echo "BLOCK: New debug-log statements detected in $FILE_PATH:" >&2
     printf '%s\n' "$MATCHES" | sed 's/^/       /' >&2
@@ -122,7 +152,7 @@ if [ -n "$MATCHES" ]; then
   fi
   echo "WARN: New debug-log statements detected in $FILE_PATH:" >&2
   printf '%s\n' "$MATCHES" | sed 's/^/       /' >&2
-  echo "      coding-standards.md prefers no console.* / print( in committed code." >&2
+  echo "      $GUIDANCE" >&2
   echo "      If intentional (e.g., a one-off script), this warning is safe to ignore." >&2
 fi
 
