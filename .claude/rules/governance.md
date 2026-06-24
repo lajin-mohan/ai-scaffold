@@ -22,11 +22,18 @@ This file is the **enforcement layer** — it tells you *what happens when rules
 
 | Rule | Enforcement Method | Who Catches It |
 |---|---|---|
-| H1-H8 (hallucination) | `ai-coding-rules.md` H1-H8 | AI self-check, then `/review` catches remaining |
+| H1-H8 (hallucination) | `ai-coding-rules.md` H1-H8 + PreToolUse/PostToolUse hooks | **PreToolUse hooks** (`pre-write-fact-check.sh`) fire deterministically before Edit/Write on cited-but-unread files. **PostToolUse hooks** (`post-write-console-warn.sh`) flag new debug-log statements at write time. **PreToolUse hooks** (`pre-bash-quality-gate.sh`) run the project's pre-commit inline before `git commit` / `git push` lands. **AI self-check** still applies for cases the hooks can't see. **`/review`** catches any residual issues. |
 | Plan-and-confirm skipped | `ai-coding-rules.md` §2 | BLOCK in any review |
 | Missing verification | `ai-coding-rules.md` §5 | BLOCK — cannot claim done without evidence |
 | Half-implementation | `ai-coding-rules.md` P1-P8 | BLOCK — no stubs, no TODOs without tickets |
 | Token budget exceeded | `token-usage-rules.md` | Advisory warning at 300K tokens |
+
+> **Hook enforcement principle:** Where a rule can be checked deterministically
+> (file existence, diff contents, command shape), a PreToolUse/PostToolUse hook
+> is preferred over a prompt-level rule. The hook fires whether the agent
+> remembers the rule or not; the prompt-level rule remains the source of truth
+> for the *why*, and the hook enforces the *what*. See
+> `ai-coding-rules.md §1 "Hook Enforcement"` for the current hook inventory.
 
 ### Escalation When Violations Compound
 
