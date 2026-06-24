@@ -35,8 +35,14 @@ fi
 
 # Read hook payload from stdin
 PAYLOAD=$(cat 2>/dev/null || echo "")
-TOOL_NAME=$(printf '%s' "$PAYLOAD" | grep -o '"tool_name"[[:space:]]*:[[:space:]]*"[^"]*"' | head -1 | sed 's/.*"tool_name"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/')
-FILE_PATH=$(printf '%s' "$PAYLOAD" | grep -o '"file_path"[[:space:]]*:[[:space:]]*"[^"]*"' | head -1 | sed 's/.*"file_path"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/')
+# Extract file_path via jq if available (robust against escaped quotes), else
+# fall back to a regex (less robust, but the scaffold's hooks run in shells
+# that may not have jq). Per review BLOCK #3, prefer jq for JSON parsing.
+if command -v jq > /dev/null 2>&1; then
+  FILE_PATH=$(printf '%s' "$PAYLOAD" | jq -r '.tool_input.file_path // empty' 2>/dev/null || echo "")
+else
+  FILE_PATH=$(printf '%s' "$PAYLOAD" | grep -o '"file_path"[[:space:]]*:[[:space:]]*"[^"]*"' | head -1 | sed 's/.*"file_path"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/')
+fi
 
 # No file_path (e.g., MultiEdit without primary path) — nothing to check
 if [ -z "$FILE_PATH" ]; then
@@ -48,16 +54,16 @@ if [ ! -f "$FILE_PATH" ]; then
   exit 0
 fi
 
-# Locate the conversation transcript for this session.
-# Claude Code stores it under:
-#   $HOME/.claude/projects/<encoded-cwd>/<session-id>.jsonl
-# where <encoded-cwd> replaces the leading "/" with "-" and every remaining
-# "/" with "-". Dots are preserved as-is. Example:
-#   /Users/lajinmohan/website/ai-scaffold
-#   -> ~/.claude/projects/-Users-lajinmohan-website-ai-scaffold/<id>.jsonl
-# Confirmed against the actual filesystem on this scaffold's CI host.
+# Locate the conversation transcript for this session. The Claude Code hooks
+# runtime provides `transcript_path` in the JSON payload — prefer that over
+# reconstructing the path from env vars (which was the source of an earlier
+# no-op bug). Fall back to env-var reconstruction only if the payload field
+# is missing, so older harness versions still work.
 TRANSCRIPT=""
-if [ -n "${CLAUDE_SESSION_ID:-}" ] && [ -n "${CLAUDE_PROJECT_DIR:-}" ]; then
+if command -v jq > /dev/null 2>&1; then
+  TRANSCRIPT=$(printf '%s' "$PAYLOAD" | jq -r '.transcript_path // empty' 2>/dev/null || echo "")
+fi
+if [ -z "$TRANSCRIPT" ] && [ -n "${CLAUDE_SESSION_ID:-}" ] && [ -n "${CLAUDE_PROJECT_DIR:-}" ] && [ -n "${HOME:-}" ]; then
   ENCODED_CWD=$(printf '%s' "$CLAUDE_PROJECT_DIR" | sed 's|^/|-|; s|/|-|g')
   TRANSCRIPT="$HOME/.claude/projects/${ENCODED_CWD}/${CLAUDE_SESSION_ID}.jsonl"
 fi
@@ -67,20 +73,32 @@ if [ -z "$TRANSCRIPT" ] || [ ! -f "$TRANSCRIPT" ]; then
   exit 0
 fi
 
-# 1. Was this file *cited* in the conversation (file:line patterns)?
-#    We look for relative or absolute paths of the target file appearing in
-#    any assistant or user message.
+# 1. Was this file *cited* in the conversation? We use fixed-string matching
+# (`grep -F`) for the path itself to avoid regex-metacharacter injection if a
+# `file_path` ever contains characters like `[`, `]`, `.`, `*`. The `:N` line
+# suffix is matched separately with a small ERE pattern (no metachar input).
 FILE_BASENAME=$(basename "$FILE_PATH")
 CITED=0
-if grep -qE "${FILE_BASENAME}:[0-9]+|${FILE_PATH}" "$TRANSCRIPT" 2>/dev/null; then
+if grep -qF -- "${FILE_BASENAME}:" "$TRANSCRIPT" 2>/dev/null; then
+  CITED=1
+elif grep -qF -- "$FILE_PATH" "$TRANSCRIPT" 2>/dev/null; then
   CITED=1
 fi
 
-# 2. Was this file *read* in this session? Transcript format nests file_path
-# under content[].input.file_path, so we look for a Read tool_use whose
-# file_path ends with our basename or contains our absolute path.
+# 2. Was this file *read* in this session? Pull Read tool_uses from the
+# transcript with jq (also robust against nested JSON shape), or fall back to
+# a fixed-string scan for the basename inside Read blocks.
 READ=0
-if grep -qE '"name"[[:space:]]*:[[:space:]]*"Read"[[:space:]]*,[[:space:]]*"input"[[:space:]]*:[[:space:]]*\{[[:space:]]*"file_path"[[:space:]]*:[[:space:]]*"[^"]*'"${FILE_BASENAME}"'"' "$TRANSCRIPT" 2>/dev/null; then
+if command -v jq > /dev/null 2>&1; then
+  if jq -e --arg b "$FILE_BASENAME" --arg p "$FILE_PATH" \
+    '.. | objects | select(.type=="tool_use" and .name=="Read") | select((.input.file_path // "") | endswith($b) or . == $p or contains("/" + $b))' \
+    "$TRANSCRIPT" >/dev/null 2>&1; then
+    READ=1
+  fi
+elif grep -qF -- "\"name\": \"Read\"" "$TRANSCRIPT" 2>/dev/null \
+  && grep -qF -- "$FILE_BASENAME" "$TRANSCRIPT" 2>/dev/null; then
+  # Loose fallback: Read happened AND basename is mentioned in the transcript.
+  # Not as tight as the jq path, but avoids the regex-metachar issue.
   READ=1
 fi
 

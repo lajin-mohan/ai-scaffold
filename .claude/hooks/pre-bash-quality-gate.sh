@@ -59,16 +59,15 @@ if [ "$TRIGGER" = "0" ]; then
   exit 0
 fi
 
-# Locate the existing pre-commit hook
+# Locate the existing pre-commit hook. Anchor strictly under the git toplevel
+# (per review BLOCK #4: the previous relative-path candidate resolved against
+# the agent's CWD and could match an attacker-planted `.claude/hooks/pre-commit`
+# in a subdirectory). If we can't resolve the toplevel, fail open.
 PRE_COMMIT=""
-for candidate in \
-  ".claude/hooks/pre-commit" \
-  "$(git rev-parse --show-toplevel 2>/dev/null)/.claude/hooks/pre-commit"; do
-  if [ -x "$candidate" ]; then
-    PRE_COMMIT="$candidate"
-    break
-  fi
-done
+GIT_ROOT=$(git rev-parse --show-toplevel 2>/dev/null || echo "")
+if [ -n "$GIT_ROOT" ] && [ -x "$GIT_ROOT/.claude/hooks/pre-commit" ]; then
+  PRE_COMMIT="$GIT_ROOT/.claude/hooks/pre-commit"
+fi
 
 # Template / pre-bootstrap state: pre-commit exists but template state means
 # it exits 0 with "(no project stack detected — template state, skipping checks)".
