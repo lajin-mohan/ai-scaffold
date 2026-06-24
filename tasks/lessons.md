@@ -3,6 +3,7 @@
 This file records patterns from mistakes and corrections. Claude reads this at the start of every session.
 
 **Format for each entry:**
+
 - **Mistake:** What went wrong
 - **Why:** Root cause
 - **Rule:** The principle that prevents recurrence
@@ -11,11 +12,17 @@ This file records patterns from mistakes and corrections. Claude reads this at t
 
 <!-- Add lessons below as they are captured. Most recent at the top. -->
 
+## 2026-06-25 - Don't keep a half-fixed fallback for the bug the fix was supposed to eliminate
+
+- **Mistake:** The /review BLOCK on `pre-write-fact-check.sh` said "the hook re-enters the exact hand-rolled path reconstruction failure mode the review wanted eliminated." The first fix attempt kept the env-var reconstruction (`CLAUDE_SESSION_ID` + `CLAUDE_PROJECT_DIR` with hand-rolled directory encoding) as a "fallback" on the grounds that older harness versions might not provide `transcript_path` in the payload. The reviewer flagged this on the second pass: the fallback IS the original bug. By keeping it, I left the failure mode in the codebase under the guise of backward compatibility. The whole point of the fix was to make that reconstruction impossible — keeping it "just in case" reintroduces the class of failure the BLOCK was about.
+- **Why:** Backward-compat fallbacks feel safe ("if the new way doesn't work, the old way still does") but they're how deprecated code paths outlive the deprecation. The previous attempt to fix the same hook (URL-encoding vs leading-dash) was itself a "fix" of the env-var reconstruction, and the hook still failed open silently. A fix that preserves the failure mode it was meant to remove is not a fix.
+- **Rule:** **When a review BLOCK says "remove X", removing X includes removing X's fallback path.** If a fallback to the broken path is needed for older harness support, it should be a separate, more conservative mechanism (e.g. python3 with a different lookup rule) — not a thinly-veiled copy of the original broken code. Specifically for `pre-write-fact-check.sh`: the env-var reconstruction was the root cause of the no-op bug in PR #12; after the BLOCK, the hook must not reconstruct the transcript path from env vars under any branch. If a JSON parser (jq or python3) is not available, the hook fails open and emits a one-line warning to stderr explaining why enforcement is disabled in this session.
+
 ## 2026-06-20 - ponytail-mode is OFF by default; per-call intensity only; gates always win
 
 - **Mistake:** A "lazy senior developer" ruleset was added to the scaffold. Without an explicit off-by-default and per-call scoping rule, the agent auto-applied the ladder and tried to skip Stage 1 (BRD), bypass tenant scoping, and stop at "one runnable check" instead of the test pyramid.
 - **Why:** The plugin's default behavior is to activate at SessionStart and persist across the session. The reflex-driven mode (`/ponytail lite|full|ultra`) conflicts with the scaffold's stage-gated workflow, layered architecture, and DoD floor. Without an explicit subordination rule, the agent treats the ladder as a parallel enforcement system and the gates as advisory.
-- **Rule:** **ponytail-mode is OFF by default in this scaffold.** Intensity is per-call via `/start-task --intensity lite|full|ultra` and never persists. The ladder never overrides the gates, DoD, layered architecture, security rules, or the test pyramid — it is a pressure layer *below* them, not a parallel driver. See [`.claude/rules/ponytail-ladder.md`](../.claude/rules/ponytail-ladder.md) "What This Rule Does NOT Override" for the full list. Any review finding that says "this should have been caught by gates" while intensity was set should cite this lesson.
+- **Rule:** **ponytail-mode is OFF by default in this scaffold.** Intensity is per-call via `/start-task --intensity lite|full|ultra` and never persists. The ladder never overrides the gates, DoD, layered architecture, security rules, or the test pyramid — it is a pressure layer _below_ them, not a parallel driver. See [`.claude/rules/ponytail-ladder.md`](../.claude/rules/ponytail-ladder.md) "What This Rule Does NOT Override" for the full list. Any review finding that says "this should have been caught by gates" while intensity was set should cite this lesson.
 
 ## 2026-05-10 - Phase estimation missing from project workflow
 
@@ -66,6 +73,7 @@ This file records patterns from mistakes and corrections. Claude reads this at t
 
 ## 2026-06-24 - Audit-then-fix sequence caught defects that code review missed
 
-- **Mistake:** The three hooks passed shellcheck, passed `/review` (no BLOCK findings), and looked correct. The defects only surfaced when `/ponytail-audit` was run *and the user agreed to fix the BLOCK finding first* — at which point I had to actually run the hooks against real transcripts to verify the fix. That verification revealed the untracked-file bug in console-warn that wasn't even in the audit report.
+- **Mistake:** The three hooks passed shellcheck, passed `/review` (no BLOCK findings), and looked correct. The defects only surfaced when `/ponytail-audit` was run _and the user agreed to fix the BLOCK finding first_ — at which point I had to actually run the hooks against real transcripts to verify the fix. That verification revealed the untracked-file bug in console-warn that wasn't even in the audit report.
 - **Why:** `/review` checks the code-as-written for correctness against the rules; `/ponytail-audit` checks for over-engineering. Neither runs the artifact against a real environment. Both assume the code does what it says.
-- **Rule:** **For Claude Code hooks (or any code that depends on external system state), the verification step is "run it against reality," not "review it for correctness."** A `/review` pass without an execution test is incomplete. When building hooks, the work isn't done until the hook has been invoked with a real session ID, a real `CLAUDE_PROJECT_DIR`, and a real transcript, and the output matches the documented behaviour for at least one positive case and one negative case.
+- **Rule:** **For Claude Code hooks (or any code that depends on external system state), the verification step is "run it against reality," not "review it for correctness."** A `/review` pass without an execution test is incomplete. When building hooks, the work isn't done until the hook has been invoked with a real session ID, a real `CLAUDE_PROJECT_DIR`, and a real transcript, and the output matches the documented behavi
+  our for at least one positive case and one negative case.

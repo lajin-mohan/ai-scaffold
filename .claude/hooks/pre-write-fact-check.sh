@@ -35,11 +35,21 @@ fi
 
 # Read hook payload from stdin
 PAYLOAD=$(cat 2>/dev/null || echo "")
-# Extract file_path via jq if available (robust against escaped quotes), else
-# fall back to a regex (less robust, but the scaffold's hooks run in shells
-# that may not have jq). Per review BLOCK #3, prefer jq for JSON parsing.
+# Extract file_path. Prefer jq (robust against escaped quotes); fall back to
+# python3 (similarly robust); otherwise a simple regex on the unescaped form
+# (the payload field comes from Claude Code, which doesn't emit escaped quotes
+# in file_path, so this last resort is safe in practice).
 if command -v jq > /dev/null 2>&1; then
   FILE_PATH=$(printf '%s' "$PAYLOAD" | jq -r '.tool_input.file_path // empty' 2>/dev/null || echo "")
+elif command -v python3 > /dev/null 2>&1; then
+  FILE_PATH=$(printf '%s' "$PAYLOAD" | python3 -c '
+import json, sys
+try:
+    d = json.load(sys.stdin)
+    print(d.get("tool_input", {}).get("file_path", "") or "")
+except Exception:
+    print("")
+' 2>/dev/null || echo "")
 else
   FILE_PATH=$(printf '%s' "$PAYLOAD" | grep -o '"file_path"[[:space:]]*:[[:space:]]*"[^"]*"' | head -1 | sed 's/.*"file_path"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/')
 fi
@@ -55,17 +65,24 @@ if [ ! -f "$FILE_PATH" ]; then
 fi
 
 # Locate the conversation transcript for this session. The Claude Code hooks
-# runtime provides `transcript_path` in the JSON payload — prefer that over
-# reconstructing the path from env vars (which was the source of an earlier
-# no-op bug). Fall back to env-var reconstruction only if the payload field
-# is missing, so older harness versions still work.
+# runtime provides `transcript_path` in the JSON payload — that's the only
+# source of truth we trust. The previous env-var reconstruction
+# (CLAUDE_SESSION_ID + CLAUDE_PROJECT_DIR with hand-rolled directory
+# encoding) was the source of an earlier no-op bug, so it has been removed
+# entirely per the post-/review follow-up. Without a JSON parser (jq or
+# python3) we cannot read the payload, so we fail open.
 TRANSCRIPT=""
 if command -v jq > /dev/null 2>&1; then
   TRANSCRIPT=$(printf '%s' "$PAYLOAD" | jq -r '.transcript_path // empty' 2>/dev/null || echo "")
-fi
-if [ -z "$TRANSCRIPT" ] && [ -n "${CLAUDE_SESSION_ID:-}" ] && [ -n "${CLAUDE_PROJECT_DIR:-}" ] && [ -n "${HOME:-}" ]; then
-  ENCODED_CWD=$(printf '%s' "$CLAUDE_PROJECT_DIR" | sed 's|^/|-|; s|/|-|g')
-  TRANSCRIPT="$HOME/.claude/projects/${ENCODED_CWD}/${CLAUDE_SESSION_ID}.jsonl"
+elif command -v python3 > /dev/null 2>&1; then
+  TRANSCRIPT=$(printf '%s' "$PAYLOAD" | python3 -c '
+import json, sys
+try:
+    d = json.load(sys.stdin)
+    print(d.get("transcript_path", "") or "")
+except Exception:
+    print("")
+' 2>/dev/null || echo "")
 fi
 
 # No transcript found — can't verify, fail open
@@ -86,8 +103,8 @@ elif grep -qF -- "$FILE_PATH" "$TRANSCRIPT" 2>/dev/null; then
 fi
 
 # 2. Was this file *read* in this session? Pull Read tool_uses from the
-# transcript with jq (also robust against nested JSON shape), or fall back to
-# a fixed-string scan for the basename inside Read blocks.
+# transcript with jq (robust against nested JSON shape), fall back to
+# python3 (same), and finally to a fixed-string scan over the transcript.
 READ=0
 if command -v jq > /dev/null 2>&1; then
   if jq -e --arg b "$FILE_BASENAME" --arg p "$FILE_PATH" \
@@ -95,10 +112,42 @@ if command -v jq > /dev/null 2>&1; then
     "$TRANSCRIPT" >/dev/null 2>&1; then
     READ=1
   fi
+elif command -v python3 > /dev/null 2>&1; then
+  if python3 -c '
+import json, sys
+target_b = sys.argv[1]
+target_p = sys.argv[2]
+found = False
+with open(sys.argv[3], "r", encoding="utf-8", errors="ignore") as f:
+    for line in f:
+        try:
+            obj = json.loads(line)
+        except Exception:
+            continue
+        # Walk nested structure looking for tool_use blocks with name=Read
+        def walk(o):
+            global found
+            if isinstance(o, dict):
+                if o.get("type") == "tool_use" and o.get("name") == "Read":
+                    fp = o.get("input", {}).get("file_path", "") or ""
+                    if fp.endswith(target_b) or fp == target_p or ("/" + target_b) in fp:
+                        found = True
+                for v in o.values():
+                    walk(v)
+            elif isinstance(o, list):
+                for v in o:
+                    walk(v)
+        walk(obj)
+        if found:
+            break
+sys.exit(0 if found else 1)
+' "$FILE_BASENAME" "$FILE_PATH" "$TRANSCRIPT" >/dev/null 2>&1; then
+    READ=1
+  fi
 elif grep -qF -- "\"name\": \"Read\"" "$TRANSCRIPT" 2>/dev/null \
   && grep -qF -- "$FILE_BASENAME" "$TRANSCRIPT" 2>/dev/null; then
   # Loose fallback: Read happened AND basename is mentioned in the transcript.
-  # Not as tight as the jq path, but avoids the regex-metachar issue.
+  # Not as tight as the jq/python3 paths, but avoids the regex-metachar issue.
   READ=1
 fi
 
