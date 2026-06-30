@@ -80,7 +80,7 @@ UX work is **task-based** — one UX task = one UX deliverable. The Reporting mo
 
 **UX state coverage requirement (hard gate):** every data-rendering screen must cover all **7** states — loading, empty, error, permission-denied, success, form-validation, mobile. Token-only colors enforced (GH-11 — Token Hygiene Reference-Only Rule).
 
-**Live reference:** see [docs/ux/reporting/00-index.md](./docs/ux/reporting/00-index.md) and [docs/ux/reporting/tasks/UX-REP-003-combined-figma-package/03-design-prompt.md](./docs/ux/reporting/tasks/UX-REP-003-combined-figma-package/03-design-prompt.md) for an end-to-end example.
+**Live reference:** see `docs/ux/` for the UX module structure and task conventions.
 
 ### Where work-state lives
 

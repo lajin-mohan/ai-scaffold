@@ -1,0 +1,24 @@
+{
+  "version": "0.6.2",
+  "profile": "generic",
+  "bootstrapped": true,
+  "bootstrapCompletedAt": "2026-06-29",
+  "installedAt": "2026-06-29",
+  "updatedAt": "2026-06-29",
+  "source": "ai-scaffold",
+  "defaultedValues": [],
+  "managedFiles": [
+    {
+      "path": ".claude/rules/ai-coding-rules.md",
+      "hash": "sha256:c26d5ac6f20d9f464b1cd896d9c4d0fd279f9277ba81e0da91d028ed5b3bcb2d"
+    },
+    {
+      "path": ".claude/rules/branching-rules.md",
+      "hash": "sha256:cf9c51947cd5e9c5121bad7fb0b43b47e21c7238e9af6438686e332c793c9ef9"
+    },
+    {
+      "path": ".claude/rules/coding-standards.md",
+      "hash": "sha256:c147ce83d117bbecfdecf6b92df2f00ea977704f7e99e7924263142951db576c"
+    }
+  ]
+}

@@ -60,3 +60,47 @@ Application repositories should not copy these entries into their project memory
 
 ### Lesson
 - Do not add unsupported governance fields to Claude Code settings. Operationalize governance thresholds through commands and output instead.
+
+---
+
+## 2026-06-08 — v0.6.0 / v0.6.1: Agent-Side Enforcement Hooks
+
+**Stage:** H1-H8 hallucination guard hooks shipped
+
+### Key Changes
+- Added 3 pre/post hooks: `pre-write-fact-check.sh`, `post-write-console-warn.sh`, `pre-bash-quality-gate.sh`
+- Pre-review hook (`pre-review.sh`) enforces lint + typecheck + tests before `/review`
+- Template mode settings keep fresh scaffold clones working without configuration
+- Bug fix: exact canonical-path match in fact-check bypass detection
+
+### Decision
+- Hooks fail open in template state (exit 0 with no checks run) so the scaffold stays CI-green before `/bootstrap`
+- Downstream projects must keep their own pre-commit hooks and gate configuration up to date
+
+---
+
+## 2026-06-29 — v0.6.2 (Current Work): AI Scaffold CLI Development
+
+**Stage:** Phase 0 stabilize + Phase 1 planning complete; CLI implementation next
+
+### Key Changes (Planned)
+- Create distributable CLI tool (`npx ai-scaffold`)
+- Commands: `create`, `init`, `status`, `doctor`, `update`
+- Profiles: generic, laravel, nextjs, golang, flutter, python, java, dotnet
+- Placeholder-resolution pipeline prevents `{{...}}` tokens from reaching adopted projects
+- Version tracking via `.ai-scaffold.json`
+
+### Scaffold Stabilization Actions (Phase 0)
+- Untracked `.claude/MEMORY.md` from git — was leaking build history to adopted projects
+- Split `.claude/settings-overrides.json` into template + generated
+- Marked Vue/Nuxt as "planned, not ready" until overlay exists
+- Created `docs/cli/placeholder-resolution.md` spec
+- Set `PRE_REVIEW_ALLOW_UNCONFIGURED` for template mode
+
+### Architectural Decisions
+- Pre-merged complete profiles (no runtime profile merging)
+- `.ai-scaffold.json` tracks version, profile, bootstrap state, and file hashes
+- Generated per-project files: `.claude/MEMORY.md`, `.claude/settings-overrides.json`, `.ai-scaffold.json`
+
+### Lesson (Pending)
+- Placeholder propagation is the #1 risk for CLI adoption — template files must never ship unresolved tokens

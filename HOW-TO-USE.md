@@ -183,7 +183,7 @@ UX work follows a staged, task-based path. Each command gates the next — no sk
 
 **Module-level structure:** one folder per UX module under `docs/ux/<module>/` with `module.json`, `state.json`, `00-index.md`, and a `tasks/<MODULE>-<NNN>-<slug>/` subfolder per task.
 
-**Reporting module is the live reference:** see `docs/ux/reporting/00-index.md` and `docs/ux/reporting/tasks/UX-REP-003-combined-figma-package/03-design-prompt.md` for a real end-to-end example.
+**UX module structure is the live reference:** see `docs/ux/` for the UX module folder conventions and task artifacts.
 
 **For quick fixes and spikes** (single screen, color/spacing), use `/ux-create` directly — bypasses the staged path.
 

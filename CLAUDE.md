@@ -14,6 +14,8 @@ This file governs how Claude, Codex, and other AI tools collaborate on every pro
 > - `/review` runs with `PRE_REVIEW_ALLOW_UNCONFIGURED=1` set in `.claude/settings.json` so it works without configured lint/typecheck/test commands. `/bootstrap` removes this opt-out as part of stack configuration.
 >
 > If you are editing this template itself (improving rules, agents, commands), the placeholders stay. If you are starting a real project, run `/bootstrap` first.
+>
+> **NOTE:** This file (`ai-scaffold` repo itself) IS bootstrapped for its own identity. Its project identity, tech stack, and settings are resolved. The `{{...}}` placeholders remaining in this file are intentionally left as documentation of what `/bootstrap` fills in — they do not appear in projects created via the CLI.
 
 ---
 
@@ -21,14 +23,14 @@ This file governs how Claude, Codex, and other AI tools collaborate on every pro
 
 | Field | Value |
 |---|---|
-| **Project** | `{{PROJECT_NAME}}` |
+| **Project** | `ai-scaffold` |
 | **Organization** | Techversant Infotech |
 | **Owner** | Lajin M J - lajinmj@gmail.com |
-| **Purpose** | `{{ONE_LINE_PURPOSE}}` |
-| **Type** | `{{SaaS / Internal Tool / API / Platform}}` |
-| **Status** | `{{Active Development / MVP / Production}}` |
-| **Multi-tenant** | `{{IS_MULTI_TENANT}}` — `true` / `false`. When `true`, every mutable entity carries `tenant_id` and tenant isolation rules in `.claude/rules/security-rules.md` apply. |
-| **Compliance Scope** | `{{COMPLIANCE_SCOPE}}` — applicable frameworks: `GDPR`, `ISO27001`, `HIPAA`, `SOC2`, `PCI-DSS`, or `N/A`. Drives `.claude/rules/compliance-rules.md`. |
+| **Purpose** | Reusable AI engineering scaffold with CLI distribution |
+| **Type** | Platform |
+| **Status** | Active Development |
+| **Multi-tenant** | `false` — single-tenant CLI tool, no tenant isolation needed |
+| **Compliance Scope** | `N/A` — CLI tool, no personal data processing |
 
 ---
 
@@ -38,17 +40,17 @@ This file governs how Claude, Codex, and other AI tools collaborate on every pro
 
 | Layer | Technology |
 |---|---|
-| **Backend** | `{{BACKEND_STACK}}` - e.g., Node.js + TypeScript + Fastify, Laravel + PHP, Python + FastAPI |
-| **Frontend** | `{{FRONTEND_STACK}}` - e.g., React + Vite + TypeScript, Vue 3, Next.js |
-| **Database** | `{{DATABASE}}` - e.g., PostgreSQL 16, MySQL 8, MongoDB |
-| **Cache / Queue** | `{{CACHE_QUEUE}}` - e.g., Redis, pg-boss, BullMQ |
-| **Auth** | `{{AUTH_STRATEGY}}` - e.g., opaque sessions, JWT, OAuth2 |
-| **Email** | `{{EMAIL_PROVIDER}}` - e.g., Resend, SendGrid |
-| **Storage** | `{{STORAGE}}` - e.g., AWS S3, Cloudflare R2 |
-| **Infra / Cloud** | `{{CLOUD_PROVIDER}}` - e.g., AWS ECS + Fargate, GCP Cloud Run |
-| **IaC** | `{{IAC_TOOL}}` - e.g., Terraform, Pulumi, CDK |
-| **CI/CD** | `{{CICD_PLATFORM}}` - e.g., GitHub Actions, GitLab CI |
-| **Project Mgmt** | `{{PM_TOOL}}` - e.g., Jira, Linear, GitHub Projects |
+| **Backend** | `N/A` — CLI tool, no server runtime |
+| **Frontend** | `N/A` — CLI tool, no UI runtime |
+| **Database** | `N/A` — CLI tool, no database |
+| **Cache / Queue** | `N/A` — CLI tool, no runtime state |
+| **Auth** | `N/A` — CLI tool, no authentication |
+| **Email** | `N/A` — CLI tool, no email |
+| **Storage** | `N/A` — CLI tool, no object storage |
+| **Infra / Cloud** | `N/A` — CLI tool, no hosting |
+| **IaC** | `N/A` — CLI tool distribution, no project infra |
+| **CI/CD** | GitHub Actions — CI runs on the scaffold repo itself |
+| **Project Mgmt** | GitHub Projects — issue tracking for CLI development |
 
 ---
 

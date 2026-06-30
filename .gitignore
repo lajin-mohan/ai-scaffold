@@ -43,6 +43,9 @@ _ai/experiments/
 .claude/MEMORY.md
 .claude/memory/*.local.md
 
+# Local Claude settings overrides — generated during bootstrap/init from template
+.claude/settings-overrides.json
+
 # Legacy tracked file — replaced by tasks/todo/ per-ticket files + CHANGELOG.md.
 # Untracked via `git rm --cached tasks/todo.md`. Kept locally; new edits stay local.
 tasks/todo.md

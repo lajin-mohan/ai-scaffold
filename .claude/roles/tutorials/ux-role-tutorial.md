@@ -61,7 +61,7 @@ This analyzes a feature's UX requirements, user roles, information architecture,
 
 ### Full UX Lifecycle (task-based)
 
-The UX workflow is **task-based** — one UX task = one UX deliverable. The Reporting module under `docs/ux/reporting/` is the live reference implementation.
+The UX workflow is **task-based** — one UX task = one UX deliverable. See `docs/ux/` for the UX module folder structure and task artifact conventions.
 
 ```
 1. UX Analysis: /ux-analysis <MODULE>-<NNN>
@@ -290,4 +290,4 @@ Invoke these for deep analysis:
 - UX system skill (design tokens, components): [.claude/skills/ux-system/SKILL.md](../../skills/ux-system/SKILL.md)
 - Design system: [.claude/skills/design-system.md](../../skills/design-system.md)
 - UX rules: [.claude/rules/ux-rules.md](../../rules/ux-rules.md)
-- Live reference implementation: [docs/ux/reporting/00-index.md](../../../docs/ux/reporting/00-index.md) and [docs/ux/reporting/tasks/UX-REP-003-combined-figma-package/03-design-prompt.md](../../../docs/ux/reporting/tasks/UX-REP-003-combined-figma-package/03-design-prompt.md)
+- Live reference implementation: see `docs/ux/` for the UX module structure and task artifact conventions.

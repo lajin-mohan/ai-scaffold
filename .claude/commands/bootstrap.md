@@ -102,7 +102,7 @@ Reply 'confirm' to proceed.
 
 On `confirm`, write in this order:
 
-1. **`.claude/settings-overrides.json`** — the single source of truth. Contains project identity + all feature flags. This file is committed and shared.
+1. **`.claude/settings-overrides.json`** — project identity + all feature flags. Generated from `.claude/settings-overrides.template.json` during bootstrap/init. Gitignored — not committed. Commit the template file instead.
 
 2. **`.claude/MEMORY.md`** — initialize from `.claude/MEMORY.template.md` and replace project snapshot placeholders. Do not copy ai-scaffold build history into the adopted application.
 
@@ -335,7 +335,7 @@ Based on the tech stack selected, write the corresponding overlay files into CLA
 | Stack keyword | Overlay file |
 |---|---|
 | `react`, `next`, `vite` | `.claude/rules/stacks/frontend-react.md` |
-| `vue`, `nuxt` | `.claude/rules/stacks/frontend-vue.md` (create if needed) |
+| `vue`, `nuxt` | Not yet implemented — `frontend-vue.md` does not exist. Flag as planned. |
 
 ### Rule
 Write only the overlays that match the selected stack. Do not reference absent stack files.
