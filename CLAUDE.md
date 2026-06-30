@@ -7,15 +7,13 @@ This file governs how Claude, Codex, and other AI tools collaborate on every pro
 > [!IMPORTANT]
 > **TEMPLATE STATE — placeholders below are intentional**
 >
-> If you see `{{PROJECT_NAME}}`, `{{BACKEND_STACK}}`, `{{IS_MULTI_TENANT}}`, etc., the scaffold has not been bootstrapped for a real project yet. Do not treat them as bugs to fix or guess at values. Run `/bootstrap` instead — it walks through identity, stack, tenancy, and compliance one decision at a time and updates every file that holds a placeholder.
+> If you see bracket-placeholders in the Project Identity or Tech Stack table below, the scaffold has not been bootstrapped for a real project yet. Do not treat them as bugs to fix or guess at values. Run `/bootstrap` instead — it walks through identity, stack, tenancy, and compliance one decision at a time and updates every file that holds a placeholder.
 >
 > While in template state, the operational gates are deliberately permissive:
 > - CI workflow's `detect-stack` job skips Node/PHP jobs when no `package.json` / `composer.json` exists, so a fresh template clone passes CI.
 > - `/review` runs with `PRE_REVIEW_ALLOW_UNCONFIGURED=1` set in `.claude/settings.json` so it works without configured lint/typecheck/test commands. `/bootstrap` removes this opt-out as part of stack configuration.
 >
 > If you are editing this template itself (improving rules, agents, commands), the placeholders stay. If you are starting a real project, run `/bootstrap` first.
->
-> **NOTE:** This file (`ai-scaffold` repo itself) IS bootstrapped for its own identity. Its project identity, tech stack, and settings are resolved. The `{{...}}` placeholders remaining in this file are intentionally left as documentation of what `/bootstrap` fills in — they do not appear in projects created via the CLI.
 
 ---
 
@@ -470,7 +468,7 @@ The legacy `tasks/todo.md` is gitignored and untracked — do not commit it. It 
 
 > Update this section at the start of each epic.
 
-- **Current Epic**: `{{EPIC_NAME}}`
-- **Next Milestone**: `{{MILESTONE_DATE}}`
-- **Blockers**: `{{NONE or list}}`
-- **In-Flight Branches**: `{{list}}`
+- **Current Epic**: CLI distribution and profile support (v0.7.0)
+- **Next Milestone**: Phase 1 CLI MVP — `create`, `init`, `status`, `doctor` commands
+- **Blockers**: None
+- **In-Flight Branches**: `dev` — Phase 0 committed, Phase 1 next
