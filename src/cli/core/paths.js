@@ -1,0 +1,48 @@
+/**
+ * Path utilities — resolves paths relative to the CLI package root.
+ * Templates, configs, and other package resources are resolved from here.
+ */
+
+import path from 'path';
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+
+/**
+ * The directory of this core module.
+ * All package resources are relative to the package root.
+ */
+export const CLI_ROOT = dirname(fileURLToPath(import.meta.url));
+// => .../src/cli/core
+
+/**
+ * The root directory of the ai-scaffold package.
+ * src/cli/core/.. = src/cli/
+ * src/cli/../.. = src/
+ * src/../.. = repo root
+ */
+export const PKG_ROOT = path.resolve(CLI_ROOT, '..', '..', '..');
+// => repo root (ai-scaffold/)
+
+/**
+ * Directory containing scaffold templates (generic, laravel, etc.).
+ */
+export const TEMPLATES_DIR = path.resolve(PKG_ROOT, 'templates');
+
+/**
+ * Directory containing scaffold managed files (used for `init` into same repo).
+ */
+export const SCAFFOLD_DIR = PKG_ROOT;
+
+/**
+ * Resolve a path relative to the package root.
+ */
+export function pkgPath(...segments) {
+  return path.resolve(PKG_ROOT, ...segments);
+}
+
+/**
+ * Resolve a path relative to the templates directory.
+ */
+export function templatePath(profile, ...segments) {
+  return path.resolve(TEMPLATES_DIR, profile, ...segments);
+}
