@@ -192,6 +192,8 @@ Code that AI generates is read by humans, by other AIs, and most often by **futu
 | R6 | **No "AI signature" patterns.** Avoid tells: extra blank lines for "spacing", over-explanatory variable names like `userInputThatCameFromForm`, redundant `as Type` casts. | Generated code should be indistinguishable from human-written |
 | R7 | **Naming describes IS, not DOES.** `userRepository` not `getUserStuff`. `pendingApplications` not `apps`. | Already in coding-standards; reinforced here |
 | R8 | **One concept per function.** If you can't name it without "and", split it. | Already in coding-standards; reinforced here |
+| R9 | **Return early, exit fast.** Prefer guard clauses at the top of a function over nested conditionals deeper in the body. One level of nesting is the ceiling; beyond that, extract or return. | Senior engineers write flat code; deep nesting is the root cause of most "I can't follow this function" bugs |
+| R10 | **Safe by default — don't trust the caller.** A function should handle empty input, null values, and zero-length collections without crashing. If the contract says "caller must check X first," the function is fragile — make it robust or document the guard explicitly. | AI tends to write functions that crash on edge inputs; senior engineers write functions that degrade gracefully |
 
 ### Comment density check
 
@@ -212,6 +214,32 @@ for (const user of users) {
 for (const user of users) {
   if (user.deleted_at) continue
   if (validateEmail(user.email)) { ... }
+}
+```
+
+### Flat-code pattern
+
+```typescript
+// BAD — deep nesting, unclear happy path
+function processApplication(app: Application | null) {
+  if (app) {
+    if (app.tenant_id) {
+      if (app.status === "draft") {
+        if (app.submitted_at === null) {
+          // happy path is buried here
+        }
+      }
+    }
+  }
+}
+
+// GOOD — guard clauses, happy path at top level
+function processApplication(app: Application | null) {
+  if (!app) return
+  if (!app.tenant_id) return
+  if (app.status !== "draft") return
+  if (app.submitted_at !== null) return
+  // happy path is here — flat, readable, obvious
 }
 ```
 
@@ -397,6 +425,8 @@ Hard rules:
 - Functions ≤ 50 lines, files ≤ 300 lines, ≤ 5 params, complexity ≤ 10.
 - Run lint + tests before claiming "done". If you can't, say so.
 - Match adjacent code style. Don't bundle refactors into feature work.
+- Return early and keep nesting flat. One level of nesting, then extract.
+- Make functions safe by default — handle null, empty, and zero without crashing.
 
 Restate the rules above in one sentence to confirm context, then ask me what to build.
 ```
@@ -406,7 +436,7 @@ Restate the rules above in one sentence to confirm context, then ask me what to 
 ## Cross-References
 
 - [coding-standards.md](./coding-standards.md) — universal correctness, structure, SOLID
-- [review-rules.md](./review-rules.md) — pre-review checklist, severity labels
+- [review-rules.md](./review-rules.md) — pre-review checklist, severity labels, merge rules
 - [testing-rules.md](./testing-rules.md) — coverage expectations, test pyramid
 - [security-rules.md](./security-rules.md) — non-negotiable security rules
 - [dod-rules.md](./dod-rules.md) — Definition of Done at story/sprint/release level

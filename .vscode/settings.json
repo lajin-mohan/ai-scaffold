@@ -22,7 +22,7 @@
   "security.workspace.trust.enabled": true,
   "security.workspace.trust.emptyWindow": false,
   "telemetry.telemetryLevel": "off",
-  "workbench.colorTheme": "Default Dark+",
+  "workbench.colorTheme": "Dark+",
   "[json]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
