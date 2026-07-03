@@ -175,14 +175,29 @@ export async function buildFilePlan(sourceDir, targetDir, options = {}) {
 
   // Add always-generate files (no template source; built programmatically)
   for (const genRel of alwaysGenerate) {
-    if (!plan.generate.some(g => g.rel === genRel)) {
-      plan.generate.push({
+    if (plan.generate.some(g => g.rel === genRel) || plan.skipProtected.some(f => f.rel === genRel)) {
+      continue;
+    }
+
+    const target = path.join(targetDir, genRel);
+    if (existingTarget && matchesAny(genRel, PROTECTED_PATHS)) {
+      const targetExists = await fs.pathExists(target);
+      plan.skipProtected.push({
         src: null,
         rel: genRel,
-        target: path.join(targetDir, genRel),
+        target,
+        exists: targetExists,
         templateRel: null,
       });
+      continue;
     }
+
+    plan.generate.push({
+      src: null,
+      rel: genRel,
+      target,
+      templateRel: null,
+    });
   }
 
   return plan;

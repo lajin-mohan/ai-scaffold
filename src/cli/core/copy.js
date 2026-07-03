@@ -32,13 +32,13 @@ export async function copyFiles(plan, bootstrapValues, opts = {}) {
     if (!file.exists) {
       // Protected file missing in target — offer to create it
       if (force || yes) {
-        await copySingle(file.src, file.target, values, dryRun);
+        await writePlannedFile(file, values, dryRun);
         copied++;
       } else {
         console.log(chalk.yellow(`? ${file.rel} — protected file missing in target`));
         const answer = await confirm(`  Create from template?`);
         if (answer) {
-          await copySingle(file.src, file.target, values, dryRun);
+          await writePlannedFile(file, values, dryRun);
           copied++;
         } else {
           skipped++;
@@ -48,7 +48,7 @@ export async function copyFiles(plan, bootstrapValues, opts = {}) {
       // Protected file exists — never overwrite without --force
       if (force) {
         console.log(chalk.yellow(`! ${file.rel} — overwriting protected file (--force)`));
-        await copySingle(file.src, file.target, values, dryRun);
+        await writePlannedFile(file, values, dryRun);
         copied++;
       } else {
         console.log(chalk.cyan(`⊘ ${file.rel} — protected, skipped`));
@@ -81,6 +81,14 @@ export async function copyFiles(plan, bootstrapValues, opts = {}) {
   }
 
   return { copied, skipped, errors };
+}
+
+async function writePlannedFile(file, values, dryRun) {
+  if (file.src) {
+    await copySingle(file.src, file.target, values, dryRun);
+  } else {
+    await generateFile(file, values, dryRun);
+  }
 }
 
 /**

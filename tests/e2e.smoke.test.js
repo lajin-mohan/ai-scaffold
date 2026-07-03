@@ -1,20 +1,25 @@
 /**
- * E2E smoke test — creates a fresh project with --yes --dry-run and asserts the file plan
- * includes generated files (.ai-scaffold.json, MEMORY.md, settings-overrides.json).
+ * E2E smoke tests that spawn the real CLI entrypoint.
  */
 
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
+import { spawnSync } from 'child_process';
+import { fileURLToPath } from 'url';
 import os from 'os';
 import path from 'path';
 import fs from 'fs-extra';
-import { resolveWithDefaults } from '../src/cli/core/prompts.js';
-import { buildFilePlan } from '../src/cli/core/file-plan.js';
-import { templatePath } from '../src/cli/core/paths.js';
 
-const REPO_ROOT = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..', '..', '..');
-const CLI_BIN = path.resolve(REPO_ROOT, 'bin', 'ai-scaffold.js');
+const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+const CLI_BIN = path.join(REPO_ROOT, 'bin', 'ai-scaffold.js');
 
-describe('CLI e2e smoke — --yes creates expected files', () => {
+function runCli(args) {
+  return spawnSync(process.execPath, [CLI_BIN, ...args], {
+    cwd: REPO_ROOT,
+    encoding: 'utf-8',
+  });
+}
+
+describe('CLI e2e smoke', () => {
   let tmpDir;
 
   beforeAll(async () => {
@@ -25,42 +30,78 @@ describe('CLI e2e smoke — --yes creates expected files', () => {
     await fs.remove(tmpDir);
   });
 
-  it('--yes --dry-run produces a file plan with generated files', async () => {
-    // Create the file plan using the same logic the CLI uses
-    const flags = {
-      projectName: 'smoke-test',
-      profile: 'generic',
-    };
-    const resolved = resolveWithDefaults(flags).resolved;
-    const templateDir = templatePath('generic');
-    const plan = await buildFilePlan(templateDir, path.join(tmpDir, 'smoke-test'));
+  it('bare project command creates generated files and resolves README placeholders', async () => {
+    const targetDir = path.join(tmpDir, 'bare-create');
+    const result = runCli([
+      targetDir,
+      '--yes',
+      '--purpose',
+      'Bare create smoke',
+      '--owner-email',
+      'test@example.com',
+      '--backend-stack',
+      'Node.js',
+      '--frontend-stack',
+      'None',
+      '--database',
+      'N/A',
+    ]);
 
-    // Check that generated files are in the plan
-    const generatedPaths = plan.generate.map(g => g.rel);
-    expect(generatedPaths).toContain('.ai-scaffold.json');
-    expect(generatedPaths).toContain('README.md');
-    expect(generatedPaths).toContain('.claude/MEMORY.md');
-    expect(generatedPaths).toContain('.claude/settings-overrides.json');
+    expect(result.status, result.stderr || result.stdout).toBe(0);
+    expect(await fs.pathExists(path.join(targetDir, '.ai-scaffold.json'))).toBe(true);
+    expect(await fs.pathExists(path.join(targetDir, '.claude', 'MEMORY.md'))).toBe(true);
+    expect(await fs.pathExists(path.join(targetDir, '.claude', 'settings-overrides.json'))).toBe(true);
+    expect(await fs.pathExists(path.join(targetDir, 'README.md'))).toBe(true);
 
-    // Check that managed root files are in the copy plan
-    const copyPaths = plan.copy.map(c => c.rel);
-    expect(copyPaths).toContain('CLAUDE.md');
-    expect(copyPaths).not.toContain('README.md');
-    expect(copyPaths).toContain('.gitignore');
-    expect(copyPaths).toContain('.github/copilot-instructions.md');
+    const readme = await fs.readFile(path.join(targetDir, 'README.md'), 'utf-8');
+    expect(readme).toContain('Bare create smoke');
+    expect(readme).not.toMatch(/\{\{[^}]+\}\}/);
   });
 
-  it('--yes --dry-run lists .claude/ directories in copy plan', async () => {
-    const flags = {
-      projectName: 'smoke-test-2',
-      profile: 'generic',
-    };
-    const resolved = resolveWithDefaults(flags).resolved;
-    const templateDir = templatePath('generic');
-    const plan = await buildFilePlan(templateDir, path.join(tmpDir, 'smoke-test-2'));
+  it('init --yes preserves existing protected files without --force', async () => {
+    const targetDir = path.join(tmpDir, 'existing-project');
+    const workflowDir = path.join(targetDir, '.github', 'workflows');
+    await fs.ensureDir(workflowDir);
+    await fs.writeFile(path.join(targetDir, 'README.md'), '# Existing README\n');
+    await fs.writeJson(path.join(targetDir, 'package.json'), {
+      name: 'existing-app',
+      scripts: { test: 'existing-test' },
+    }, { spaces: 2 });
+    await fs.writeJson(path.join(targetDir, '.ai-scaffold.json'), {
+      version: 'existing',
+      profile: 'custom',
+    }, { spaces: 2 });
+    await fs.writeFile(path.join(workflowDir, 'ci.yml'), 'name: existing-ci\n');
 
-    // .claude/ directory contents should be in copy plan
-    const hasClaudeDir = plan.copy.some(f => f.rel.startsWith('.claude/'));
-    expect(hasClaudeDir).toBe(true);
+    const result = runCli([
+      'init',
+      targetDir,
+      '--yes',
+      '--profile',
+      'generic',
+      '--purpose',
+      'Init smoke',
+      '--owner-email',
+      'test@example.com',
+      '--backend-stack',
+      'Node.js',
+      '--frontend-stack',
+      'React',
+      '--database',
+      'PostgreSQL',
+    ]);
+
+    expect(result.status, result.stderr || result.stdout).toBe(0);
+    expect(await fs.readFile(path.join(targetDir, 'README.md'), 'utf-8')).toBe('# Existing README\n');
+    expect(await fs.readJson(path.join(targetDir, 'package.json'))).toMatchObject({
+      name: 'existing-app',
+      scripts: { test: 'existing-test' },
+    });
+    expect(await fs.readJson(path.join(targetDir, '.ai-scaffold.json'))).toMatchObject({
+      version: 'existing',
+      profile: 'custom',
+    });
+    expect(await fs.readFile(path.join(workflowDir, 'ci.yml'), 'utf-8')).toBe('name: existing-ci\n');
+    expect(await fs.pathExists(path.join(targetDir, '.claude', 'MEMORY.md'))).toBe(true);
   });
 });
