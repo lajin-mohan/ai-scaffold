@@ -7,6 +7,7 @@
 # Usage:
 #   bash scripts/setup-branch-protection.sh                  # uses gh's default repo
 #   bash scripts/setup-branch-protection.sh owner/repo       # explicit repo
+#   REQUIRE_AI_REVIEW_CHECK=1 bash scripts/setup-branch-protection.sh
 #
 # Requires:
 #   - gh CLI installed (https://cli.github.com)
@@ -65,21 +66,73 @@ if [ -z "$REPO" ]; then
 fi
 
 echo "Applying branch protection to: $REPO"
+echo "This script will update branch protection for main and dev."
+echo
+
+STATUS_CHECKS='[{"context":"ci-passed"}]'
+STATUS_LABEL="ci-passed"
+if [ "${REQUIRE_AI_REVIEW_CHECK:-0}" = "1" ]; then
+  echo "WARNING: ai-review-passed will be required."
+  echo "Ensure this check exists and has completed at least once."
+  echo
+  STATUS_CHECKS='[{"context":"ci-passed"},{"context":"ai-review-passed"}]'
+  STATUS_LABEL="ci-passed + ai-review-passed"
+fi
+
+# ------------------------------------------------------------
+# Required branches
+# ------------------------------------------------------------
+
+for BRANCH in main dev; do
+  if ! gh api "repos/$REPO/branches/$BRANCH" \
+    --header "Accept: application/vnd.github+json" \
+    --header "X-GitHub-Api-Version: 2022-11-28" >/dev/null 2>&1; then
+    echo "ERROR: branch '$BRANCH' does not exist in $REPO." >&2
+    echo "Create it first, then re-run this script." >&2
+    if [ "$BRANCH" = "dev" ]; then
+      cat >&2 <<'EOF'
+Example:
+  git checkout main
+  git checkout -b dev
+  git push -u origin dev
+EOF
+    fi
+    exit 1
+  fi
+done
+
+# ------------------------------------------------------------
+# Repository merge settings
+# ------------------------------------------------------------
+
+echo "==> Configuring repository merge settings..."
+
+gh api -X PATCH "repos/$REPO" \
+  --header "Accept: application/vnd.github+json" \
+  --header "X-GitHub-Api-Version: 2022-11-28" \
+  -F allow_squash_merge=true \
+  -F allow_merge_commit=false \
+  -F allow_rebase_merge=false \
+  -F delete_branch_on_merge=true >/dev/null
+
+echo "    OK"
 echo
 
 # ------------------------------------------------------------
 # main: production-stable
 # ------------------------------------------------------------
 
-echo "==> Protecting main (2 approvals, ci-passed required, no force push)..."
+echo "==> Protecting main (2 approvals, $STATUS_LABEL required, no force push)..."
 
 gh api -X PUT "repos/$REPO/branches/main/protection" \
   --header "Accept: application/vnd.github+json" \
-  --input - <<'EOF'
+  --header "X-GitHub-Api-Version: 2022-11-28" \
+  --input - <<EOF
 {
   "required_status_checks": {
     "strict": true,
-    "contexts": ["ci-passed"]
+    "contexts": [],
+    "checks": $STATUS_CHECKS
   },
   "enforce_admins": true,
   "required_pull_request_reviews": {
@@ -106,15 +159,17 @@ echo
 # dev: integration
 # ------------------------------------------------------------
 
-echo "==> Protecting dev (1 approval, ci-passed required, no force push)..."
+echo "==> Protecting dev (1 approval, $STATUS_LABEL required, no force push)..."
 
 gh api -X PUT "repos/$REPO/branches/dev/protection" \
   --header "Accept: application/vnd.github+json" \
-  --input - <<'EOF'
+  --header "X-GitHub-Api-Version: 2022-11-28" \
+  --input - <<EOF
 {
   "required_status_checks": {
     "strict": true,
-    "contexts": ["ci-passed"]
+    "contexts": [],
+    "checks": $STATUS_CHECKS
   },
   "enforce_admins": false,
   "required_pull_request_reviews": {
@@ -146,6 +201,7 @@ if [ "$CURRENT_DEFAULT" != "dev" ]; then
   echo "==> Setting default branch to dev (was: $CURRENT_DEFAULT)..."
   gh api -X PATCH "repos/$REPO" \
     --header "Accept: application/vnd.github+json" \
+    --header "X-GitHub-Api-Version: 2022-11-28" \
     -f default_branch=dev >/dev/null
   echo "    OK"
 else
@@ -156,6 +212,14 @@ echo
 echo "Done. Verify in the GitHub UI:"
 echo "  https://github.com/$REPO/settings/branches"
 echo
-echo "Note: ci-passed must have run at least once on the repo before"
-echo "      it appears as a valid status check. If you see 'context not"
-echo "      found' errors above, push a commit to trigger CI then re-run."
+echo "Note: required status checks must have completed successfully"
+echo "      in this repository within the past 7 days before GitHub"
+echo "      allows them to be selected/enforced. Set REQUIRE_AI_REVIEW_CHECK=1"
+echo "      only after ai-review-passed automation exists and has run recently."
+echo
+echo "Note: main push restrictions are not configured by this generic script."
+echo "      Configure Tech Lead / release-bot push restrictions manually in"
+echo "      GitHub UI or rulesets if required."
+echo
+echo "Note: tag immutability is not configured by this script."
+echo "      Configure tag protection/rulesets manually if your GitHub plan supports it."
