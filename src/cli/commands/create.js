@@ -68,13 +68,13 @@ async function runCreate(projectName, options) {
     profile,
   };
 
-  const bootstrap = yes
-    ? { resolved: resolveWithDefaults(flags), defaulted: [] }
+  const resolved = yes
+    ? resolveWithDefaults(flags).resolved
     : await collectBootstrapValues(flags);
 
-  // 3. Build file plan
+  // 3. Build file plan — target is new, so no protected-file logic needed
   console.log(chalk.gray('Building file plan...'));
-  const plan = await buildFilePlan(templateDir, targetDir);
+  const plan = await buildFilePlan(templateDir, targetDir, { existingTarget: false });
 
   // 4. Detect conflicts (only for dry-run / existing dirs)
   if (fs.existsSync(targetDir)) {
@@ -86,7 +86,7 @@ async function runCreate(projectName, options) {
 
   // 5. Copy files
   console.log(chalk.gray('\nCopying files...'));
-  const result = await copyFiles(plan, bootstrap, { dryRun, force });
+  const result = await copyFiles(plan, resolved, { dryRun, force });
 
   // 6. Summary
   if (dryRun) {
@@ -94,6 +94,6 @@ async function runCreate(projectName, options) {
   } else {
     console.log(chalk.green(`\n✓ Done! Created ${result.copied} files in ./${projectName}/`));
     console.log(chalk.gray(`  Profile: ${profile}`));
-    console.log(chalk.gray(`  Bootstrap: ${bootstrap.resolved?.profile ?? profile}\n`));
+    console.log(chalk.gray(`  Bootstrap: ${resolved.profile ?? profile}\n`));
   }
 }

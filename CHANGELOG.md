@@ -24,6 +24,11 @@ This file is configured with `merge=union` in `.gitattributes` so parallel addit
 - **`/ponytail-debt` allowlist** — harvest now includes `*.sql` and `*.sh` (regex already supported `#` and `--` comment syntax; migrations and scripts are exactly where shortcut markers live). YAML excluded because it's config, not source code.
 
 ### Added
+- **ai-scaffold CLI** — `bin/ai-scaffold.js` entry point using CAC v6 with subcommands: `create`, `init`, `status`, `doctor`, `update`. Handles template selection, conflict detection, staged copy, and bootstrap prompts.
+- **Template profiles** — `templates/generic` (default) and `templates/laravel` (derived from generic + PHP/Laravel overlays). Generic profile is a full scaffold snapshot (`.claude/`, `CLAUDE.md`, `apps/`, `packages/`, `docs/`, etc.).
+- **CLI core modules** — `src/cli/core/paths.js` (path resolution: CLI_ROOT, PKG_ROOT, TEMPLATES_DIR), `prompts.js` (interactive bootstrap collection), `file-plan.js` (staged copy plan + filter lists), `conflicts.js` (overlap detection), `copy.js` (staged fs copy), `version.js` (semver check).
+- **Path resolution fix** — `PKG_ROOT` correctly resolves to repo root (3 `..` from `src/cli/core/`). Templates at `templates/<profile>/` are now reliably found regardless of where the CLI is invoked from.
+- **Unit tests** — `src/__tests__/core.test.js` covering version semver check, prompt defaults, path lists, conflict report structure, and template-not-found error. All 8 tests pass.
 - `CHANGELOG.md` (this file) — permanent record replacing the tracked `tasks/todo.md`.
 - `tasks/todo/` and `tasks/done/` directories for per-ticket workflow files.
 - `.claude/work/` directory (gitignored) for AI ephemera.

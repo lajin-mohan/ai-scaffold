@@ -15,8 +15,13 @@ import chalk from 'chalk';
  * @param {object} opts - { dryRun: boolean, force: boolean }
  */
 export async function copyFiles(plan, bootstrapValues, opts = {}) {
-  const { dryRun = false, force = false } = opts;
-  const { resolved: values } = bootstrapValues;
+  const { dryRun = false, force = false, yes = false } = opts;
+  // Accept both shapes:
+  // - Flat object from collectBootstrapValues() (interactive path)
+  // - { resolved, defaulted } from resolveWithDefaults() (--yes path)
+  const values = bootstrapValues.resolved
+    ? { ...bootstrapValues.resolved, defaulted: bootstrapValues.defaulted ?? [] }
+    : { ...bootstrapValues, defaulted: bootstrapValues.defaulted ?? [] };
 
   let copied = 0;
   let skipped = 0;
@@ -26,7 +31,7 @@ export async function copyFiles(plan, bootstrapValues, opts = {}) {
   for (const file of plan.skipProtected) {
     if (!file.exists) {
       // Protected file missing in target — offer to create it
-      if (force) {
+      if (force || yes) {
         await copySingle(file.src, file.target, values, dryRun);
         copied++;
       } else {
@@ -64,6 +69,17 @@ export async function copyFiles(plan, bootstrapValues, opts = {}) {
     copied++;
   }
 
+  // Track defaulted values in the ai-scaffold.json metadata
+  if (!dryRun && values.defaulted && values.defaulted.length > 0) {
+    // Find the generated ai-scaffold.json and add defaulted values
+    const manifestPath = path.join(opts.targetDir || '', '.ai-scaffold.json');
+    if (await fs.pathExists(manifestPath)) {
+      const manifest = await fs.readJson(manifestPath);
+      manifest.defaultedValues = values.defaulted;
+      await fs.writeJson(manifestPath, manifest, { spaces: 2 });
+    }
+  }
+
   return { copied, skipped, errors };
 }
 
@@ -85,6 +101,10 @@ async function copySingle(src, target, values, dryRun) {
 
 /**
  * Generate a per-project file from a template with resolved values.
+ * @param {string} relPath - Output path relative to target (e.g. .claude/MEMORY.md)
+ * @param {string} target - Absolute output file path
+ * @param {object} values - Resolved bootstrap values
+ * @param {boolean} dryRun
  */
 async function generateFile(relPath, target, values, dryRun) {
   if (dryRun) {
@@ -216,6 +236,7 @@ function resolvePlaceholders(content, values) {
   const tokenMap = {
     '{{PROJECT_NAME}}': values.projectName ?? '',
     '{{PROJECT_DISPLAY_NAME}}': values.displayName ?? '',
+    '{{PROJECT_DESCRIPTION}}': values.purpose ?? '',
     '{{ONE_LINE_PURPOSE}}': values.purpose ?? '',
     '{{SaaS / Internal Tool / API / Platform}}': values.projectType ?? '',
     '{{Active Development / MVP / Production}}': 'Active Development',
@@ -226,6 +247,16 @@ function resolvePlaceholders(content, values) {
     '{{BACKEND_STACK}}': values.backendStack ?? 'N/A',
     '{{FRONTEND_STACK}}': values.frontendStack ?? 'N/A',
     '{{DATABASE}}': values.database ?? 'N/A',
+    '{{RUNTIME}}': values.backendStack ?? 'N/A',
+    '{{REPO_URL}}': 'N/A',
+    '{{INSTALL_COMMAND}}': 'N/A',
+    '{{MIGRATION_COMMAND}}': 'N/A',
+    '{{MIGRATE_COMMAND}}': 'N/A',
+    '{{DEV_COMMAND}}': 'N/A',
+    '{{BUILD_COMMAND}}': 'N/A',
+    '{{TEST_COMMAND}}': 'N/A',
+    '{{LINT_COMMAND}}': 'N/A',
+    '{{SEED_COMMAND}}': 'N/A',
     '{{CACHE_QUEUE}}': 'N/A',
     '{{AUTH_STRATEGY}}': 'N/A',
     '{{EMAIL_PROVIDER}}': 'N/A',
@@ -234,6 +265,8 @@ function resolvePlaceholders(content, values) {
     '{{IAC_TOOL}}': 'N/A',
     '{{CICD_PLATFORM}}': 'GitHub Actions',
     '{{PM_TOOL}}': 'GitHub Projects',
+    '{{LICENSE}}': 'MIT',
+    '{{YEAR}}': new Date().getFullYear().toString(),
   };
 
   let result = content;

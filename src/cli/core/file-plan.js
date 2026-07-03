@@ -10,27 +10,55 @@ import picomatch from 'picomatch';
 
 /**
  * Files always managed by the scaffold (relative to project root).
+ * Expanded to include root-level scaffold files that a new project needs.
  * @type {string[]}
  */
 export const MANAGED_PATHS = [
+  // Per-project directories
   '.claude/**',
   '.cursor/**',
-  '.github/copilot-instructions.md',
   '_ai/**',
   'docs/**',
   'tasks/**',
+  // Root-level scaffold files
+  '.github/copilot-instructions.md',
   'AGENTS.md',
   'CLAUDE.md',
   'HOW-TO-USE.md',
   'CONTRIBUTING.md',
+  'LICENSE',
+  'SECURITY.md',
+  'CHANGELOG.md',
+  'package.json',
+  'package-lock.json',
+  '.gitignore',
+  '.env.example',
+  '.editorconfig',
+  '.gitleaks.toml',
 ];
 
 /**
+ * Template file → generated file mapping.
+ * When a `*.template.*` file is found, it is used as the source for the
+ * generated output path (stripping `.template` from the filename).
+ * @type {Record<string, string>}
+ */
+const GENERATED_FILE_MAP = {
+  'README.template.md': 'README.md',
+  '.claude/MEMORY.template.md': '.claude/MEMORY.md',
+  '.claude/settings-overrides.template.json': '.claude/settings-overrides.json',
+};
+
+/**
  * Files that must never be overwritten without explicit confirmation.
+ * These protect an existing project's files during `init` — the scaffold will
+ * never overwrite a pre-existing file in these paths without --force.
  * @type {string[]}
  */
 export const PROTECTED_PATHS = [
   '.env',
+  '.ai-scaffold.json',
+  // Project root files that existing projects will have customized:
   'README.md',
   'package.json',
   'composer.json',
@@ -39,6 +67,7 @@ export const PROTECTED_PATHS = [
   'pom.xml',
   'build.gradle',
   '*.csproj',
+  // CI workflows — existing projects have their own:
   '.github/workflows/**',
 ];
 
@@ -54,6 +83,8 @@ export const APP_SOURCE_PATHS = [
   'app/**',
   'resources/**',
   'database/**',
+  'infra/**',
+  'scripts/**',
 ];
 
 import { TEMPLATES_DIR } from './paths.js';
@@ -61,8 +92,10 @@ import { TEMPLATES_DIR } from './paths.js';
 /**
  * Build a staged file plan from a source profile directory.
  * Returns files grouped by action: copy, generate, skip (protected), skip (app-source).
+ * Discovers `*.template.*` files and maps them to generated output paths.
  */
-export async function buildFilePlan(sourceDir, targetDir) {
+export async function buildFilePlan(sourceDir, targetDir, options = {}) {
+  const { existingTarget = false } = options;
   const plan = {
     copy: [],
     generate: [],
@@ -76,22 +109,57 @@ export async function buildFilePlan(sourceDir, targetDir) {
     throw new Error(`Template profile not found: ${sourceDir}`);
   }
 
-  const sourceFiles = await expandGlobs(sourceDir, MANAGED_PATHS);
+  // Always-generate files: these have no template source; they are built
+  // programmatically by copy.js generateFile().
+  const alwaysGenerate = ['.ai-scaffold.json'];
+
+  // Collect all source files from the template directory
+  const sourceFiles = await collectSourceFiles(sourceDir);
 
   for (const srcFile of sourceFiles) {
     const relPath = path.relative(sourceDir, srcFile);
     const targetFile = path.join(targetDir, relPath);
 
-    // Per-project generated files (never copied verbatim)
-    if (isGeneratedFile(relPath)) {
-      plan.generate.push({ src: srcFile, rel: relPath, target: targetFile });
+    // Check if this file maps to a generated output (e.g. .template.md → .md)
+    const generatedRel = GENERATED_FILE_MAP[relPath];
+    if (generatedRel) {
+      if (existingTarget && matchesAny(generatedRel, PROTECTED_PATHS)) {
+        const targetExists = await fs.pathExists(path.join(targetDir, generatedRel));
+        plan.skipProtected.push({
+          src: srcFile,
+          rel: generatedRel,
+          target: path.join(targetDir, generatedRel),
+          exists: targetExists,
+          templateRel: relPath,
+        });
+        continue;
+      }
+
+      plan.generate.push({
+        src: srcFile,
+        rel: generatedRel,
+        target: path.join(targetDir, generatedRel),
+        templateRel: relPath,
+      });
+      continue;
+    }
+
+    // Skip raw template marker files that have no generated counterpart
+    if (relPath.includes('.template.')) {
       continue;
     }
 
     // Protected files — never overwrite without confirmation
-    if (matchesAny(relPath, PROTECTED_PATHS)) {
-      const targetExists = await fs.pathExists(targetFile);
-      plan.skipProtected.push({ src: srcFile, rel: relPath, target: targetFile, exists: targetExists });
+    // Only check PROTECTED_PATHS when the target directory already exists (init).
+    // For create (new directory), all files are copied normally since there's nothing to protect.
+    if (existingTarget && matchesAny(relPath, PROTECTED_PATHS)) {
+      const targetExists = await fs.pathExists(path.join(targetDir, relPath));
+      plan.skipProtected.push({
+        src: srcFile,
+        rel: relPath,
+        target: path.join(targetDir, relPath),
+        exists: targetExists,
+      });
       continue;
     }
 
@@ -105,36 +173,25 @@ export async function buildFilePlan(sourceDir, targetDir) {
     plan.copy.push({ src: srcFile, rel: relPath, target: targetFile });
   }
 
+  // Add always-generate files (no template source; built programmatically)
+  for (const genRel of alwaysGenerate) {
+    if (!plan.generate.some(g => g.rel === genRel)) {
+      plan.generate.push({
+        src: null,
+        rel: genRel,
+        target: path.join(targetDir, genRel),
+        templateRel: null,
+      });
+    }
+  }
+
   return plan;
 }
 
 /**
- * Check if a file should be generated (not copied verbatim).
- * These files exist as templates in the profile but are generated per-project.
+ * Collect all files under a directory, including `*.template.*` marker files.
  */
-function isGeneratedFile(relPath) {
-  return relPath === '.claude/MEMORY.md'
-    || relPath === '.claude/settings-overrides.json'
-    || relPath === '.ai-scaffold.json';
-}
-
-/**
- * Expand glob patterns relative to a base directory.
- */
-async function expandGlobs(baseDir, patterns) {
-  const files = [];
-  for (const pattern of patterns) {
-    const matcher = picomatch(path.join(baseDir, pattern));
-    const matches = await walkDir(baseDir, matcher);
-    files.push(...matches);
-  }
-  return [...new Set(files)].sort();
-}
-
-/**
- * Walk a directory and return files matching a picomatch matcher.
- */
-async function walkDir(dir, matcher) {
+async function collectSourceFiles(dir) {
   const results = [];
   let entries;
   try {
@@ -145,9 +202,9 @@ async function walkDir(dir, matcher) {
   for (const entry of entries) {
     const fullPath = path.join(dir, entry.name);
     if (entry.isDirectory()) {
-      const subResults = await walkDir(fullPath, matcher);
+      const subResults = await collectSourceFiles(fullPath);
       results.push(...subResults);
-    } else if (matcher(fullPath)) {
+    } else {
       results.push(fullPath);
     }
   }

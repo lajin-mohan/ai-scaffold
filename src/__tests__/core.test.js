@@ -24,6 +24,14 @@ describe('resolveWithDefaults', () => {
     expect(defaulted).toContain('profile');
   });
 
+  it('auto-derives displayName and purpose from projectName', () => {
+    const { resolved, defaulted } = resolveWithDefaults({ projectName: 'billing-api' });
+    expect(resolved.displayName).toBe('Billing Api');
+    expect(resolved.purpose).toBe('Billing Api — scaffold-managed project');
+    expect(defaulted).toContain('displayName');
+    expect(defaulted).toContain('purpose');
+  });
+
   it('preserves user-provided values', () => {
     const { resolved, defaulted } = resolveWithDefaults({
       projectType: 'API',
@@ -52,10 +60,9 @@ describe('MANAGED_PATHS', () => {
 });
 
 describe('PROTECTED_PATHS', () => {
-  it('includes .env, package.json, and CI workflows', () => {
+  it('includes .env and .ai-scaffold.json', () => {
     expect(PROTECTED_PATHS.some(p => p.includes('.env'))).toBe(true);
-    expect(PROTECTED_PATHS.some(p => p.includes('package.json'))).toBe(true);
-    expect(PROTECTED_PATHS.some(p => p.includes('.github/workflows'))).toBe(true);
+    expect(PROTECTED_PATHS.some(p => p.includes('.ai-scaffold.json'))).toBe(true);
   });
 });
 

@@ -1,139 +1,68 @@
-# {{PROJECT_NAME}}
+# ai-scaffold
 
-> [!IMPORTANT]
-> **TEMPLATE — NOT YET INITIALIZED**
->
-> This repository is the Techversant AI project template. The `{{PLACEHOLDERS}}` below (`{{PROJECT_NAME}}`, `{{BACKEND_STACK}}`, etc.) are **intentional, not defects**.
->
-> After copying this template into a new project repo, run `/bootstrap` to fill them in. Until then:
-> - CI gates skip stack jobs gracefully (no `package.json` → no Node jobs run; `ci-passed` still succeeds)
-> - `/review` runs with `PRE_REVIEW_ALLOW_UNCONFIGURED=1` so it works without configured checks; `/bootstrap` removes this once real checks are wired
-> - `tasks/todo/` and `tasks/done/` are empty until you create per-ticket files
->
-> See [`HOW-TO-USE.md`](./HOW-TO-USE.md) and [`CONTRIBUTING.md`](./CONTRIBUTING.md).
+Reusable AI engineering scaffold with CLI distribution.
 
-> {{ONE_LINE_PURPOSE}}
+`ai-scaffold` packages this repository's AI operating system into a CLI that can create new projects, install scaffold-managed files into existing projects, track installed metadata, and run basic health checks.
 
----
+This repository is the scaffold platform itself, not a generated application. Generated project documentation is produced from template files during `create` or `init`; scaffold platform documentation lives separately in [README.scaffold.md](./README.scaffold.md).
 
-## Overview
+## Status
 
-{{2-3 sentences describing what this project does, who it's for, and why it exists.}}
-
-**Organization:** Techversant Infotech
-**Type:** `{{SaaS / Internal Tool / API / Platform}}`
-**Status:** `{{Active Development / MVP / Production}}`
-
----
-
-## Tech Stack
-
-| Layer | Technology |
+| Area | State |
 |---|---|
-| Backend | `{{BACKEND_STACK}}` |
-| Frontend | `{{FRONTEND_STACK}}` |
-| Database | `{{DATABASE}}` |
-| Infrastructure | `{{CLOUD_PROVIDER}}` |
-| CI/CD | `{{CICD_PLATFORM}}` |
+| Package version | `0.7.0` |
+| Active branch target | `dev` before release promotion |
+| Supported profiles | `generic`, `laravel` |
+| Implemented commands | `create`, `init`, `status`, `doctor`, `update` |
+| Update behavior | Placeholder only until Phase 3 |
 
----
-
-## Getting Started
-
-### Prerequisites
-
-- `{{RUNTIME}}` — e.g., Node.js 20+, PHP 8.2+, Python 3.11+
-- `{{DATABASE}}` running locally or via Docker
-- Environment variables configured (see `.env.example`)
-
-### Setup
+## CLI Usage
 
 ```bash
-# Clone the repository
-git clone {{REPO_URL}}
-cd {{PROJECT_NAME}}
-
-# Install dependencies
-{{INSTALL_COMMAND}}   # e.g., npm install / composer install / pip install -r requirements.txt
-
-# Configure environment
-cp .env.example .env
-# Edit .env with your local values
-
-# Run database migrations
-{{MIGRATION_COMMAND}}   # e.g., npm run db:migrate / php artisan migrate
-
-# Start development server
-{{DEV_COMMAND}}   # e.g., npm run dev / php artisan serve
+npx ai-scaffold my-project
+npx ai-scaffold create my-project
+npx ai-scaffold init --profile laravel
+npx ai-scaffold status
+npx ai-scaffold doctor
+npx ai-scaffold update
 ```
 
-### Available Scripts
+## Development
 
 ```bash
-{{BUILD_COMMAND}}       # Production build
-{{TEST_COMMAND}}        # Run tests
-{{LINT_COMMAND}}        # Lint + typecheck
-{{MIGRATE_COMMAND}}     # Database migrations
-{{SEED_COMMAND}}        # Seed development data
+npm test
+npm run test:unit
+npm run test:e2e
+npm run typecheck
 ```
 
----
+The root package is the CLI package. Template profile contents live under `templates/`, and generated project README content is sourced from `README.template.md` files inside each profile.
 
-## Project Structure
+## Repository Map
 
-```
-{{PROJECT_NAME}}/
-+-- apps/               # Deployable applications
-|   +-- api/            # Backend API server
-|   +-- web/            # Frontend application
-+-- packages/           # Shared modules
-|   +-- domain/         # Business entities and rules
-|   +-- services/       # Application services
-|   +-- repositories/   # Data access layer
-|   +-- shared/         # Types, utils, constants
-+-- infra/              # Infrastructure as code
-+-- scripts/            # Dev, migration, seed scripts
-+-- docs/               # Architecture, BRD, API docs
-+-- _ai/                # AI-generated drafts (not production)
-```
-
----
-
-## Development Workflow
-
-```
-Analysis → Plan → Arch Design → UX Design → Execution → AI Review → Manual Review → QA → CI/CD → Deploy
-```
-
-See [CLAUDE.md](./CLAUDE.md) for full workflow rules and AI collaboration guidelines.
-
----
-
-## Documentation
-
-| Document | Location |
+| Path | Purpose |
 |---|---|
-| Architecture | `docs/architecture/` |
-| Business Requirements | `docs/brd/` |
-| API Reference | `docs/api/` |
-| UX Specs | `docs/ux/` |
-| Estimates | `docs/estimates/` |
-| QA Plans | `docs/qa/` |
-| Deployment | `docs/deployment/` |
+| `bin/ai-scaffold.js` | CLI entry point |
+| `src/cli/commands/` | Command handlers |
+| `src/cli/core/` | Shared CLI file planning, copying, prompt, path, and version logic |
+| `templates/generic/` | Generic profile source |
+| `templates/laravel/` | Laravel profile source |
+| `docs/cli/` | CLI behavior specs |
+| `docs/process/` | Scaffold planning and process records |
+| `docs/compliance/third-party-attributions.md` | Third-party sources, licenses, and attribution register |
 
----
+## Generated Project Documentation
 
-## Contributing
+The scaffold keeps platform documentation separate from generated project documentation:
 
-1. Branch from `dev` — `feature/your-feature-name`
-2. Follow commit conventions in [CLAUDE.md](./CLAUDE.md)
-3. Ensure CI passes before requesting review
-4. AI review → manual review → merge to `dev`
+- Platform docs: `README.md` and [README.scaffold.md](./README.scaffold.md)
+- Generated project README source: `templates/<profile>/README.template.md`
+- Generated output path: `README.md` in the target project
 
-See `.claude/rules/branching-rules.md` for full git workflow.
-
----
+This split prevents project template placeholders from appearing in the scaffold platform README.
 
 ## License
 
-`{{LICENSE}}` — `{{YEAR}}` Techversant Infotech
+This repository is proprietary to Techversant Infotech. See [LICENSE](./LICENSE).
+
+Third-party packages and adapted source material retain their original licenses. See [docs/compliance/third-party-attributions.md](./docs/compliance/third-party-attributions.md).

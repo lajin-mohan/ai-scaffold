@@ -10,7 +10,7 @@ import semver from 'semver';
 import { getVersion } from '../core/version.js';
 
 export function updateCommand(cli) {
-  cli.command('update [target-dir]', 'Update scaffold to the latest version')
+  cli.command('update [target-dir]', 'Update scaffold to the latest version — (placeholder — Phase 3)')
     .option('--version <version>', 'Update to a specific version')
     .option('--dry-run', 'Show what would be updated without making changes')
     .option('--force', 'Force update even if already up to date')

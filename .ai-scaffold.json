@@ -6,6 +6,12 @@
   "installedAt": "2026-06-29",
   "updatedAt": "2026-06-29",
   "source": "ai-scaffold",
+  "documentation": {
+    "scaffoldReadme": "README.scaffold.md",
+    "generatedReadmeTemplate": "README.template.md",
+    "generatedReadmeOutput": "README.md",
+    "attributionRegister": "docs/compliance/third-party-attributions.md"
+  },
   "defaultedValues": [],
   "managedFiles": [
     {

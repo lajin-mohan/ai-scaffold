@@ -66,23 +66,26 @@ Suggested conservative defaults:
 3. Copy template files into a staging area.
 4. Collect bootstrap values.
 5. Replace placeholders in every staged text file.
-6. Generate `.claude/MEMORY.md` from `.claude/MEMORY.template.md`.
-7. Generate `.claude/settings-overrides.json` from `.claude/settings-overrides.template.json`.
-8. Validate that no managed text file still contains `{{...}}`.
-9. Build the safe file plan.
-10. Apply writes, respecting protected files and conflicts.
-11. Write `.ai-scaffold.json`.
+6. Generate `README.md` from `README.template.md`.
+7. Generate `.claude/MEMORY.md` from `.claude/MEMORY.template.md`.
+8. Generate `.claude/settings-overrides.json` from `.claude/settings-overrides.template.json`.
+9. Validate that no managed text file still contains unresolved project identity placeholders.
+10. Build the safe file plan.
+11. Apply writes, respecting protected files and conflicts.
+12. Write `.ai-scaffold.json`.
 
 ## Generated Files
 
 These files are generated per project and should not be copied directly from the template:
 
 - `.ai-scaffold.json`
+- `README.md`
 - `.claude/MEMORY.md`
 - `.claude/settings-overrides.json`
 
 Tracked template files:
 
+- `README.template.md`
 - `.claude/MEMORY.template.md`
 - `.claude/settings-overrides.template.json`
 

@@ -72,14 +72,14 @@ async function runInit(targetDir, options) {
     profile,
   };
 
-  const bootstrap = yes
-    ? { resolved: resolveWithDefaults(flags), defaulted: [] }
+  const resolved = yes
+    ? resolveWithDefaults(flags).resolved
     : await collectBootstrapValues(flags);
 
   // 4. Build file plan
   console.log(chalk.gray('Building file plan...'));
   const templateDir = templatePath(profile);
-  const plan = await buildFilePlan(templateDir, resolvedTarget);
+  const plan = await buildFilePlan(templateDir, resolvedTarget, { existingTarget: true });
 
   // 5. Detect conflicts
   const conflicts = await detectConflicts(resolvedTarget, plan);
@@ -87,7 +87,7 @@ async function runInit(targetDir, options) {
 
   // 6. Copy files
   console.log(chalk.gray('\nInstalling scaffold...'));
-  const result = await copyFiles(plan, bootstrap, { dryRun, force });
+  const result = await copyFiles(plan, resolved, { dryRun, force, yes });
 
   // 7. Summary
   if (dryRun) {
@@ -95,6 +95,6 @@ async function runInit(targetDir, options) {
   } else {
     console.log(chalk.green(`\n✓ Done! Scaffold installed in ${resolvedTarget}/`));
     console.log(chalk.gray(`  Profile: ${profile}`));
-    console.log(chalk.gray(`  Bootstrap: ${bootstrap.resolved?.profile ?? profile}\n`));
+    console.log(chalk.gray(`  Bootstrap: ${resolved.profile ?? profile}\n`));
   }
 }

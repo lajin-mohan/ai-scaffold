@@ -70,7 +70,7 @@ if [ -f package.json ]; then
   if command -v npm &>/dev/null; then
     run_check "ESLint" "npm run lint -- --max-warnings 0"
     run_check "TypeScript" "npm run typecheck"
-    run_check "Unit Tests" "npm run test:unit -- --run"
+    run_check "Unit Tests" "npm run test:unit"
   else
     echo "(npm not found — skipping Node checks)"
   fi

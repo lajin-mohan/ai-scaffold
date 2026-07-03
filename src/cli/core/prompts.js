@@ -128,6 +128,16 @@ export function resolveWithDefaults(flags = {}) {
   const defaulted = [];
   const resolved = { ...flags };
 
+  // Derive displayName and purpose from projectName when not provided
+  if (!resolved.displayName && resolved.projectName) {
+    resolved.displayName = toTitleCase(resolved.projectName);
+    defaulted.push('displayName');
+  }
+  if (!resolved.purpose && resolved.displayName) {
+    resolved.purpose = `${resolved.displayName} — scaffold-managed project`;
+    defaulted.push('purpose');
+  }
+
   const defaults = {
     projectType: 'SaaS',
     frontendStack: 'None',
@@ -145,4 +155,15 @@ export function resolveWithDefaults(flags = {}) {
   }
 
   return { resolved, defaulted };
+}
+
+/**
+ * Convert a kebab-case or snake-case slug to Title Case.
+ * e.g. "billing-api" → "Billing Api"
+ */
+function toTitleCase(str) {
+  return str
+    .split(/[-_]+/)
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(' ');
 }

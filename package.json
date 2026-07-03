@@ -7,9 +7,9 @@
     "ai-scaffold": "./bin/ai-scaffold.js"
   },
   "scripts": {
-    "test": "node --experimental-vm-modules node_modules/vitest/vitest.mjs",
-    "test:unit": "node --experimental-vm-modules node_modules/vitest/vitest.mjs run src/",
-    "test:e2e": "node --experimental-vm-modules node_modules/vitest/vitest.mjs run tests/",
+    "test": "node --experimental-vm-modules node_modules/vitest/vitest.mjs --run",
+    "test:unit": "node --experimental-vm-modules node_modules/vitest/vitest.mjs run src/ --run",
+    "test:e2e": "node --experimental-vm-modules node_modules/vitest/vitest.mjs run tests/ --run",
     "lint": "echo 'No linter configured yet'",
     "typecheck": "node --check bin/ai-scaffold.js"
   },
@@ -21,7 +21,15 @@
     "boilerplate"
   ],
   "author": "Techversant Infotech",
-  "license": "MIT",
+  "license": "UNLICENSED",
+  "aiScaffold": {
+    "documentation": {
+      "scaffoldReadme": "README.scaffold.md",
+      "generatedReadmeTemplate": "README.template.md",
+      "generatedReadmeOutput": "README.md",
+      "attributionRegister": "docs/compliance/third-party-attributions.md"
+    }
+  },
   "dependencies": {
     "cac": "^6.7.14",
     "chalk": "^5.3.0",
