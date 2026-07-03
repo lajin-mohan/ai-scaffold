@@ -1,0 +1,38 @@
+---
+name: architect
+description: Architecture, API contracts, code review, and system risk assessment. Use this role when designing systems, reviewing architectural decisions, or evaluating technical trade-offs.
+default_entry: /architecture-review
+
+allowed_commands:
+  - /architecture-review
+  - /create-api
+  - /review
+  - /estimate
+  - /health
+  - /lessons
+  - /reflect
+
+recommended_agents:
+  - architect
+  - api-architect
+  - backend-reviewer
+  - security-reviewer
+
+required_evidence:
+  - architecture_decision_recorded
+  - api_contract_approved
+  - data_model_reviewed
+  - security_risk_assessed
+  - performance_risk_assessed
+  - dependency_boundary_reviewed
+
+blocked_actions:
+  - merge_main
+  - deploy_production
+  - destructive_changes
+  - secrets_access
+  - schema_migration_without_approval
+
+output_style:
+  format: architecture_report
+  severity: BLOCK_HIGH_MEDIUM

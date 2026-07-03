@@ -1,0 +1,40 @@
+# Gitleaks configuration — allowlist for false positives.
+#
+# Gitleaks scans all files for secrets (API keys, passwords, tokens, etc.).
+# This config suppresses false positives for known-safe files.
+#
+# Add paths or patterns here when a detection is a known false positive.
+# Each entry must have a description explaining why it's safe.
+#
+# Reference: https://github.com/gitleaks/gitleaks/blob/master/README.md
+
+[allowlist]
+description = "False positives for development patterns"
+global = true
+
+paths = [
+  # .env.example contains placeholder values only — not real credentials
+  ".env.example",
+  ".env.example.bak",
+
+  # Test files contain fake credentials for testing purposes only
+  "tests/**/*.ts",
+  "tests/**/*.js",
+  "**/*.test.ts",
+  "**/*.fixture.ts",
+  "apps/api/src/**/test*.ts",
+
+  # Documentation examples use illustrative (not real) values
+  "docs/**/*.md",
+  "README.md",
+  "CONTRIBUTING.md",
+
+  # Specific example files that contain fake credentials for demonstration
+  "apps/api/src/repositories/examples/applications.repository.integration-example.ts",
+]
+
+# Example: suppress specific secret patterns in specific files
+# [[allowlist]]
+# description = "Fake AWS example key in docs"
+# match = "(A3T[a-zA-Z0-9]{16})"
+# path = "docs/**/*.md"
