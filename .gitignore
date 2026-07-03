@@ -18,6 +18,9 @@ build/
 out/
 .next/
 .nuxt/
+coverage/
+.vitest/
+.turbo/
 
 # Logs
 *.log

@@ -38,13 +38,14 @@ describe('CLI e2e smoke — --yes creates expected files', () => {
     // Check that generated files are in the plan
     const generatedPaths = plan.generate.map(g => g.rel);
     expect(generatedPaths).toContain('.ai-scaffold.json');
+    expect(generatedPaths).toContain('README.md');
     expect(generatedPaths).toContain('.claude/MEMORY.md');
     expect(generatedPaths).toContain('.claude/settings-overrides.json');
 
     // Check that managed root files are in the copy plan
     const copyPaths = plan.copy.map(c => c.rel);
     expect(copyPaths).toContain('CLAUDE.md');
-    expect(copyPaths).toContain('README.md');
+    expect(copyPaths).not.toContain('README.md');
     expect(copyPaths).toContain('.gitignore');
     expect(copyPaths).toContain('.github/copilot-instructions.md');
   });

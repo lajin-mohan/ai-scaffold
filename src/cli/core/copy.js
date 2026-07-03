@@ -65,7 +65,7 @@ export async function copyFiles(plan, bootstrapValues, opts = {}) {
 
   // Generate per-project files
   for (const file of plan.generate) {
-    await generateFile(file.rel, file.target, values, dryRun);
+    await generateFile(file, values, dryRun);
     copied++;
   }
 
@@ -101,12 +101,13 @@ async function copySingle(src, target, values, dryRun) {
 
 /**
  * Generate a per-project file from a template with resolved values.
- * @param {string} relPath - Output path relative to target (e.g. .claude/MEMORY.md)
- * @param {string} target - Absolute output file path
+ * @param {object} file - Generated file plan entry
  * @param {object} values - Resolved bootstrap values
  * @param {boolean} dryRun
  */
-async function generateFile(relPath, target, values, dryRun) {
+async function generateFile(file, values, dryRun) {
+  const { rel: relPath, target, src } = file;
+
   if (dryRun) {
     console.log(chalk.gray(`[dry-run] generate: ${relPath}`));
     return;
@@ -114,7 +115,10 @@ async function generateFile(relPath, target, values, dryRun) {
 
   await fs.ensureDir(path.dirname(target));
 
-  if (relPath === '.ai-scaffold.json') {
+  if (relPath === 'README.md' && src) {
+    const content = await fs.readFile(src, 'utf-8');
+    await fs.writeFile(target, resolvePlaceholders(content, values));
+  } else if (relPath === '.ai-scaffold.json') {
     await fs.writeFile(target, JSON.stringify({
       version: '0.7.0',
       profile: values.profile,
@@ -265,7 +269,7 @@ function resolvePlaceholders(content, values) {
     '{{IAC_TOOL}}': 'N/A',
     '{{CICD_PLATFORM}}': 'GitHub Actions',
     '{{PM_TOOL}}': 'GitHub Projects',
-    '{{LICENSE}}': 'MIT',
+    '{{LICENSE}}': 'Proprietary',
     '{{YEAR}}': new Date().getFullYear().toString(),
   };
 
