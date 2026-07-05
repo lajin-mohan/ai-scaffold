@@ -4,6 +4,7 @@ import { buildFilePlan } from '../cli/core/file-plan.js';
 import { MANAGED_PATHS, PROTECTED_PATHS, APP_SOURCE_PATHS } from '../cli/core/file-plan.js';
 import { detectConflicts, printConflictReport } from '../cli/core/conflicts.js';
 import { getVersion } from '../cli/core/version.js';
+import { normalizeProfile, templatePath } from '../cli/core/paths.js';
 
 describe('version', () => {
   it('returns a semver-compliant version', () => {
@@ -35,6 +36,7 @@ describe('resolveWithDefaults', () => {
   it('preserves user-provided values', () => {
     const { resolved, defaulted } = resolveWithDefaults({
       projectType: 'API',
+      backendStack: 'PHP/Laravel',
       frontendStack: 'React',
       database: 'PostgreSQL 16',
       multiTenant: true,
@@ -42,12 +44,30 @@ describe('resolveWithDefaults', () => {
       profile: 'laravel',
     });
     expect(resolved.projectType).toBe('API');
+    expect(resolved.backendStack).toBe('PHP/Laravel');
     expect(resolved.frontendStack).toBe('React');
     expect(resolved.database).toBe('PostgreSQL 16');
     expect(resolved.multiTenant).toBe(true);
     expect(resolved.complianceScope).toBe('GDPR');
     expect(resolved.profile).toBe('laravel');
     expect(defaulted).toHaveLength(0);
+  });
+
+  it('normalizes JavaScript aliases to the node profile', () => {
+    expect(normalizeProfile('js')).toBe('node');
+    expect(normalizeProfile('javascript')).toBe('node');
+    expect(normalizeProfile('nodejs')).toBe('node');
+  });
+
+  it('applies Node.js defaults for the node profile', () => {
+    const { resolved, defaulted } = resolveWithDefaults({
+      projectName: 'node-api',
+      profile: 'javascript',
+    });
+
+    expect(resolved.profile).toBe('node');
+    expect(resolved.backendStack).toBe('Node.js');
+    expect(defaulted).toContain('backendStack');
   });
 });
 
@@ -77,6 +97,11 @@ describe('APP_SOURCE_PATHS', () => {
 describe('buildFilePlan', () => {
   it('throws when template directory does not exist', async () => {
     await expect(buildFilePlan('/nonexistent/template', '/tmp/out')).rejects.toThrow('Template profile not found');
+  });
+
+  it('finds the node template through the JavaScript alias', async () => {
+    const plan = await buildFilePlan(templatePath('javascript'), '/tmp/out');
+    expect(plan.generate.map(f => f.rel)).toContain('README.md');
   });
 });
 

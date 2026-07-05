@@ -4,6 +4,7 @@
  */
 
 import prompts from 'prompts';
+import { PROFILE_CHOICES, normalizeProfile } from './paths.js';
 
 /**
  * Minimum prompt/flag inputs required for create/init.
@@ -30,7 +31,6 @@ export const REQUIRED_VALUES = [
 export async function collectBootstrapValues(overrides = {}) {
   const projectTypeOptions = ['SaaS', 'Internal Tool', 'API', 'Platform', 'Library'];
   const frontendStackOptions = ['None', 'React', 'Next.js', 'Vue', 'Nuxt'];
-  const profileOptions = ['generic', 'laravel'];
   const complianceOptions = ['N/A', 'GDPR', 'ISO27001', 'HIPAA', 'SOC2', 'PCI-DSS'];
 
   const questions = [
@@ -105,8 +105,8 @@ export async function collectBootstrapValues(overrides = {}) {
       name: 'profile',
       type: 'select',
       message: 'Scaffold profile:',
-      choices: profileOptions,
-      initial: profileOptions.indexOf(overrides.profile ?? 'generic'),
+      choices: PROFILE_CHOICES,
+      initial: Math.max(PROFILE_CHOICES.indexOf(overrides.profile ?? 'generic'), 0),
     },
   ];
 
@@ -117,7 +117,10 @@ export async function collectBootstrapValues(overrides = {}) {
     },
   });
 
-  return answers;
+  return {
+    ...answers,
+    profile: normalizeProfile(answers.profile),
+  };
 }
 
 /**
@@ -127,6 +130,10 @@ export async function collectBootstrapValues(overrides = {}) {
 export function resolveWithDefaults(flags = {}) {
   const defaulted = [];
   const resolved = { ...flags };
+
+  if (resolved.profile !== undefined) {
+    resolved.profile = normalizeProfile(resolved.profile);
+  }
 
   // Derive displayName and purpose from projectName when not provided
   if (!resolved.displayName && resolved.projectName) {
@@ -154,7 +161,34 @@ export function resolveWithDefaults(flags = {}) {
     }
   }
 
+  applyProfileDefaults(resolved, defaulted);
+
   return { resolved, defaulted };
+}
+
+function applyProfileDefaults(resolved, defaulted) {
+  const defaultsByProfile = {
+    laravel: {
+      backendStack: 'PHP/Laravel',
+      frontendStack: 'optional',
+      database: 'MySQL or PostgreSQL',
+    },
+    node: {
+      backendStack: 'Node.js',
+      frontendStack: 'None',
+      database: 'N/A',
+    },
+  };
+
+  const profileDefaults = defaultsByProfile[resolved.profile] ?? {};
+  for (const [key, value] of Object.entries(profileDefaults)) {
+    if (resolved[key] === undefined || resolved[key] === 'None' || resolved[key] === 'N/A') {
+      resolved[key] = value;
+      if (!defaulted.includes(key)) {
+        defaulted.push(key);
+      }
+    }
+  }
 }
 
 /**

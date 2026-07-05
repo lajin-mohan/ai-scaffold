@@ -58,6 +58,31 @@ describe('CLI e2e smoke', () => {
     expect(readme).not.toMatch(/\{\{[^}]+\}\}/);
   });
 
+  it('creates a Node.js project through the JavaScript profile alias', async () => {
+    const targetDir = path.join(tmpDir, 'node-create');
+    const result = runCli([
+      'create',
+      targetDir,
+      '--yes',
+      '--profile',
+      'javascript',
+      '--purpose',
+      'Node profile smoke',
+      '--owner-email',
+      'test@example.com',
+    ]);
+
+    expect(result.status, result.stderr || result.stdout).toBe(0);
+
+    const manifest = await fs.readJson(path.join(targetDir, '.ai-scaffold.json'));
+    expect(manifest.profile).toBe('node');
+
+    const readme = await fs.readFile(path.join(targetDir, 'README.md'), 'utf-8');
+    expect(readme).toContain('Node profile smoke');
+    expect(readme).toContain('npm install');
+    expect(readme).not.toMatch(/\{\{[^}]+\}\}/);
+  });
+
   it('init --yes preserves existing protected files without --force', async () => {
     const targetDir = path.join(tmpDir, 'existing-project');
     const workflowDir = path.join(targetDir, '.github', 'workflows');

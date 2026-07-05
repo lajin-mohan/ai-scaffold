@@ -15,7 +15,7 @@ import { templatePath } from '../core/paths.js';
 
 export function createCommand(cli) {
   cli.command('create <project-name>', 'Create a new project from the scaffold')
-    .option('--profile <profile>', 'Scaffold profile to use (generic, laravel)', { default: 'generic' })
+    .option('--profile <profile>', 'Scaffold profile to use (generic, laravel, node)', { default: 'generic' })
     .option('--yes', 'Use defaults for all options, no prompts')
     .option('--dry-run', 'Show what would be created without writing files')
     .option('--force', 'Overwrite existing files without prompting')
@@ -31,7 +31,7 @@ export function createCommand(cli) {
     .option('--no-multi-tenant', 'Disable multi-tenancy')
     .option('--compliance <scope>', 'Compliance scope (N/A, GDPR, ISO27001, HIPAA, SOC2, PCI-DSS)')
     .example('ai-scaffold create billing-api')
-    .example('ai-scaffold create my-app --profile laravel --yes')
+    .example('ai-scaffold create my-app --profile node --yes')
     .example('ai-scaffold create my-app --dry-run')
     .action(async (projectName, options) => {
       await runCreate(projectName, options);
@@ -93,7 +93,7 @@ async function runCreate(projectName, options) {
     console.log(chalk.gray(`\n[dry-run] Would create ${result.copied} files, skip ${result.skipped}`));
   } else {
     console.log(chalk.green(`\n✓ Done! Created ${result.copied} files in ./${projectName}/`));
-    console.log(chalk.gray(`  Profile: ${profile}`));
+    console.log(chalk.gray(`  Profile: ${resolved.profile ?? profile}`));
     console.log(chalk.gray(`  Bootstrap: ${resolved.profile ?? profile}\n`));
   }
 }

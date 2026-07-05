@@ -1,0 +1,43 @@
+---
+name: ux
+description: UX creation, UX review, accessibility, and responsive behavior. Use this role when designing screens, reviewing UX artifacts, or verifying frontend implementation.
+default_entry: /ux-analysis
+
+allowed_commands:
+  - /ux-create
+  - /ux-analysis
+  - /ux-design-prompt
+  - /ux-analyze
+  - /ux-flow
+  - /ux-screen-spec
+  - /ux-figma-spec
+  - /ux-handoff
+  - /ux-review
+  - /qa
+  - /lessons
+  - /reflect
+
+recommended_agents:
+  - ux-requirement-analyst
+  - ux-flow-designer
+  - ux-designer
+  - frontend-reviewer
+
+required_evidence:
+  - accessibility_verified
+  - responsive_verified
+  - light_theme_verified
+  - dark_theme_verified
+  - state_coverage_verified
+  - design_system_consistency_verified
+
+blocked_actions:
+  - merge_main
+  - deploy_production
+  - destructive_changes
+  - secrets_access
+  - backend_logic_changes
+
+output_style:
+  format: ux_report
+  severity: BLOCK_HIGH_MEDIUM

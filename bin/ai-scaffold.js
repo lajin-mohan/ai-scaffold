@@ -36,8 +36,9 @@ cli.help((sections) => {
 Examples:
   npx ai-scaffold my-project
   npx ai-scaffold create my-project
-  npx ai-scaffold create my-project --profile laravel
+  npx ai-scaffold create my-project --profile node
   npx ai-scaffold init --profile laravel
+  npx ai-scaffold init --profile javascript
   npx ai-scaffold status
   npx ai-scaffold doctor
   npx ai-scaffold update
@@ -53,15 +54,22 @@ doctorCommand(cli);
 updateCommand(cli);
 
 // ── Bare command routing ──────────────────────────────────────────────────
-// If `ai-scaffold` is invoked with a bare positional arg (no subcommand),
-// it means "create this project". CAC v6 treats bare positionals as unknown,
-// so we rewrite argv before parse: "my-project" → "create my-project".
+// CAC v6 does not accept positional args without a matching subcommand, so
+// we rewrite argv before parse. The routing rule is:
+//
+//   ai-scaffold <name>          → create <name>   (new project)
+//   ai-scaffold . / ./here      → init             (existing directory)
+//
+// Known subcommands and flags are left untouched.
 const knownSubcommands = ['create', 'init', 'status', 'doctor', 'update', '--help', '-h', '--version', '-V'];
 const rawArgs = process.argv.slice(2);
 
-// Only rewrite if first arg is not a known subcommand or flag
 if (rawArgs.length > 0 && !knownSubcommands.includes(rawArgs[0]) && !rawArgs[0].startsWith('-')) {
-  process.argv.splice(2, 0, 'create');
+  const bare = rawArgs[0];
+  // `.` or `./` means "operate on the current directory" → init
+  const isCurrentDir = bare === '.' || bare === './';
+  const injectedSub = isCurrentDir ? 'init' : 'create';
+  process.argv.splice(2, 0, injectedSub);
 }
 
 cli.parse();

@@ -1,0 +1,24 @@
+# Exclude large template subdirectories that aren't needed for template generation
+templates/generic/.claude/rules/
+templates/generic/.claude/skills/
+templates/generic/.claude/roles/
+templates/generic/.claude/memory/
+templates/generic/docs/
+templates/generic/apps/api/src/
+templates/generic/infra/
+templates/generic/packages/
+templates/generic/scripts/
+templates/generic/tasks/
+templates/generic/_ai/
+
+templates/laravel/.claude/rules/
+templates/laravel/.claude/skills/
+templates/laravel/.claude/roles/
+templates/laravel/.claude/memory/
+templates/laravel/docs/
+templates/laravel/apps/api/src/
+templates/laravel/infra/
+templates/laravel/packages/
+templates/laravel/scripts/
+templates/laravel/tasks/
+templates/laravel/_ai/

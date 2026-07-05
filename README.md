@@ -12,7 +12,7 @@ This repository is the scaffold platform itself, not a generated application. Ge
 |---|---|
 | Package version | `0.7.0` |
 | Active branch target | `dev` before release promotion |
-| Supported profiles | `generic`, `laravel` |
+| Supported profiles | `generic`, `laravel`, `node` (`javascript`, `js` aliases) |
 | Implemented commands | `create`, `init`, `status`, `doctor`, `update` |
 | Update behavior | Placeholder only until Phase 3 |
 
@@ -21,7 +21,9 @@ This repository is the scaffold platform itself, not a generated application. Ge
 ```bash
 npx ai-scaffold my-project
 npx ai-scaffold create my-project
+npx ai-scaffold create my-node-app --profile node
 npx ai-scaffold init --profile laravel
+npx ai-scaffold init --profile javascript
 npx ai-scaffold status
 npx ai-scaffold doctor
 npx ai-scaffold update
@@ -47,6 +49,7 @@ The root package is the CLI package. Template profile contents live under `templ
 | `src/cli/core/` | Shared CLI file planning, copying, prompt, path, and version logic |
 | `templates/generic/` | Generic profile source |
 | `templates/laravel/` | Laravel profile source |
+| `templates/node/` | Node.js/JavaScript profile source |
 | `docs/cli/` | CLI behavior specs |
 | `docs/process/` | Scaffold planning and process records |
 | `docs/compliance/third-party-attributions.md` | Third-party sources, licenses, and attribution register |

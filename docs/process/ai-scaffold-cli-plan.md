@@ -19,6 +19,8 @@ npx ai-scaffold my-project
 npx ai-scaffold .
 npx ai-scaffold init
 npx ai-scaffold init --profile laravel
+npx ai-scaffold init --profile node
+npx ai-scaffold init --profile javascript
 npx ai-scaffold status
 npx ai-scaffold doctor
 npx ai-scaffold update
@@ -81,6 +83,7 @@ src/
 templates/
   generic/
   laravel/
+  node/
   nextjs/
   golang/
   flutter/
@@ -381,7 +384,7 @@ Profile metadata example:
 }
 ```
 
-Start with `generic` and `laravel`; add the rest after CLI fundamentals are stable.
+Start with `generic`, `laravel`, and `node`; add the rest after CLI fundamentals are stable.
 
 ### Profile Inheritance Model
 
@@ -389,6 +392,7 @@ Use pre-merged complete profiles for the first release.
 
 - `templates/generic/` contains the base scaffold.
 - `templates/laravel/` contains a complete installable file set with generic files plus Laravel overlays already applied.
+- `templates/node/` contains a complete installable file set with Node.js/JavaScript defaults. `javascript`, `js`, and `nodejs` resolve to this profile.
 - The CLI copies from exactly one resolved profile directory.
 - `update` compares the installed profile against the complete template for that same profile and version.
 - Profile metadata may still include `extends` for documentation and future build tooling, but runtime install/update logic should not merge profiles on the fly in v1.
@@ -512,6 +516,7 @@ Implement:
 npx ai-scaffold my-project
 npx ai-scaffold init --profile generic
 npx ai-scaffold init --profile laravel
+npx ai-scaffold init --profile node
 npx ai-scaffold status
 npx ai-scaffold doctor
 ```
@@ -544,7 +549,7 @@ Publish once tests, docs, upgrade flow, and sample installs are verified.
 
 Ship the CLI in two releases:
 
-1. v1 CLI MVP: `create`, `init`, `status`, `doctor`, `generic`, `laravel`, safe conflict handling.
+1. v1 CLI MVP: `create`, `init`, `status`, `doctor`, `generic`, `laravel`, `node`, safe conflict handling.
 2. v1.1 or v1.2: `update`, version pinning, more profiles, richer doctor checks.
 
 This gets the team using the scaffold faster without waiting for every profile to be perfect.

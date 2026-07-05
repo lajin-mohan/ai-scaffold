@@ -28,6 +28,21 @@ export const PKG_ROOT = path.resolve(CLI_ROOT, '..', '..', '..');
  */
 export const TEMPLATES_DIR = path.resolve(PKG_ROOT, 'templates');
 
+export const PROFILE_ALIASES = {
+  js: 'node',
+  javascript: 'node',
+  nodejs: 'node',
+};
+
+export const SUPPORTED_PROFILES = ['generic', 'laravel', 'node'];
+
+export const PROFILE_CHOICES = [...SUPPORTED_PROFILES, 'javascript', 'js'];
+
+export function normalizeProfile(profile = 'generic') {
+  const normalized = String(profile).toLowerCase();
+  return PROFILE_ALIASES[normalized] ?? normalized;
+}
+
 /**
  * Directory containing scaffold managed files (used for `init` into same repo).
  */
@@ -44,5 +59,5 @@ export function pkgPath(...segments) {
  * Resolve a path relative to the templates directory.
  */
 export function templatePath(profile, ...segments) {
-  return path.resolve(TEMPLATES_DIR, profile, ...segments);
+  return path.resolve(TEMPLATES_DIR, normalizeProfile(profile), ...segments);
 }

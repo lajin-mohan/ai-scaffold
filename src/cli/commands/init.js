@@ -15,7 +15,7 @@ import { templatePath } from '../core/paths.js';
 
 export function initCommand(cli) {
   cli.command('init [target-dir]', 'Install scaffold into an existing directory')
-    .option('--profile <profile>', 'Scaffold profile to use (generic, laravel)', { default: 'generic' })
+    .option('--profile <profile>', 'Scaffold profile to use (generic, laravel, node)', { default: 'generic' })
     .option('--yes', 'Use defaults for all options, no prompts')
     .option('--dry-run', 'Show what would be installed without writing files')
     .option('--force', 'Overwrite existing files without prompting')
@@ -31,7 +31,7 @@ export function initCommand(cli) {
     .option('--no-multi-tenant', 'Disable multi-tenancy')
     .option('--compliance <scope>', 'Compliance scope (N/A, GDPR, ISO27001, HIPAA, SOC2, PCI-DSS)')
     .example('ai-scaffold init')
-    .example('ai-scaffold init ./my-existing-project --profile laravel --yes')
+    .example('ai-scaffold init ./my-existing-project --profile node --yes')
     .example('ai-scaffold init --dry-run')
     .action(async (targetDir, options) => {
       await runInit(targetDir, options);
@@ -94,7 +94,7 @@ async function runInit(targetDir, options) {
     console.log(chalk.gray(`\n[dry-run] Would install ${result.copied} files, skip ${result.skipped}`));
   } else {
     console.log(chalk.green(`\n✓ Done! Scaffold installed in ${resolvedTarget}/`));
-    console.log(chalk.gray(`  Profile: ${profile}`));
+    console.log(chalk.gray(`  Profile: ${resolved.profile ?? profile}`));
     console.log(chalk.gray(`  Bootstrap: ${resolved.profile ?? profile}\n`));
   }
 }

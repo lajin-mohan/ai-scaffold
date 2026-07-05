@@ -10,16 +10,16 @@ import picomatch from 'picomatch';
 
 /**
  * Files always managed by the scaffold (relative to project root).
- * Expanded to include root-level scaffold files that a new project needs.
+ * During init, these are installed under .ai-scaffold/ namespace.
+ * During create, these are at project root.
  * @type {string[]}
  */
 export const MANAGED_PATHS = [
-  // Per-project directories
+  // Scaffold-owned directories (namespaced in init, root in create)
+  '.ai-scaffold/**',
   '.claude/**',
   '.cursor/**',
   '_ai/**',
-  'docs/**',
-  'tasks/**',
   // Root-level scaffold files
   '.github/copilot-instructions.md',
   'AGENTS.md',
@@ -29,12 +29,6 @@ export const MANAGED_PATHS = [
   'LICENSE',
   'SECURITY.md',
   'CHANGELOG.md',
-  'package.json',
-  'package-lock.json',
-  '.gitignore',
-  '.env.example',
-  '.editorconfig',
-  '.gitleaks.toml',
 ];
 
 /**
@@ -109,6 +103,18 @@ export async function buildFilePlan(sourceDir, targetDir, options = {}) {
     throw new Error(`Template profile not found: ${sourceDir}`);
   }
 
+  // Namespace prefix for init (existing project). During create, prefix is empty.
+  // Scaffold-owned files install under .ai-scaffold/ to avoid polluting project root.
+  const NAMESPACE_PREFIX = existingTarget ? '.ai-scaffold' : '';
+
+  // Files that always go to project root (never namespaced).
+  const ROOT_FILES = [
+    '.github/copilot-instructions.md',
+    'LICENSE',
+    'SECURITY.md',
+    'CHANGELOG.md',
+  ];
+
   // Always-generate files: these have no template source; they are built
   // programmatically by copy.js generateFile().
   const alwaysGenerate = ['.ai-scaffold.json'];
@@ -118,17 +124,23 @@ export async function buildFilePlan(sourceDir, targetDir, options = {}) {
 
   for (const srcFile of sourceFiles) {
     const relPath = path.relative(sourceDir, srcFile);
-    const targetFile = path.join(targetDir, relPath);
+    const isRootFile = ROOT_FILES.some((rf) => picomatch(rf)(relPath));
+    const namespace = isRootFile ? '' : NAMESPACE_PREFIX;
+    const targetRel = namespace ? path.join(namespace, relPath) : relPath;
+    const targetFile = path.join(targetDir, targetRel);
 
     // Check if this file maps to a generated output (e.g. .template.md → .md)
     const generatedRel = GENERATED_FILE_MAP[relPath];
     if (generatedRel) {
+      const genTargetRel = existingTarget && !generatedRel.startsWith('.claude/') && !generatedRel.startsWith('.ai-scaffold.json')
+        ? path.join('.ai-scaffold', generatedRel)
+        : generatedRel;
       if (existingTarget && matchesAny(generatedRel, PROTECTED_PATHS)) {
-        const targetExists = await fs.pathExists(path.join(targetDir, generatedRel));
+        const targetExists = await fs.pathExists(path.join(targetDir, genTargetRel));
         plan.skipProtected.push({
           src: srcFile,
-          rel: generatedRel,
-          target: path.join(targetDir, generatedRel),
+          rel: genTargetRel,
+          target: path.join(targetDir, genTargetRel),
           exists: targetExists,
           templateRel: relPath,
         });
@@ -137,27 +149,25 @@ export async function buildFilePlan(sourceDir, targetDir, options = {}) {
 
       plan.generate.push({
         src: srcFile,
-        rel: generatedRel,
-        target: path.join(targetDir, generatedRel),
+        rel: genTargetRel,
+        target: path.join(targetDir, genTargetRel),
         templateRel: relPath,
       });
       continue;
     }
 
-    // Skip raw template marker files that have no generated counterpart
+    // Skip raw template marker files that no generated counterpart
     if (relPath.includes('.template.')) {
       continue;
     }
 
     // Protected files — never overwrite without confirmation
-    // Only check PROTECTED_PATHS when the target directory already exists (init).
-    // For create (new directory), all files are copied normally since there's nothing to protect.
     if (existingTarget && matchesAny(relPath, PROTECTED_PATHS)) {
-      const targetExists = await fs.pathExists(path.join(targetDir, relPath));
+      const targetExists = await fs.pathExists(targetFile);
       plan.skipProtected.push({
         src: srcFile,
-        rel: relPath,
-        target: path.join(targetDir, relPath),
+        rel: targetRel,
+        target: targetFile,
         exists: targetExists,
       });
       continue;
@@ -170,7 +180,7 @@ export async function buildFilePlan(sourceDir, targetDir, options = {}) {
     }
 
     // Copy normally
-    plan.copy.push({ src: srcFile, rel: relPath, target: targetFile });
+    plan.copy.push({ src: srcFile, rel: targetRel, target: targetFile });
   }
 
   // Add always-generate files (no template source; built programmatically)
@@ -179,12 +189,13 @@ export async function buildFilePlan(sourceDir, targetDir, options = {}) {
       continue;
     }
 
-    const target = path.join(targetDir, genRel);
+    const genTargetRel = existingTarget ? path.join('.ai-scaffold', genRel) : genRel;
+    const target = path.join(targetDir, genTargetRel);
     if (existingTarget && matchesAny(genRel, PROTECTED_PATHS)) {
       const targetExists = await fs.pathExists(target);
       plan.skipProtected.push({
         src: null,
-        rel: genRel,
+        rel: genTargetRel,
         target,
         exists: targetExists,
         templateRel: null,
@@ -194,7 +205,7 @@ export async function buildFilePlan(sourceDir, targetDir, options = {}) {
 
     plan.generate.push({
       src: null,
-      rel: genRel,
+      rel: genTargetRel,
       target,
       templateRel: null,
     });

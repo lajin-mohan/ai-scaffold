@@ -1,0 +1,63 @@
+# Local Claude overrides — personal, not shared
+CLAUDE.local.md
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Dependencies
+node_modules/
+vendor/
+.venv/
+__pycache__/
+
+# Build outputs
+dist/
+build/
+out/
+.next/
+.nuxt/
+
+# Logs
+*.log
+logs/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+*.iml
+
+# AI staging area — generated content not for production
+_ai/generated/
+_ai/drafts/
+_ai/experiments/
+
+# AI ephemera — planning, scratch, intermediate outputs (per-clone working state)
+.claude/work/
+
+# Local project memory — generated per adopted application from MEMORY.template.md
+.claude/MEMORY.md
+.claude/memory/*.local.md
+
+# Local Claude settings overrides — generated during bootstrap/init from template
+.claude/settings-overrides.json
+
+# Legacy tracked file — replaced by tasks/todo/ per-ticket files + CHANGELOG.md.
+# Untracked via `git rm --cached tasks/todo.md`. Kept locally; new edits stay local.
+tasks/todo.md
+
+# Local Claude settings overrides (copy settings.local.example.json to get started)
+.claude/settings.local.json
+
+# Gitleaks personal allowlist overrides (gitignore secrets scanning)
+.gitleaksignore
+
+# Command memory files — per-clone, never shared
+.claude/memory/health-history.jsonl
+.claude/memory/health-stack.json
+.claude/memory/investigate-scope.txt
+.claude/memory/audit-log.jsonl
