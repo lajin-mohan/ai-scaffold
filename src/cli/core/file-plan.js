@@ -43,6 +43,11 @@ const GENERATED_FILE_MAP = {
   '.claude/settings-overrides.template.json': '.claude/settings-overrides.json',
 };
 
+const EXCLUDED_TEMPLATE_FILES = [
+  '.claude/settings.local.json',
+  '.DS_Store',
+];
+
 /**
  * Files that must never be overwritten without explicit confirmation.
  * These protect an existing project's files during `init` — the scaffold will
@@ -124,6 +129,9 @@ export async function buildFilePlan(sourceDir, targetDir, options = {}) {
 
   for (const srcFile of sourceFiles) {
     const relPath = path.relative(sourceDir, srcFile);
+    if (EXCLUDED_TEMPLATE_FILES.includes(relPath)) {
+      continue;
+    }
     const isRootFile = ROOT_FILES.some((rf) => picomatch(rf)(relPath));
     const namespace = isRootFile ? '' : NAMESPACE_PREFIX;
     const targetRel = namespace ? path.join(namespace, relPath) : relPath;

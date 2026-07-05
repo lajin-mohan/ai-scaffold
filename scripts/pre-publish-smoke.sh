@@ -55,16 +55,23 @@ fi
 echo ""
 echo ">> Gate 3: npm pack --dry-run"
 # npm pack is non-zero exit only on real errors (not --dry-run).
-# Count files from the "Tarball Contents" lines that start with "./"
-PACK_OUTPUT=$(npm_config_cache=/tmp/ai-scaffold-npm-cache npm pack --dry-run 2>&1) || true
+PACK_OUTPUT=$(npm_config_cache=/tmp/ai-scaffold-npm-cache npm pack --dry-run --json 2>&1)
+PACK_STATUS=$?
 
-if echo "$PACK_OUTPUT" | grep -qE "ai-scaffold-[0-9.]+\.tgz"; then
-  PACK_FILE=$(echo "$PACK_OUTPUT" | grep -oE "ai-scaffold-[0-9.]+\.tgz" | tail -1)
+if [ "$PACK_STATUS" -eq 0 ] && [[ "$PACK_OUTPUT" =~ ai-scaffold-[0-9.]+\.tgz ]]; then
+  PACK_FILE=$(grep -oE "ai-scaffold-[0-9.]+\.tgz" <<< "$PACK_OUTPUT" | tail -1)
   echo "  ${PACK_FILE} produced"
   pass "npm pack --dry-run"
 else
   fail "npm pack --dry-run"
   echo "  $PACK_OUTPUT" | head -3
+fi
+
+FORBIDDEN_PACK_PATHS='templates/.*/apps/|templates/.*/infra/|templates/.*/packages/|templates/.*/scripts/|templates/.*/\.vscode/|templates/.*/\.claude/settings.local.json|src/__tests__|tests/'
+if grep -Eq "$FORBIDDEN_PACK_PATHS" <<< "$PACK_OUTPUT"; then
+  fail "npm package excludes heavy/template-local paths"
+else
+  pass "npm package excludes heavy/template-local paths"
 fi
 
 # ── Gate 4: create smoke test ──────────────────────────────────────────
@@ -151,6 +158,20 @@ if echo "$STATUS_OUT" | grep -q "0.7.0"; then
 else
   fail "status does not recognize init install"
   echo "  Got: $STATUS_OUT"
+fi
+
+DOCTOR_OUT=$(node bin/ai-scaffold.js doctor "$INIT_DIR" --json 2>&1) || true
+if echo "$DOCTOR_OUT" | grep -q '"criticalFailed": 0' && echo "$DOCTOR_OUT" | grep -q '"highFailed": 0'; then
+  pass "doctor recognizes namespaced init install"
+else
+  fail "doctor reports critical/high failures after init"
+  echo "  Got: $DOCTOR_OUT"
+fi
+
+if grep -q '"managedFiles": \\[\\]' "$INIT_DIR/.ai-scaffold.json"; then
+  fail "manifest records managed files"
+else
+  pass "manifest records managed files"
 fi
 
 # ── Gate 6: bare . routes to init ──────────────────────────────────────

@@ -6,6 +6,7 @@
 import path from 'path';
 import fs from 'fs-extra';
 import chalk from 'chalk';
+import crypto from 'crypto';
 
 export function doctorCommand(cli) {
   cli.command('doctor [target-dir]', 'Diagnose scaffold installation health')
@@ -35,6 +36,7 @@ async function runDoctor(targetDir, options) {
 async function runDiagnostics(target) {
   const checks = [];
   const scaffoldFile = path.join(target, '.ai-scaffold.json');
+  const scaffoldDir = path.join(target, '.ai-scaffold');
   const claudDir = path.join(target, '.claude');
   const memoryFile = path.join(target, '.claude', 'MEMORY.md');
   const settingsFile = path.join(target, '.claude', 'settings-overrides.json');
@@ -89,11 +91,32 @@ async function runDiagnostics(target) {
     message: manifestValid ? undefined : 'Manifest is corrupt or missing required fields.',
   });
 
+  const integrity = manifestData
+    ? await findManagedFileIssues(target, manifestData)
+    : { modified: [], missing: [] };
+
+  checks.push({
+    name: 'Managed files present',
+    passed: integrity.missing.length === 0,
+    severity: 'high',
+    message: integrity.missing.length > 0 ? `Missing: ${integrity.missing.slice(0, 10).join(', ')}` : undefined,
+  });
+
+  checks.push({
+    name: 'Managed files unmodified',
+    passed: integrity.modified.length === 0,
+    severity: 'medium',
+    message: integrity.modified.length > 0 ? `Modified: ${integrity.modified.slice(0, 10).join(', ')}` : undefined,
+  });
+
+  const namespacedInstall = await fs.pathExists(scaffoldDir);
+  const managedRoot = namespacedInstall ? scaffoldDir : target;
+
   // 6. Check required managed files
   const requiredFiles = ['CLAUDE.md', 'HOW-TO-USE.md', 'AGENTS.md'];
   const missingRequired = [];
   for (const f of requiredFiles) {
-    if (!(await fs.pathExists(path.join(target, f)))) {
+    if (!(await fs.pathExists(path.join(managedRoot, f)))) {
       missingRequired.push(f);
     }
   }
@@ -106,17 +129,17 @@ async function runDiagnostics(target) {
 
   // 7. Check docs/ and tasks/ directories
   checks.push({
-    name: 'docs/ directory',
-    passed: await fs.pathExists(path.join(target, 'docs')),
+    name: namespacedInstall ? '.ai-scaffold/docs/ directory' : 'docs/ directory',
+    passed: await fs.pathExists(path.join(managedRoot, 'docs')),
     severity: 'low',
-    message: 'docs/ directory not found.',
+    message: `${namespacedInstall ? '.ai-scaffold/docs' : 'docs'} directory not found.`,
   });
 
   checks.push({
-    name: 'tasks/ directory',
-    passed: await fs.pathExists(path.join(target, 'tasks')),
+    name: namespacedInstall ? '.ai-scaffold/tasks/ directory' : 'tasks/ directory',
+    passed: await fs.pathExists(path.join(managedRoot, 'tasks')),
     severity: 'low',
-    message: 'tasks/ directory not found.',
+    message: `${namespacedInstall ? '.ai-scaffold/tasks' : 'tasks'} directory not found.`,
   });
 
   // 8. Check .git/ directory
@@ -135,6 +158,32 @@ async function runDiagnostics(target) {
   const allPassed = checks.every((c) => c.passed);
 
   return { target, checks, allPassed, criticalFailed, highFailed, mediumFailed, lowFailed, manifestData };
+}
+
+async function findManagedFileIssues(target, manifestData) {
+  const modified = [];
+  const missing = [];
+
+  if (!Array.isArray(manifestData.managedFiles)) {
+    return { modified, missing };
+  }
+
+  for (const file of manifestData.managedFiles) {
+    const fullPath = path.join(target, file.path);
+    if (!(await fs.pathExists(fullPath))) {
+      missing.push(file.path);
+      continue;
+    }
+    const hash = crypto
+      .createHash('sha256')
+      .update(await fs.readFile(fullPath))
+      .digest('hex');
+    if (file.hash !== `sha256:${hash}`) {
+      modified.push(file.path);
+    }
+  }
+
+  return { modified, missing };
 }
 
 function printDiagnostics(diagnostics) {

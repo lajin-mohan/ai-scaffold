@@ -278,6 +278,6 @@ This split prevents project template placeholders from appearing in the scaffold
 
 ## License And Attribution
 
-This repository is released under the MIT License, with copyright retained by Lajin M J. See [LICENSE](./LICENSE).
+This repository is released under the AI Scaffold Community License, with copyright retained by Lajin M J. It is free for personal, educational, internal, and non-commercial use, including forks and pull requests. Selling, sublicensing, paid redistribution, or commercializing the scaffold itself requires prior written permission. See [LICENSE](./LICENSE).
 
 Third-party packages and adapted source material retain their original licenses. See [docs/compliance/third-party-attributions.md](./docs/compliance/third-party-attributions.md).

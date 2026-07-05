@@ -23,7 +23,7 @@
     "boilerplate"
   ],
   "author": "Lajin M J <lajinmj@gmail.com>",
-  "license": "MIT",
+  "license": "SEE LICENSE IN LICENSE",
   "dependencies": {
     "cac": "^6.7.14",
     "chalk": "^5.3.0",

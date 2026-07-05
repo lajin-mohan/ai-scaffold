@@ -5,6 +5,7 @@
 import fs from 'fs-extra';
 import path from 'path';
 import chalk from 'chalk';
+import crypto from 'crypto';
 
 /**
  * Copy staged files to target directory.
@@ -26,6 +27,7 @@ export async function copyFiles(plan, bootstrapValues, opts = {}) {
   let copied = 0;
   let skipped = 0;
   let errors = 0;
+  const writtenFiles = [];
 
   // Handle protected files
   for (const file of plan.skipProtected) {
@@ -33,12 +35,14 @@ export async function copyFiles(plan, bootstrapValues, opts = {}) {
       // Protected file missing in target — offer to create it
       if (force || yes) {
         await writePlannedFile(file, values, dryRun);
+        writtenFiles.push(file.rel);
         copied++;
       } else {
         console.log(chalk.yellow(`? ${file.rel} — protected file missing in target`));
         const answer = await confirm(`  Create from template?`);
         if (answer) {
           await writePlannedFile(file, values, dryRun);
+          writtenFiles.push(file.rel);
           copied++;
         } else {
           skipped++;
@@ -49,6 +53,7 @@ export async function copyFiles(plan, bootstrapValues, opts = {}) {
       if (force) {
         console.log(chalk.yellow(`! ${file.rel} — overwriting protected file (--force)`));
         await writePlannedFile(file, values, dryRun);
+        writtenFiles.push(file.rel);
         copied++;
       } else {
         console.log(chalk.cyan(`⊘ ${file.rel} — protected, skipped`));
@@ -60,22 +65,23 @@ export async function copyFiles(plan, bootstrapValues, opts = {}) {
   // Copy managed files
   for (const file of plan.copy) {
     await copySingle(file.src, file.target, values, dryRun);
+    writtenFiles.push(file.rel);
     copied++;
   }
 
   // Generate per-project files
   for (const file of plan.generate) {
     await generateFile(file, values, dryRun);
+    writtenFiles.push(file.rel);
     copied++;
   }
 
-  // Track defaulted values in the ai-scaffold.json metadata
-  if (!dryRun && values.defaulted && values.defaulted.length > 0) {
-    // Find the generated ai-scaffold.json and add defaulted values
-    const manifestPath = path.join(opts.targetDir || '', '.ai-scaffold.json');
+  if (!dryRun && opts.targetDir) {
+    const manifestPath = path.join(opts.targetDir, '.ai-scaffold.json');
     if (await fs.pathExists(manifestPath)) {
       const manifest = await fs.readJson(manifestPath);
-      manifest.defaultedValues = values.defaulted;
+      manifest.defaultedValues = values.defaulted ?? [];
+      manifest.managedFiles = await buildManagedFileRecords(opts.targetDir, writtenFiles);
       await fs.writeJson(manifestPath, manifest, { spaces: 2 });
     }
   }
@@ -123,7 +129,7 @@ async function generateFile(file, values, dryRun) {
 
   await fs.ensureDir(path.dirname(target));
 
-  if (relPath === 'README.md' && src) {
+  if (relPath.endsWith('README.md') && src) {
     const content = await fs.readFile(src, 'utf-8');
     await fs.writeFile(target, resolvePlaceholders(content, values));
   } else if (relPath === '.ai-scaffold.json') {
@@ -241,6 +247,26 @@ Update this index when new memory files are created or existing memory files are
   console.log(chalk.green(`✓ ${relPath} (generated)`));
 }
 
+async function buildManagedFileRecords(targetDir, relPaths) {
+  const uniquePaths = [...new Set(relPaths)]
+    .filter((relPath) => relPath !== '.ai-scaffold.json')
+    .sort();
+
+  const records = [];
+  for (const relPath of uniquePaths) {
+    const fullPath = path.join(targetDir, relPath);
+    if (!(await fs.pathExists(fullPath))) {
+      continue;
+    }
+    const hash = crypto
+      .createHash('sha256')
+      .update(await fs.readFile(fullPath))
+      .digest('hex');
+    records.push({ path: relPath, hash: `sha256:${hash}` });
+  }
+  return records;
+}
+
 /**
  * Replace all {{PLACEHOLDER}} tokens in text content with resolved values.
  */
@@ -277,7 +303,7 @@ function resolvePlaceholders(content, values) {
     '{{IAC_TOOL}}': 'N/A',
     '{{CICD_PLATFORM}}': 'GitHub Actions',
     '{{PM_TOOL}}': 'GitHub Projects',
-    '{{LICENSE}}': 'Proprietary',
+    '{{LICENSE}}': 'AI Scaffold Community License',
     '{{YEAR}}': new Date().getFullYear().toString(),
   };
 

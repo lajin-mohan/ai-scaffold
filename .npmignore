@@ -1,49 +1,15 @@
-# Prune heavy template subdirectories from npm package
-# npm respects these when files are listed in package.json "files" field
-templates/generic/.claude/rules/
-templates/generic/.claude/skills/
-templates/generic/.claude/roles/
-templates/generic/.claude/memory/
-templates/generic/.claude/templates/
-templates/generic/.claude/hooks/
-templates/generic/.claude/lib/
-templates/generic/docs/
-templates/generic/infra/
-templates/generic/packages/
-templates/generic/scripts/
-templates/generic/tasks/
-templates/generic/_ai/
-templates/generic/.github/
-templates/generic/.vscode/
+# Keep the published package focused on the CLI plus scaffold-managed assets.
+# The package.json "files" allowlist is the primary control; these entries prune
+# application-like examples and local/editor-only files if they are matched.
 
-templates/laravel/.claude/rules/
-templates/laravel/.claude/skills/
-templates/laravel/.claude/roles/
-templates/laravel/.claude/memory/
-templates/laravel/.claude/templates/
-templates/laravel/.claude/hooks/
-templates/laravel/.claude/lib/
-templates/laravel/docs/
-templates/laravel/infra/
-templates/laravel/packages/
-templates/laravel/scripts/
-templates/laravel/tasks/
-templates/laravel/_ai/
-templates/laravel/.github/
-templates/laravel/.vscode/
+templates/*/apps/
+templates/*/infra/
+templates/*/packages/
+templates/*/scripts/
+templates/*/.vscode/
+templates/*/.claude/settings.local.json
 
-templates/node/.claude/rules/
-templates/node/.claude/skills/
-templates/node/.claude/roles/
-templates/node/.claude/memory/
-templates/node/.claude/templates/
-templates/node/.claude/hooks/
-templates/node/.claude/lib/
-templates/node/docs/
-templates/node/infra/
-templates/node/packages/
-templates/node/scripts/
-templates/node/tasks/
-templates/node/_ai/
-templates/node/.github/
-templates/node/.vscode/
+src/__tests__/
+tests/
+docs/process/
+docs/estimates/

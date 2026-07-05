@@ -86,7 +86,7 @@ async function runCreate(projectName, options) {
 
   // 5. Copy files
   console.log(chalk.gray('\nCopying files...'));
-  const result = await copyFiles(plan, resolved, { dryRun, force });
+  const result = await copyFiles(plan, resolved, { dryRun, force, targetDir });
 
   // 6. Summary
   if (dryRun) {

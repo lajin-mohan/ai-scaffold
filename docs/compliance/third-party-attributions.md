@@ -6,9 +6,9 @@ Update this file whenever the scaffold adds, removes, or materially adapts third
 
 ## Repository License
 
-`ai-scaffold` is released under the MIT License, with copyright retained by Lajin M J. See [../../LICENSE](../../LICENSE).
+`ai-scaffold` is released under the AI Scaffold Community License, with copyright retained by Lajin M J. See [../../LICENSE](../../LICENSE).
 
-Users may use, copy, modify, merge, publish, distribute, sublicense, and sell copies under the MIT License terms. Third-party components retain their original licenses.
+Users may use, copy, modify, fork, and distribute the scaffold for personal, educational, internal, and non-commercial purposes. Selling, sublicensing, paid redistribution, or commercializing the scaffold itself requires prior written permission from Lajin M J. Third-party components retain their original licenses.
 
 ## Direct npm Dependencies
 

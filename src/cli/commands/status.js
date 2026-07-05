@@ -6,6 +6,7 @@
 import path from 'path';
 import fs from 'fs-extra';
 import chalk from 'chalk';
+import crypto from 'crypto';
 
 export function statusCommand(cli) {
   cli.command('status [target-dir]', 'Show installed scaffold version, profile, and status')
@@ -53,14 +54,22 @@ async function runStatus(targetDir, options) {
 
   // Managed files
   console.log(chalk.bold('\nManaged Files'));
-  const managedFiles = await countManagedFiles(target);
+  const managedFiles = await countManagedFiles(target, status);
   console.log(`  ${chalk.cyan(managedFiles)} managed files`);
 
-  // Modified files
-  const modified = await findModifiedFiles(target);
-  if (modified.length === 0) {
-    console.log(chalk.green('  No modified files'));
-  } else {
+  // Integrity
+  const { modified, missing } = await findManagedFileIssues(target, status);
+  if (missing.length > 0) {
+    console.log(chalk.red(`  ${missing.length} missing file(s):`));
+    for (const f of missing.slice(0, 10)) {
+      console.log(`    - ${chalk.red(f)}`);
+    }
+    if (missing.length > 10) {
+      console.log(`    ... and ${missing.length - 10} more`);
+    }
+  }
+
+  if (modified.length > 0) {
     console.log(chalk.yellow(`  ${modified.length} modified file(s):`));
     for (const f of modified.slice(0, 10)) {
       console.log(`    ~ ${chalk.yellow(f)}`);
@@ -68,10 +77,12 @@ async function runStatus(targetDir, options) {
     if (modified.length > 10) {
       console.log(`    ... and ${modified.length - 10} more`);
     }
+  } else if (missing.length === 0) {
+    console.log(chalk.green('  No missing or modified files'));
   }
 
   // Health status
-  const health = getHealthStatus(status, modified);
+  const health = getHealthStatus(status, modified, missing);
   console.log(chalk.bold('\nHealth'));
   console.log(`  Status: ${health.icon} ${health.label}`);
   if (health.message) {
@@ -96,8 +107,13 @@ async function getStatusObject(target) {
   }
 }
 
-async function countManagedFiles(target) {
+async function countManagedFiles(target, status = {}) {
+  if (Array.isArray(status.managedFiles) && status.managedFiles.length > 0) {
+    return status.managedFiles.length;
+  }
+
   const managedPaths = [
+    '.ai-scaffold/',
     '.claude/',
     '.cursor/',
     '_ai/',
@@ -119,15 +135,38 @@ async function countManagedFiles(target) {
   return count;
 }
 
-async function findModifiedFiles(target) {
-  // Placeholder — returns empty list until hash tracking is implemented
-  // Phase 3 will add file hash comparison
-  return [];
+async function findManagedFileIssues(target, status = {}) {
+  const modified = [];
+  const missing = [];
+
+  if (!Array.isArray(status.managedFiles)) {
+    return { modified, missing };
+  }
+
+  for (const file of status.managedFiles) {
+    const fullPath = path.join(target, file.path);
+    if (!(await fs.pathExists(fullPath))) {
+      missing.push(file.path);
+      continue;
+    }
+    const hash = crypto
+      .createHash('sha256')
+      .update(await fs.readFile(fullPath))
+      .digest('hex');
+    if (file.hash !== `sha256:${hash}`) {
+      modified.push(file.path);
+    }
+  }
+
+  return { modified, missing };
 }
 
-function getHealthStatus(status, modified) {
+function getHealthStatus(status, modified, missing) {
+  if (missing.length > 0) {
+    return { icon: '✗', label: chalk.red('Missing files'), message: 'Some managed files are missing' };
+  }
   if (modified.length > 0) {
-    return { icon: '⚠', label: chalk.yellow('Modified'), message: 'Some managed files have been changed' };
+    return { icon: '⚠', label: chalk.yellow('Modified'), message: 'Some managed files have changed' };
   }
   if (status.bootstrapped) {
     return { icon: '✓', label: chalk.green('Healthy'), message: 'All managed files are intact' };

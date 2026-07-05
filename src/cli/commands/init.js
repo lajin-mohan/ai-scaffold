@@ -87,7 +87,7 @@ async function runInit(targetDir, options) {
 
   // 6. Copy files
   console.log(chalk.gray('\nInstalling scaffold...'));
-  const result = await copyFiles(plan, resolved, { dryRun, force, yes });
+  const result = await copyFiles(plan, resolved, { dryRun, force, yes, targetDir: resolvedTarget });
 
   // 7. Summary
   if (dryRun) {
