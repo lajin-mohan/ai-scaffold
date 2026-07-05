@@ -20,6 +20,8 @@ These rules govern how every AI tool (Claude, Codex, Cursor, Copilot, etc.) writ
 
 These are the single most important rules in this file. AI systems hallucinate. The defence is verification, not optimism.
 
+Attribution note: these guardrails are first-party scaffold rules, but their posture is influenced by Andrej Karpathy's public writing and talks on LLM hallucinations, supervised AI coding, and the risks of "vibe coding" when output is accepted without inspection. No Karpathy text or code is copied here; the influence is conceptual.
+
 | # | Rule | Enforcement |
 |---|---|---|
 | H1 | **Verify before claim.** Any statement about code (a function exists, a file is at path X, a flag has value Y) must be backed by reading the file in this session. No claims from training data alone. | BLOCK in review |

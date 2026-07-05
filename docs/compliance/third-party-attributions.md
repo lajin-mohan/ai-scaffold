@@ -6,9 +6,9 @@ Update this file whenever the scaffold adds, removes, or materially adapts third
 
 ## Repository License
 
-`ai-scaffold` is proprietary to Techversant Infotech. See [../../LICENSE](../../LICENSE).
+`ai-scaffold` is released under the MIT License, with copyright retained by Lajin M J. See [../../LICENSE](../../LICENSE).
 
-No outbound open-source license is granted for this repository unless a separate written agreement says otherwise. Third-party components retain their original licenses.
+Users may use, copy, modify, merge, publish, distribute, sublicense, and sell copies under the MIT License terms. Third-party components retain their original licenses.
 
 ## Direct npm Dependencies
 
@@ -35,10 +35,11 @@ Transitive dependency licenses are recorded in `package-lock.json` and should be
 | Source | License | Incorporated Material | Local Locations | Attribution Notes |
 |---|---|---|---|---|
 | Dietrich Gebert, `ponytail` | MIT | Ponytail ladder philosophy, shortcut marker taxonomy, audit/debt command ideas | `.claude/rules/ponytail-ladder.md`, `.claude/commands/ponytail-audit.md`, `.claude/commands/ponytail-debt.md`, `tasks/ponytail-debt.md`, related docs | Keep file-level attribution blocks in adapted files. Upstream: https://github.com/DietrichGebert/ponytail |
+| Andrej Karpathy public AI writing and talks | Public reference material; no copied code or prose | Conceptual influence for hallucination-aware AI coding rules: verify before claiming, keep AI-generated work supervised, and treat plausible generated output as untrusted until checked | `.claude/rules/ai-coding-rules.md`, template copies under `templates/*/.claude/rules/ai-coding-rules.md`, README research context | Attribution is conceptual only. No text copied. References: https://karpathy.github.io/2015/05/21/rnn-effectiveness/ and Karpathy's public "vibe coding" discussion as a cautionary contrast for governed AI-assisted delivery. |
 
 ## Scaffold-Owned Materials
 
-The following categories are treated as first-party Techversant scaffold material unless a file-level attribution block says otherwise:
+The following categories are treated as first-party Lajin M J scaffold material unless a file-level attribution block says otherwise:
 
 - `.claude/agents/`
 - `.claude/commands/`

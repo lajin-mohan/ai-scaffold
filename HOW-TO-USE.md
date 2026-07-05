@@ -1,6 +1,131 @@
-# How to Use This AI Project Template
+# How to Use AI Scaffold
 
-This guide explains how every role at Techversant Infotech uses the AI tools in this template — in the right order, at the right phase, for the right purpose.
+This guide explains how every role at Techversant Infotech uses the AI tools in this scaffold — in the right order, at the right phase, for the right purpose.
+
+---
+
+## What This Scaffold Gives You
+
+Use `ai-scaffold` when you want one consistent AI operating model across a project. It gives teams:
+
+- shared governance rules for AI-assisted delivery
+- reusable Claude/Codex/Cursor guidance files
+- stage gates from analysis through deployment
+- role-specific workflows for developers, QA, architects, UX, and project owners
+- project memory, lessons, review commands, QA commands, and release checks
+- safer setup for both new projects and existing repositories
+
+It does **not** replace human approval, real engineering judgment, project-specific CI, security review, or production release ownership.
+
+---
+
+## How It Helps Each Role Day To Day
+
+| Role | Before the scaffold | With the scaffold |
+|---|---|---|
+| Developer | Starts from an issue and asks AI for code, often without enough context | Starts with `/start-task`, reads memory/lessons, follows coding rules, runs verification, then uses `/review` |
+| QA | Receives late, uneven handoffs and manually reconstructs acceptance coverage | Uses `/qa-plan`, `/gen-tests`, `/qa-review`, and UAT templates tied back to requirements |
+| Architect | Gets pulled in after implementation has already made design decisions | Uses architecture review, ADRs, API contracts, invariants, and risk checks before code starts |
+| UX | Receives partial requirements and creates designs without consistent state coverage | Uses UX analysis, design prompt, viewport/state checks, accessibility gates, and `/ux-handoff` |
+| PM / owner | Tracks scope, blockers, and readiness manually across chats and documents | Uses `/what-next`, BRDs, estimates, scope summaries, CRs, and release readiness checks |
+| Reviewer | Reviews AI output without knowing what assumptions or checks were used | Reviews against shared BLOCK/WARN/NIT severity, DoD, security rules, and evidence expectations |
+
+The practical benefit is not just "AI writes faster code." The benefit is that every AI-assisted step leaves behind enough context for the next person to inspect, correct, approve, or reject it.
+
+---
+
+## Installing The Scaffold
+
+After the npm package is published, use `npx ai-scaffold`.
+
+### Create a new project
+
+```bash
+npx ai-scaffold my-project
+npx ai-scaffold create my-project
+npx ai-scaffold create my-node-app --profile node
+npx ai-scaffold create my-js-app --profile js
+```
+
+`create` generates a new project directory with the scaffold files, project README, `.ai-scaffold.json`, `.claude/MEMORY.md`, and `.claude/settings-overrides.json`.
+
+### Install into an existing project
+
+From inside the target repository:
+
+```bash
+npx ai-scaffold init
+npx ai-scaffold .
+npx ai-scaffold init --profile node
+npx ai-scaffold init --profile javascript
+npx ai-scaffold init --profile laravel
+```
+
+Preview before writing files:
+
+```bash
+npx ai-scaffold init --profile node --dry-run
+npx ai-scaffold . --dry-run
+```
+
+Use defaults without prompts:
+
+```bash
+npx ai-scaffold init --profile node --yes
+```
+
+Pass explicit project context:
+
+```bash
+npx ai-scaffold init \
+  --profile node \
+  --project-name acme-api \
+  --display-name "Acme API" \
+  --purpose "Internal API for Acme operations" \
+  --project-type API \
+  --owner-email team@example.com \
+  --backend-stack "Node.js" \
+  --frontend-stack "None" \
+  --database "PostgreSQL" \
+  --no-multi-tenant \
+  --compliance N/A
+```
+
+### Check or update an installed scaffold
+
+```bash
+npx ai-scaffold status
+npx ai-scaffold doctor
+npx ai-scaffold update --dry-run
+npx ai-scaffold update --version 0.7.0
+```
+
+`update` is currently a Phase 3 placeholder. Do not rely on it for full file migrations, managed-file diffs, or safe patch application yet.
+
+### Profiles
+
+| Profile | Use when | Notes |
+|---|---|---|
+| `generic` | You want neutral AI governance without stack-specific defaults | Default |
+| `node` | You are starting or adopting a Node.js/JavaScript project | Day-one JS profile |
+| `js`, `javascript`, `nodejs` | You prefer an alias for Node.js | Resolves to `node` |
+| `laravel` | You are adopting a PHP/Laravel project | Light profile |
+
+---
+
+## Role Tutorials
+
+Start with the tutorial for your active AI role:
+
+| Role | Tutorial |
+|---|---|
+| Developer | [.claude/roles/tutorials/dev-role-tutorial.md](.claude/roles/tutorials/dev-role-tutorial.md) |
+| QA | [.claude/roles/tutorials/qa-role-tutorial.md](.claude/roles/tutorials/qa-role-tutorial.md) |
+| Architect | [.claude/roles/tutorials/architect-role-tutorial.md](.claude/roles/tutorials/architect-role-tutorial.md) |
+| UX | [.claude/roles/tutorials/ux-role-tutorial.md](.claude/roles/tutorials/ux-role-tutorial.md) |
+| Owner | [.claude/roles/tutorials/owner-role-tutorial.md](.claude/roles/tutorials/owner-role-tutorial.md) |
+
+Human-readable role overview: [docs/ai-os/README.md](docs/ai-os/README.md).
 
 ---
 
@@ -548,25 +673,38 @@ Claude will write the lesson to `tasks/lessons.md` immediately.
 
 ---
 
-## Applying This Template to a New Project
+## Applying This Scaffold To A Project
 
-### One-Time Machine Setup
+### New project setup
 
-Before using the template on any machine, run the git commit template setup:
+1. Run `npx ai-scaffold create <project-name> --profile <profile>`.
+2. Review generated project identity and stack values in `.claude/settings-overrides.json`.
+3. Run `/what-next` — it should report the next project stage.
+4. Run `/kickoff` at the start of every epic to verify all gates are met.
+5. Follow the 10-stage workflow — no skipping gates.
+
+### Existing project setup
+
+1. From the existing repository, run `npx ai-scaffold init --profile <profile> --dry-run`.
+2. Review the file plan and confirm it does not conflict with application-owned files.
+3. Run `npx ai-scaffold init --profile <profile>`.
+4. Review generated context in `.claude/MEMORY.md`, `.claude/settings-overrides.json`, and `.ai-scaffold.json` or the configured scaffold namespace.
+5. Run `npx ai-scaffold doctor`.
+6. Run `/what-next` to begin project work.
+
+### Local CLI development setup
+
+When working on this scaffold repository itself, use local commands:
 
 ```bash
-bash scripts/setup-git-template.sh
+node bin/ai-scaffold.js create /private/tmp/test-project --profile node --yes
+node bin/ai-scaffold.js init /private/tmp/existing-project --profile javascript --yes --dry-run
+npm test
+npm run typecheck
+bash scripts/pre-publish-smoke.sh
 ```
 
-This configures git to use a commit template that enforces human-only authorship — no `Co-Authored-By` lines will be added to any commits. You only need to run this once per machine.
-
-### Project Setup
-
-1. Copy the entire `.claude/` folder and root AI guidance files (`CLAUDE.md`, `.cursorrules`, `.github/copilot-instructions.md`, `README.md`, `_ai/`) into the new project repo
-2. Run `/bootstrap` — it walks through identity, stack, tenancy, and compliance one decision at a time and fills every placeholder across all files. Do not edit `{{PLACEHOLDERS}}` by hand; the bootstrap command keeps the files in sync.
-3. Run `/what-next` — it should now report Stage 1 (Analysis) ready to start
-4. Run `/kickoff` at the start of every epic to verify all gates are met
-5. Follow the 10-stage workflow — no skipping gates
+The pre-publish smoke script is the release gate. If it fails, do not publish.
 
 ---
 

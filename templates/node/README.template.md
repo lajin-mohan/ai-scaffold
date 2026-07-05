@@ -6,7 +6,6 @@
 
 | Field | Value |
 |---|---|
-| Organization | Techversant Infotech |
 | Type | {{SaaS / Internal Tool / API / Platform}} |
 | Status | {{Active Development / MVP / Production}} |
 | Owner | {{OWNER_EMAIL}} |
@@ -70,4 +69,4 @@ Useful entry points:
 
 ## License
 
-{{LICENSE}} - {{YEAR}} Techversant Infotech.
+{{LICENSE}} - {{YEAR}} Lajin M J.

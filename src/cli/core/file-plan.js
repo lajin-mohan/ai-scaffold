@@ -189,7 +189,11 @@ export async function buildFilePlan(sourceDir, targetDir, options = {}) {
       continue;
     }
 
-    const genTargetRel = existingTarget ? path.join('.ai-scaffold', genRel) : genRel;
+    // .ai-scaffold.json stays at project root for both create and init —
+    // it is the discovery entry point for status/doctor.
+    const genTargetRel = (existingTarget && genRel !== '.ai-scaffold.json')
+      ? path.join('.ai-scaffold', genRel)
+      : genRel;
     const target = path.join(targetDir, genTargetRel);
     if (existingTarget && matchesAny(genRel, PROTECTED_PATHS)) {
       const targetExists = await fs.pathExists(target);

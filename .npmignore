@@ -1,24 +1,49 @@
-# Exclude large template subdirectories that aren't needed for template generation
+# Prune heavy template subdirectories from npm package
+# npm respects these when files are listed in package.json "files" field
 templates/generic/.claude/rules/
 templates/generic/.claude/skills/
 templates/generic/.claude/roles/
 templates/generic/.claude/memory/
+templates/generic/.claude/templates/
+templates/generic/.claude/hooks/
+templates/generic/.claude/lib/
 templates/generic/docs/
-templates/generic/apps/api/src/
 templates/generic/infra/
 templates/generic/packages/
 templates/generic/scripts/
 templates/generic/tasks/
 templates/generic/_ai/
+templates/generic/.github/
+templates/generic/.vscode/
 
 templates/laravel/.claude/rules/
 templates/laravel/.claude/skills/
 templates/laravel/.claude/roles/
 templates/laravel/.claude/memory/
+templates/laravel/.claude/templates/
+templates/laravel/.claude/hooks/
+templates/laravel/.claude/lib/
 templates/laravel/docs/
-templates/laravel/apps/api/src/
 templates/laravel/infra/
 templates/laravel/packages/
 templates/laravel/scripts/
 templates/laravel/tasks/
 templates/laravel/_ai/
+templates/laravel/.github/
+templates/laravel/.vscode/
+
+templates/node/.claude/rules/
+templates/node/.claude/skills/
+templates/node/.claude/roles/
+templates/node/.claude/memory/
+templates/node/.claude/templates/
+templates/node/.claude/hooks/
+templates/node/.claude/lib/
+templates/node/docs/
+templates/node/infra/
+templates/node/packages/
+templates/node/scripts/
+templates/node/tasks/
+templates/node/_ai/
+templates/node/.github/
+templates/node/.vscode/
