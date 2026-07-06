@@ -24,7 +24,7 @@ Runs a full code review on the current feature branch or specified files. Invoke
    - Tag findings as `[security]` BLOCK/WARN
 4. **Run browser and UX verification for UI/full-stack work**:
    - For changes touching `apps/web/`, routes that drive UI flows, or frontend-visible API behavior, run `npm run test:e2e`.
-   - Run `/ux-review` against changed UI screens/components or their `docs/ux/` artifacts. `/ux-handoff` (`docs/ux/<module>/tasks/<task-id>/06-dev-handoff.md`) must exist before claiming frontend/full-stack work is done — it is the hard gate for Stage 5.
+   - Run `/ux-review` against changed UI screens/components or their `.ai-scaffold/docs/ux/` artifacts. `/ux-handoff` (`.ai-.ai-scaffold/tasks/ld/docs/ux/<module>/tasks/<task-id>/06-dev-handoff.md`) must exist before claiming frontend/full-stack work is done — it is the hard gate for Stage 5.
    - Verify changed UI in desktop light, desktop dark, mobile light, and mobile dark states.
    - Mobile verification must include an approximately 390px-wide viewport and confirm the primary workflow remains usable.
    - Require Playwright failure artifacts (screenshots/traces/videos) to be preserved when tests fail.

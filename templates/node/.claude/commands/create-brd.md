@@ -7,7 +7,7 @@ Produces a Business Requirements Document from a feature description or stakehol
 ```
 /create-brd "Candidate bulk import via CSV with duplicate detection"
 /create-brd --from-notes meeting-notes.md     # From meeting notes
-/create-brd --update docs/brd/feature-x.md   # Update existing BRD
+/create-brd --update .ai-scaffold/docs/brd/feature-x.md   # Update existing BRD
 ```
 
 ## Process
@@ -54,6 +54,6 @@ When a feature flag is `false`, its corresponding requirements section is omitte
 
 - BRDs are living documents — update them when requirements change, don't work from stale specs.
 - Every requirement gets a unique ID (e.g., `FR-001`, `BR-001`, `NFR-001`) for traceability.
-- Save to `docs/brd/[feature-name]-brd.md`.
+- Save to `.ai-scaffold/docs/brd/[feature-name]-brd.md`.
 - A BRD must be approved before architecture work begins.
 - Run `/settings --list` to see which features are active for this project.

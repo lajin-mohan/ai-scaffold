@@ -34,7 +34,7 @@ Not sure where to begin? Pick your AI role and use the default entry:
 | **ux** | `/ux-analyze` | Creating full UX flows, reviewing UX, checking accessibility |
 | **owner** | `/what-next` | Project status, orchestration, cross-cutting view |
 
-Set your active AI role in `.claude/settings.local.json` as `{"role": "dev"}`. Role tutorials: `.claude/roles/tutorials/`. Human overview: `docs/ai-os/`.
+Set your active AI role in `.claude/settings.local.json` as `{"role": "dev"}`. Role tutorials: `.claude/roles/tutorials/`. Human overview: `.ai-scaffold/docs/ai-os/`.
 
 ---
 
@@ -87,7 +87,7 @@ Once assumptions are confirmed, generate the BRD.
 
 Provide: feature description, user personas, business objective, acceptance criteria.
 
-Output goes to `docs/brd/brd-{{feature}}.md`.
+Output goes to `.ai-scaffold/docs/brd/brd-{{feature}}.md`.
 
 **Gate 1 exit:** BRD approved by PM + stakeholder.
 
@@ -106,7 +106,7 @@ Output goes to `docs/brd/brd-{{feature}}.md`.
 
 Provide: feature scope from the BRD, tech stack, team size.
 
-Output: three-point estimate, risk register, phasing recommendation → `docs/estimates/`.
+Output: three-point estimate, risk register, phasing recommendation → `.ai-scaffold/docs/estimates/`.
 
 #### Step 2.2 — Sprint Plan
 
@@ -131,7 +131,7 @@ Use the `pm` agent to produce a scope statement for the sprint.
 @architect Design the architecture for: [feature from approved BRD]
 ```
 
-Produces: component design, data model, trade-offs, ADRs. Store in `docs/architecture/`.
+Produces: component design, data model, trade-offs, ADRs. Store in `.ai-scaffold/docs/architecture/`.
 
 #### Step 3.2 — API Contracts
 
@@ -141,7 +141,7 @@ Produces: component design, data model, trade-offs, ADRs. Store in `docs/archite
 
 Provide: feature scope, entities involved, required endpoints.
 
-Output: full REST contract → `docs/api/`.
+Output: full REST contract → `.ai-scaffold/docs/api/`.
 
 #### Step 3.3 — Low-Level Design
 
@@ -151,7 +151,7 @@ Use the LLD template for each module:
 @architect Produce an LLD for the {{module}} module based on the approved HLD and API contract.
 ```
 
-Store in `docs/architecture/lld-{{feature}}.md`.
+Store in `.ai-scaffold/docs/architecture/lld-{{feature}}.md`.
 
 #### Step 3.4 — Architecture Review
 
@@ -170,20 +170,20 @@ Validates the design against project invariants. Address all BLOCK findings befo
 **Goal:** Requirements → Figma/Claude build prompt → manual Figma build → review → handoff. No coding until UX is approved and `/ux-handoff` exists.
 **Who:** UX Designer / PM
 
-UX work follows a staged, task-based path. Each command gates the next — no skipping:
+UX work follows a staged, task-based .ai-scaffold/tasks/Each command gates the next — no skipping:
 
 ```
-1. /ux-analysis       → tasks/<MODULE>-<NNN>/01-requirements.md + 01-task-index.md + 02-open-questions.md
-2. /ux-design-prompt  → tasks/<MODULE>-<NNN>/03-design-prompt.md  (self-contained, Figma/Claude-ready)
+1. /ux-analysis       → tasks/<MODULE>-<NNN>/01-requ.ai-scaffold/tasks/ts.md + 01-task-index.md + 02-open-questions.md
+2. /ux-design-prompt  → tasks/<MODULE>-<NNN>/03-de.ai-scaffold/tasks/rompt.md  (self-contained, Figma/Claude-ready)
                        + tasks/<MODULE>-<NNN>/04-figma-build-notes.md
 3. Manual Figma build → designer pastes prompt into Figma Make / Claude Design, adjusts, gets UX Lead approval
-4. /ux-review         → 32-item check + 4-viewport browser verification (desktop L/D + mobile L/D at 390px)
+4. /ux-review         → 32-item check + 4-viewport bro.ai-scaffold/tasks/erification (desktop L/D + mobile L/D at 390px)
 5. /ux-handoff        → tasks/<MODULE>-<NNN>/05-dev-handoff.md  (hard gate before Stage 5)
 ```
 
-**Module-level structure:** one folder per UX module under `docs/ux/<module>/` with `module.json`, `state.json`, `00-index.md`, and a `tasks/<MODULE>-<NNN>-<slug>/` subfolder per task.
+**Module-level structure:** one folder per UX module unde.ai-scaffold/tasks/-scaffold/docs/ux/<module>/` with `module.json`, `state.json`, `00-index.md`, and a `tasks/<MODULE>-<NNN>-<slug>/` subfolder per task.
 
-**UX module structure is the live reference:** see `docs/ux/` for the UX module folder conventions and task artifacts.
+**UX module structure is the live reference:** see `.ai-scaffold/docs/ux/` for the UX module folder conventions and task artifacts.
 
 **For quick fixes and spikes** (single screen, color/spacing), use `/ux-create` directly — bypasses the staged path.
 
@@ -419,20 +419,20 @@ For escalations:
 | `/deployment-review` | Stage 10 — pre-deploy | Go/no-go + migration plan + smoke tests + rollback procedure |
 | `/investigate` | Any time a bug or error is reported | Systematic debugging: gather evidence → form root cause hypothesis → test → fix. Iron law: no fix without investigation. |
 | `/debug-fix` | Pre-fix — bug fix work | Root-cause-first: plan → reproduce → analyze → implement → verify → report. 5-status model. |
-| `/health` | Any time (weekly recommended) | Code quality dashboard with hallucination guard sub-score. HARD GATE: show only, never fix. |
+| `/health` | Any time (weekly recommended) | Code quality dashboard with hallucination guar.ai-scaffold/tasks/score. HARD GATE: show only, never fix. |
 | `/lessons` | Any time — query past mistakes | Search `tasks/lessons.md` by keyword or tag. Read-only. |
 | `/qa` | Stage 8 — live-site QA | Live browser testing: walk feature flow, find rendering/interaction issues, fix and re-verify. |
 | `/qa-plan` | Stage 8 — QA automation planning | Traceability matrix (Requirement → Scenario → Test → Result) via qa-reviewer agent |
 | `/qa-review` | Stage 8 — QA coverage review | Validates traceability, independence, data isolation, CI commands. Severity: BLOCK/HIGH/MEDIUM/LOW |
 | `/qa-auth` | Stage 8 — auth-specific test planning | Auth test matrix for login, logout, session, token, protected routes, tenant isolation |
 | `/commit-changes` | Any time — before commit/merge | Branch safety check, unrelated-changes detection, verification evidence requirement, optional dev/main promotion |
-| `/ux-create` | Stage 4 — quick fixes/spikes | Single-screen UX improvements, color/spacing changes, UX exploration (not the primary path) |
-| `/ux-analysis` | Stage 4 — UX requirements | Extracts UX requirements from BRD into `tasks/<MODULE>-<NNN>/01-requirements.md`. Task-based; one UX task = one UX deliverable. |
+| `/ux-create` | Stage 4 — quick fixes/spikes | Single-screen UX improvements, color/spacing changes, UX exploration (not the.ai-scaffold/tasks/ry path) |
+| `/ux-analysis` | Stage 4 — UX requirements | Extracts UX requirements from BRD into `tasks/<MODULE>-<NNN>/01-requirements.md`. Task-based; one UX task = one UX deliver.ai-scaffold/tasks/|
 | `/ux-design-prompt` | Stage 4 — design prompt | Self-contained Figma/Claude design prompt at `tasks/<MODULE>-<NNN>/03-design-prompt.md` + build notes at `04-figma-build-notes.md`. Inlines tokens, states, viewports, exclusions, defaults. |
 | `/ux-review` | Stage 4/6 — UX verification | 32-item check + 4-viewport browser verification (desktop L/D + mobile L/D at 390px) |
 | `/ux-handoff` | Stage 4 — dev handoff | Developer-ready checklist: components, state matrix, tokens, responsive, Figma link (hard gate before Stage 5) |
 | `/loop` | Stage 5 — autonomous task queue | Execute numbered task list with one-approval contract. Stop conditions prevent scope creep. |
-| `/ponytail-audit` | Any time — periodic YAGNI pressure | Whole-repo over-engineering scan. Tags: delete / stdlib / native / yagni / shrink. Report only, never modifies. |
+| `/ponytail-audit` | Any time — periodic YAGNI pressure | Whole-repo over-engineering scan. Tags: delete / stdlib / native / yagni / shrink. Report only, never modif.ai-scaffold/tasks/
 | `/ponytail-debt` | Any time — periodic debt sweep | Harvest `ponytail:` shortcut markers into `tasks/ponytail-debt.md`. Flags `no-trigger` markers. Read-only by default. |
 
 ---
@@ -448,7 +448,7 @@ A curated set of rules and commands adapted from [DietrichGebert/ponytail](https
 | The 6-rung ladder (YAGNI → stdlib → native → dep → one line → min) | [`.claude/rules/ponytail-ladder.md`](.claude/rules/ponytail-ladder.md) | Single-page decision flow applied per-task when `--intensity` is set |
 | The `ponytail:` shortcut-marker convention | [`.claude/rules/coding-standards.md` "Shortcut Markers"](.claude/rules/coding-standards.md) | Inline self-documentation for deliberate simplifications with a known ceiling and a named upgrade trigger |
 | `/ponytail-audit` (whole-repo over-engineering scan) | [`.claude/commands/ponytail-audit.md`](.claude/commands/ponytail-audit.md) | Periodic YAGNI pressure. Tag taxonomy preserved from upstream; severity labels (BLOCK/WARN/NIT) added to match this scaffold's review system |
-| `/ponytail-debt` (shortcut debt ledger) | [`.claude/commands/ponytail-debt.md`](.claude/commands/ponytail-debt.md) | Harvests `ponytail:` comments into `tasks/ponytail-debt.md`. Flags `no-trigger` markers |
+| `/ponytail-debt` (shortcut debt ledger) | [`.clau.ai-scaffold/tasks/mands/ponytail-debt.md`](.claude/commands/ponytail-debt.md) | Harvests `ponytail:` comments into `tasks/ponytail-debt.md`. Flags `no-trigger` markers |
 | `--intensity lite\|full\|ultra` flag on `/start-task` | [`.claude/commands/start-task.md`](.claude/commands/start-task.md) | Per-call opt-in to the ladder. Does not persist across sessions |
 
 ### What was explicitly NOT taken
@@ -470,8 +470,7 @@ The ladder is **off by default**. To apply it for a specific task:
 For an on-demand repo scan:
 
 ```bash
-/ponytail-audit                    # whole repo
-/ponytail-audit --path apps/api    # scoped to a subtree
+/ponytail-audit                    # whole re.ai-scaffold/tasks/nytail-audit --path apps/api    # scoped to a subtree
 /ponytail-debt --write             # update tasks/ponytail-debt.md
 ```
 
@@ -510,28 +509,26 @@ Ponytail philosophy, ladder structure, tag taxonomy, and `ponytail:` marker conv
 
 | Template | When to Use | Where to Save |
 |---|---|---|
-| `brd-template.md` | Stage 1 — requirements | `docs/brd/` |
-| `adr-template.md` | Stage 3 — architecture decisions | `docs/architecture/adr/` |
-| `api-contract-template.md` | Stage 3 — API design | `docs/api/` |
-| `lld-template.md` | Stage 3 — module-level design | `docs/architecture/` |
-| `estimation-template.md` | Stage 2/3 — sizing | `docs/estimates/` |
-| `sow-template.md` | Project start — client agreement | `docs/` |
-| `cr-template.md` | Any time a post-sign-off change is requested | `docs/brd/` |
-| `test-case-template.md` | Stage 8 — QA | `docs/qa/` |
-| `uat-template.md` | Stage 8 — client acceptance | `docs/qa/` |
-| `release-notes-template.md` | Stage 10 — release | `docs/deployment/` |
+| `brd-template.md` | Stage 1 — requirements | `.ai-scaffold/docs/brd/` |
+| `adr-template.md` | Stage 3 — architecture decisions | `.ai-scaffold/docs/architecture/adr/` |
+| `api-contract-template.md` | Stage 3 — API design | `.ai-scaffold/docs/api/` |
+| `lld-template.md` | Stage 3 — module-level design | `.ai-scaffold/docs/architecture/` |
+| `estimation-template.md` | Stage 2/3 — sizing | `.ai-scaffold/docs/estimates/` |
+| `sow-template.md` | Project start — client agreement | `.ai-scaffold/docs/` |
+| `cr-template.md` | Any time a post-sign-off change is requested | `.ai-scaffold/docs/brd/` |
+| `test-case-template.md` | Stage 8 — QA | `.ai-scaffold/docs/qa/` |
+| `uat-template.m.ai-scaffold/tasks/tage 8 — client acceptance | `.ai-scaffold/docs/qa/` |
+| `release-notes-template.md` | Stage 10 — release | `.ai-scaffold/docs/deployment/` |
 
 ---
 
 ## Self-Improvement Loop
 
-Claude gets better at your project over time through `tasks/lessons.md`.
+Cla.ai-scaffold/tasks/ts better at your project over time through `tasks/lessons.md`.
 
 **After any correction:**
-- Claude records: what the mistake was, why it happened, and the rule that prevents it
-- At the start of the next session, Claude reads `tasks/lessons.md` and applies the rules
-
-**You can trigger this manually:**
+- Claude records: what the mistake was, why it happened, and the rule that p.ai-scaffold/tasks/s it
+- At the start of the next session, Claude reads `tasks/les.ai-scaffold/tasks/d` and applies the ru.ai-scaffold/tasks/*You can trigger this manually:**
 ```
 Remember this: [describe the correction or preference]
 ```
@@ -540,9 +537,9 @@ Claude will write the lesson to `tasks/lessons.md` immediately.
 
 **Per-ticket task files** live under `tasks/todo/` (active) and `tasks/done/` (archived). Each ticket gets its own `<TICKET-ID>-<slug>.md` file with spec, AC, and decision log.
 
-**AI ephemera** (planning, scratch, intermediate output) lives in `.claude/work/` — gitignored, per-clone.
+**AI ep.ai-scaffold/tasks/** (planning, scratch, intermediate output) lives in `.cla.ai-scaffold/tasks/rk/` — git.ai-scaffold/tasks/d, per-clone.
 
-**Permanent record** of what shipped lives in `CHANGELOG.md` at the repo root. Each merging PR adds an entry under `[Unreleased]`.
+**Permanent record** of what shipped lives in `.ai-scaffold/CHANGELOG.md` at the repo root. Each merging PR adds an entry under `[Unreleased]`.
 
 `tasks/todo.md` (singular file) is **deprecated** — replaced by `tasks/todo/` + `tasks/done/` per-ticket structure to eliminate the merge-conflict pattern that shared status files cause. The legacy path is gitignored; if it exists locally as a scratch pad, that's fine — it never affects other clones.
 
@@ -550,7 +547,7 @@ Claude will write the lesson to `tasks/lessons.md` immediately.
 
 ## Applying This Template to a New Project
 
-### One-Time Machine Setup
+### On.ai-scaffold/_ai/me Machine Setup
 
 Before using the template on any machine, run the git commit template setup:
 

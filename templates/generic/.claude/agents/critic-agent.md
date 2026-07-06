@@ -144,7 +144,7 @@ After the Critic Check, output the verdict:
 
 - **Before `/start-task`:** Run Critic before the plan goes to the human
 - **Before code output:** Run Critic as the self-critique gate in `/start-task` Phase 4
-- **Before `/reflect`:** Run Critic to verify the lesson is accurate before writing to `tasks/lessons.md`
+- **Before `/reflect`:** Run Critic to verify the lesson is accurate before writing to `.ai-scaffold/tasks/lessons.md`
 - **As standalone:** `@critic "<output text or description>"` — returns verdict only
 
 ---

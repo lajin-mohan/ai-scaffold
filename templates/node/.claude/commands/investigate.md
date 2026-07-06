@@ -93,7 +93,7 @@ Tell the user: "Edits restricted to `<dir>/` for this investigation session."
 
 Also check:
 - `TODOS.md` for known issues in the affected area
-- `tasks/lessons.md` for similar past bugs
+- `.ai-scaffold/tasks/lessons.md` for similar past bugs
 - `git log --grep="<keyword>"` for prior fixes in the same area
 
 ---
@@ -162,7 +162,7 @@ Status:        DONE | DONE_WITH_CONCERNS | BLOCKED
 
 ## Capture Learnings
 
-After completing, log the finding to `tasks/lessons.md`:
+After completing, log the finding to `.ai-scaffold/tasks/lessons.md`:
 ```markdown
 ## YYYY-MM-DD - [Bug category or system]
 

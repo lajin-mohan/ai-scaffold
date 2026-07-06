@@ -30,10 +30,10 @@ It does not create a Figma prompt. Use `/ux-design-prompt` for that.
 For task-based UX work, verify:
 
 ```text
-docs/ux/<module>/tasks/<task-id>/01-analysis.md
-docs/ux/<module>/tasks/<task-id>/03-design-prompt.md
-docs/ux/<module>/tasks/<task-id>/04-figma-build-notes.md
-docs/ux/<module>/tasks/<task-id>/05-ux-review.md
+.ai-scaffold/docs.ai-scaffold/tasks/odule>/tasks/<task-id>/01-analysis.md
+.ai-.ai-scaffold/tasks/ld/docs/ux/<module>/tasks/<task-id>/03-design-p.ai-scaffold/tasks/md
+.ai-scaffold/docs/ux/<module>/tasks/<task-id>/04.ai-scaffold/tasks/-build-notes.md
+.ai-scaffold/docs/ux/<module>/tasks/<task-id>/05-ux-review.md
 ```
 
 Also verify:
@@ -70,12 +70,12 @@ Flag:
 - missing token/component references
 - out-of-scope items that developers might otherwise assume are included
 
-### Step 3 - Produce Developer Handoff
+### Step 3 - Produce .ai-scaffold/tasks/per Handoff
 
 Write:
 
 ```text
-docs/ux/<module>/tasks/<task-id>/06-dev-handoff.md
+.ai-scaffold/docs/ux/<module>/tasks/<task-id>/06-dev-handoff.md
 ```
 
 Include:
@@ -99,9 +99,9 @@ Include:
 Update:
 
 ```text
-docs/ux/<module>/module.json
-docs/ux/<module>/state.json
-docs/ux/<module>/00-index.md
+.ai-scaffold/docs/ux/<module>/module.json
+.ai-scaffold/docs/ux/<module>/state.json
+.ai-scaffold/docs/ux/<module>/00-index.md
 ```
 
 Set status to:

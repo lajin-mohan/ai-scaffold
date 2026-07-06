@@ -116,7 +116,7 @@ Before routing to any agent, confirm:
 - **No half-implementations** — no stubs, no TODOs without tickets
 - **H1-H8 hallucination guards** — no unverified claims, `file:line` citations required
 
-When governance is violated: **BLOCK, don't proceed**. Log the violation to `tasks/lessons.md`.
+When governance is violated: **BLOCK, don't proceed**. Log the violation to `.ai-scaffold/tasks/lessons.md`.
 
 ---
 

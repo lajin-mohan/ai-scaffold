@@ -26,8 +26,8 @@ Create a complete Figma Make, Claude Design, or similar AI design prompt from ap
 
 Read:
 
-- `docs/ux/<module>/tasks/<task-id>/01-analysis.md`
-- `docs/ux/<module>/tasks/<task-id>/02-open-questions.md`
+- `.ai-scaffold/docs.ai-scaffold/tasks/odule>/tasks/<task-id>/01-analysis.md`
+- `.ai-.ai-scaffold/tasks/ld/docs/ux/<module>/tasks/<task-id>/02-open-questions.md`
 - `.claude/skills/ux-system/DESIGN_TOKENS.md`
 - `.claude/skills/ux-system/COMPONENT_RULES.md`
 - `.claude/rules/ux-rules.md`
@@ -55,9 +55,8 @@ If not ready, stop and report what is missing.
 ### Step 2 - Build The Design Prompt
 
 Write:
-
-```text
-docs/ux/<module>/tasks/<task-id>/03-design-prompt.md
+.ai-scaffold/tasks/xt
+.ai-scaffold/docs/ux/<module>/tasks/<task-id>/03-design-prompt.md
 ```
 
 The prompt must include:
@@ -83,10 +82,10 @@ The prompt must include:
 
 ### Step 3 - Add Manual Build Instructions
 
-Write or update:
+Writ.ai-scaffold/tasks/pdate:
 
 ```text
-docs/ux/<module>/tasks/<task-id>/04-figma-build-notes.md
+.ai-scaffold/docs/ux/<module>/tasks/<task-id>/04-figma-build-notes.md
 ```
 
 Include a blank section for:
@@ -104,9 +103,9 @@ Include a blank section for:
 Update:
 
 ```text
-docs/ux/<module>/module.json
-docs/ux/<module>/state.json
-docs/ux/<module>/00-index.md
+.ai-scaffold/docs/ux/<module>/module.json
+.ai-scaffold/docs/ux/<module>/state.json
+.ai-scaffold/docs/ux/<module>/00-index.md
 ```
 
 Set status to:
