@@ -1,166 +1,132 @@
 #!/bin/bash
 
-# Pre-ToolUse hook: Secret Path Guard
-# Blocks AI from reading or writing sensitive files
+# PreToolUse hook: Secret Path Guard
+# Blocks AI tool access to real secret-bearing files while allowing templates.
 set -uo pipefail
 
-# Define sensitive file patterns
-SENSITIVE_PATTERNS=(
-  # Environment variables
-  ".*\.env(\..+)?$"
-  ".*\.npmrc$"
-  ".*composer\.json$"
-  ".*\.npmrc$"
-  ".*composer\.json$"
+PAYLOAD=$(cat 2>/dev/null || echo "")
 
-  # Secrets and credentials
-  ".*\.key$"
-  ".*\.pem$"
-  ".*\.p12$"
-  ".*\.jks$"
-  ".*\.pfx$"
-  ".*\.p7b$"
-  ".*\.p7r$"
-  ".*\.crt$"
-  ".*\.cer$"
-  ".*\.csr$"
-  ".*\.p8$"
-  ".*\.pk8$"
-  ".*\.der$"
-  ".*\.keystore$"
-  ".*\.truststore$"
-  ".*\.token$"
-  ".*\.secret$"
-  ".*\.creds$"
-  ".*\.credential$"
-  ".*auth\.json$"
-  "id_rsa$"
-  "id_ecdsa$"
-  "id_ed25519$"
-  "authorized_keys$"
-  "known_hosts$"
+json_value() {
+  local expr="$1"
+  if command -v jq >/dev/null 2>&1; then
+    printf '%s' "$PAYLOAD" | jq -r "$expr // empty" 2>/dev/null || true
+  elif command -v python3 >/dev/null 2>&1; then
+    printf '%s' "$PAYLOAD" | python3 -c '
+import json, sys
 
-  # Private configurations
-  ".*\.gpg$"
-  ".*\.pgp$"
-  ".*\.gpg.*$"
-  ".*pgp.*$"
-  "config\.json$"
-  "settings\.json$"
-  ".*service-account\.json$"
-  ".*account\.json$"
-  ".*client-secret\.json$"
-  ".*private.*\.key$"
-  ".*private.*\.pem$"
+payload = sys.stdin.read()
+expr = sys.argv[1]
+try:
+    data = json.loads(payload)
+except Exception:
+    sys.exit(0)
 
-  # Database and API keys
-  ".*\.db$"
-  ".*\.sqlite$"
-  ".*\.mysql$"
-  ".*\.mongodb$"
-  ".*\.postgresql$"
-  ".*api.*\.key$"
-  ".*api.*\.token$"
-  ".*\.env\.production$"
-  ".*\.env\.staging$"
-
-  # Build/deployment keys
-  "build\.secrets$"
-  "deploy\.secrets$"
-  "ci\.secrets$"
-  "terraform\.tfvars$"
-  "terraform\.tfvars\.json$"
-  ".*\.tfstate$"
-  ".*\.tfstate\..*\.json$"
-
-  # Cloud credentials
-  ".*\.gcloud$"
-  ".*\.aws$"
-  ".*\.aws/.*$"
-  ".*\.azure$"
-  "gcp.*\.json$"
-  "aws.*\.json$"
-  "azure.*\.json$"
-
-  # Vault/secrets manager
-  "vault.*\.json$"
-  "secrets.*\.json$"
-  ".*\.enc$"
-  ".*\.dec$"
-
-  # Package manager auth
-  "~/.npm/_auth$"
-  "~/.npm/registry$"
-  "~/.composer/auth\.json$"
-
-  # Other sensitive files
-  ".*\.bak$"
-  ".*\.backup$"
-  ".*\.dump$"
-  ".*\.log$"
-  ".*\.tmp$"
-  ".*\.temp$"
-)
-
-# Check if any sensitive patterns match the tool path
-check_sensitive_file() {
-  local file_path="$1"
-
-  # Skip if file_path is empty or not provided
-  if [[ -z "$file_path" ]]; then
-    exit 0
-  fi
-
-  # Extract filename from path
-  local filename=$(basename "$file_path")
-  local dirname=$(dirname "$file_path")
-
-  # Check against all sensitive patterns
-  for pattern in "${SENSITIVE_PATTERNS[@]}"; do
-    # Check filename
-    if [[ "$filename" =~ $pattern ]]; then
-      echo "ERROR: Blocked access to sensitive file: $file_path" >&2
-      echo "File matches pattern: $pattern" >&2
-      exit 1
-    fi
-
-    # Check directory path
-    if [[ "$dirname" =~ $pattern ]]; then
-      echo "ERROR: Blocked access to sensitive directory: $file_path" >&2
-      echo "Directory matches pattern: $pattern" >&2
-      exit 1
-    fi
-  done
-
-  # Special check for root directory files
-  if [[ "$dirname" == "." && "$filename" =~ ^\.(env|npmrc|composer\.json|config\.json|settings\.json)$ ]]; then
-    echo "ERROR: Blocked access to sensitive root file: $file_path" >&2
-    exit 1
+value = data
+for part in expr.strip(".").split("."):
+    if not part:
+        continue
+    if isinstance(value, dict):
+        value = value.get(part, "")
+    else:
+        value = ""
+        break
+if isinstance(value, str):
+    print(value)
+' "$expr" 2>/dev/null || true
+  else
+    printf '%s' "$PAYLOAD" \
+      | grep -o "\"${expr##*.}\"[[:space:]]*:[[:space:]]*\"[^\"]*\"" \
+      | head -1 \
+      | sed 's/.*:[[:space:]]*"\([^"]*\)".*/\1/' || true
   fi
 }
 
-# Check based on tool type
-case "${TOOL_NAME:-}" in
-  "Read")
-    check_sensitive_file "$1"
-    ;;
-  "Grep")
-    check_sensitive_file "$1"
-    ;;
-  "Glob")
-    check_sensitive_file "$1"
-    ;;
-  "Edit")
-    check_sensitive_file "$1"
-    ;;
-  "Write")
-    check_sensitive_file "$1"
-    ;;
-  "MultiEdit")
-    # MultiEdit can handle multiple files
-    for file in "$@"; do
-      check_sensitive_file "$file"
-    done
+TOOL_NAME=$(json_value '.tool_name')
+
+candidate_paths() {
+  json_value '.tool_input.file_path'
+  json_value '.tool_input.path'
+  json_value '.tool_input.pattern'
+  json_value '.tool_input.command'
+}
+
+ALLOW_PATTERNS=(
+  '(^|/)\.env\.example$'
+  '(^|/)\.env\.sample$'
+  '(^|/)\.env\.template$'
+)
+
+SENSITIVE_PATTERNS=(
+  '(^|[[:space:]/])\.env($|[[:space:]./])'
+  '(^|[[:space:]/])\.npmrc($|[[:space:]/])'
+  '(^|[[:space:]/])\.pypirc($|[[:space:]/])'
+  '(^|/)auth\.json$'
+  '(^|/)id_rsa($|_)'
+  '(^|/)id_ecdsa($|_)'
+  '(^|/)id_ed25519($|_)'
+  '(^|/)authorized_keys$'
+  '(^|/)known_hosts$'
+  '(^|/)\.aws($|/)'
+  '(^|/)\.azure($|/)'
+  '(^|/)\.gcloud($|/)'
+  '(^|/)\.gnupg($|/)'
+  '(^|/)\.ssh($|/)'
+  '(^|/)secrets($|/)'
+  '(^|/)credentials($|/)'
+  '(^|/).*service-account.*\.json$'
+  '(^|/).*client-secret.*\.json$'
+  '(^|/).*credentials?.*\.json$'
+  '(^|/).*secrets?.*\.json$'
+  '(^|/).*secret.*\.json$'
+  '(^|/).*private.*\.(key|pem)$'
+  '(^|/).*\.(key|pem|p12|p8|pk8|p7b|p7r|jks|pfx|keystore|truststore|token|secret|creds|credential)$'
+  '(^|/).*\.(tfstate|tfstate\..*|tfvars|tfvars\.json)$'
+  '(^|/)(build|deploy|ci)\.secrets$'
+)
+
+is_allowed_template() {
+  local path="$1"
+  for pattern in "${ALLOW_PATTERNS[@]}"; do
+    if [[ "$path" =~ $pattern ]]; then
+      return 0
+    fi
+  done
+  return 1
+}
+
+check_sensitive_path() {
+  local path="$1"
+  [ -z "$path" ] && return 0
+
+  # Normalize a leading ./ so regexes work the same for relative paths.
+  path="${path#./}"
+
+  if is_allowed_template "$path"; then
+    return 0
+  fi
+
+  # Bash commands may include safe env templates as arguments. Remove those
+  # allowed tokens before matching the remaining command/path text.
+  local scan_path="$path"
+  scan_path="${scan_path//.env.example/}"
+  scan_path="${scan_path//.env.sample/}"
+  scan_path="${scan_path//.env.template/}"
+
+  for pattern in "${SENSITIVE_PATTERNS[@]}"; do
+    if [[ "$scan_path" =~ $pattern ]]; then
+      echo "BLOCK: secret-path guard blocked access to: $path" >&2
+      echo "       Matched pattern: $pattern" >&2
+      echo "       Use .env.example, .env.sample, or .env.template with placeholder values." >&2
+      exit 2
+    fi
+  done
+}
+
+case "$TOOL_NAME" in
+  Read|Grep|Glob|Edit|Write|MultiEdit|Bash|"")
+    while IFS= read -r candidate; do
+      check_sensitive_path "$candidate"
+    done < <(candidate_paths)
     ;;
 esac
 

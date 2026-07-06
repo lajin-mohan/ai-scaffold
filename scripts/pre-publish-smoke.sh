@@ -189,6 +189,64 @@ else
   echo "  Got: $OUTPUT"
 fi
 
+# ── Gate 7: hook simulations ───────────────────────────────────────────
+echo ""
+echo ">> Gate 7: Hook Simulations"
+
+SECRET_ENV_OUT=$(printf '%s' '{"tool_name":"Read","tool_input":{"file_path":".env"}}' | bash .claude/hooks/pre-secret-guard.sh 2>&1)
+SECRET_ENV_STATUS=$?
+if [ "$SECRET_ENV_STATUS" -eq 2 ] && echo "$SECRET_ENV_OUT" | grep -q "BLOCK:"; then
+  pass "secret guard blocks .env"
+else
+  fail "secret guard blocks .env"
+  echo "  Exit: $SECRET_ENV_STATUS Output: $SECRET_ENV_OUT"
+fi
+
+SECRET_TEMPLATE_OUT=$(printf '%s' '{"tool_name":"Read","tool_input":{"file_path":".env.example"}}' | bash .claude/hooks/pre-secret-guard.sh 2>&1)
+SECRET_TEMPLATE_STATUS=$?
+if [ "$SECRET_TEMPLATE_STATUS" -eq 0 ]; then
+  pass "secret guard allows .env.example"
+else
+  fail "secret guard allows .env.example"
+  echo "  Exit: $SECRET_TEMPLATE_STATUS Output: $SECRET_TEMPLATE_OUT"
+fi
+
+SECRET_BASH_OUT=$(printf '%s' '{"tool_name":"Bash","tool_input":{"command":"cat .env"}}' | bash .claude/hooks/pre-secret-guard.sh 2>&1)
+SECRET_BASH_STATUS=$?
+if [ "$SECRET_BASH_STATUS" -eq 2 ] && echo "$SECRET_BASH_OUT" | grep -q "BLOCK:"; then
+  pass "secret guard blocks Bash access to .env"
+else
+  fail "secret guard blocks Bash access to .env"
+  echo "  Exit: $SECRET_BASH_STATUS Output: $SECRET_BASH_OUT"
+fi
+
+DANGER_OUT=$(printf '%s' '{"tool_name":"Bash","tool_input":{"command":"git reset --hard"}}' | bash .claude/hooks/pre-dangerous-bash-guard.sh 2>&1)
+DANGER_STATUS=$?
+if [ "$DANGER_STATUS" -eq 2 ] && echo "$DANGER_OUT" | grep -q "BLOCK:"; then
+  pass "dangerous bash guard blocks git reset --hard"
+else
+  fail "dangerous bash guard blocks git reset --hard"
+  echo "  Exit: $DANGER_STATUS Output: $DANGER_OUT"
+fi
+
+SAFE_BASH_OUT=$(printf '%s' '{"tool_name":"Bash","tool_input":{"command":"npm test"}}' | bash .claude/hooks/pre-dangerous-bash-guard.sh 2>&1)
+SAFE_BASH_STATUS=$?
+if [ "$SAFE_BASH_STATUS" -eq 0 ]; then
+  pass "dangerous bash guard allows safe command"
+else
+  fail "dangerous bash guard allows safe command"
+  echo "  Exit: $SAFE_BASH_STATUS Output: $SAFE_BASH_OUT"
+fi
+
+GOV_OUT=$(printf '%s' '{"tool_name":"Edit","tool_input":{"file_path":"CLAUDE.md"}}' | bash .claude/hooks/governance-file-guard.sh 2>&1)
+GOV_STATUS=$?
+if [ "$GOV_STATUS" -eq 0 ] && echo "$GOV_OUT" | grep -q "WARN:"; then
+  pass "governance guard warns on CLAUDE.md"
+else
+  fail "governance guard warns on CLAUDE.md"
+  echo "  Exit: $GOV_STATUS Output: $GOV_OUT"
+fi
+
 # ── Summary ───────────────────────────────────────────────────────────
 echo ""
 echo "========================================"

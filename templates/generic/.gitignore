@@ -7,15 +7,16 @@ CLAUDE.local.md
 .env.local
 .env.*.local
 
-# All .env variants — allow only .env.example/.env.template
+# All .env variants — allow only safe templates with placeholder values
 .env.*
+!.env.example
+!.env.sample
+!.env.template
 
 # Package manager credentials
 .npmrc
 .yarnrc
 .yarnrc.yml
-composer.json
-npm-shrinkwrap.json
 
 # Private keys & certificates
 *.key

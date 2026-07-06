@@ -1,85 +1,92 @@
 #!/bin/bash
 
-# Pre-ToolUse hook: AI Protected Governance File Guard
-# Warns when AI attempts to modify scaffold governance files
-# These files control AI behavior and should only be modified by the project owner
+# PreToolUse hook: AI Protected Governance File Guard
+# Warns when AI reads or edits files that control the scaffold's behavior.
 set -uo pipefail
 
-# Read the file path from stdin or arguments
-if [ -t 0 ]; then
-  FILE_PATH="$1"
-else
-  FILE_PATH=$(cat)
-fi
+PAYLOAD=$(cat 2>/dev/null || echo "")
 
-# Normalize the path (remove leading ./)
-FILE_PATH="${FILE_PATH#./}"
+json_value() {
+  local expr="$1"
+  if command -v jq >/dev/null 2>&1; then
+    printf '%s' "$PAYLOAD" | jq -r "$expr // empty" 2>/dev/null || true
+  elif command -v python3 >/dev/null 2>&1; then
+    printf '%s' "$PAYLOAD" | python3 -c '
+import json, sys
 
-# Protected governance files and directories
+payload = sys.stdin.read()
+expr = sys.argv[1]
+try:
+    data = json.loads(payload)
+except Exception:
+    sys.exit(0)
+
+value = data
+for part in expr.strip(".").split("."):
+    if not part:
+        continue
+    if isinstance(value, dict):
+        value = value.get(part, "")
+    else:
+        value = ""
+        break
+if isinstance(value, str):
+    print(value)
+' "$expr" 2>/dev/null || true
+  else
+    printf '%s' "$PAYLOAD" \
+      | grep -o "\"${expr##*.}\"[[:space:]]*:[[:space:]]*\"[^\"]*\"" \
+      | head -1 \
+      | sed 's/.*:[[:space:]]*"\([^"]*\)".*/\1/' || true
+  fi
+}
+
+candidate_paths() {
+  json_value '.tool_input.file_path'
+  json_value '.tool_input.path'
+}
+
 PROTECTED_PATTERNS=(
-  # Root governance files
-  "^CLAUDE\.md$"
-  "^AGENTS\.md$"
-  "^SECURITY\.md$"
-  "^CONTRIBUTING\.md$"
-
-  # .claude directory
-  "^\.claude/settings\.json$"
-  "^\.claude/settings\.local\.json$"
-  "^\.claude/settings-overrides\.json$"
-  "^\.claude/hooks/"
-  "^\.claude/agents/"
-  "^\.claude/commands/"
-  "^\.claude/rules/"
-  "^\.claude/skills/"
-  "^\.claude/memory/"
-  "^\.claude/roles/"
-  "^\.claude/templates/"
-  "^\.claude/lib/"
-
-  # GitHub workflows
-  "^\.github/workflows/"
-
-  # Scripts directory
-  "^scripts/"
-  "^scripts/install-hooks\.sh$"
-  "^scripts/pre-publish-smoke\.sh$"
-  "^scripts/setup-branch-protection\.sh$"
-  "^scripts/setup-git-template\.sh$"
-
-  # Hook scripts specifically
-  "^\.claude/hooks/pre-commit$"
-  "^\.claude/hooks/pre-commit-secrets"
-  "^\.claude/hooks/pre-review\.sh$"
-  "^\.claude/hooks/pre-write-fact-check\.sh$"
-  "^\.claude/hooks/post-write-console-warn\.sh$"
-  "^\.claude/hooks/pre-bash-quality-gate\.sh$"
-  "^\.claude/hooks/pre-secret-guard\.sh$"
-  "^\.claude/hooks/pre-dangerous-bash-guard\.sh$"
-  "^\.claude/hooks/governance-file-guard\.sh$"
-
-  # Docs/process and docs/setup
-  "^docs/process/"
-  "^docs/setup/"
-  "^docs/architecture/ai-coding-scaffold-review\.md$"
+  '^CLAUDE\.md$'
+  '^AGENTS\.md$'
+  '^SECURITY\.md$'
+  '^CONTRIBUTING\.md$'
+  '^\.claude/settings\.json$'
+  '^\.claude/settings\.local\.json$'
+  '^\.claude/settings-overrides\.json$'
+  '^\.claude/hooks/'
+  '^\.claude/agents/'
+  '^\.claude/commands/'
+  '^\.claude/rules/'
+  '^\.claude/skills/'
+  '^\.claude/roles/'
+  '^\.claude/templates/'
+  '^\.claude/lib/'
+  '^\.github/workflows/'
+  '^scripts/'
+  '^docs/process/'
+  '^docs/setup/'
+  '^docs/architecture/ai-coding-scaffold-review\.md$'
 )
 
-# Check if the file matches any protected pattern
-for pattern in "${PROTECTED_PATTERNS[@]}"; do
-  if [[ "$FILE_PATH" =~ $pattern ]]; then
-    echo "WARNING: Attempting to modify AI governance file: $FILE_PATH" >&2
-    echo "" >&2
-    echo "This file controls AI behavior and should only be modified by the project owner." >&2
-    echo "If this change is intentional, please:" >&2
-    echo "  1. Review the change carefully" >&2
-    echo "  2. Commit with a clear message explaining why this governance file was changed" >&2
-    echo "  3. Run 'ais doctor' after the change to verify hooks are still correct" >&2
-    echo "" >&2
-    echo "Pattern matched: $pattern" >&2
-    # Exit 0 with warning (not blocking, just alerting)
-    # Use exit 1 to make it blocking instead
-    exit 0
-  fi
-done
+warn_if_governance_path() {
+  local file_path="$1"
+  [ -z "$file_path" ] && return 0
+  file_path="${file_path#./}"
+
+  for pattern in "${PROTECTED_PATTERNS[@]}"; do
+    if [[ "$file_path" =~ $pattern ]]; then
+      echo "WARN: governance-file guard noticed access to: $file_path" >&2
+      echo "      This file controls AI behavior or repository safety." >&2
+      echo "      Review the change carefully and explain it in the commit/PR." >&2
+      echo "      Pattern matched: $pattern" >&2
+      return 0
+    fi
+  done
+}
+
+while IFS= read -r candidate; do
+  warn_if_governance_path "$candidate"
+done < <(candidate_paths)
 
 exit 0

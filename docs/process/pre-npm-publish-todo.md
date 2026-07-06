@@ -258,7 +258,7 @@ Write confirmed context to:
 Current hook state is a useful starter layer, not a full enterprise-safe hooks
 pack. Keep public docs accurate unless these controls are implemented.
 
-Already in place:
+Done:
 
 - Claude Code hook wiring in `.claude/settings.json`.
 - `/review` pre-review hook.
@@ -268,6 +268,15 @@ Already in place:
 - Git pre-commit hook with branch, lint, typecheck, test, and optional gitleaks checks.
 - Branch protection docs/scripts.
 - CI secret scanning.
+- Secret path guard file exists: `.claude/hooks/pre-secret-guard.sh`.
+- Dangerous Bash guard file exists: `.claude/hooks/pre-dangerous-bash-guard.sh`.
+- Governance file guard file exists: `.claude/hooks/governance-file-guard.sh`.
+- Template `.gitignore` files were strengthened for env files, private keys, cloud credentials, Terraform state, and secret directories.
+- New Claude Code hooks parse JSON payloads from stdin.
+- Blocking guards exit with Claude Code's blocking status (`2`).
+- Hook simulation tests are part of `scripts/pre-publish-smoke.sh`.
+- Package manifests such as `composer.json` are not treated as secrets by default.
+- `.env.example`, `.env.sample`, and `.env.template` remain explicitly allowed in template `.gitignore` files.
 
 Pending P1 hook improvements:
 
