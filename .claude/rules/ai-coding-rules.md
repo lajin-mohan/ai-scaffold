@@ -316,11 +316,11 @@ When a user reports an error, stack trace, unexpected behaviour, or "it was work
 
 1. **Collect evidence** — read the error, trace the code path, run `git log` on affected files, use `git blame` on the failing line
 2. **Form hypothesis** — state root cause clearly before writing any code
-3. **Scope lock** — write the affected directory to `.claude/memory/investigate-scope.txt` to prevent scope creep. Tell the user: "Edits restricted to `<dir>/` for this investigation."
+3. **Scope lock** — write the affected directory to the active tool's memory/scope file (for Claude: `.claude/memory/investigate-scope.txt`; for Codex or other tools: the equivalent `.codex`/tool-local memory file) to prevent scope creep. Tell the user: "Edits restricted to `<dir>/` for this investigation."
 4. **Pattern match** — check if this matches a known pattern (race condition, nil/null propagation, state corruption, integration failure, config drift, stale cache)
 5. **Test hypothesis** — reproduce the bug, verify the hypothesis explains it
 6. **3-strike rule:** After 3 failed hypotheses, STOP. Ask the user to continue with a new hypothesis, escalate to human review, or add monitoring
-7. **Fix minimal** — fix only the root cause, write a regression test, run the full test suite
+7. **Fix minimal** — fix only the root cause, write a regression test, run targeted tests plus relevant lint/typecheck; run the full suite for critical paths, release branches, or when the change has broad blast radius
 8. **Document** — log the finding to `tasks/lessons.md`
 
 ### Rules
