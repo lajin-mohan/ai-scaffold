@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# PreToolUse hook: Dangerous Bash Command Guard
+# Pre-ToolUse hook: Dangerous Bash Command Guard
 # Blocks destructive shell and Git history commands before execution.
 set -uo pipefail
 
@@ -43,8 +43,14 @@ DESTRUCTIVE_PATTERNS=(
   "rm -rf ./*"
   "rm -rf ~"
   "rm -rf \$home"
-  "git push --force"
-  "git push -f"
+  "git push --force "
+  "git push --force'"
+  "git push --force\""
+  "git push --force$"
+  "git push -f "
+  "git push -f'"
+  "git push -f\""
+  "git push -f$"
   "git reset --hard"
   "git clean -xfd"
   "git clean -fd"
@@ -82,7 +88,7 @@ for pattern in "${DESTRUCTIVE_PATTERNS[@]}"; do
   fi
 done
 
-if printf '%s' "$CMD_LOWER" | grep -qE '(^|[;&|])[^;&|]*(rm -rf|git reset --hard|git clean -xfd|git push --force|mkfs|dd if=|dd of=)'; then
+if printf '%s' "$CMD_LOWER" | grep -qE '(^|[;&|])[^;&|]*(rm -rf|git reset --hard|git clean -xfd|git push --force[[:space:]'"'"'"]|git push --force$|mkfs|dd if=|dd of=)'; then
   block "compound command contains a destructive operation"
 fi
 
