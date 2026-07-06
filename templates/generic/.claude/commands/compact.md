@@ -63,7 +63,7 @@ The compaction summary is written as a new entry in `MEMORY.md` (prepended to th
 Written for someone who has no context of this session.}}
 
 ### Lessons Captured
-- {{Lesson from this session, if any — link to .ai-scaffold/tasks/lessons.md}}
+- {{Lesson from this session, if any — link to tasks/lessons.md}}
 
 ---
 ```
@@ -91,7 +91,7 @@ Run `/what-next --brief` to capture current stage and blockers for the Next Sess
 
 ### Step 4 — Check for Uncaptured Lessons
 
-Run `/lessons --recent 3` to see if any patterns from this session should be added to `.ai-scaffold/tasks/lessons.md`. If a new lesson was learned (root cause, mistake, decision), add it now before compacting.
+Run `/lessons --recent 3` to see if any patterns from this session should be added to `tasks/lessons.md`. If a new lesson was learned (root cause, mistake, decision), add it now before compacting.
 
 ### Step 5 — Write MEMORY.md Entry
 
@@ -112,7 +112,7 @@ After writing MEMORY.md, output the completion summary and signal that the conve
 **Tokens:** ~{{current estimate}} / {{warningThreshold}}
 **Session:** {{duration}} minutes | Stage: {{stage}}
 **Decisions:** {{N}} written to MEMORY.md
-**Lessons:** {{N}} captured to .ai-scaffold/tasks/lessons.md
+**Lessons:** {{N}} captured to tasks/lessons.md
 
 ---
 
@@ -149,7 +149,7 @@ Run `--deep` monthly or when MEMORY.md exceeds 50KB.
 - **Never compact mid-task.** Finish the current unit of work first — a decision, a code block, a review. Compact only at natural break points.
 - **Next Session Brief is mandatory.** Written for someone with zero context. Include: where the project stands, what was being worked on, what needs to happen next.
 - **No deletion — only archival.** Pruning removes broken references and archives old entries; nothing is permanently deleted.
-- **Lessons capture first.** If this session produced a lesson (root cause found, mistake corrected, pattern identified), write it to `.ai-scaffold/tasks/lessons.md` before compacting.
+- **Lessons capture first.** If this session produced a lesson (root cause found, mistake corrected, pattern identified), write it to `tasks/lessons.md` before compacting.
 - **Compact history is append-only.** Existing entries are never edited after the fact.
 
 ---

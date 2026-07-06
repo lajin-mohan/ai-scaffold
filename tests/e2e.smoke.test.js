@@ -51,6 +51,9 @@ describe('CLI e2e smoke', () => {
     expect(await fs.pathExists(path.join(targetDir, '.ai-scaffold.json'))).toBe(true);
     expect(await fs.pathExists(path.join(targetDir, '.claude', 'MEMORY.md'))).toBe(true);
     expect(await fs.pathExists(path.join(targetDir, '.claude', 'settings-overrides.json'))).toBe(true);
+    expect(await fs.pathExists(path.join(targetDir, '.claude', 'hooks', 'pre-secret-guard.sh'))).toBe(true);
+    expect(await fs.pathExists(path.join(targetDir, '.claude', 'hooks', 'pre-dangerous-bash-guard.sh'))).toBe(true);
+    expect(await fs.pathExists(path.join(targetDir, '.claude', 'hooks', 'governance-file-guard.sh'))).toBe(true);
     expect(await fs.pathExists(path.join(targetDir, 'README.md'))).toBe(true);
     expect(await fs.pathExists(path.join(targetDir, '.ai-scaffold', 'HOW-TO-USE.md'))).toBe(true);
     expect(await fs.pathExists(path.join(targetDir, '.ai-scaffold', 'docs', 'architecture', 'README.md'))).toBe(true);
@@ -68,6 +71,16 @@ describe('CLI e2e smoke', () => {
     const readme = await fs.readFile(path.join(targetDir, 'README.md'), 'utf-8');
     expect(readme).toContain('Bare create smoke');
     expect(readme).not.toMatch(/\{\{[^}]+\}\}/);
+
+    const settings = await fs.readFile(path.join(targetDir, '.claude', 'settings.json'), 'utf-8');
+    expect(settings).toContain('pre-secret-guard.sh');
+    expect(settings).toContain('pre-dangerous-bash-guard.sh');
+    expect(settings).toContain('governance-file-guard.sh');
+
+    const memory = await fs.readFile(path.join(targetDir, '.claude', 'MEMORY.md'), 'utf-8');
+    expect(memory).toContain('Project memory only');
+    expect(memory).toContain('production data');
+    expect(memory).toContain('client-confidential text');
   });
 
   it('creates a Node.js project through the JavaScript profile alias', async () => {
@@ -143,6 +156,9 @@ describe('CLI e2e smoke', () => {
     });
     expect(await fs.readFile(path.join(workflowDir, 'ci.yml'), 'utf-8')).toBe('name: existing-ci\n');
     expect(await fs.pathExists(path.join(targetDir, '.claude', 'MEMORY.md'))).toBe(true);
+    expect(await fs.pathExists(path.join(targetDir, '.claude', 'hooks', 'pre-secret-guard.sh'))).toBe(true);
+    expect(await fs.pathExists(path.join(targetDir, '.claude', 'hooks', 'pre-dangerous-bash-guard.sh'))).toBe(true);
+    expect(await fs.pathExists(path.join(targetDir, '.claude', 'hooks', 'governance-file-guard.sh'))).toBe(true);
     expect(await fs.pathExists(path.join(targetDir, '.ai-scaffold', 'docs'))).toBe(true);
     expect(await fs.pathExists(path.join(targetDir, 'docs'))).toBe(false);
     expect(await fs.pathExists(path.join(targetDir, 'tasks'))).toBe(false);

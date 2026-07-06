@@ -6,7 +6,7 @@ Produces a risk-weighted effort estimate for a feature, epic, or full project. I
 
 ```
 /estimate "Add candidate bulk import via CSV"
-/estimate .ai-scaffold/docs/brd/feature-x.md             # Estimate from a BRD section
+/estimate docs/brd/feature-x.md             # Estimate from a BRD section
 /estimate --epic "Requisition Management"   # Estimate a full epic
 /estimate --sprint                          # Estimate everything in current sprint scope
 ```

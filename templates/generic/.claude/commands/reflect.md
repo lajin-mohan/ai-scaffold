@@ -1,6 +1,6 @@
 # /reflect
 
-Post-task reflection to capture lessons, patterns, and process improvements. Run after any significant work session — debugging, architecture, planning, or implementation. Writes findings to `.ai-scaffold/tasks/lessons.md` and the audit log.
+Post-task reflection to capture lessons, patterns, and process improvements. Run after any significant work session — debugging, architecture, planning, or implementation. Writes findings to `tasks/lessons.md` and the audit log.
 
 Use `/reflect` when `/lessons` has no relevant entries for what you just worked through.
 
@@ -62,9 +62,9 @@ For each lesson, capture:
 
 Tags: `debugging` `architecture` `security` `workflow` `testing` `git` `performance` `frontend` `ai-governance` `estimation`
 
-### Step 3 — Write to .ai-scaffold/tasks/lessons.md
+### Step 3 — Write to tasks/lessons.md
 
-Append to `.ai-scaffold/tasks/lessons.md`. Entries are append-only — never edit past lessons, only add new ones.
+Append to `tasks/lessons.md`. Entries are append-only — never edit past lessons, only add new ones.
 
 ### Step 4 — Audit Log Entry
 
@@ -121,7 +121,7 @@ When given a brief note (`/reflect "brief description"`), expand it into a full 
 
 ## Audit Trail (Phase 3 ready)
 
-`/reflect` writes to both `.ai-scaffold/tasks/lessons.md` and `.claude/memory/audit-log.jsonl`. The audit log entry enables future observability: session quality trends, recurring patterns, estimation accuracy.
+`/reflect` writes to both `tasks/lessons.md` and `.claude/memory/audit-log.jsonl`. The audit log entry enables future observability: session quality trends, recurring patterns, estimation accuracy.
 
 ---
 

@@ -14,12 +14,12 @@ Produce a flow document that defines every path a user can take through the feat
 ## Prerequisites
 
 Before producing flows, confirm:
-- `.ai-scaffold/docs/ux/<feature>/01-requirements.md` exists and is approved
+- `docs/ux/<feature>/01-requirements.md` exists and is approved
 - All open questions from Stage 1 have been resolved or accepted with documented assumptions
 
 ## Output Format
 
-Produce a file at `.ai-scaffold/docs/ux/<feature>/02-flows.md` following this structure:
+Produce a file at `docs/ux/<feature>/02-flows.md` following this structure:
 
 ```markdown
 # User Flows — {{Feature Name}}

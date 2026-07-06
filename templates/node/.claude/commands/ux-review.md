@@ -6,7 +6,7 @@ Review a UI implementation or UX artifact against the centralized UX system.
 
 ```text
 /ux-review review dashboard.tsx
-/ux-review review .ai-scaffold/docs/ux/phase-1/timesheets/wireframes.md
+/ux-review review docs/ux/phase-1/timesheets/wireframes.md
 /ux-review review apps/web/src/pages/DashboardPage.tsx
 ```
 

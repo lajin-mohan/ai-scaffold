@@ -108,6 +108,30 @@ for f in .ai-scaffold.json .claude/MEMORY.md .claude/settings-overrides.json; do
   fi
 done
 
+for f in .claude/hooks/pre-secret-guard.sh .claude/hooks/pre-dangerous-bash-guard.sh .claude/hooks/governance-file-guard.sh; do
+  if [ -f "$SMOKE_DIR/smoke-project/$f" ]; then
+    pass "$f generated"
+  else
+    fail "$f not generated"
+  fi
+done
+
+if grep -q "pre-secret-guard.sh" "$SMOKE_DIR/smoke-project/.claude/settings.json" \
+  && grep -q "pre-dangerous-bash-guard.sh" "$SMOKE_DIR/smoke-project/.claude/settings.json" \
+  && grep -q "governance-file-guard.sh" "$SMOKE_DIR/smoke-project/.claude/settings.json"; then
+  pass "generated settings wire starter safety hooks"
+else
+  fail "generated settings do not wire starter safety hooks"
+fi
+
+if grep -q "Project memory only" "$SMOKE_DIR/smoke-project/.claude/MEMORY.md" \
+  && grep -q "production data" "$SMOKE_DIR/smoke-project/.claude/MEMORY.md" \
+  && grep -q "client-confidential text" "$SMOKE_DIR/smoke-project/.claude/MEMORY.md"; then
+  pass "generated memory includes safety policy"
+else
+  fail "generated memory missing safety policy"
+fi
+
 # Check scaffold-owned docs are namespaced and noisy root folders are absent.
 for f in .ai-scaffold/HOW-TO-USE.md .ai-scaffold/docs/architecture/README.md .ai-scaffold/tasks/lessons.md; do
   if [ -f "$SMOKE_DIR/smoke-project/$f" ]; then
@@ -184,6 +208,22 @@ for f in .ai-scaffold/HOW-TO-USE.md .ai-scaffold/docs/architecture/README.md .ai
     fail "init did not generate $f"
   fi
 done
+
+for f in .claude/hooks/pre-secret-guard.sh .claude/hooks/pre-dangerous-bash-guard.sh .claude/hooks/governance-file-guard.sh; do
+  if [ -f "$INIT_DIR/$f" ]; then
+    pass "init generated $f"
+  else
+    fail "init did not generate $f"
+  fi
+done
+
+if grep -q "Project memory only" "$INIT_DIR/.claude/MEMORY.md" \
+  && grep -q "production data" "$INIT_DIR/.claude/MEMORY.md" \
+  && grep -q "client-confidential text" "$INIT_DIR/.claude/MEMORY.md"; then
+  pass "init memory includes safety policy"
+else
+  fail "init memory missing safety policy"
+fi
 
 for f in HOW-TO-USE.md CONTRIBUTING.md CHANGELOG.md SECURITY.md LICENSE .env.example .editorconfig .gitattributes .gitleaks.toml .cursorrules; do
   if [ -e "$INIT_DIR/$f" ]; then

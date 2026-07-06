@@ -32,7 +32,7 @@ When token count ≥ `tokenBudget.warningThreshold` (from `settings.json`), appe
 
 ## How It Works
 
-1. Read `CLAUDE.md` current state section, `.ai-scaffold/tasks/todo.md`, `.ai-scaffold/docs/` folder structure, and `.claude/memory/project-context.md`
+1. Read `CLAUDE.md` current state section, `tasks/todo.md`, `docs/` folder structure, and `.claude/memory/project-context.md`
 2. Read `.claude/settings-overrides.json` to determine which features are active (see [Settings Reference](#settings-reference))
 3. **Run Stage 0 — Bootstrap detection first.** If the scaffold is uninitialized, output the bootstrap instruction and stop. No other stage is meaningful until Stage 0 is complete.
 4. Otherwise, determine which stage the project or feature is currently in
@@ -131,8 +131,8 @@ If the project has phases (Phase 0, Phase 1, etc.), check before Stage 1:
 
 | Check | Where to find |
 |---|---|
-| Phase BRD exists | `.ai-scaffold/docs/brd/phases/phase-{N}-*.md` |
-| Phase estimate exists | `.ai-scaffold/docs/estimates/phase-{N}-*-estimate.md` |
+| Phase BRD exists | `docs/brd/phases/phase-{N}-*.md` |
+| Phase estimate exists | `docs/estimates/phase-{N}-*-estimate.md` |
 | Phase estimate signed off | Tech Lead review documented in estimate file |
 | Previous phase complete | All tasks in prior phase task list done |
 
@@ -148,12 +148,12 @@ If a phase is being started without an estimate, output:
 
 ### 🔴 Blocker
 **No formal estimate for Phase {N}.** The phase task list exists in
-`.ai-scaffold/docs/brd/phases/phase-{N}-foundation-setup.md` but has not been
+`docs/brd/phases/phase-{N}-foundation-setup.md` but has not been
 formally estimated with three-point method.
 
 ### ⚡ Next Action
 Create the phase estimate:
-1. Invoke `/estimate` or create `.ai-scaffold/docs/estimates/phase-{N}-*-estimate.md` manually
+1. Invoke `/estimate` or create `docs/estimates/phase-{N}-*-estimate.md` manually
 2. Cover ALL tasks from the phase task list (no informal estimates)
 3. Submit for Tech Lead sign-off
 4. Document sign-off in the estimate file
@@ -172,7 +172,7 @@ Evaluate each stage in order. The **current stage** is the earliest stage with i
 ### Stage 1 — Analysis
 **Required artifacts:**
 - Solution analysis completed (`@solution-analyst` output exists or open questions resolved)
-- BRD exists in `.ai-scaffold/docs/brd/` and is marked approved
+- BRD exists in `docs/brd/` and is marked approved
 
 **Blocked by:** Unresolved assumptions or ambiguities from solution analysis
 
@@ -180,7 +180,7 @@ Evaluate each stage in order. The **current stage** is the earliest stage with i
 
 ### Stage 2 — Plan
 **Required artifacts:**
-- Estimation exists in `.ai-scaffold/docs/estimates/` and is signed off
+- Estimation exists in `docs/estimates/` and is signed off
 - Sprint plan / phasing defined
 - Scope statement produced (via `@pm`)
 
@@ -190,27 +190,27 @@ Evaluate each stage in order. The **current stage** is the earliest stage with i
 
 ### Stage 3 — Architecture Design
 **Required artifacts:**
-- HLD exists in `.ai-scaffold/docs/architecture/`
-- API contract exists in `.ai-scaffold/docs/api/` for all new endpoints
+- HLD exists in `docs/architecture/`
+- API contract exists in `docs/api/` for all new endpoints
 - API contract includes async operation pattern for any long-running operations (report gen, bulk export, large file upload)
 - All list endpoints in the contract define pagination, sorting, and filtering
-- LLD exists in `.ai-scaffold/docs/architecture/` for each module
+- LLD exists in `docs/architecture/` for each module
 - Architecture review run (`/architecture-review`) with no unresolved BLOCK findings
 - ADRs written for all significant decisions
 
-**Blocked by:** Missing or.ai-scaffold/tasks/roved estimation from Stage 2
+**Blocked by:** Missing or unapproved estimation from Stage 2
 
 ---
 
 ### Stage 4 — UX Design
 **Required artifacts:**
-- UX a.ai-scaffold/tasks/s exists (`.ai-scaffold/docs/ux/<module>/tasks/<task-id>/01-analysis.md` vi.ai-scaffold/tasks/-analysis`)
-- Open questions tracked (`.ai-scaffold/docs/ux/<module>/tasks/<task-id>/02-open-questions.md`)
-- Design p.ai-scaffold/tasks/exists (`.ai-scaffold/docs/ux/<module>/tasks/<task-id>/03-design-prompt.md` via `/ux-design-prompt`)
-- Manual Figma/Claude build notes recorded (`.ai-scaffold/docs/ux/<module>/tasks/<task-id>/04-figma-b.ai-scaffold/tasks/otes.md`)
+- UX analysis exists (`docs/ux/<module>/tasks/<task-id>/01-analysis.md` via `/ux-analysis`)
+- Open questions tracked (`docs/ux/<module>/tasks/<task-id>/02-open-questions.md`)
+- Design prompt exists (`docs/ux/<module>/tasks/<task-id>/03-design-prompt.md` via `/ux-design-prompt`)
+- Manual Figma/Claude build notes recorded (`docs/ux/<module>/tasks/<task-id>/04-figma-build-notes.md`)
 - UX Lead approval and Figma frame links documented in build notes
 - `/ux-review` passed with all BLOCK findings resolved
-- `/ux-handoff` complete (`.ai-scaffold/docs/ux/<module>/tasks/<task-id>/06-dev-handoff.md`) — hard gate: no Stage 5 without this
+- `/ux-handoff` complete (`docs/ux/<module>/tasks/<task-id>/06-dev-handoff.md`) — hard gate: no Stage 5 without this
 - All 7 states defined per screen: loading, empty, empty (filtered), error, permission denied, success, form validation
 - Desktop-first layout specified for the primary enterprise workflow
 - Tablet/mobile adaptations specified and reviewed, including approximately 390px mobile width
@@ -275,7 +275,7 @@ Evaluate each stage in order. The **current stage** is the earliest stage with i
 - `/qa` run (if UI feature) — live-site browser verification for rendering and interaction
 - All P0 test cases passing
 - QA sign-off from `@qa-reviewer` or QA team
-- UAT completed with client sign-off (see `.ai-scaffold/docs/qa/uat-*.md`)
+- UAT completed with client sign-off (see `docs/qa/uat-*.md`)
 - For async operations (report generation, bulk export, large file processing): job polling and failure paths tested
 
 **Blocked by:** Open PR review comments from Stage 7
@@ -294,7 +294,7 @@ Evaluate each stage in order. The **current stage** is the earliest stage with i
 ### Stage 10 — Deploy
 **Required artifacts:**
 - `/deployment-review` run with GO decision
-- Release notes produced in `.ai-scaffold/docs/deployment/`
+- Release notes produced in `docs/deployment/`
 - Rollback plan documented
 - Smoke test plan ready
 
@@ -333,7 +333,7 @@ Evaluate each stage in order. The **current stage** is the earliest stage with i
 **Command to run:**
 \`{{/command or @agent instruction}}\`
 
-**Output goes to:** `{{.ai-scaffold/docs/folder/filename.md}}`
+**Output goes to:** `{{docs/folder/filename.md}}`
 
 ---
 
@@ -359,7 +359,7 @@ Status: 🔴 BLOCKED
 
 📍 Current Stage: Stage 1 — Analysis
 - ❌ Solution analysis — not run
-- ❌ BRD — not found in .ai-scaffold/docs/brd/
+- ❌ BRD — not found in docs/brd/
 
 🔴 Blockers
 1. Solution analysis not completed — run @solution-analyst before writing requirements
@@ -372,7 +372,7 @@ Command to run:
 @solution-analyst Analyse this feature: [describe the onboarding feature]
 Then: /create-brd
 
-Output goes to: .ai-scaffold/docs/brd/brd-user-onboarding.md
+Output goes to: docs/brd/brd-user-onboarding.md
 ```
 
 ### Example 2 — Ready to start coding
@@ -397,8 +397,8 @@ Status: 🟢 READY TO PROCEED
 (none)
 
 ⚡ Next Action
-Begin implementation. Code against the approved LLD at .ai-scaffold/docs/architecture/lld-billing.md
-and the API contract at .ai-scaffold/docs/api/billing-api-contract.md.
+Begin implementation. Code against the approved LLD at docs/architecture/lld-billing.md
+and the API contract at docs/api/billing-api-contract.md.
 
 When complete, run the self-review checklist in .claude/rules/review-rules.md
 before proceeding to Stage 6.

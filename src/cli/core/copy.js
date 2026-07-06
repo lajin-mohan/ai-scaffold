@@ -235,7 +235,9 @@ Before debugging or investigating:
 
 - Code and current specs win over stale memory.
 - Archive stale entries instead of deleting useful history.
-- Never store secrets, credentials, tokens, or private customer data.
+- Project memory only: do not install or depend on global/user-home memory by default.
+- Never store secrets, credentials, API tokens, production data, private customer data, or client-confidential text unless explicitly approved for this repo.
+- Treat memory edits as reviewed project changes; prefer small, factual updates with source context.
 - Keep local-only notes in ignored files such as \`.claude/memory/*.local.md\`.
 
 ---

@@ -5,7 +5,7 @@ Reviews a proposed architecture or existing system design against project invari
 ## Usage
 
 ```
-/architecture-review .ai-scaffold/docs/architecture/feature-x-design.md
+/architecture-review docs/architecture/feature-x-design.md
 /architecture-review                    # Review current branch changes for architectural concerns
 /architecture-review --adr              # Produce ADRs for key decisions found
 ```

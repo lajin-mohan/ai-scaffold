@@ -10,7 +10,7 @@ Analyze a BRD, feature spec, or product request into a complete product/UX analy
 /ux-analysis
 /ux-analysis reporting
 /ux-analysis UX-REP-001-main-table
-/ux-analysis --spec .ai-scaffold/docs/brd/business-requirements.md --module reporting
+/ux-analysis --spec docs/brd/business-requirements.md --module reporting
 ```
 
 ---
@@ -47,9 +47,9 @@ Confirm:
 Use the task model:
 
 ```text
-.ai-scaffold/docs/ux/<module>/
+docs/ux/<module>/
   00-index.md
-  m.ai-scaffold/tasks/json
+  module.json
   state.json
   tasks/<task-id>/
 ```
@@ -69,8 +69,9 @@ Read the BRD and any existing docs needed to understand:
 ### Step 3 - Produce Analysis
 
 Write the analysis to:
-.ai-scaffold/tasks/xt
-.ai-scaffold/docs/ux/<module>/tasks/<task-id>/01-analysis.md
+
+```text
+docs/ux/<module>/tasks/<task-id>/01-analysis.md
 ```
 
 If the work is module-level, write a module analysis and create/update task candidates in `module.json`.
@@ -90,10 +91,10 @@ The analysis must include:
 
 ### Step 4 - Track Open Questions
 
-Writ.ai-scaffold/tasks/pdate:
+Write or update:
 
 ```text
-.ai-scaffold/docs/ux/<module>/tasks/<task-id>/02-open-questions.md
+docs/ux/<module>/tasks/<task-id>/02-open-questions.md
 ```
 
 Every question must have:
@@ -109,9 +110,9 @@ Every question must have:
 Update:
 
 ```text
-.ai-scaffold/docs/ux/<module>/00-index.md
-.ai-scaffold/docs/ux/<module>/module.json
-.ai-scaffold/docs/ux/<module>/state.json
+docs/ux/<module>/00-index.md
+docs/ux/<module>/module.json
+docs/ux/<module>/state.json
 ```
 
 Set status to one of:

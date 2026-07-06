@@ -19,7 +19,7 @@
       "Write(tasks/**)",
       "Write(.claude/memory/**)",
       "Bash(rm .claude/hooks/pre-commit.sh)",
-      "Bash(chmod +x .claude/hooks/pre-commit .claude/hooks/pre-commit-secrets .claude/hooks/pre-review.sh .claude/hooks/pre-write-fact-check.sh .claude/hooks/post-write-console-warn.sh .claude/hooks/pre-bash-quality-gate.sh)",
+      "Bash(chmod +x .claude/hooks/pre-commit .claude/hooks/pre-commit-secrets .claude/hooks/pre-review.sh .claude/hooks/pre-write-fact-check.sh .claude/hooks/post-write-console-warn.sh .claude/hooks/pre-bash-quality-gate.sh .claude/hooks/pre-secret-guard.sh .claude/hooks/pre-dangerous-bash-guard.sh .claude/hooks/governance-file-guard.sh)",
       "Bash(git add *)",
       "Bash(git commit -m ' *)"
     ]
@@ -39,6 +39,21 @@
     ],
     "PreToolUse": [
       {
+        "matcher": "Read|Grep|Glob|Edit|Write|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/governance-file-guard.sh",
+            "timeout": 5
+          },
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/pre-secret-guard.sh",
+            "timeout": 5
+          }
+        ]
+      },
+      {
         "matcher": "Edit|Write|MultiEdit",
         "hooks": [
           {
@@ -51,6 +66,11 @@
       {
         "matcher": "Bash",
         "hooks": [
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/pre-dangerous-bash-guard.sh",
+            "timeout": 5
+          },
           {
             "type": "command",
             "command": "bash .claude/hooks/pre-bash-quality-gate.sh",

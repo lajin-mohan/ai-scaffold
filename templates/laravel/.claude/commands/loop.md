@@ -9,7 +9,7 @@ Use this command when the user wants a set of related tasks handled one by one w
 ## Usage
 
 ```
-/loop .ai-scaffold/tasks/todo/phase-0-foundation-task-queue.md
+/loop tasks/todo/phase-0-foundation-task-queue.md
 /loop "complete P0-030 then run verification"
 /loop --from /what-next
 ```
@@ -42,7 +42,7 @@ Approval does not cover:
 ## Process
 
 1. Read the requested task source, such as:
-   - `.ai-scaffold/tasks/todo/*.md`
+   - `tasks/todo/*.md`
    - `/what-next` output
    - BRD/spec/module task list
    - user-provided task list
@@ -50,7 +50,7 @@ Approval does not cover:
 3. Create/use the correct branch:
    - `feature/*` for features
    - `fix/*` for bugs
-   - `chore/*` for workflow/.ai-scaffold/docs/tooling
+   - `chore/*` for workflow/docs/tooling
 4. Produce a short plan:
 
 ```

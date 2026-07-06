@@ -15,7 +15,7 @@ Run the Project Readiness Checklist before starting any project or major epic. P
 
 ## Process
 
-Read the current state of the project — CLAUDE.md current state section, .ai-scaffold/docs/ folder, and any context provided — then evaluate each gate below.
+Read the current state of the project — CLAUDE.md current state section, docs/ folder, and any context provided — then evaluate each gate below.
 
 For each gate, mark:
 - ✅ PASS — artifact exists, is complete, and is approved
@@ -26,7 +26,7 @@ For each gate, mark:
 
 ## Gate 1 — Requirements
 
-- [ ] BRD exists and is approved (check `.ai-scaffold/docs/brd/`)
+- [ ] BRD exists and is approved (check `docs/brd/`)
 - [ ] User personas defined
 - [ ] End-to-end user flows documented
 - [ ] Acceptance criteria written for all features in scope
@@ -36,13 +36,13 @@ For each gate, mark:
 
 ## Gate 2 — UX / Design
 
-- [ ] UX analysis produced via `/ux-ana.ai-scaffold/tasks/ (`.ai-scaffold/docs/ux/<module>/tasks/<task-id>/01-analysis.md`)
-- [ ] Ope.ai-scaffold/tasks/tions tracked (`.ai-scaffold/docs/ux/<module>/tasks/<task-id>/02-open-questions.md`)
-- [ ] Design prompt .ai-scaffold/tasks/ed via `/ux-design-prompt` (`.ai-scaffold/docs/ux/<module>/tasks/<task-id>/03-design-prompt.md`)
--.ai-scaffold/tasks/anual Figma/Claude build notes recorded (`.ai-scaffold/docs/ux/<module>/tasks/<task-id>/04-figma-build-notes.md`)
+- [ ] UX analysis produced via `/ux-analysis` (`docs/ux/<module>/tasks/<task-id>/01-analysis.md`)
+- [ ] Open questions tracked (`docs/ux/<module>/tasks/<task-id>/02-open-questions.md`)
+- [ ] Design prompt produced via `/ux-design-prompt` (`docs/ux/<module>/tasks/<task-id>/03-design-prompt.md`)
+- [ ] Manual Figma/Claude build notes recorded (`docs/ux/<module>/tasks/<task-id>/04-figma-build-notes.md`)
 - [ ] UX Lead approved the manually adjusted design package
-- [ ] `/ux-review` completed wit.ai-scaffold/tasks/BLOCK findings resolved
-- [ ] `/ux-handoff` complete (`.ai-scaffold/docs/ux/<module>/tasks/<task-id>/06-dev-handoff.md`) — hard gate before Stage 5
+- [ ] `/ux-review` completed with all BLOCK findings resolved
+- [ ] `/ux-handoff` complete (`docs/ux/<module>/tasks/<task-id>/06-dev-handoff.md`) — hard gate before Stage 5
 - [ ] Desktop-first layout defined for primary enterprise workflows
 - [ ] Tablet/mobile adaptations defined, including approximately 390px mobile behavior
 - [ ] Light and dark theme behavior defined for every page/screen
@@ -53,9 +53,9 @@ For each gate, mark:
 
 ## Gate 3 — Architecture
 
-- [ ] HLD (High-Level Design) produced (check `.ai-scaffold/docs/architecture/`)
+- [ ] HLD (High-Level Design) produced (check `docs/architecture/`)
 - [ ] Tech stack confirmed and documented in CLAUDE.md
-- [ ] API contracts defined (check `.ai-scaffold/docs/api/`)
+- [ ] API contracts defined (check `docs/api/`)
 - [ ] Database schema reviewed
 - [ ] Security and compliance requirements assessed
 - [ ] ADRs written for all significant technical decisions
@@ -63,7 +63,7 @@ For each gate, mark:
 
 ## Gate 4 — Estimation & Planning
 
-- [ ] Effort estimate completed using three-point method (check `.ai-scaffold/docs/estimates/`)
+- [ ] Effort estimate completed using three-point method (check `docs/estimates/`)
 - [ ] Risk register produced
 - [ ] Sprint plan / phasing defined
 - [ ] Team assigned with right seniority mix for the complexity
@@ -73,7 +73,7 @@ For each gate, mark:
 
 - [ ] QA strategy defined (what will be tested, at what level)
 - [ ] Test environments confirmed
-- [ ] UAT plan agreed with client (check `.ai-scaffold/docs/qa/`)
+- [ ] UAT plan agreed with client (check `docs/qa/`)
 - [ ] Regression scope defined for affected areas
 
 ## Gate 6 — Governance

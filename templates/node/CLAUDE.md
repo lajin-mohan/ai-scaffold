@@ -54,7 +54,7 @@ This file governs how Claude, Codex, and other AI tools collaborate on every pro
 
 ## Development Workflow
 
-**Every production feature follows the full path unless it qualifies for a documented fast lane** (see task-size policy in `.ai-scaffold/docs/process/task-size-policy.md`).
+**Every production feature follows the full path unless it qualifies for a documented fast lane** (see task-size policy in `docs/process/task-size-policy.md`).
 
 ```
 Full path: 1. Analysis → 2. Plan → 3. Arch Design → 4. UX Design → 5. Execution → 6. AI Review → 7. Manual Review → 8. QA → 9. CI/CD → 10. Deploy
@@ -84,7 +84,7 @@ project-root/
 |   +-- shared/         # Types, utils, constants
 +-- infra/              # Infrastructure as code (Terraform / CDK)
 +-- scripts/            # Dev, migration, seed, CI scripts
-+-- .ai-scaffold/docs/               # Architecture, BRD, estimates, UX.ai-scaffold/_ai/I, QA, deployment
++-- docs/               # Architecture, BRD, estimates, UX, API, QA, deployment
 +-- _ai/                # AI-generated drafts, experiments (not production code)
 ```
 
@@ -101,7 +101,7 @@ See `apps/api/src/README.md` for the layered architecture quick reference.
 
 ### Architectural Invariants
 
-> **Setup note:** The invariants below are defaults for a multi-tenant SaaS product. During project setup, review each one and explicitly accept, modify, or remove it based on your system type (single-tenant, API-only, mobile, website, etc.). Record any changes as ADRs in `.ai-scaffold/docs/architecture/adr/`.
+> **Setup note:** The invariants below are defaults for a multi-tenant SaaS product. During project setup, review each one and explicitly accept, modify, or remove it based on your system type (single-tenant, API-only, mobile, website, etc.). Record any changes as ADRs in `docs/architecture/adr/`.
 
 #### Universal (apply to all project types)
 - **Domain logic lives in `packages/domain`** - never in route handlers or controllers.
@@ -171,7 +171,7 @@ Pick an AI role to get relevant commands, evidence requirements, and output styl
 | `ux` | UX creation, review, accessibility | `/ux-analyze` |
 | `owner` | Project orchestration, status, risk | `/what-next` |
 
-AI role configs live at `.claude/roles/`. Human-facing AI role docs live at `.ai-scaffold/docs/ai-os/`. AI role routing for `/what-next` and `/loop` is planned for Phase 3.
+AI role configs live at `.claude/roles/`. Human-facing AI role docs live at `docs/ai-os/`. AI role routing for `/what-next` and `/loop` is planned for Phase 3.
 
 ### Claude's Operating Rules
 
@@ -230,9 +230,9 @@ Run via `/command-name` in Claude Code.
 | `/deployment-review` | Deployment readiness checklist, migration plan, smoke tests, rollback procedure | Stage 10 |
 | `/investigate` | Root cause debugging: gather evidence → form hypothesis → test → fix. Iron law: no fix without investigation. Run when user reports error or bug. | Pre-fix |
 | `/health` | Code quality dashboard: auto-detect tools (tsc, biome, eslint, ruff, pytest, etc.), run them, compute 0-10 composite score, show tabular dashboard. HARD GATE: show only, never fix. Run weekly. | Any time |
-| `/lessons` |.ai-scaffold/tasks/ past root causes and debugging lessons from `tasks/lessons.md`. Search by keyword or filter by tag. Read-only — never writes lessons. | Any time |
+| `/lessons` | Query past root causes and debugging lessons from `tasks/lessons.md`. Search by keyword or filter by tag. Read-only — never writes lessons. | Any time |
 | `/compact` | Session compaction: write key decisions, stage state, open questions, and Next Session Brief to `MEMORY.md`. Run when approaching token threshold (300K) or at natural milestones. Audit-log ready. | Any time |
-| `/reflect` | Post-task reflection: captures .ai-scaffold/tasks/s, patterns, process improvements. Writes to `tasks/lessons.md` and audit log. Run after significant work sessions. | Any time |
+| `/reflect` | Post-task reflection: captures lessons, patterns, process improvements. Writes to `tasks/lessons.md` and audit log. Run after significant work sessions. | Any time |
 | `/qa` | Live-site QA with headless browser: walk the feature flow, detect rendering/interaction/console issues, fix and re-verify. | Stage 8 |
 | `/loop` | Autonomous task queue: execute a numbered task list with one-approval contract. Generates tests via `/gen-tests` per task. Stop conditions prevent scope creep. | Stage 5 |
 | `/commit-changes` | Git workflow enforcement: branch safety check, unrelated-changes detection, verification evidence requirement. Optional `--dev` / `--main` merge promotion. No Co-Authored-By ever. | Any time |
@@ -243,7 +243,7 @@ Run via `/command-name` in Claude Code.
 | `/ux-review` | UX review: 32-item check, 4-viewport browser verification (desktop L/D + mobile L/D at 390px). Token-based colours enforced as BLOCK. | Stage 6 |
 | `/debug-fix` | Root-cause-first bug fixing: plan → reproduce → analyze → implement → verify → report. 5-status model. Required verification by bug type. | Pre-fix |
 | `/ponytail-audit` | Whole-repo over-engineering scan. Tags: delete / stdlib / native / yagni / shrink. Severity: BLOCK / WARN / NIT. Report only, never modifies. Companion to `/start-task --intensity` — when intensity is set, the `Ladder compliance` step in the verification report feeds the audit's scope. | Any time |
-| `/ponytail-debt.ai-scaffold/tasks/rvest every `ponytail:` shortcut marker into `tasks/ponytail-debt.md`. Flags `no-trigger` and `malformed` markers. Read-only by default; `--write` updates the ledger. | Any time |
+| `/ponytail-debt` | Harvest every `ponytail:` shortcut marker into `tasks/ponytail-debt.md`. Flags `no-trigger` and `malformed` markers. Read-only by default; `--write` updates the ledger. | Any time |
 
 ---
 
@@ -263,7 +263,7 @@ Referenced internally by agents and commands.
 | `ux-audit` | UX clarity, hierarchy, cognitive load analysis |
 | `accessibility-check` | WCAG 2.1 AA validation |
 | `ux-system` | Master UX system: layout, design tokens (CSS variables), component rules, page patterns. Enterprise desktop-first with 390px mobile validation and light/dark theme support. See `.claude/skills/ux-system/SKILL.md`. |
-| `systematic-debugging` | Root-cause-first bug investigation: no fix without root cause, 3-strike ru.ai-scaffold/tasks/ope lock, 5-status model. Capture lessons to `tasks/lessons.md`. See `.claude/skills/systematic-debugging/SKILL.md`. |
+| `systematic-debugging` | Root-cause-first bug investigation: no fix without root cause, 3-strike rule, scope lock, 5-status model. Capture lessons to `tasks/lessons.md`. See `.claude/skills/systematic-debugging/SKILL.md`. |
 | `ux-review` | UX artifact review: 32-item check, BLOCK/HIGH/MEDIUM/LOW/NIT severity, CSS variable pattern enforced, 4-viewport browser verification. See `.claude/skills/ux-review/SKILL.md`. |
 
 ---
@@ -341,7 +341,7 @@ Before marking any PR ready:
 | `.claude/rules/security-rules.md` | SQL injection, tenant isolation, auth, input validation, secrets |
 | `.claude/rules/testing-rules.md` | Test pyramid, coverage expectations, CI requirements |
 | `.claude/rules/review-rules.md` | Pre-review checklist, severity labels, merge rules |
-| `.claude/rules/branching-rules.md` | Branch model, commit format, PR rules, release tagging, **required GitHub branch protection settings** (single source of truth — applied via `.ai-scaffold/docs/setup/branch-protection.md` UI walkthrough or `scripts/setup-branch-protection.sh`) |
+| `.claude/rules/branching-rules.md` | Branch model, commit format, PR rules, release tagging, **required GitHub branch protection settings** (single source of truth — applied via `docs/setup/branch-protection.md` UI walkthrough or `scripts/setup-branch-protection.sh`) |
 | `.claude/rules/token-usage-rules.md` | When to use AI, model selection, cost awareness |
 | `.claude/rules/dod-rules.md` | Definition of Done - story, sprint, and release level |
 | `.claude/rules/definition-of-ready.md` | Definition of Ready - gates `BACKLOG → IN PROGRESS` (parallel to DoD) |
@@ -353,7 +353,7 @@ Before marking any PR ready:
 
 ## Claude Operating Instructions
 
-How Claude plans, executes, self-improves, .ai-scaffold/tasks/intains quality on this project.
+How Claude plans, executes, self-improves, and maintains quality on this project.
 
 ### Session Start
 
@@ -393,9 +393,11 @@ Reply "go" to proceed. Any other response requires clarification before starting
 - For complex problems, use multiple subagents in parallel - one focused task per agent
 - Never delegate understanding - synthesise subagent findings yourself before acting on them
 
-### Self-Improvement Loop.ai-scaffold/tasks/r **any correction from the user**, record the pattern in `tasks/lessons.md` **immediately** (not end of session):
+### Self-Improvement Loop
+
+After **any correction from the user**, record the pattern in `tasks/lessons.md` **immediately** (not end of session):
 - What the mistake was
-.ai-scaffold/tasks/it happened
+- Why it happened
 - The rule that prevents it recurring
 
 Review `tasks/lessons.md` at the start of each session for this project. Ruthlessly iterate until the mistake rate drops.
@@ -434,14 +436,14 @@ When given a bug report: **fix it** - don't ask for hand-holding.
 
 There are three places for work-state, separated by lifecycle:
 
-1. **`.claude/work/`** (gitignored) — AI ephemera: planning, .ai-scaffold/tasks/h, intermediate outputs. Per-clone, never committed.
-2. **`tasks/todo/<TICKET-ID>-<slug>.md`** (tracked) — one file per .ai-scaffold/tasks/ ticket. Spec, acceptance criteria, decision log. Move to `tasks/done/` when complete. Per-ticket files prevent the merge-conflict pattern that shared status files cause.
-3. **`.ai-scaffold/CHANGELOG.md`** (tracked, `merge=union`) — permanent record of what shipped. Each mergin.ai-scaffold/tasks/dds an entry. Source of truth for "what was done", replaces the legacy `.ai-scaffold/tasks/todo.md` "history" role.
+1. **`.claude/work/`** (gitignored) — AI ephemera: planning, scratch, intermediate outputs. Per-clone, never committed.
+2. **`tasks/todo/<TICKET-ID>-<slug>.md`** (tracked) — one file per active ticket. Spec, acceptance criteria, decision log. Move to `tasks/done/` when complete. Per-ticket files prevent the merge-conflict pattern that shared status files cause.
+3. **`CHANGELOG.md`** (tracked, `merge=union`) — permanent record of what shipped. Each merging PR adds an entry. Source of truth for "what was done", replaces the legacy `tasks/todo.md` "history" role.
 
 Workflow:
 - Start a non-trivial task: create `tasks/todo/<TICKET-ID>-<slug>.md` with the spec and AC. Do planning notes in `.claude/work/` (gitignored).
-- During work: update the per-ticket file as decisions are made. Use the `TodoWrite` tool for in-conversation step tracking .ai-scaffold/tasks/session-local, .ai-scaffold/tasks/mmitted).
-- Complete a task: move the file `git mv tasks/todo/<file>.md tasks/done/<file.ai-scaffold/tasks/ add a .ai-scaffold/CHANGE.ai-scaffold/tasks/ entry under `[Unreleased]`, capture any lessons in `tasks/lessons.md`.
+- During work: update the per-ticket file as decisions are made. Use the `TodoWrite` tool for in-conversation step tracking (it's session-local, not committed).
+- Complete a task: move the file `git mv tasks/todo/<file>.md tasks/done/<file>.md`, add a CHANGELOG.md entry under `[Unreleased]`, capture any lessons in `tasks/lessons.md`.
 
 The legacy `tasks/todo.md` is gitignored and untracked — do not commit it. It survives locally as a scratch pad if you prefer single-file working notes, but it never affects other clones.
 
@@ -451,14 +453,14 @@ The legacy `tasks/todo.md` is gitignored and untracked — do not commit it. It 
 
 - **Correctness is non-negotiable** - a slow correct answer beats a fast wrong one.
 - **Explicit is better than implicit** - name things clearly, document decisions in ADRs.
-- **Decisi.ai-scaffold/docs/re recorded** - use `docs/architecture/adr/` for every significant choice.
+- **Decisions are recorded** - use `docs/architecture/adr/` for every significant choice.
 - **The spec is the contract** - if the spec is wrong, update it before the code.
 - **Done means tested** - untested code is not done.
 - **Changes are controlled** - any post-sign-off scope change requires a CR (see `cr-template.md`).
-- **Releases are documented** - every production rele.ai-scaffold/tasks/s release notes and a UAT sign-off.
-- **Mistakes are learned from** - every correction goes into `ta.ai-scaffold/tasks/ssons.md`.
-- **Working state is separated from history** - `.claude/work/` is per-clone scratch, `tasks/todo/` is per-ticket spec, `.ai-scaffold/CHANGELOG.md` is the permanent record. No shared mutable status files (lesson learned 2026-05-08).
-- **Releases are recorded in `.ai-scaffold/CHANGELOG.md`** - format: [Keep a Changelog](https://keepachangelog.com). Each merging PR adds an entry under `[Unreleased]`. Configured with `merge=union` so parallel branches don't conflict on it.
+- **Releases are documented** - every production release has release notes and a UAT sign-off.
+- **Mistakes are learned from** - every correction goes into `tasks/lessons.md`.
+- **Working state is separated from history** - `.claude/work/` is per-clone scratch, `tasks/todo/` is per-ticket spec, `CHANGELOG.md` is the permanent record. No shared mutable status files (lesson learned 2026-05-08).
+- **Releases are recorded in `CHANGELOG.md`** - format: [Keep a Changelog](https://keepachangelog.com). Each merging PR adds an entry under `[Unreleased]`. Configured with `merge=union` so parallel branches don't conflict on it.
 
 ---
 

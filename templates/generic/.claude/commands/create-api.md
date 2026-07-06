@@ -6,7 +6,7 @@ Designs a complete API contract for a new feature or resource. Invokes `api-arch
 
 ```
 /create-api "User management — CRUD for users with role assignment"
-/create-api .ai-scaffold/docs/brd/feature-x.md      # From a BRD section
+/create-api docs/brd/feature-x.md      # From a BRD section
 /create-api --resource users           # From an entity name
 ```
 
@@ -72,5 +72,5 @@ Designs a complete API contract for a new feature or resource. Invokes `api-arch
 ## Notes
 
 - Every contract produced by this command must be approved before implementation begins.
-- Save output to `.ai-scaffold/docs/api/[resource-name]-contract.md`.
+- Save output to `docs/api/[resource-name]-contract.md`.
 - Use `.claude/templates/api-contract-template.md` as the base format.

@@ -19,7 +19,7 @@ Query past root causes and debugging lessons. Makes institutional knowledge from
 
 ## How It Works
 
-1. Read `.ai-scaffold/tasks/lessons.md`
+1. Read `tasks/lessons.md`
 2. Parse entries (separated by `## ` headings with ISO dates)
 3. Apply filters (search term or tag)
 4. Output matching entries with relevance context
@@ -65,9 +65,9 @@ tags: debugging, workflow
 
 ## Rules
 
-- **Read-only.** Never write to `.ai-scaffold/tasks/lessons.md` from this command. Use `/investigate` or `/debug-fix` to capture new lessons.
+- **Read-only.** Never write to `tasks/lessons.md` from this command. Use `/investigate` or `/debug-fix` to capture new lessons.
 - **No AI generation.** This command searches and formats — it doesn't generate new content.
-- **If `.ai-scaffold/tasks/lessons.md` doesn't exist:** say "No lessons recorded yet. Run `/investigate` or `/debug-fix` to capture the first lesson."
+- **If `tasks/lessons.md` doesn't exist:** say "No lessons recorded yet. Run `/investigate` or `/debug-fix` to capture the first lesson."
 - **Case-insensitive search.** `"Race Condition"` matches "race condition".
 
 ---

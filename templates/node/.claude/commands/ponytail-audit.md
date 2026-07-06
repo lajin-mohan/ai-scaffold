@@ -3,7 +3,7 @@ Adapted from DietrichGebert/ponytail (MIT), v4.7.0
 Source command: https://github.com/DietrichGebert/ponytail/blob/main/commands/ponytail-audit.toml
 Source prompt: "Audit the entire repository for over-engineering only..."
 Upstream repository: https://github.com/DietrichGebert/ponytail
-Upstream license: https://github.com/DietrichGebert/ponytail/blob/main/.ai-scaffold/LICENSE (MIT)
+Upstream license: https://github.com/DietrichGebert/ponytail/blob/main/LICENSE (MIT)
 Adapted: severity labels merged with this scaffold's BLOCK/WARN/NIT system;
 tag taxonomy preserved from upstream.
 -->
@@ -44,7 +44,7 @@ This complements `/review` (which finds what is wrong) by finding what is **unne
 
 | Flag | Effect |
 |---|---|
-| *(no flag)* | Whole tree, excluding `node_modules/`, `dist/`, `build/`.ai-scaffold/_ai/next/`, `_ai/`, `.claude/work/` |
+| *(no flag)* | Whole tree, excluding `node_modules/`, `dist/`, `build/`, `.next/`, `_ai/`, `.claude/work/` |
 | `--path <dir>` | Limit to `<dir>` and its descendants |
 | `--top <N>` | Show only the top N findings, ranked by estimated lines removable |
 | `--since <ref>` | Limit to files changed since `<ref>` (e.g., `main`, `HEAD~10`, a tag) |

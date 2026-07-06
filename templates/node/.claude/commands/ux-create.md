@@ -31,7 +31,7 @@ This path produces requirements, flows, screen specs, design tokens, and a devel
 3. Load `DESIGN_SYSTEM.md`, `DESIGN_TOKENS.md`, `COMPONENT_RULES.md`, or `UX_PATTERNS.md` only as needed.
 4. Define role, business goal, workflow, and data density.
 5. Produce UX architecture, component hierarchy, interactions, states, responsiveness, mobile behavior, theme behavior, and accessibility guidance.
-6. Save artifacts under `.ai-scaffold/docs/ux/<phase-or-feature>/` when creating project documentation.
+6. Save artifacts under `docs/ux/<phase-or-feature>/` when creating project documentation.
 
 ## Requirements
 
@@ -62,4 +62,4 @@ This path produces requirements, flows, screen specs, design tokens, and a devel
 9. Light/dark theme behavior
 10. Accessibility guidance
 11. Implementation guidance
-12. Suggested .ai-scaffold/docs/ux artifact paths
+12. Suggested docs/ux artifact paths

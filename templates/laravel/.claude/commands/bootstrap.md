@@ -119,7 +119,7 @@ On `confirm`, write in this order:
      - .claude/rules/stacks/frontend-<STACK>.md  ← based on detected frontend
      ```
 
-4. **`.ai-scaffold/HOW-TO-USE.md`** — replace runtime template tokens:
+4. **`HOW-TO-USE.md`** — replace runtime template tokens:
    - `{{PROJECT_NAME}}` → project name
    - `{{N}}` / `{{SPRINT_NUMBER}}` → placeholder form `[SPRINT_N]`
    - `{{DATE}}` → `[DATE]`
@@ -141,12 +141,13 @@ On `confirm`, write in this order:
 
 8. **`.claude/hooks/notify-review.py`** — replace runtime template tokens:
    - `{{PROJECT_NAME}}` → project name
-   - `{{REPO_URL}}` → `[REPO_.ai-scaffold/docs/
+   - `{{REPO_URL}}` → `[REPO_URL]`
 
 9. **`docs/qa/README.md`** — replace runtime template tokens:
    - `{{DATE}}` → `[DATE]`
    - `{{NAME}}` → `[NAME]`
-   - `{{COMMIT_SHA}}` → `[COMMIT_S.ai-scaffold/docs/
+   - `{{COMMIT_SHA}}` → `[COMMIT_SHA]`
+
 10. **`docs/architecture/adr/001-template.md`** — replace runtime template tokens:
    - `{{}}` → `[VALUE]` form
 
@@ -157,7 +158,7 @@ On `confirm`, write in this order:
 13. **`.gitignore`** — ensure `settings.local.json`, `.claude/MEMORY.md`, and local memory files are gitignored
 
 14. **Compliance docs** — only created if their feature flag is `true`:
-    - `accessibility: tru.ai-scaffold/docs/create `docs/compliance/accessibility.md`
+    - `accessibility: true` → create `docs/compliance/accessibility.md`
     - `gdpr: true` → ensure GDPR section in `compliance-rules.md` is active
     - `iso27001: true` → ensure ISO 27001 section in `compliance-rules.md` is active
 
@@ -257,7 +258,7 @@ Run /bootstrap to initialize the scaffold for a real project.
 ## Idempotency
 
 - If `settings-overrides.json` already exists, read it and only ask for missing values
-- Never overwrite a real value with a.ai-scaffold/tasks/holder
+- Never overwrite a real value with a placeholder
 - `--resume` loads partial state from `tasks/bootstrap-state.json` (gitignored)
 - Running bootstrap on an already-bootstrapped scaffold → one-line: "Already bootstrapped. Run `/settings` to view or `/bootstrap --check` to verify."
 

@@ -17,16 +17,24 @@ The CLI can be published as an MVP only after:
 - Node/JavaScript is available as a day-one profile.
 - npm package contents are explicitly controlled.
 - `npx @lajin.m/ai-scaffold .` behaves as documented.
+- Template hook safety is actually shipped in generated projects, not only in this scaffold repo.
+
+Already confirmed for v0.7.1:
+
+- Package name is `@lajin.m/ai-scaffold`.
+- CLI bin is `ais`.
+- Default install remains project-local.
+- Clean root install surface is implemented and covered by smoke tests.
 
 ---
 
 ## P0 — Must Fix Before Publish
 
-### 1. Route `ais .` to `init`
+### 1. Route `ais .` to `init` — Done For v0.7.1
 
-Current behavior routes bare `.` to `create .`.
+Previous behavior routed bare `.` to `create .`.
 
-Required behavior:
+Implemented behavior:
 
 ```bash
 npx @lajin.m/ai-scaffold .
@@ -42,9 +50,9 @@ Acceptance:
 
 - `ais . --dry-run` runs the init flow.
 - Existing project files are protected.
-- Add/keep an e2e test that spawns the real CLI.
+- E2E and publish smoke tests spawn the real CLI.
 
-### 2. Isolate Existing Project Installs
+### 2. Isolate Existing Project Installs — Done For v0.7.1
 
 For `init`, do not create or modify generic project-owned root folders by default.
 
@@ -75,7 +83,7 @@ CLAUDE.md
 
 Optional root files may be added only with explicit flags in a future pass.
 
-### 3. Add a Namespaced Scaffold Folder
+### 3. Add a Namespaced Scaffold Folder — Done For v0.7.1
 
 Move scaffold-owned docs and operational context out of the project root namespace.
 
@@ -94,7 +102,7 @@ Target install namespace:
 
 This keeps scaffold guidance separate from the application's own documentation.
 
-### 4. Control npm Package Contents
+### 4. Control npm Package Contents — Done For v0.7.1
 
 Add an explicit npm publish allowlist.
 
@@ -124,7 +132,7 @@ npm_config_cache=/private/tmp/ai-scaffold-npm-cache npm pack --dry-run
 
 shows only intentional package files.
 
-### 5. Split Create and Init Template Behavior
+### 5. Split Create and Init Template Behavior — Done For v0.7.1
 
 `create` and `init` should not install the same full tree.
 
@@ -134,7 +142,7 @@ Required:
 - `init` must stay minimal and non-invasive.
 - Both flows must generate `.ai-scaffold.json`, `.claude/MEMORY.md`, and `.claude/settings-overrides.json`.
 
-### 6. Ship Node/JS Profile From Day 1
+### 6. Ship Node/JS Profile From Day 1 — Done For v0.7.1
 
 Node/JavaScript is required for the first npm-published version.
 
@@ -153,11 +161,70 @@ node bin/ai-scaffold.js create /private/tmp/ai-scaffold-node-smoke --profile js 
 node bin/ai-scaffold.js init /private/tmp/ai-scaffold-node-init-smoke --profile javascript --yes --dry-run
 ```
 
+### 7. Sync Hook Safety Into Templates — Done For v0.7.1
+
+The current scaffold repo has the starter hook safety layer, but generated
+projects must receive the same safety layer.
+
+Status: verified. The shipped profile templates include and wire the starter
+safety hooks, and the publish smoke gate checks generated output.
+
+Required:
+
+- Copy these hooks into every shipped profile template:
+  - `.claude/hooks/pre-secret-guard.sh`
+  - `.claude/hooks/pre-dangerous-bash-guard.sh`
+  - `.claude/hooks/governance-file-guard.sh`
+- Update every `templates/*/.claude/settings.json` to wire the hooks.
+- Ensure generated projects have executable hook files.
+- Add smoke checks that `create` and `init` output include and wire these hooks.
+- Verify each template settings file references only hook files that exist in
+  that same template.
+
+Acceptance:
+
+```bash
+node bin/ai-scaffold.js create /private/tmp/ai-scaffold-hook-smoke --profile node --yes
+test -f /private/tmp/ai-scaffold-hook-smoke/.claude/hooks/pre-secret-guard.sh
+test -f /private/tmp/ai-scaffold-hook-smoke/.claude/hooks/pre-dangerous-bash-guard.sh
+test -f /private/tmp/ai-scaffold-hook-smoke/.claude/hooks/governance-file-guard.sh
+```
+
+Final verification:
+
+```bash
+npm test
+bash scripts/pre-publish-smoke.sh
+```
+
+### 8. Add Memory Safety Policy — Done For v0.7.1
+
+Persistent memory is useful but risky. Keep this lightweight for v0.7.x.
+
+Status: verified. Generated `.claude/MEMORY.md` contains the lightweight
+project-memory safety policy.
+
+Required:
+
+- Document project memory only; no global/user-home memory install by default.
+- Forbid secrets, credentials, tokens, production data, and client-confidential text unless explicitly allowed.
+- Require review for memory changes.
+- Add this policy to scaffold rules/docs that generated projects receive.
+- Ensure generated project docs explain that memory is operational context, not
+  a place for private data, secrets, credentials, or unreviewed instructions.
+
+Acceptance:
+
+- Generated projects contain a clear memory safety policy.
+- `README.md` and/or `HOW-TO-USE.md` do not overstate memory as risk-free automation.
+- The policy appears in at least one scaffold-managed file that every shipped
+  profile receives.
+
 ---
 
-## P1 — Strongly Recommended Before Publish
+## P1 — Strongly Recommended Soon After Publish
 
-### 7. Reduce Default Template Surface — Done For v0.7.1
+### 9. Reduce Default Template Surface — Done For v0.7.1
 
 Implemented:
 
@@ -203,7 +270,7 @@ docs/compliance/accessibility.md
 
 For existing projects, prefer `.ai-scaffold/docs/` instead of root `docs/`.
 
-### 8. Decide Light Profile Status
+### 10. Decide Light Profile Status — Mostly Done For v0.7.1
 
 Current Laravel and Node profiles are light profiles.
 
@@ -231,7 +298,60 @@ Recommended for v0.7.x:
 - Keep `node` as the required JavaScript profile.
 - Keep `laravel` only if docs clearly call it a light profile.
 
-### 9. Add Context Collection for Existing Projects
+Remaining:
+
+- Keep docs honest that `laravel` is a light profile, not a full Laravel application scaffold.
+- Revisit profile overlays after v0.7.x.
+
+### 11. Add Dry-Run JSON Plan
+
+Enterprise users should be able to inspect what the CLI will do before writing.
+
+Required commands:
+
+```bash
+ais init --profile node --dry-run --json
+ais create my-project --profile node --dry-run --json
+```
+
+Output should include:
+
+- profile
+- target path
+- files to copy
+- files to generate
+- protected files skipped
+- app/source paths skipped
+- conflicts
+- whether placeholders were defaulted
+
+### 12. Add Install Operation Records
+
+Extend `.ai-scaffold.json` beyond a flat managed file list.
+
+Add operation records such as:
+
+```json
+{
+  "operations": [
+    {
+      "type": "copy",
+      "path": ".claude/settings.json",
+      "source": "templates/node/.claude/settings.json",
+      "hash": "sha256:..."
+    },
+    {
+      "type": "skip-protected",
+      "path": "README.md",
+      "reason": "existing project file"
+    }
+  ]
+}
+```
+
+This will power future `doctor`, `repair`, `uninstall`, and safe `update`.
+
+### 13. Add Context Collection for Existing Projects
 
 During `init`, collect or detect:
 
@@ -270,7 +390,7 @@ Write confirmed context to:
 .ai-scaffold/docs/context.md
 ```
 
-### 10. Add Starter Hooks Safety Roadmap
+### 14. Add Starter Hooks Safety Roadmap
 
 Current hook state is a useful starter layer, not a full enterprise-safe hooks
 pack. Keep public docs accurate unless these controls are implemented.
@@ -298,6 +418,7 @@ Done:
 Pending P1 hook improvements:
 
 - Add `ais hooks doctor` to report hook install/config health.
+- Add template hook parity checks for every shipped profile.
 - Add a `pre-push` safety hook for secret scan, lint, typecheck, tests, and protected branch warnings.
 - Add a `commit-msg` policy hook for useful commit messages and optional ticket references.
 - Add `post-merge` and `post-checkout` warning hooks for changed lockfiles, hooks, `.env.example`, or dependency manifests.
@@ -307,7 +428,7 @@ Pending P1 hook improvements:
 
 ## P2 — Can Ship After MVP
 
-### 11. Implement Real Update Flow
+### 15. Implement Real Update Flow
 
 Current `update` is a placeholder.
 
@@ -320,7 +441,7 @@ Pending:
 - `update --target-version`
 - manifest updates after file writes
 
-### 12. Improve `status` and `doctor`
+### 16. Improve `status` and `doctor`
 
 Pending:
 
@@ -333,7 +454,20 @@ Pending:
 - profile validity checks
 - version mismatch checks
 
-### 13. Add Missing CLI Docs
+### 17. Add Repair And Uninstall Dry Runs
+
+Do not implement destructive repair/uninstall behavior first. Start with preview-only.
+
+Future commands:
+
+```bash
+ais repair --dry-run
+ais uninstall --dry-run
+```
+
+These should rely on install operation records and managed file hashes.
+
+### 18. Add Missing CLI Docs
 
 Create:
 
@@ -347,19 +481,26 @@ docs/cli/conflict-handling.md
 
 Keep scaffold process/history docs out of generated project installs.
 
-### 14. Expand Tests
+### 19. Expand Tests
 
 Add coverage for:
 
-- `ais .` routes to init
-- `init` does not create root `docs/`, `apps/`, `packages/`, `infra/`, `scripts/` by default
+- hook safety files are present in generated projects
+- template `.claude/settings.json` references only hooks that exist
+- `--dry-run --json` returns a machine-readable file plan
+- install operation records are written
 - existing `README.md`, `package.json`, workflows, and app dirs are preserved
-- minimal install writes `.ai-scaffold/`
-- package allowlist excludes unintended root files
-- Node profile behavior is explicitly tested through the real CLI
 - Laravel profile behavior is explicitly tested or removed
 
-### 15. Enterprise Safe Hooks Pack
+Already covered:
+
+- `ais .` routes to init.
+- `init` does not create root `docs/`, `apps/`, `packages/`, `infra/`, `scripts/`, or `tasks/` by default.
+- Minimal install writes `.ai-scaffold/`.
+- Package allowlist excludes unintended root files.
+- Node profile behavior is tested through the real CLI.
+
+### 20. Enterprise Safe Hooks Pack
 
 Build a reusable enterprise-safe hooks profile after the MVP surface is stable.
 
@@ -480,3 +621,5 @@ Publish only when:
 - Node/JS profile aliases resolve to `node`
 - `ais .` routes to init
 - no generated README or settings file has unresolved project placeholders
+- generated projects include the starter hook safety layer
+- generated projects include a clear memory safety policy

@@ -23,7 +23,7 @@ Read the BRD or feature spec. If none is provided, ask the user for it.
 
 ## Output Format
 
-Produce a file at `.ai-scaffold/docs/ux/<feature>/01-requirements.md` following this structure:
+Produce a file at `docs/ux/<feature>/01-requirements.md` following this structure:
 
 ```markdown
 # UX Requirements — {{Feature Name}}

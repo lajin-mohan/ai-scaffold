@@ -12,7 +12,7 @@ This is the command developers and AI tools should invoke for any non-trivial im
 /start-task                                           # interactive — ask the user what to build
 /start-task "{{ticket-id-and-summary}}"               # task description provided
 /start-task --ticket HIRE-142                         # link to a Jira/Linear ticket
-/start-task --spec .ai-scaffold/docs/brd/HIRE-142-csv-import.md    # work from a specific spec
+/start-task --spec docs/brd/HIRE-142-csv-import.md    # work from a specific spec
 /start-task --resume                                  # continue a paused task
 /start-task --intensity lite|full|ultra              # apply the ponytail ladder at this intensity for this task only
 ```
@@ -55,7 +55,7 @@ The command runs in 5 phases. Phase 2/3 is the approval gate; after approval, co
 2. Read adjacent code — the files in the same module, the same layer, neighbouring tests. Goal: understand local conventions before proposing changes.
 3. Read [ai-coding-rules.md](../rules/ai-coding-rules.md) hard-rule summary.
 4. Verify Definition of Ready criteria are met (see [definition-of-ready.md](../rules/definition-of-ready.md)). If not, **stop** and surface the missing items.
-   For frontend/full-stack tasks: also verify UX handoff is complete (`.ai-.ai-scaffold/tasks/ld/docs/ux/<module>/tasks/<task-id>/06-dev-handoff.md` exists) — this is a **hard gate** before Stage 5 execution. See `.claude/rules/ux-rules.md`.
+   For frontend/full-stack tasks: also verify UX handoff is complete (`docs/ux/<module>/tasks/<task-id>/06-dev-handoff.md` exists) — this is a **hard gate** before Stage 5 execution. See `.claude/rules/ux-rules.md`.
 
 ### Phase 2 — Plan
 
@@ -161,7 +161,7 @@ When the implementation is done, run the verification suite and produce the repo
 ✅ Typecheck: `npm run typecheck` — passing
 ✅ Tests: `npm run test [target]` — N/N passing (added M new tests)
 ✅ UX: `/ux-review` — passing (required for frontend/full-stack tasks)
-✅ UX Handoff: `/ux-handoff` file.ai-scaffold/tasks/s `.ai-scaffold/docs/ux/<module>/tasks/<task-id>/06-dev-handoff.md` — hard gate before Stage 5
+✅ UX Handoff: `/ux-handoff` file exists `docs/ux/<module>/tasks/<task-id>/06-dev-handoff.md` — hard gate before Stage 5
 ✅ Browser: `npm run test:e2e` — passing (required for frontend/full-stack tasks)
 ✅ Desktop themes: light + dark verified (required for frontend/full-stack tasks)
 ✅ Mobile themes: light + dark verified at ~390px (required for frontend/full-stack tasks)
@@ -189,7 +189,7 @@ If verification fails: do not claim done. Report what failed, propose the fix, a
 
 ## State management
 
-If the us.ai-scaffold/tasks/errupts mid-task, save state to `tasks/start-task-state.json` (gitignored). Includes:
+If the user interrupts mid-task, save state to `tasks/start-task-state.json` (gitignored). Includes:
 
 - Which phase the task was in
 - The approved plan (if past Phase 3)
@@ -205,7 +205,7 @@ If the us.ai-scaffold/tasks/errupts mid-task, save state to `tasks/start-task-st
 - Trivial edits (≤3 steps, single concept, single file): just do the work
 - Reading questions ("what does this function do?"): just answer
 - Bug fixes, failed tests, runtime errors, API defects, UI defects, Docker failures, and incident-style work: use `/debug-fix` so the original failure is reproduced or simulated, root-caused, corrected, tested, and verified with evidence
-- Refactors: those ar.ai-scaffold/_ai/eir own task — don't bundle them into a feature
+- Refactors: those are their own task — don't bundle them into a feature
 - Spike/exploration: use `_ai/experiments/` directly, no plan gate needed
 
 ---
