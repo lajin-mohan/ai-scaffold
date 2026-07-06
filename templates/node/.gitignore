@@ -6,6 +6,87 @@ CLAUDE.local.md
 .env.local
 .env.*.local
 
+# All .env variants — allow only .env.example/.env.template
+.env.*
+
+# Package manager credentials
+.npmrc
+.yarnrc
+.yarnrc.yml
+composer.json
+
+# Private keys & certificates
+*.key
+*.pem
+*.p12
+*.p8
+*.pk8
+*.p7b
+*.p7r
+*.crt
+*.cer
+*.der
+*.jks
+*.pfx
+id_rsa*
+id_ecdsa*
+id_ed25519*
+*.keystore
+*.truststore
+
+# Cloud / service account credentials
+*credentials*.json
+*credential*.json
+*secrets*.json
+*secret*.json
+*auth*.json
+service-account*.json
+account*.json
+client-secret*.json
+gcloud*.json
+*.gcloud
+google-application-credentials.json
+
+# AWS credentials
+.aws/
+aws_credentials
+
+# Azure credentials
+.azure/
+azure*.json
+
+# GCP / Firebase
+gcp*.json
+
+# Terraform state & secrets
+*.tfstate
+*.tfstate.*
+*.tfvars
+*.tfvars.json
+
+# Vault / secrets manager
+vault*.json
+secrets/
+credentials/
+
+# SSH & GPG
+*.gpg
+*.pgp
+.gnupg/
+.ssh/
+known_hosts
+authorized_keys
+
+# Application config (commonly contain secrets)
+config.json
+settings.json
+private*.json
+
+# Build secrets & deployment
+build.secrets
+deploy.secrets
+ci.secrets
+
 # Dependencies
 node_modules/
 vendor/

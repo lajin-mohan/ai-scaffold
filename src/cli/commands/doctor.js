@@ -1,6 +1,6 @@
 /**
  * doctor command — diagnoses scaffold installation health and flags issues.
- * Usage: ai-scaffold doctor [target-dir]
+ * Usage: ais doctor [target-dir]
  */
 
 import path from 'path';
@@ -11,8 +11,8 @@ import crypto from 'crypto';
 export function doctorCommand(cli) {
   cli.command('doctor [target-dir]', 'Diagnose scaffold installation health')
     .option('--json', 'Output diagnostics as JSON')
-    .example('ai-scaffold doctor')
-    .example('ai-scaffold doctor ./my-project --json')
+    .example('ais doctor')
+    .example('ais doctor ./my-project --json')
     .action(async (targetDir, options) => {
       await runDoctor(targetDir, options);
     });
@@ -27,7 +27,7 @@ async function runDoctor(targetDir, options) {
     return;
   }
 
-  console.log(chalk.bold(`\n🔬 ai-scaffold doctor — ${target}\n`));
+  console.log(chalk.bold(`\n🔬 AI Scaffold doctor — ${target}\n`));
 
   const diagnostics = await runDiagnostics(target);
   printDiagnostics(diagnostics);
@@ -46,7 +46,7 @@ async function runDiagnostics(target) {
     name: 'Scaffold manifest (.ai-scaffold.json)',
     passed: await fs.pathExists(scaffoldFile),
     severity: 'critical',
-    message: 'Scaffold manifest not found. Run `ai-scaffold init` to install.',
+    message: 'Scaffold manifest not found. Run `ais init` to install.',
   });
 
   // 2. .claude/ directory present
@@ -208,7 +208,7 @@ function printDiagnostics(diagnostics) {
     console.log(chalk.green(`✓ All checks passed — scaffold installation is healthy.`));
   } else if (criticalFailed > 0) {
     console.log(chalk.red(`✗ ${criticalFailed} critical check(s) failed. Scaffold installation is broken.`));
-    console.log(chalk.gray('  Run `ai-scaffold init --force` to reinstall.'));
+    console.log(chalk.gray('  Run `ais init --force` to reinstall.'));
   } else if (highFailed > 0) {
     console.log(chalk.yellow(`⚠ ${highFailed} high-severity check(s) failed. Some features may not work.`));
   } else {

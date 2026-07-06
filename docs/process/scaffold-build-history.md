@@ -84,7 +84,7 @@ Application repositories should not copy these entries into their project memory
 **Stage:** Phase 0 stabilize + Phase 1 planning complete; CLI implementation next
 
 ### Key Changes (Planned)
-- Create distributable CLI tool (`npx ai-scaffold`)
+- Create distributable CLI tool (`npx @lajin/ai-scaffold`)
 - Commands: `create`, `init`, `status`, `doctor`, `update`
 - Profiles: generic, laravel, nextjs, golang, flutter, python, java, dotnet
 - Placeholder-resolution pipeline prevents `{{...}}` tokens from reaching adopted projects

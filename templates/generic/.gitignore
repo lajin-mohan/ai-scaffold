@@ -1,62 +1,152 @@
 # Local Claude overrides — personal, not shared
 CLAUDE.local.md
 
-# Environment files
+# === Environment & Secrets ===
+# Core env files (always ignored)
 .env
 .env.local
 .env.*.local
 
-# Dependencies
+# All .env variants — allow only .env.example/.env.template
+.env.*
+
+# Package manager credentials
+.npmrc
+.yarnrc
+.yarnrc.yml
+composer.json
+npm-shrinkwrap.json
+
+# Private keys & certificates
+*.key
+*.pem
+*.p12
+*.p8
+*.pk8
+*.p7b
+*.p7r
+*.crt
+*.cer
+*.der
+*.jks
+*.pfx
+id_rsa*
+id_ecdsa*
+id_ed25519*
+*.keystore
+*.truststore
+
+# Cloud / service account credentials
+*credentials*.json
+*credential*.json
+*secrets*.json
+*secret*.json
+*auth*.json
+service-account*.json
+account*.json
+client-secret*.json
+gcloud*.json
+*.gcloud
+google-application-credentials.json
+
+# AWS credentials
+.aws/
+aws_credentials
+
+# Azure credentials
+.azure/
+azure*.json
+
+# GCP / Firebase
+gcp*.json
+
+# Terraform state & secrets
+*.tfstate
+*.tfstate.*
+*.tfvars
+*.tfvars.json
+
+# Vault / secrets manager
+vault*.json
+secrets/
+credentials/
+
+# SSH & GPG
+*.gpg
+*.pgp
+.gnupg/
+.ssh/
+known_hosts
+authorized_keys
+
+# Application config (commonly contain secrets)
+config.json
+settings.json
+private*.json
+
+# Database dumps
+*.sql
+*.sqlite
+*.sqlite3
+*.db
+
+# Build secrets & deployment
+build.secrets
+deploy.secrets
+ci.secrets
+
+# Dependency cache
+.pnpm-store/
+.npm/
+.yarn/
+.cache/
+.m2/
+
+# Logs with potential sensitive data
+*.log
+
+# === Dependencies ===
 node_modules/
 vendor/
 .venv/
 __pycache__/
 
-# Build outputs
+# === Build outputs ===
 dist/
 build/
 out/
 .next/
 .nuxt/
 
-# Logs
-*.log
-logs/
-
-# OS
+# === OS ===
 .DS_Store
 Thumbs.db
 
-# IDE
+# === IDE ===
 .idea/
 *.iml
+.vscode/
 
-# AI staging area — generated content not for production
+# === AI staging area — generated content not for production ===
 _ai/generated/
 _ai/drafts/
 _ai/experiments/
 
-# AI ephemera — planning, scratch, intermediate outputs (per-clone working state)
+# === AI ephemera — planning, scratch, intermediate outputs ===
 .claude/work/
 
-# Local project memory — generated per adopted application from MEMORY.template.md
+# === Local project memory ===
 .claude/MEMORY.md
 .claude/memory/*.local.md
 
-# Local Claude settings overrides — generated during bootstrap/init from template
+# === Local Claude settings overrides ===
 .claude/settings-overrides.json
-
-# Legacy tracked file — replaced by tasks/todo/ per-ticket files + CHANGELOG.md.
-# Untracked via `git rm --cached tasks/todo.md`. Kept locally; new edits stay local.
-tasks/todo.md
-
-# Local Claude settings overrides (copy settings.local.example.json to get started)
 .claude/settings.local.json
 
-# Gitleaks personal allowlist overrides (gitignore secrets scanning)
+# === Gitleaks personal allowlist ===
 .gitleaksignore
 
-# Command memory files — per-clone, never shared
+# === Command memory files ===
 .claude/memory/health-history.jsonl
 .claude/memory/health-stack.json
 .claude/memory/investigate-scope.txt

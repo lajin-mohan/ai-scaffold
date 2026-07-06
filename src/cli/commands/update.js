@@ -1,6 +1,6 @@
 /**
  * update command — updates scaffold to the latest version.
- * Usage: ai-scaffold update [target-dir] [options]
+ * Usage: ais update [target-dir] [options]
  */
 
 import path from 'path';
@@ -11,12 +11,12 @@ import { getVersion } from '../core/version.js';
 
 export function updateCommand(cli) {
   cli.command('update [target-dir]', 'Update scaffold to the latest version — (placeholder — Phase 3)')
-    .option('--version <version>', 'Update to a specific version')
+    .option('--target-version <version>', 'Update to a specific version')
     .option('--dry-run', 'Show what would be updated without making changes')
     .option('--force', 'Force update even if already up to date')
-    .example('ai-scaffold update')
-    .example('ai-scaffold update ./my-project --version 1.0.0')
-    .example('ai-scaffold update --dry-run')
+    .example('ais update')
+    .example('ais update ./my-project --target-version 1.0.0')
+    .example('ais update --dry-run')
     .action(async (targetDir, options) => {
       await runUpdate(targetDir, options);
     });
@@ -25,16 +25,16 @@ export function updateCommand(cli) {
 async function runUpdate(targetDir, options) {
   const target = targetDir ? path.resolve(targetDir) : process.cwd();
   const { dryRun = false, force = false } = options;
-  const targetVersion = options.version;
+  const targetVersion = options.targetVersion;
 
-  console.log(chalk.bold(`\n🔄 ai-scaffold update — ${target}\n`));
+  console.log(chalk.bold(`\n🔄 AI Scaffold update — ${target}\n`));
 
   const scaffoldFile = path.join(target, '.ai-scaffold.json');
 
   // 1. Check if scaffold is installed
   if (!(await fs.pathExists(scaffoldFile))) {
     console.error(chalk.red('✗ No scaffold installation found.'));
-    console.error(chalk.gray('  Run `ai-scaffold init` to install the scaffold first.'));
+    console.error(chalk.gray('  Run `ais init` to install the scaffold first.'));
     process.exit(1);
   }
 

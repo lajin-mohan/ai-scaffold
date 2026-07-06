@@ -1,6 +1,6 @@
 /**
  * init command — installs scaffold into an existing project directory.
- * Usage: ai-scaffold init [target-dir] [options]
+ * Usage: ais init [target-dir] [options]
  */
 
 import path from 'path';
@@ -30,9 +30,9 @@ export function initCommand(cli) {
     .option('--multi-tenant', 'Enable multi-tenancy')
     .option('--no-multi-tenant', 'Disable multi-tenancy')
     .option('--compliance <scope>', 'Compliance scope (N/A, GDPR, ISO27001, HIPAA, SOC2, PCI-DSS)')
-    .example('ai-scaffold init')
-    .example('ai-scaffold init ./my-existing-project --profile node --yes')
-    .example('ai-scaffold init --dry-run')
+    .example('ais init')
+    .example('ais init ./my-existing-project --profile node --yes')
+    .example('ais init --dry-run')
     .action(async (targetDir, options) => {
       await runInit(targetDir, options);
     });
@@ -44,12 +44,12 @@ async function runInit(targetDir, options) {
   // Default to current directory if no target specified
   const resolvedTarget = targetDir ? path.resolve(targetDir) : process.cwd();
 
-  console.log(chalk.bold(`\n🔧 ai-scaffold init — ${resolvedTarget}\n`));
+  console.log(chalk.bold(`\n🔧 AI Scaffold init — ${resolvedTarget}\n`));
 
   // 1. Verify target exists
   if (!dryRun && !(await fs.pathExists(resolvedTarget))) {
     console.error(chalk.red(`✗ Directory does not exist: ${resolvedTarget}`));
-    console.error(chalk.gray('  Use `ai-scaffold create <project>` for new projects.'));
+    console.error(chalk.gray('  Use `ais create <project>` for new projects.'));
     process.exit(1);
   }
 

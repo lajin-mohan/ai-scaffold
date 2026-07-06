@@ -58,8 +58,8 @@ echo ">> Gate 3: npm pack --dry-run"
 PACK_OUTPUT=$(npm_config_cache=/tmp/ai-scaffold-npm-cache npm pack --dry-run --json 2>&1)
 PACK_STATUS=$?
 
-if [ "$PACK_STATUS" -eq 0 ] && [[ "$PACK_OUTPUT" =~ ai-scaffold-[0-9.]+\.tgz ]]; then
-  PACK_FILE=$(grep -oE "ai-scaffold-[0-9.]+\.tgz" <<< "$PACK_OUTPUT" | tail -1)
+if [ "$PACK_STATUS" -eq 0 ] && [[ "$PACK_OUTPUT" =~ lajin-ai-scaffold-[0-9.]+\.tgz ]]; then
+  PACK_FILE=$(grep -oE "lajin-ai-scaffold-[0-9.]+\.tgz" <<< "$PACK_OUTPUT" | tail -1)
   echo "  ${PACK_FILE} produced"
   pass "npm pack --dry-run"
 else
@@ -182,7 +182,7 @@ DOT_DIR=$(mktemp -d)
 echo "# Keep My README" > "$DOT_DIR/README.md"
 # Use a subshell to cd so we don't alter the outer shell's cwd
 OUTPUT=$(cd "$DOT_DIR" && node /Users/lajinmohan/website/ai-scaffold/bin/ai-scaffold.js . --yes 2>&1 | head -5) || true
-if echo "$OUTPUT" | grep -q "ai-scaffold init"; then
+if echo "$OUTPUT" | grep -q "AI Scaffold init"; then
   pass "bare '.' routes to init"
 else
   fail "bare '.' does not route to init"

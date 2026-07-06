@@ -1,6 +1,6 @@
 # How to Use This AI Project Template
 
-This guide explains how every role at Techversant Infotech uses the AI tools in this template — in the right order, at the right phase, for the right purpose.
+This guide explains how every role can use the AI tools in this template — in the right order, at the right phase, for the right purpose.
 
 ---
 

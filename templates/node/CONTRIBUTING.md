@@ -1,6 +1,6 @@
 # Contributing
 
-Welcome. This project follows the Techversant AI development workflow — every contribution goes through a strict gating sequence to keep production-grade quality high.
+Welcome. This project follows the AI Scaffold development workflow — every contribution goes through a strict gating sequence to keep production-grade quality high.
 
 **Read these first:**
 1. [CLAUDE.md](./CLAUDE.md) — the master rules for AI collaboration and the 10-stage workflow

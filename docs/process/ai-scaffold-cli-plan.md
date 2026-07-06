@@ -15,16 +15,16 @@ The CLI should build around the existing scaffold structure. Do not remove or re
 ## Target Commands
 
 ```bash
-npx ai-scaffold my-project
-npx ai-scaffold .
-npx ai-scaffold init
-npx ai-scaffold init --profile laravel
-npx ai-scaffold init --profile node
-npx ai-scaffold init --profile javascript
-npx ai-scaffold status
-npx ai-scaffold doctor
-npx ai-scaffold update
-npx ai-scaffold update --version 1.2.0
+npx @lajin/ai-scaffold my-project
+npx @lajin/ai-scaffold .
+npx @lajin/ai-scaffold init
+npx @lajin/ai-scaffold init --profile laravel
+npx @lajin/ai-scaffold init --profile node
+npx @lajin/ai-scaffold init --profile javascript
+npx @lajin/ai-scaffold status
+npx @lajin/ai-scaffold doctor
+npx @lajin/ai-scaffold update
+npx @lajin/ai-scaffold update --target-version 1.2.0
 ```
 
 ## Phase 0: Stabilize Current Scaffold
@@ -96,10 +96,10 @@ Package entry:
 
 ```json
 {
-  "name": "ai-scaffold",
+  "name": "@lajin/ai-scaffold",
   "version": "1.0.0",
   "bin": {
-    "ai-scaffold": "bin/ai-scaffold.js"
+    "ais": "bin/ai-scaffold.js"
   }
 }
 ```
@@ -233,7 +233,7 @@ This powers `status`, `doctor`, and `update`. `doctor` must warn when `bootstrap
 ### Create New Project
 
 ```bash
-npx ai-scaffold my-project
+npx @lajin/ai-scaffold my-project
 ```
 
 Behavior:
@@ -251,15 +251,15 @@ Behavior:
 ### Install Into Current Directory
 
 ```bash
-npx ai-scaffold .
+npx @lajin/ai-scaffold .
 ```
 
-Equivalent to `npx ai-scaffold init` in the current directory. Installs scaffold-managed files without touching application code.
+Equivalent to `npx @lajin/ai-scaffold init` in the current directory. Installs scaffold-managed files without touching application code.
 
 ### Install Into Existing Project
 
 ```bash
-npx ai-scaffold init --profile laravel
+npx @lajin/ai-scaffold init --profile laravel
 ```
 
 Installs scaffold files into an existing project and protects existing application files.
@@ -275,7 +275,7 @@ Conflict rules:
 ### Status
 
 ```bash
-npx ai-scaffold status
+npx @lajin/ai-scaffold status
 ```
 
 Displays installed version, available version, profile, installation date, managed file count, modified managed file count, and missing managed file count.
@@ -283,7 +283,7 @@ Displays installed version, available version, profile, installation date, manag
 ### Doctor
 
 ```bash
-npx ai-scaffold doctor
+npx @lajin/ai-scaffold doctor
 ```
 
 Checks missing files, modified managed files, configuration issues, version mismatch, profile validity, hook presence, and unresolved bootstrap state.
@@ -291,8 +291,8 @@ Checks missing files, modified managed files, configuration issues, version mism
 ### Update
 
 ```bash
-npx ai-scaffold update
-npx ai-scaffold update --version 1.2.0
+npx @lajin/ai-scaffold update
+npx @lajin/ai-scaffold update --target-version 1.2.0
 ```
 
 Reads `.ai-scaffold.json`, compares managed files, shows a file plan, asks for confirmation, applies safe updates, and updates hashes/version.
@@ -449,7 +449,7 @@ Test cases:
 10. `doctor` detects missing managed files.
 11. `doctor` detects modified managed files.
 12. `update` applies changed managed files.
-13. `update --version` selects a specific version.
+13. `update --target-version` selects a specific version.
 14. Laravel profile includes PHP stack rules.
 15. Existing `README.md` is not overwritten without confirmation.
 16. Placeholder tokens are resolved during `create`.
@@ -513,12 +513,12 @@ Fix:
 Implement:
 
 ```bash
-npx ai-scaffold my-project
-npx ai-scaffold init --profile generic
-npx ai-scaffold init --profile laravel
-npx ai-scaffold init --profile node
-npx ai-scaffold status
-npx ai-scaffold doctor
+npx @lajin/ai-scaffold my-project
+npx @lajin/ai-scaffold init --profile generic
+npx @lajin/ai-scaffold init --profile laravel
+npx @lajin/ai-scaffold init --profile node
+npx @lajin/ai-scaffold status
+npx @lajin/ai-scaffold doctor
 ```
 
 ### Milestone 3: Safe Updates
@@ -526,8 +526,8 @@ npx ai-scaffold doctor
 Implement:
 
 ```bash
-npx ai-scaffold update
-npx ai-scaffold update --version 1.2.0
+npx @lajin/ai-scaffold update
+npx @lajin/ai-scaffold update --target-version 1.2.0
 ```
 
 ### Milestone 4: Profiles

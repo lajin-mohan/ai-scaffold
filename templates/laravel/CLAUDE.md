@@ -21,14 +21,14 @@ This file governs how Claude, Codex, and other AI tools collaborate on every pro
 
 | Field | Value |
 |---|---|
-| **Project** | `ai-scaffold` |
-| **Organization** | Techversant Infotech |
-| **Owner** | Lajin M J - lajinmj@gmail.com |
-| **Purpose** | Reusable AI engineering scaffold with CLI distribution |
-| **Type** | Platform |
-| **Status** | Active Development |
-| **Multi-tenant** | `false` — single-tenant CLI tool, no tenant isolation needed |
-| **Compliance Scope** | `N/A` — CLI tool, no personal data processing |
+| **Project** | `{{PROJECT_NAME}}` |
+| **Organization** | Project Team |
+| **Owner** | {{OWNER_EMAIL}} |
+| **Purpose** | {{ONE_LINE_PURPOSE}} |
+| **Type** | {{SaaS / Internal Tool / API / Platform}} |
+| **Status** | {{Active Development / MVP / Production}} |
+| **Multi-tenant** | {{IS_MULTI_TENANT}} |
+| **Compliance Scope** | {{COMPLIANCE_SCOPE}} |
 
 ---
 
@@ -38,17 +38,17 @@ This file governs how Claude, Codex, and other AI tools collaborate on every pro
 
 | Layer | Technology |
 |---|---|
-| **Backend** | `N/A` — CLI tool, no server runtime |
-| **Frontend** | `N/A` — CLI tool, no UI runtime |
-| **Database** | `N/A` — CLI tool, no database |
-| **Cache / Queue** | `N/A` — CLI tool, no runtime state |
-| **Auth** | `N/A` — CLI tool, no authentication |
-| **Email** | `N/A` — CLI tool, no email |
-| **Storage** | `N/A` — CLI tool, no object storage |
-| **Infra / Cloud** | `N/A` — CLI tool, no hosting |
-| **IaC** | `N/A` — CLI tool distribution, no project infra |
-| **CI/CD** | GitHub Actions — CI runs on the scaffold repo itself |
-| **Project Mgmt** | GitHub Projects — issue tracking for CLI development |
+| **Backend** | {{BACKEND_STACK}} |
+| **Frontend** | {{FRONTEND_STACK}} |
+| **Database** | {{DATABASE}} |
+| **Cache / Queue** | {{CACHE_QUEUE}} |
+| **Auth** | {{AUTH_STRATEGY}} |
+| **Email** | {{EMAIL_PROVIDER}} |
+| **Storage** | {{STORAGE}} |
+| **Infra / Cloud** | {{CLOUD_PROVIDER}} |
+| **IaC** | {{IAC_TOOL}} |
+| **CI/CD** | {{CICD_PLATFORM}} |
+| **Project Mgmt** | {{PM_TOOL}} |
 
 ---
 

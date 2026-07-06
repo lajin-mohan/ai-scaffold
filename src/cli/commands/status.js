@@ -1,6 +1,6 @@
 /**
  * status command — reports installed scaffold version, profile, and managed files.
- * Usage: ai-scaffold status [target-dir]
+ * Usage: ais status [target-dir]
  */
 
 import path from 'path';
@@ -11,8 +11,8 @@ import crypto from 'crypto';
 export function statusCommand(cli) {
   cli.command('status [target-dir]', 'Show installed scaffold version, profile, and status')
     .option('--json', 'Output status as JSON')
-    .example('ai-scaffold status')
-    .example('ai-scaffold status ./my-project')
+    .example('ais status')
+    .example('ais status ./my-project')
     .action(async (targetDir, options) => {
       await runStatus(targetDir, options);
     });
@@ -28,13 +28,13 @@ async function runStatus(targetDir, options) {
     return;
   }
 
-  console.log(chalk.bold(`\n📊 ai-scaffold status — ${target}\n`));
+  console.log(chalk.bold(`\n📊 AI Scaffold status — ${target}\n`));
 
   const status = await getStatusObject(target);
 
   if (!status.installed) {
     console.log(chalk.yellow('⚠ No scaffold installed in this directory.'));
-    console.log(chalk.gray('  Run `ai-scaffold init` to install the scaffold.'));
+    console.log(chalk.gray('  Run `ais init` to install the scaffold.'));
     return;
   }
 

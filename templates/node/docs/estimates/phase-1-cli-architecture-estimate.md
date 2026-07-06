@@ -4,7 +4,7 @@
 **Target:** CLI MVP with `create`, `init`, `status`, `doctor` commands  
 **Version:** v0.6.2 scaffolding baseline  
 **Date:** 2026-06-30  
-**Estimator:** Techversant Team Lead  
+**Estimator:** AI Scaffold maintainer  
 
 ---
 

@@ -1,12 +1,12 @@
 # How to Use AI Scaffold
 
-This guide explains how every role at Techversant Infotech uses the AI tools in this scaffold — in the right order, at the right phase, for the right purpose.
+This guide explains how every role can use AI Scaffold — in the right order, at the right phase, for the right purpose.
 
 ---
 
 ## What This Scaffold Gives You
 
-Use `ai-scaffold` when you want one consistent AI operating model across a project. It gives teams:
+Use AI Scaffold when you want one consistent AI operating model across a project. It gives teams:
 
 - shared governance rules for AI-assisted delivery
 - reusable Claude/Codex/Cursor guidance files
@@ -36,15 +36,15 @@ The practical benefit is not just "AI writes faster code." The benefit is that e
 
 ## Installing The Scaffold
 
-After the npm package is published, use `npx ai-scaffold`.
+Use the npm package with `npx @lajin/ai-scaffold`. After installation, the CLI command is `ais`.
 
 ### Create a new project
 
 ```bash
-npx ai-scaffold my-project
-npx ai-scaffold create my-project
-npx ai-scaffold create my-node-app --profile node
-npx ai-scaffold create my-js-app --profile js
+npx @lajin/ai-scaffold my-project
+npx @lajin/ai-scaffold create my-project
+npx @lajin/ai-scaffold create my-node-app --profile node
+npx @lajin/ai-scaffold create my-js-app --profile js
 ```
 
 `create` generates a new project directory with the scaffold files, project README, `.ai-scaffold.json`, `.claude/MEMORY.md`, and `.claude/settings-overrides.json`.
@@ -54,30 +54,30 @@ npx ai-scaffold create my-js-app --profile js
 From inside the target repository:
 
 ```bash
-npx ai-scaffold init
-npx ai-scaffold .
-npx ai-scaffold init --profile node
-npx ai-scaffold init --profile javascript
-npx ai-scaffold init --profile laravel
+npx @lajin/ai-scaffold init
+npx @lajin/ai-scaffold .
+npx @lajin/ai-scaffold init --profile node
+npx @lajin/ai-scaffold init --profile javascript
+npx @lajin/ai-scaffold init --profile laravel
 ```
 
 Preview before writing files:
 
 ```bash
-npx ai-scaffold init --profile node --dry-run
-npx ai-scaffold . --dry-run
+npx @lajin/ai-scaffold init --profile node --dry-run
+npx @lajin/ai-scaffold . --dry-run
 ```
 
 Use defaults without prompts:
 
 ```bash
-npx ai-scaffold init --profile node --yes
+npx @lajin/ai-scaffold init --profile node --yes
 ```
 
 Pass explicit project context:
 
 ```bash
-npx ai-scaffold init \
+npx @lajin/ai-scaffold init \
   --profile node \
   --project-name acme-api \
   --display-name "Acme API" \
@@ -94,13 +94,13 @@ npx ai-scaffold init \
 ### Check or update an installed scaffold
 
 ```bash
-npx ai-scaffold status
-npx ai-scaffold doctor
-npx ai-scaffold update --dry-run
-npx ai-scaffold update --version 0.7.0
+ais status
+ais doctor
+ais update --dry-run
+ais update --target-version 0.7.0
 ```
 
-`update` is currently a Phase 3 placeholder. Do not rely on it for full file migrations, managed-file diffs, or safe patch application yet.
+`update` is currently a Phase 3 placeholder. Do not rely on it for full file migrations or safe patch application yet.
 
 ### Profiles
 
@@ -677,7 +677,7 @@ Claude will write the lesson to `tasks/lessons.md` immediately.
 
 ### New project setup
 
-1. Run `npx ai-scaffold create <project-name> --profile <profile>`.
+1. Run `npx @lajin/ai-scaffold create <project-name> --profile <profile>`.
 2. Review generated project identity and stack values in `.claude/settings-overrides.json`.
 3. Run `/what-next` — it should report the next project stage.
 4. Run `/kickoff` at the start of every epic to verify all gates are met.
@@ -685,11 +685,11 @@ Claude will write the lesson to `tasks/lessons.md` immediately.
 
 ### Existing project setup
 
-1. From the existing repository, run `npx ai-scaffold init --profile <profile> --dry-run`.
+1. From the existing repository, run `npx @lajin/ai-scaffold init --profile <profile> --dry-run`.
 2. Review the file plan and confirm it does not conflict with application-owned files.
-3. Run `npx ai-scaffold init --profile <profile>`.
+3. Run `npx @lajin/ai-scaffold init --profile <profile>`.
 4. Review generated context in `.claude/MEMORY.md`, `.claude/settings-overrides.json`, and `.ai-scaffold.json` or the configured scaffold namespace.
-5. Run `npx ai-scaffold doctor`.
+5. Run `ais doctor`.
 6. Run `/what-next` to begin project work.
 
 ### Local CLI development setup

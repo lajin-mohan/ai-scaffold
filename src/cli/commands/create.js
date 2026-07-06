@@ -1,6 +1,6 @@
 /**
  * create command — bootstraps a new project from a scaffold profile.
- * Usage: ai-scaffold create <project-name> [options]
+ * Usage: ais create <project-name> [options]
  */
 
 import path from 'path';
@@ -30,9 +30,9 @@ export function createCommand(cli) {
     .option('--multi-tenant', 'Enable multi-tenancy')
     .option('--no-multi-tenant', 'Disable multi-tenancy')
     .option('--compliance <scope>', 'Compliance scope (N/A, GDPR, ISO27001, HIPAA, SOC2, PCI-DSS)')
-    .example('ai-scaffold create billing-api')
-    .example('ai-scaffold create my-app --profile node --yes')
-    .example('ai-scaffold create my-app --dry-run')
+    .example('ais create billing-api')
+    .example('ais create my-app --profile node --yes')
+    .example('ais create my-app --dry-run')
     .action(async (projectName, options) => {
       await runCreate(projectName, options);
     });
@@ -41,21 +41,23 @@ export function createCommand(cli) {
 async function runCreate(projectName, options) {
   const { profile = 'generic', yes = false, dryRun = false, force = false } = options;
 
-  console.log(chalk.bold(`\n🔧 ai-scaffold create — ${projectName}\n`));
+  console.log(chalk.bold(`\n🔧 AI Scaffold create — ${projectName}\n`));
 
   // 1. Resolve project directory
   const targetDir = path.resolve(projectName);
   const templateDir = templatePath(profile);
+  const projectSlug = options['project-name'] || options.projectName
+    || path.basename(targetDir).replace(/[^a-z0-9-]/gi, '-').toLowerCase();
 
   if (!dryRun && fs.existsSync(targetDir)) {
     console.error(chalk.red(`✗ Directory already exists: ${targetDir}`));
-    console.error(chalk.gray('  Use a different project name, or `ai-scaffold init` to install into an existing directory.'));
+    console.error(chalk.gray('  Use a different project name, or `ais init` to install into an existing directory.'));
     process.exit(1);
   }
 
   // 2. Collect bootstrap values
   const flags = {
-    projectName,
+    projectName: projectSlug,
     displayName: options['display-name'] || options.displayName,
     purpose: options.purpose,
     projectType: options['project-type'] || options.projectType,

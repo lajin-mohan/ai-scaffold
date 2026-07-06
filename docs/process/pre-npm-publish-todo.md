@@ -1,6 +1,6 @@
 # Pre-NPM Publish TODO
 
-**Purpose:** Final cleanup checklist before publishing `ai-scaffold` for `npx ai-scaffold ...` usage.
+**Purpose:** Final cleanup checklist before publishing `ai-scaffold` for `npx @lajin/ai-scaffold ...` usage.
 
 This combines the CLI plan with the release-readiness cleanup review. The goal is to make the package useful without taking over an existing repository's own `docs/`, `apps/`, `packages/`, `infra/`, `scripts/`, or CI structure.
 
@@ -8,7 +8,7 @@ This combines the CLI plan with the release-readiness cleanup review. The goal i
 
 ## Release Decision
 
-Do not publish until the v0.7.x package has a smaller, safer install surface.
+Use this checklist to verify that the v0.7.x package keeps a smaller, safer install surface.
 
 The CLI can be published as an MVP only after:
 
@@ -16,31 +16,31 @@ The CLI can be published as an MVP only after:
 - New project creation remains useful but not noisy.
 - Node/JavaScript is available as a day-one profile.
 - npm package contents are explicitly controlled.
-- `npx ai-scaffold .` behaves as documented.
+- `npx @lajin/ai-scaffold .` behaves as documented.
 
 ---
 
 ## P0 — Must Fix Before Publish
 
-### 1. Route `ai-scaffold .` to `init`
+### 1. Route `ais .` to `init`
 
 Current behavior routes bare `.` to `create .`.
 
 Required behavior:
 
 ```bash
-npx ai-scaffold .
+npx @lajin/ai-scaffold .
 ```
 
 must behave like:
 
 ```bash
-npx ai-scaffold init
+npx @lajin/ai-scaffold init
 ```
 
 Acceptance:
 
-- `ai-scaffold . --dry-run` runs the init flow.
+- `ais . --dry-run` runs the init flow.
 - Existing project files are protected.
 - Add/keep an e2e test that spawns the real CLI.
 
@@ -253,11 +253,35 @@ Write confirmed context to:
 .ai-scaffold/docs/context.md
 ```
 
+### 10. Add Starter Hooks Safety Roadmap
+
+Current hook state is a useful starter layer, not a full enterprise-safe hooks
+pack. Keep public docs accurate unless these controls are implemented.
+
+Already in place:
+
+- Claude Code hook wiring in `.claude/settings.json`.
+- `/review` pre-review hook.
+- Pre-edit fact-check hook.
+- Post-edit debug-log warning hook.
+- Bash pre-commit quality gate for `git commit` / `git push`.
+- Git pre-commit hook with branch, lint, typecheck, test, and optional gitleaks checks.
+- Branch protection docs/scripts.
+- CI secret scanning.
+
+Pending P1 hook improvements:
+
+- Add `ais hooks doctor` to report hook install/config health.
+- Add a `pre-push` safety hook for secret scan, lint, typecheck, tests, and protected branch warnings.
+- Add a `commit-msg` policy hook for useful commit messages and optional ticket references.
+- Add `post-merge` and `post-checkout` warning hooks for changed lockfiles, hooks, `.env.example`, or dependency manifests.
+- Document clearly that local hooks can be bypassed and CI/repository policy remains authoritative.
+
 ---
 
 ## P2 — Can Ship After MVP
 
-### 10. Implement Real Update Flow
+### 11. Implement Real Update Flow
 
 Current `update` is a placeholder.
 
@@ -267,10 +291,10 @@ Pending:
 - modified/missing detection
 - safe diff plan
 - confirmation before overwrite
-- `update --version`
+- `update --target-version`
 - manifest updates after file writes
 
-### 11. Improve `status` and `doctor`
+### 12. Improve `status` and `doctor`
 
 Pending:
 
@@ -283,7 +307,7 @@ Pending:
 - profile validity checks
 - version mismatch checks
 
-### 12. Add Missing CLI Docs
+### 13. Add Missing CLI Docs
 
 Create:
 
@@ -297,17 +321,63 @@ docs/cli/conflict-handling.md
 
 Keep scaffold process/history docs out of generated project installs.
 
-### 13. Expand Tests
+### 14. Expand Tests
 
 Add coverage for:
 
-- `ai-scaffold .` routes to init
+- `ais .` routes to init
 - `init` does not create root `docs/`, `apps/`, `packages/`, `infra/`, `scripts/` by default
 - existing `README.md`, `package.json`, workflows, and app dirs are preserved
 - minimal install writes `.ai-scaffold/`
 - package allowlist excludes unintended root files
 - Node profile behavior is explicitly tested through the real CLI
 - Laravel profile behavior is explicitly tested or removed
+
+### 15. Enterprise Safe Hooks Pack
+
+Build a reusable enterprise-safe hooks profile after the MVP surface is stable.
+
+Future commands:
+
+```bash
+ais hooks install --profile enterprise-safe
+ais hooks status
+ais hooks doctor
+ais hooks update
+ais hooks test
+ais hooks uninstall
+```
+
+Future AI hook architecture:
+
+```text
+.ai-scaffold/
+  hooks/
+    ai/
+      guard-pretool.js
+      guard-posttool.js
+      guard-stop.js
+      guard-user-prompt.js
+      policies/
+        dangerous-commands.json
+        protected-files.json
+        secret-paths.json
+    git/
+      commit-msg-policy.sh
+      forbid-dangerous-files.sh
+      forbid-env-files.sh
+      pre-push-safety.sh
+```
+
+Future enterprise controls:
+
+- Policy-file-driven AI secret path guard.
+- Policy-file-driven dangerous command guard.
+- Policy-file-driven protected governance file guard.
+- Stop hook requiring changed-files, tests, security, and manual verification evidence.
+- Hook simulation tests such as `--simulate-env-read` and `--simulate-secret-commit`.
+- Optional `.pre-commit-config.yaml` integration for teams that standardize on the pre-commit framework.
+- CODEOWNERS and branch-protection verification in `ais hooks doctor`.
 
 ---
 
@@ -316,7 +386,7 @@ Add coverage for:
 ### New Project
 
 ```bash
-npx ai-scaffold my-project
+npx @lajin/ai-scaffold my-project
 ```
 
 Creates a clean starter project:
@@ -343,8 +413,8 @@ Optional future flags:
 ### Existing Project
 
 ```bash
-npx ai-scaffold init
-npx ai-scaffold .
+npx @lajin/ai-scaffold init
+npx @lajin/ai-scaffold .
 ```
 
 Installs only scaffold-owned assets:
@@ -382,5 +452,5 @@ Publish only when:
 - pack contents are intentional
 - existing-project install is isolated
 - Node/JS profile aliases resolve to `node`
-- `ai-scaffold .` routes to init
+- `ais .` routes to init
 - no generated README or settings file has unresolved project placeholders

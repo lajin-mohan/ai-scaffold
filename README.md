@@ -1,8 +1,8 @@
-# ai-scaffold
+# AI Scaffold
 
 Reusable AI engineering scaffold with CLI distribution.
 
-`ai-scaffold` packages this repository's AI operating system into a CLI that can create new projects, install scaffold-managed guidance into existing projects, track installed metadata, and run basic health checks.
+`@lajin/ai-scaffold` packages this repository's AI operating system into a CLI (`ais`) that can create new projects, install scaffold-managed guidance into existing projects, track installed metadata, and run basic health checks.
 
 This repository is the scaffold platform itself, not a generated application. Generated project documentation comes from profile templates during `create` or `init`; scaffold platform documentation lives separately in [README.scaffold.md](./README.scaffold.md).
 
@@ -17,7 +17,7 @@ AI-assisted delivery gets messy when every assistant invents its own workflow. T
 - guardrails for hallucination, verification, security, accessibility, and change control
 - safe installation into existing repositories without taking over application source folders
 
-AI coding tools are already good at producing more code. The harder problem is making that code trustworthy, reviewable, testable, and aligned with how your team actually ships software. `ai-scaffold` is built for that second problem.
+AI coding tools are already good at producing more code. The harder problem is making that code trustworthy, reviewable, testable, and aligned with how your team actually ships software. AI Scaffold is built for that second problem.
 
 It gives every AI assistant the same project constitution: what to read first, which rules win, which stage the work is in, what evidence is required, which reviewer lens to use, and when to stop and ask a human.
 
@@ -84,9 +84,7 @@ Tutorials:
 
 For a new project, `create` copies a full starter scaffold and generates project-specific files such as `README.md`, `.ai-scaffold.json`, `.claude/MEMORY.md`, and `.claude/settings-overrides.json`.
 
-For an existing project, `init` is designed to be safer and more isolated. The pre-publish goal is to keep scaffold-owned operational files under `.ai-scaffold/` and avoid creating root application folders such as `docs/`, `apps/`, `packages/`, `infra/`, `scripts/`, or `tasks/`.
-
-The current release candidate still has pre-publish cleanup gates tracked in [docs/process/pre-npm-publish-todo.md](./docs/process/pre-npm-publish-todo.md). Do not publish until those gates pass.
+For an existing project, `init` is designed to be safer and more isolated. Scaffold-owned operational files are installed under `.ai-scaffold/`, while generated runtime files such as `.ai-scaffold.json`, `.claude/MEMORY.md`, and `.claude/settings-overrides.json` stay at their expected project paths. `init` avoids creating root application folders such as `docs/`, `apps/`, `packages/`, `infra/`, `scripts/`, or `tasks/`.
 
 ## When This Is A Good Fit
 
@@ -106,11 +104,11 @@ It may be too heavy if you are making a throwaway prototype, a one-file script, 
 
 ```bash
 # Start a new AI-governed JavaScript project
-npx ai-scaffold create my-node-app --profile js
+npx @lajin/ai-scaffold create my-node-app --profile js
 
 # Add AI delivery governance to an existing repository
-npx ai-scaffold init --profile node --dry-run
-npx ai-scaffold init --profile node
+npx @lajin/ai-scaffold init --profile node --dry-run
+npx @lajin/ai-scaffold init --profile node
 
 # Let QA create a traceable test plan
 /qa-plan
@@ -164,36 +162,36 @@ Additional profiles such as Next.js, Go, Python, Java, .NET, and Flutter are pla
 
 ## Install And Use
 
-After the package is published:
+Install and run with `npx`:
 
 ```bash
-npx ai-scaffold my-project
-npx ai-scaffold create my-project
-npx ai-scaffold create my-node-app --profile node
-npx ai-scaffold create my-js-app --profile js
+npx @lajin/ai-scaffold my-project
+npx @lajin/ai-scaffold create my-project
+npx @lajin/ai-scaffold create my-node-app --profile node
+npx @lajin/ai-scaffold create my-js-app --profile js
 ```
 
 Install into the current repository:
 
 ```bash
-npx ai-scaffold init
-npx ai-scaffold .
-npx ai-scaffold init --profile node
-npx ai-scaffold init --profile javascript
-npx ai-scaffold init --profile laravel
+npx @lajin/ai-scaffold init
+npx @lajin/ai-scaffold .
+npx @lajin/ai-scaffold init --profile node
+npx @lajin/ai-scaffold init --profile javascript
+npx @lajin/ai-scaffold init --profile laravel
 ```
 
 Use non-interactive defaults:
 
 ```bash
-npx ai-scaffold create my-project --yes
-npx ai-scaffold init --profile node --yes
+npx @lajin/ai-scaffold create my-project --yes
+npx @lajin/ai-scaffold init --profile node --yes
 ```
 
 Pass explicit project context:
 
 ```bash
-npx ai-scaffold init \
+npx @lajin/ai-scaffold init \
   --profile node \
   --project-name acme-api \
   --display-name "Acme API" \
@@ -210,25 +208,25 @@ npx ai-scaffold init \
 Preview before writing:
 
 ```bash
-npx ai-scaffold init --profile node --dry-run
-npx ai-scaffold . --dry-run
+npx @lajin/ai-scaffold init --profile node --dry-run
+npx @lajin/ai-scaffold . --dry-run
 ```
 
 Check an installed scaffold:
 
 ```bash
-npx ai-scaffold status
-npx ai-scaffold doctor
+ais status
+ais doctor
 ```
 
-Update metadata only in the current release candidate:
+Update metadata only in this MVP release:
 
 ```bash
-npx ai-scaffold update --dry-run
-npx ai-scaffold update --version 0.7.0
+ais update --dry-run
+ais update --target-version 0.7.0
 ```
 
-Full safe file updates, diffs, managed-file hashes, and version-pinned migrations are planned for Phase 3.
+Full safe file updates, diffs, and version-pinned migrations are planned for Phase 3. Managed-file hashes are already recorded for `status` and `doctor` checks.
 
 ## Local Development
 

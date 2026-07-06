@@ -1,42 +1,15 @@
 {
-  "name": "ai-scaffold",
-  "version": "0.7.0",
-  "description": "Node.js project scaffold with AI engineering workflow",
+  "name": "{{PROJECT_NAME}}",
+  "version": "0.1.0",
+  "private": true,
+  "description": "{{PROJECT_DESCRIPTION}}",
   "type": "module",
-  "bin": {
-    "ai-scaffold": "./bin/ai-scaffold.js"
-  },
   "scripts": {
-    "test": "node --experimental-vm-modules node_modules/vitest/vitest.mjs --run",
-    "test:unit": "node --experimental-vm-modules node_modules/vitest/vitest.mjs run src/ --run",
-    "test:e2e": "node --experimental-vm-modules node_modules/vitest/vitest.mjs run tests/ --run",
-    "lint": "echo 'No linter configured yet'",
-    "typecheck": "node --check bin/ai-scaffold.js"
+    "dev": "echo \"Configure your Node.js dev command\"",
+    "build": "echo \"Configure your Node.js build command\"",
+    "test": "echo \"Configure your Node.js test command\"",
+    "lint": "echo \"Configure your Node.js lint command\"",
+    "typecheck": "echo \"Configure your Node.js typecheck command\""
   },
-  "keywords": [
-    "scaffold",
-    "ai",
-    "node",
-    "javascript",
-    "claude",
-    "project-template",
-    "boilerplate"
-  ],
-  "author": "Lajin M J <lajinmj@gmail.com>",
-  "license": "SEE LICENSE IN LICENSE",
-  "dependencies": {
-    "cac": "^6.7.14",
-    "chalk": "^5.3.0",
-    "diff": "^5.2.0",
-    "fs-extra": "^11.2.0",
-    "picomatch": "^4.0.0",
-    "prompts": "^2.4.2",
-    "semver": "^7.6.3"
-  },
-  "devDependencies": {
-    "vitest": "^1.6.0"
-  },
-  "engines": {
-    "node": ">=16.0.0"
-  }
+  "license": "{{LICENSE}}"
 }
