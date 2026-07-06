@@ -13,6 +13,28 @@ This file is configured with `merge=union` in `.gitattributes` so parallel addit
 
 ## [Unreleased]
 
+---
+
+## [0.7.1] - 2026-07-06
+
+### Added
+- Published the scoped npm package as `@lajin.m/ai-scaffold` with the `ais` CLI bin.
+- Added the Node.js/JavaScript profile, including `node`, `nodejs`, `js`, and `javascript` aliases.
+- Added template hook parity for all shipped profiles: `pre-secret-guard.sh`, `pre-dangerous-bash-guard.sh`, and `governance-file-guard.sh`.
+- Added a project-memory safety policy to generated `.claude/MEMORY.md` output.
+
+### Changed
+- Reduced the default generated project root surface. Scaffold-owned docs, tasks, references, and support files now install under `.ai-scaffold/`.
+- Kept existing-project `init` project-local and non-invasive by default.
+- Updated smoke tests to verify clean root output, generated hook wiring, generated memory policy, and package contents.
+
+### Fixed
+- Fixed generated-template hook safety so projects created from the package receive the same starter safety layer as this repo.
+- Fixed generated memory output so it forbids secrets, credentials, API tokens, production data, and client-confidential text unless explicitly approved.
+- Repaired corrupted template path references introduced during the `.ai-scaffold/` namespacing cleanup.
+
+---
+
 ### Changed
 - **Tasks workflow restructured** — `tasks/todo.md` retired. Replaced with per-ticket files under `tasks/todo/<TICKET-ID>-<slug>.md`, archived to `tasks/done/` on completion. Eliminates the shared-mutable-state merge-conflict pattern observed during the Phase 1-4 audit work.
 - **AI ephemera relocated** — `.claude/work/` is now the gitignored home for AI scratch / planning / intermediate state. Previously these landed in `tasks/todo.md`, mixing with project history.
