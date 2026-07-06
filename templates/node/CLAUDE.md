@@ -468,7 +468,7 @@ The legacy `tasks/todo.md` is gitignored and untracked — do not commit it. It 
 
 > Update this section at the start of each epic.
 
-- **Current Epic**: CLI distribution and profile support (v0.7.0)
+- **Current Epic**: CLI distribution and profile support (v0.7.x)
 - **Next Milestone**: Phase 1 CLI MVP — `create`, `init`, `status`, `doctor` commands
 - **Blockers**: None
 - **In-Flight Branches**: `dev` — Phase 0 committed, Phase 1 next

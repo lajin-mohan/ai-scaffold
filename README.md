@@ -82,7 +82,7 @@ Tutorials:
 
 ## What To Expect
 
-For a new project, `create` copies a full starter scaffold and generates project-specific files such as `README.md`, `.ai-scaffold.json`, `.claude/MEMORY.md`, and `.claude/settings-overrides.json`.
+For a new project, `create` generates a clean starter root with the project README, AI entry files, runtime Claude files, and scaffold-owned reference material under `.ai-scaffold/`.
 
 For an existing project, `init` is designed to be safer and more isolated. Scaffold-owned operational files are installed under `.ai-scaffold/`, while generated runtime files such as `.ai-scaffold.json`, `.claude/MEMORY.md`, and `.claude/settings-overrides.json` stay at their expected project paths. `init` avoids creating root application folders such as `docs/`, `apps/`, `packages/`, `infra/`, `scripts/`, or `tasks/`.
 
@@ -223,7 +223,7 @@ Update metadata only in this MVP release:
 
 ```bash
 ais update --dry-run
-ais update --target-version 0.7.0
+ais update --target-version 0.7.1
 ```
 
 Full safe file updates, diffs, and version-pinned migrations are planned for Phase 3. Managed-file hashes are already recorded for `status` and `doctor` checks.

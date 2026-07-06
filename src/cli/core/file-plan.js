@@ -48,6 +48,29 @@ const EXCLUDED_TEMPLATE_FILES = [
   '.DS_Store',
 ];
 
+const EXCLUDED_DEFAULT_PATTERNS = [
+  '.vscode/**',
+  'tasks/ponytail-debt.md',
+  'apps/**',
+  'packages/**',
+  'infra/**',
+  'scripts/**',
+  'src/**',
+  'templates/**',
+];
+
+const ROOT_FILES = [
+  '.claude/**',
+  'AGENTS.md',
+  'CLAUDE.md',
+  '.gitignore',
+];
+
+const CREATE_ROOT_FILES_BY_PROFILE = {
+  node: ['package.json'],
+  laravel: ['package.json'],
+};
+
 /**
  * Files that must never be overwritten without explicit confirmation.
  * These protect an existing project's files during `init` — the scaffold will
@@ -57,7 +80,10 @@ const EXCLUDED_TEMPLATE_FILES = [
 export const PROTECTED_PATHS = [
   '.env',
   '.ai-scaffold.json',
+  '.gitignore',
   // Project root files that existing projects will have customized:
+  'AGENTS.md',
+  'CLAUDE.md',
   'README.md',
   'package.json',
   'composer.json',
@@ -86,8 +112,6 @@ export const APP_SOURCE_PATHS = [
   'scripts/**',
 ];
 
-import { TEMPLATES_DIR } from './paths.js';
-
 /**
  * Build a staged file plan from a source profile directory.
  * Returns files grouped by action: copy, generate, skip (protected), skip (app-source).
@@ -108,17 +132,10 @@ export async function buildFilePlan(sourceDir, targetDir, options = {}) {
     throw new Error(`Template profile not found: ${sourceDir}`);
   }
 
-  // Namespace prefix for init (existing project). During create, prefix is empty.
-  // Scaffold-owned files install under .ai-scaffold/ to avoid polluting project root.
-  const NAMESPACE_PREFIX = existingTarget ? '.ai-scaffold' : '';
-
-  // Files that always go to project root (never namespaced).
-  const ROOT_FILES = [
-    '.github/copilot-instructions.md',
-    'LICENSE',
-    'SECURITY.md',
-    'CHANGELOG.md',
-  ];
+  const profileName = path.basename(sourceDir);
+  const profileRootFiles = existingTarget
+    ? []
+    : CREATE_ROOT_FILES_BY_PROFILE[profileName] ?? [];
 
   // Always-generate files: these have no template source; they are built
   // programmatically by copy.js generateFile().
@@ -132,27 +149,35 @@ export async function buildFilePlan(sourceDir, targetDir, options = {}) {
     if (EXCLUDED_TEMPLATE_FILES.includes(relPath)) {
       continue;
     }
-    const isRootFile = ROOT_FILES.some((rf) => picomatch(rf)(relPath));
-    const namespace = isRootFile ? '' : NAMESPACE_PREFIX;
-    const targetRel = namespace ? path.join(namespace, relPath) : relPath;
+
+    if (matchesAny(relPath, EXCLUDED_DEFAULT_PATTERNS)) {
+      plan.skipAppSource.push({ src: srcFile, rel: relPath });
+      continue;
+    }
+
+    const isRootFile = matchesAny(relPath, [...ROOT_FILES, ...profileRootFiles]);
+    const targetRel = isRootFile ? relPath : path.join('.ai-scaffold', relPath);
     const targetFile = path.join(targetDir, targetRel);
 
     // Check if this file maps to a generated output (e.g. .template.md → .md)
     const generatedRel = GENERATED_FILE_MAP[relPath];
     if (generatedRel) {
-      const genTargetRel = existingTarget && !generatedRel.startsWith('.claude/') && !generatedRel.startsWith('.ai-scaffold.json')
-        ? path.join('.ai-scaffold', generatedRel)
-        : generatedRel;
-      if (existingTarget && matchesAny(generatedRel, PROTECTED_PATHS)) {
+      const generatedRoot = generatedRel === 'README.md' && !existingTarget;
+      const genTargetRel = generatedRoot || generatedRel.startsWith('.claude/') || generatedRel === '.ai-scaffold.json'
+        ? generatedRel
+        : path.join('.ai-scaffold', generatedRel);
+      if (existingTarget && genTargetRel === generatedRel && matchesAny(generatedRel, PROTECTED_PATHS)) {
         const targetExists = await fs.pathExists(path.join(targetDir, genTargetRel));
-        plan.skipProtected.push({
-          src: srcFile,
-          rel: genTargetRel,
-          target: path.join(targetDir, genTargetRel),
-          exists: targetExists,
-          templateRel: relPath,
-        });
-        continue;
+        if (targetExists) {
+          plan.skipProtected.push({
+            src: srcFile,
+            rel: genTargetRel,
+            target: path.join(targetDir, genTargetRel),
+            exists: targetExists,
+            templateRel: relPath,
+          });
+          continue;
+        }
       }
 
       plan.generate.push({
@@ -172,12 +197,20 @@ export async function buildFilePlan(sourceDir, targetDir, options = {}) {
     // Protected files — never overwrite without confirmation
     if (existingTarget && matchesAny(relPath, PROTECTED_PATHS)) {
       const targetExists = await fs.pathExists(targetFile);
-      plan.skipProtected.push({
-        src: srcFile,
-        rel: targetRel,
-        target: targetFile,
-        exists: targetExists,
-      });
+      if (targetRel !== relPath || targetExists) {
+        plan.skipProtected.push({
+          src: srcFile,
+          rel: targetRel,
+          target: targetFile,
+          exists: targetExists,
+        });
+        continue;
+      }
+    }
+
+    // Existing projects should not receive project-owned files under the
+    // scaffold namespace just because the template has a source copy.
+    if (existingTarget && targetRel !== relPath && matchesAny(relPath, PROTECTED_PATHS)) {
       continue;
     }
 
@@ -205,14 +238,16 @@ export async function buildFilePlan(sourceDir, targetDir, options = {}) {
     const target = path.join(targetDir, genTargetRel);
     if (existingTarget && matchesAny(genRel, PROTECTED_PATHS)) {
       const targetExists = await fs.pathExists(target);
-      plan.skipProtected.push({
-        src: null,
-        rel: genTargetRel,
-        target,
-        exists: targetExists,
-        templateRel: null,
-      });
-      continue;
+      if (targetExists) {
+        plan.skipProtected.push({
+          src: null,
+          rel: genTargetRel,
+          target,
+          exists: targetExists,
+          templateRel: null,
+        });
+        continue;
+      }
     }
 
     plan.generate.push({
@@ -253,5 +288,5 @@ async function collectSourceFiles(dir) {
  * Check if a path matches any of the given picomatch patterns.
  */
 function matchesAny(pathStr, patterns) {
-  return patterns.some((p) => picomatch(p)(pathStr));
+  return patterns.some((p) => picomatch(p, { dot: true })(pathStr));
 }

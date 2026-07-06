@@ -26,8 +26,8 @@
 # Install dependencies
 {{INSTALL_COMMAND}}
 
-# Configure environment
-cp .env.example .env
+# Configure environment, if your project needs one
+cp .ai-scaffold/.env.example .env
 
 # Run migrations, if applicable
 {{MIGRATION_COMMAND}}
@@ -50,11 +50,10 @@ cp .env.example .env
 
 ```text
 {{PROJECT_NAME}}/
-+-- apps/       # Deployable applications
-+-- packages/   # Shared modules
-+-- docs/       # Architecture, BRD, API, UX, QA, deployment docs
-+-- tasks/      # Active and completed work records
-+-- _ai/        # AI-generated drafts and experiments
++-- .claude/         # AI commands, agents, hooks, and rules
++-- .ai-scaffold/    # Scaffold docs, templates, examples, and task records
++-- AGENTS.md        # Cross-agent executor guide
++-- CLAUDE.md        # Main AI operating guide
 ```
 
 ## AI Workflow
@@ -63,8 +62,8 @@ Read [CLAUDE.md](./CLAUDE.md) before starting implementation. It is the source o
 
 Useful entry points:
 
-- [HOW-TO-USE.md](./HOW-TO-USE.md)
-- [CONTRIBUTING.md](./CONTRIBUTING.md)
+- [HOW-TO-USE.md](./.ai-scaffold/HOW-TO-USE.md)
+- [CONTRIBUTING.md](./.ai-scaffold/CONTRIBUTING.md)
 - [AGENTS.md](./AGENTS.md)
 
 ## License

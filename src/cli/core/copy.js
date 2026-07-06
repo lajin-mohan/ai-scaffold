@@ -6,6 +6,7 @@ import fs from 'fs-extra';
 import path from 'path';
 import chalk from 'chalk';
 import crypto from 'crypto';
+import { getVersion } from './version.js';
 
 /**
  * Copy staged files to target directory.
@@ -134,7 +135,7 @@ async function generateFile(file, values, dryRun) {
     await fs.writeFile(target, resolvePlaceholders(content, values));
   } else if (relPath === '.ai-scaffold.json') {
     await fs.writeFile(target, JSON.stringify({
-      version: '0.7.0',
+      version: getVersion(),
       profile: values.profile,
       bootstrapped: true,
       bootstrapCompletedAt: new Date().toISOString().split('T')[0],

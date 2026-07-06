@@ -109,14 +109,15 @@ async function runDiagnostics(target) {
     message: integrity.modified.length > 0 ? `Modified: ${integrity.modified.slice(0, 10).join(', ')}` : undefined,
   });
 
-  const namespacedInstall = await fs.pathExists(scaffoldDir);
-  const managedRoot = namespacedInstall ? scaffoldDir : target;
-
-  // 6. Check required managed files
-  const requiredFiles = ['CLAUDE.md', 'HOW-TO-USE.md', 'AGENTS.md'];
+  // 6. Check required managed files. v0.7.1 keeps AI entrypoints at root and
+  // moves longer scaffold docs under .ai-scaffold/. Older installs may still
+  // have all of these under .ai-scaffold/, so accept either location.
+  const requiredFiles = ['CLAUDE.md', 'AGENTS.md', 'HOW-TO-USE.md'];
   const missingRequired = [];
   for (const f of requiredFiles) {
-    if (!(await fs.pathExists(path.join(managedRoot, f)))) {
+    const rootExists = await fs.pathExists(path.join(target, f));
+    const namespacedExists = await fs.pathExists(path.join(scaffoldDir, f));
+    if (!rootExists && !namespacedExists) {
       missingRequired.push(f);
     }
   }
@@ -129,17 +130,17 @@ async function runDiagnostics(target) {
 
   // 7. Check docs/ and tasks/ directories
   checks.push({
-    name: namespacedInstall ? '.ai-scaffold/docs/ directory' : 'docs/ directory',
-    passed: await fs.pathExists(path.join(managedRoot, 'docs')),
+    name: '.ai-scaffold/docs/ directory',
+    passed: await fs.pathExists(path.join(scaffoldDir, 'docs')),
     severity: 'low',
-    message: `${namespacedInstall ? '.ai-scaffold/docs' : 'docs'} directory not found.`,
+    message: '.ai-scaffold/docs directory not found.',
   });
 
   checks.push({
-    name: namespacedInstall ? '.ai-scaffold/tasks/ directory' : 'tasks/ directory',
-    passed: await fs.pathExists(path.join(managedRoot, 'tasks')),
+    name: '.ai-scaffold/tasks/ directory',
+    passed: await fs.pathExists(path.join(scaffoldDir, 'tasks')),
     severity: 'low',
-    message: `${namespacedInstall ? '.ai-scaffold/tasks' : 'tasks'} directory not found.`,
+    message: '.ai-scaffold/tasks directory not found.',
   });
 
   // 8. Check .git/ directory

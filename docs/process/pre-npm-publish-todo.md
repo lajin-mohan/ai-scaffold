@@ -157,9 +157,26 @@ node bin/ai-scaffold.js init /private/tmp/ai-scaffold-node-init-smoke --profile 
 
 ## P1 — Strongly Recommended Before Publish
 
-### 7. Reduce Default Template Surface
+### 7. Reduce Default Template Surface — Done For v0.7.1
 
-Move these from default install to optional examples or scaffold-internal docs:
+Implemented:
+
+- New `create` keeps the project root minimal and puts scaffold-owned docs/tasks under `.ai-scaffold/`.
+- Existing-project `init` stays namespaced and does not create root `docs/`, `tasks/`, `_ai/`, `apps/`, `packages/`, `infra/`, or `scripts/`.
+- Root `HOW-TO-USE.md`, `CONTRIBUTING.md`, `CHANGELOG.md`, `SECURITY.md`, `LICENSE`, `.env.example`, `.editorconfig`, `.gitattributes`, `.gitleaks.toml`, and `.cursorrules` are moved under `.ai-scaffold/`.
+- `tasks/ponytail-debt.md` and heavy example/source folders are excluded from the default install plan.
+- Publish smoke tests now fail if noisy root folders/files are generated.
+
+Future optional install flags can re-enable examples or heavier docs explicitly:
+
+```bash
+--with-docs
+--with-examples
+--with-ci
+--with-vscode
+```
+
+Moved from default install to scaffold-internal docs or future optional examples:
 
 ```text
 apps/

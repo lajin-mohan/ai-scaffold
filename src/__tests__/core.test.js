@@ -103,6 +103,34 @@ describe('buildFilePlan', () => {
     const plan = await buildFilePlan(templatePath('javascript'), '/tmp/out');
     expect(plan.generate.map(f => f.rel)).toContain('README.md');
   });
+
+  it('keeps generic create root minimal and moves scaffold docs under .ai-scaffold', async () => {
+    const plan = await buildFilePlan(templatePath('generic'), '/tmp/out', { existingTarget: false });
+    const rels = [...plan.copy.map(f => f.rel), ...plan.generate.map(f => f.rel)];
+
+    expect(rels).toContain('README.md');
+    expect(rels).toContain('CLAUDE.md');
+    expect(rels).toContain('AGENTS.md');
+    expect(rels).toContain('.gitignore');
+    expect(rels).toContain('.ai-scaffold/HOW-TO-USE.md');
+    expect(rels).toContain('.ai-scaffold/docs/architecture/README.md');
+    expect(rels).toContain('.ai-scaffold/tasks/lessons.md');
+
+    expect(rels).not.toContain('HOW-TO-USE.md');
+    expect(rels).not.toContain('CONTRIBUTING.md');
+    expect(rels).not.toContain('package.json');
+    expect(rels.some(r => r.startsWith('docs/'))).toBe(false);
+    expect(rels.some(r => r.startsWith('tasks/'))).toBe(false);
+    expect(rels.some(r => r.startsWith('_ai/'))).toBe(false);
+    expect(rels.some(r => r.startsWith('apps/'))).toBe(false);
+    expect(rels).not.toContain('.ai-scaffold/tasks/ponytail-debt.md');
+  });
+
+  it('keeps Node profile package.json at root for new project creation', async () => {
+    const plan = await buildFilePlan(templatePath('node'), '/tmp/out', { existingTarget: false });
+    const rels = [...plan.copy.map(f => f.rel), ...plan.generate.map(f => f.rel)];
+    expect(rels).toContain('package.json');
+  });
 });
 
 describe('detectConflicts', () => {

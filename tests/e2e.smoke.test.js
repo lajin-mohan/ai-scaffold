@@ -52,6 +52,18 @@ describe('CLI e2e smoke', () => {
     expect(await fs.pathExists(path.join(targetDir, '.claude', 'MEMORY.md'))).toBe(true);
     expect(await fs.pathExists(path.join(targetDir, '.claude', 'settings-overrides.json'))).toBe(true);
     expect(await fs.pathExists(path.join(targetDir, 'README.md'))).toBe(true);
+    expect(await fs.pathExists(path.join(targetDir, '.ai-scaffold', 'HOW-TO-USE.md'))).toBe(true);
+    expect(await fs.pathExists(path.join(targetDir, '.ai-scaffold', 'docs', 'architecture', 'README.md'))).toBe(true);
+    expect(await fs.pathExists(path.join(targetDir, '.ai-scaffold', 'tasks', 'lessons.md'))).toBe(true);
+    expect(await fs.pathExists(path.join(targetDir, 'HOW-TO-USE.md'))).toBe(false);
+    expect(await fs.pathExists(path.join(targetDir, 'CONTRIBUTING.md'))).toBe(false);
+    expect(await fs.pathExists(path.join(targetDir, 'docs'))).toBe(false);
+    expect(await fs.pathExists(path.join(targetDir, 'tasks'))).toBe(false);
+    expect(await fs.pathExists(path.join(targetDir, '_ai'))).toBe(false);
+    expect(await fs.pathExists(path.join(targetDir, 'apps'))).toBe(false);
+    expect(await fs.pathExists(path.join(targetDir, 'packages'))).toBe(false);
+    expect(await fs.pathExists(path.join(targetDir, 'infra'))).toBe(false);
+    expect(await fs.pathExists(path.join(targetDir, 'scripts'))).toBe(false);
 
     const readme = await fs.readFile(path.join(targetDir, 'README.md'), 'utf-8');
     expect(readme).toContain('Bare create smoke');
@@ -76,6 +88,9 @@ describe('CLI e2e smoke', () => {
 
     const manifest = await fs.readJson(path.join(targetDir, '.ai-scaffold.json'));
     expect(manifest.profile).toBe('node');
+    expect(await fs.pathExists(path.join(targetDir, 'package.json'))).toBe(true);
+    expect(await fs.pathExists(path.join(targetDir, 'docs'))).toBe(false);
+    expect(await fs.pathExists(path.join(targetDir, '.ai-scaffold', 'docs'))).toBe(true);
 
     const readme = await fs.readFile(path.join(targetDir, 'README.md'), 'utf-8');
     expect(readme).toContain('Node profile smoke');
@@ -128,5 +143,9 @@ describe('CLI e2e smoke', () => {
     });
     expect(await fs.readFile(path.join(workflowDir, 'ci.yml'), 'utf-8')).toBe('name: existing-ci\n');
     expect(await fs.pathExists(path.join(targetDir, '.claude', 'MEMORY.md'))).toBe(true);
+    expect(await fs.pathExists(path.join(targetDir, '.ai-scaffold', 'docs'))).toBe(true);
+    expect(await fs.pathExists(path.join(targetDir, 'docs'))).toBe(false);
+    expect(await fs.pathExists(path.join(targetDir, 'tasks'))).toBe(false);
+    expect(await fs.pathExists(path.join(targetDir, '_ai'))).toBe(false);
   });
 });

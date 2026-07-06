@@ -97,7 +97,7 @@ npx @lajin.m/ai-scaffold init \
 ais status
 ais doctor
 ais update --dry-run
-ais update --target-version 0.7.0
+ais update --target-version 0.7.1
 ```
 
 `update` is currently a Phase 3 placeholder. Do not rely on it for full file migrations or safe patch application yet.

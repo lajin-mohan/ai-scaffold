@@ -116,13 +116,8 @@ async function countManagedFiles(target, status = {}) {
     '.ai-scaffold/',
     '.claude/',
     '.cursor/',
-    '_ai/',
-    'docs/',
-    'tasks/',
     'AGENTS.md',
     'CLAUDE.md',
-    'HOW-TO-USE.md',
-    'CONTRIBUTING.md',
   ];
 
   let count = 0;

@@ -9,6 +9,7 @@ set -uo pipefail
 PASS=0
 FAIL=0
 TOTAL=0
+PROJECT_VERSION=$(node -p "require('./package.json').version")
 
 pass() {
   echo "  ✓ $1"
@@ -107,6 +108,31 @@ for f in .ai-scaffold.json .claude/MEMORY.md .claude/settings-overrides.json; do
   fi
 done
 
+# Check scaffold-owned docs are namespaced and noisy root folders are absent.
+for f in .ai-scaffold/HOW-TO-USE.md .ai-scaffold/docs/architecture/README.md .ai-scaffold/tasks/lessons.md; do
+  if [ -f "$SMOKE_DIR/smoke-project/$f" ]; then
+    pass "$f generated"
+  else
+    fail "$f not generated"
+  fi
+done
+
+for f in HOW-TO-USE.md CONTRIBUTING.md CHANGELOG.md SECURITY.md LICENSE .env.example .editorconfig .gitattributes .gitleaks.toml .cursorrules; do
+  if [ -e "$SMOKE_DIR/smoke-project/$f" ]; then
+    fail "create left root $f"
+  else
+    pass "create did not leave root $f"
+  fi
+done
+
+for d in docs tasks _ai apps packages infra scripts; do
+  if [ -d "$SMOKE_DIR/smoke-project/$d" ]; then
+    fail "create created root $d/"
+  else
+    pass "create did not create root $d/"
+  fi
+done
+
 # ── Gate 5: init --yes smoke test ──────────────────────────────────────
 echo ""
 echo ">> Gate 5: Init --yes Smoke Test"
@@ -151,9 +177,25 @@ for d in docs apps packages infra scripts tasks; do
   fi
 done
 
+for f in .ai-scaffold/HOW-TO-USE.md .ai-scaffold/docs/architecture/README.md .ai-scaffold/tasks/lessons.md; do
+  if [ -f "$INIT_DIR/$f" ]; then
+    pass "init generated $f"
+  else
+    fail "init did not generate $f"
+  fi
+done
+
+for f in HOW-TO-USE.md CONTRIBUTING.md CHANGELOG.md SECURITY.md LICENSE .env.example .editorconfig .gitattributes .gitleaks.toml .cursorrules; do
+  if [ -e "$INIT_DIR/$f" ]; then
+    fail "init left root $f"
+  else
+    pass "init did not leave root $f"
+  fi
+done
+
 # status command should recognize the install
 STATUS_OUT=$(node bin/ai-scaffold.js status "$INIT_DIR" 2>&1) || true
-if echo "$STATUS_OUT" | grep -q "0.7.0"; then
+if echo "$STATUS_OUT" | grep -q "$PROJECT_VERSION"; then
   pass "status recognizes init install"
 else
   fail "status does not recognize init install"
