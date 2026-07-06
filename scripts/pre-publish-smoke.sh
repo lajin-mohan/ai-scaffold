@@ -58,8 +58,8 @@ echo ">> Gate 3: npm pack --dry-run"
 PACK_OUTPUT=$(npm_config_cache=/tmp/ai-scaffold-npm-cache npm pack --dry-run --json 2>&1)
 PACK_STATUS=$?
 
-if [ "$PACK_STATUS" -eq 0 ] && [[ "$PACK_OUTPUT" =~ lajin-ai-scaffold-[0-9.]+\.tgz ]]; then
-  PACK_FILE=$(grep -oE "lajin-ai-scaffold-[0-9.]+\.tgz" <<< "$PACK_OUTPUT" | tail -1)
+if [ "$PACK_STATUS" -eq 0 ] && [[ "$PACK_OUTPUT" =~ lajin.m-ai-scaffold-[0-9.]+\.tgz ]]; then
+  PACK_FILE=$(grep -oE "lajin.m-ai-scaffold-[0-9.]+\.tgz" <<< "$PACK_OUTPUT" | tail -1)
   echo "  ${PACK_FILE} produced"
   pass "npm pack --dry-run"
 else

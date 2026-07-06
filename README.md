@@ -2,7 +2,7 @@
 
 Reusable AI engineering scaffold with CLI distribution.
 
-`@lajin/ai-scaffold` packages this repository's AI operating system into a CLI (`ais`) that can create new projects, install scaffold-managed guidance into existing projects, track installed metadata, and run basic health checks.
+`@lajin.m/ai-scaffold` packages this repository's AI operating system into a CLI (`ais`) that can create new projects, install scaffold-managed guidance into existing projects, track installed metadata, and run basic health checks.
 
 This repository is the scaffold platform itself, not a generated application. Generated project documentation comes from profile templates during `create` or `init`; scaffold platform documentation lives separately in [README.scaffold.md](./README.scaffold.md).
 
@@ -104,11 +104,11 @@ It may be too heavy if you are making a throwaway prototype, a one-file script, 
 
 ```bash
 # Start a new AI-governed JavaScript project
-npx @lajin/ai-scaffold create my-node-app --profile js
+npx @lajin.m/ai-scaffold create my-node-app --profile js
 
 # Add AI delivery governance to an existing repository
-npx @lajin/ai-scaffold init --profile node --dry-run
-npx @lajin/ai-scaffold init --profile node
+npx @lajin.m/ai-scaffold init --profile node --dry-run
+npx @lajin.m/ai-scaffold init --profile node
 
 # Let QA create a traceable test plan
 /qa-plan
@@ -165,33 +165,33 @@ Additional profiles such as Next.js, Go, Python, Java, .NET, and Flutter are pla
 Install and run with `npx`:
 
 ```bash
-npx @lajin/ai-scaffold my-project
-npx @lajin/ai-scaffold create my-project
-npx @lajin/ai-scaffold create my-node-app --profile node
-npx @lajin/ai-scaffold create my-js-app --profile js
+npx @lajin.m/ai-scaffold my-project
+npx @lajin.m/ai-scaffold create my-project
+npx @lajin.m/ai-scaffold create my-node-app --profile node
+npx @lajin.m/ai-scaffold create my-js-app --profile js
 ```
 
 Install into the current repository:
 
 ```bash
-npx @lajin/ai-scaffold init
-npx @lajin/ai-scaffold .
-npx @lajin/ai-scaffold init --profile node
-npx @lajin/ai-scaffold init --profile javascript
-npx @lajin/ai-scaffold init --profile laravel
+npx @lajin.m/ai-scaffold init
+npx @lajin.m/ai-scaffold .
+npx @lajin.m/ai-scaffold init --profile node
+npx @lajin.m/ai-scaffold init --profile javascript
+npx @lajin.m/ai-scaffold init --profile laravel
 ```
 
 Use non-interactive defaults:
 
 ```bash
-npx @lajin/ai-scaffold create my-project --yes
-npx @lajin/ai-scaffold init --profile node --yes
+npx @lajin.m/ai-scaffold create my-project --yes
+npx @lajin.m/ai-scaffold init --profile node --yes
 ```
 
 Pass explicit project context:
 
 ```bash
-npx @lajin/ai-scaffold init \
+npx @lajin.m/ai-scaffold init \
   --profile node \
   --project-name acme-api \
   --display-name "Acme API" \
@@ -208,8 +208,8 @@ npx @lajin/ai-scaffold init \
 Preview before writing:
 
 ```bash
-npx @lajin/ai-scaffold init --profile node --dry-run
-npx @lajin/ai-scaffold . --dry-run
+npx @lajin.m/ai-scaffold init --profile node --dry-run
+npx @lajin.m/ai-scaffold . --dry-run
 ```
 
 Check an installed scaffold:

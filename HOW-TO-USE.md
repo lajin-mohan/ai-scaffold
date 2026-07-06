@@ -36,15 +36,15 @@ The practical benefit is not just "AI writes faster code." The benefit is that e
 
 ## Installing The Scaffold
 
-Use the npm package with `npx @lajin/ai-scaffold`. After installation, the CLI command is `ais`.
+Use the npm package with `npx @lajin.m/ai-scaffold`. After installation, the CLI command is `ais`.
 
 ### Create a new project
 
 ```bash
-npx @lajin/ai-scaffold my-project
-npx @lajin/ai-scaffold create my-project
-npx @lajin/ai-scaffold create my-node-app --profile node
-npx @lajin/ai-scaffold create my-js-app --profile js
+npx @lajin.m/ai-scaffold my-project
+npx @lajin.m/ai-scaffold create my-project
+npx @lajin.m/ai-scaffold create my-node-app --profile node
+npx @lajin.m/ai-scaffold create my-js-app --profile js
 ```
 
 `create` generates a new project directory with the scaffold files, project README, `.ai-scaffold.json`, `.claude/MEMORY.md`, and `.claude/settings-overrides.json`.
@@ -54,30 +54,30 @@ npx @lajin/ai-scaffold create my-js-app --profile js
 From inside the target repository:
 
 ```bash
-npx @lajin/ai-scaffold init
-npx @lajin/ai-scaffold .
-npx @lajin/ai-scaffold init --profile node
-npx @lajin/ai-scaffold init --profile javascript
-npx @lajin/ai-scaffold init --profile laravel
+npx @lajin.m/ai-scaffold init
+npx @lajin.m/ai-scaffold .
+npx @lajin.m/ai-scaffold init --profile node
+npx @lajin.m/ai-scaffold init --profile javascript
+npx @lajin.m/ai-scaffold init --profile laravel
 ```
 
 Preview before writing files:
 
 ```bash
-npx @lajin/ai-scaffold init --profile node --dry-run
-npx @lajin/ai-scaffold . --dry-run
+npx @lajin.m/ai-scaffold init --profile node --dry-run
+npx @lajin.m/ai-scaffold . --dry-run
 ```
 
 Use defaults without prompts:
 
 ```bash
-npx @lajin/ai-scaffold init --profile node --yes
+npx @lajin.m/ai-scaffold init --profile node --yes
 ```
 
 Pass explicit project context:
 
 ```bash
-npx @lajin/ai-scaffold init \
+npx @lajin.m/ai-scaffold init \
   --profile node \
   --project-name acme-api \
   --display-name "Acme API" \
@@ -677,7 +677,7 @@ Claude will write the lesson to `tasks/lessons.md` immediately.
 
 ### New project setup
 
-1. Run `npx @lajin/ai-scaffold create <project-name> --profile <profile>`.
+1. Run `npx @lajin.m/ai-scaffold create <project-name> --profile <profile>`.
 2. Review generated project identity and stack values in `.claude/settings-overrides.json`.
 3. Run `/what-next` — it should report the next project stage.
 4. Run `/kickoff` at the start of every epic to verify all gates are met.
@@ -685,9 +685,9 @@ Claude will write the lesson to `tasks/lessons.md` immediately.
 
 ### Existing project setup
 
-1. From the existing repository, run `npx @lajin/ai-scaffold init --profile <profile> --dry-run`.
+1. From the existing repository, run `npx @lajin.m/ai-scaffold init --profile <profile> --dry-run`.
 2. Review the file plan and confirm it does not conflict with application-owned files.
-3. Run `npx @lajin/ai-scaffold init --profile <profile>`.
+3. Run `npx @lajin.m/ai-scaffold init --profile <profile>`.
 4. Review generated context in `.claude/MEMORY.md`, `.claude/settings-overrides.json`, and `.ai-scaffold.json` or the configured scaffold namespace.
 5. Run `ais doctor`.
 6. Run `/what-next` to begin project work.

@@ -2,8 +2,8 @@
 
 /**
  * AI Scaffold CLI entry point.
- * Usage: npx @lajin/ai-scaffold <command> [options]
- *        npx @lajin/ai-scaffold <project-name>        # same as `create`
+ * Usage: npx @lajin.m/ai-scaffold <command> [options]
+ *        npx @lajin.m/ai-scaffold <project-name>        # same as `create`
  *
  * Bare command routing: CAC v6 does not accept positional args without a
  * matching subcommand, so we detect `ais <name>` before calling
@@ -26,18 +26,18 @@ cli.help((sections) => {
   sections.unshift({
     title: 'AI Scaffold CLI — Reusable AI engineering scaffold',
     body: `Usage:
-  npx @lajin/ai-scaffold my-project       Create a new project from the scaffold
-  npx @lajin/ai-scaffold create my-project
-  npx @lajin/ai-scaffold init             Install scaffold into the current directory
+  npx @lajin.m/ai-scaffold my-project       Create a new project from the scaffold
+  npx @lajin.m/ai-scaffold create my-project
+  npx @lajin.m/ai-scaffold init             Install scaffold into the current directory
   ais status                              Show installed scaffold version and status
   ais doctor                              Diagnose scaffold installation health
   ais update                              Update scaffold metadata
 
 Examples:
-  npx @lajin/ai-scaffold my-project
-  npx @lajin/ai-scaffold create my-project --profile node
-  npx @lajin/ai-scaffold init --profile laravel
-  npx @lajin/ai-scaffold init --profile javascript
+  npx @lajin.m/ai-scaffold my-project
+  npx @lajin.m/ai-scaffold create my-project --profile node
+  npx @lajin.m/ai-scaffold init --profile laravel
+  npx @lajin.m/ai-scaffold init --profile javascript
   ais status
   ais doctor
   ais update

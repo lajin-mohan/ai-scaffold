@@ -2,7 +2,7 @@
 
 ## Purpose
 
-AI Scaffold is a reusable AI engineering scaffold and CLI platform published as `@lajin/ai-scaffold` with the `ais` command. It provides:
+AI Scaffold is a reusable AI engineering scaffold and CLI platform published as `@lajin.m/ai-scaffold` with the `ais` command. It provides:
 
 - Governance rules for AI-assisted delivery.
 - Agent and command prompts for planning, architecture, review, QA, and release workflows.

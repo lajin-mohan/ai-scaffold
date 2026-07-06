@@ -1,6 +1,6 @@
 # Pre-NPM Publish TODO
 
-**Purpose:** Final cleanup checklist before publishing `ai-scaffold` for `npx @lajin/ai-scaffold ...` usage.
+**Purpose:** Final cleanup checklist before publishing `ai-scaffold` for `npx @lajin.m/ai-scaffold ...` usage.
 
 This combines the CLI plan with the release-readiness cleanup review. The goal is to make the package useful without taking over an existing repository's own `docs/`, `apps/`, `packages/`, `infra/`, `scripts/`, or CI structure.
 
@@ -16,7 +16,7 @@ The CLI can be published as an MVP only after:
 - New project creation remains useful but not noisy.
 - Node/JavaScript is available as a day-one profile.
 - npm package contents are explicitly controlled.
-- `npx @lajin/ai-scaffold .` behaves as documented.
+- `npx @lajin.m/ai-scaffold .` behaves as documented.
 
 ---
 
@@ -29,13 +29,13 @@ Current behavior routes bare `.` to `create .`.
 Required behavior:
 
 ```bash
-npx @lajin/ai-scaffold .
+npx @lajin.m/ai-scaffold .
 ```
 
 must behave like:
 
 ```bash
-npx @lajin/ai-scaffold init
+npx @lajin.m/ai-scaffold init
 ```
 
 Acceptance:
@@ -395,7 +395,7 @@ Future enterprise controls:
 ### New Project
 
 ```bash
-npx @lajin/ai-scaffold my-project
+npx @lajin.m/ai-scaffold my-project
 ```
 
 Creates a clean starter project:
@@ -422,8 +422,8 @@ Optional future flags:
 ### Existing Project
 
 ```bash
-npx @lajin/ai-scaffold init
-npx @lajin/ai-scaffold .
+npx @lajin.m/ai-scaffold init
+npx @lajin.m/ai-scaffold .
 ```
 
 Installs only scaffold-owned assets:
