@@ -6,6 +6,7 @@
 
 set -uo pipefail
 
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 PASS=0
 FAIL=0
 TOTAL=0
@@ -279,7 +280,7 @@ echo ">> Gate 6: Bare '.' Routes to Init"
 DOT_DIR=$(mktemp -d)
 echo "# Keep My README" > "$DOT_DIR/README.md"
 # Use a subshell to cd so we don't alter the outer shell's cwd
-OUTPUT=$(cd "$DOT_DIR" && node /Users/lajinmohan/website/ai-scaffold/bin/ai-scaffold.js . --yes 2>&1 | head -5) || true
+OUTPUT=$(cd "$DOT_DIR" && node "$REPO_ROOT/bin/ai-scaffold.js" . --yes 2>&1 | head -5) || true
 if echo "$OUTPUT" | grep -q "AI Scaffold init"; then
   pass "bare '.' routes to init"
 else
