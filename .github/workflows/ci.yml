@@ -1,20 +1,4 @@
-# CI Workflow - runs lint, typecheck, tests, audit, build
-# Stack: Node.js + TypeScript + ReactJS + PHP + PostgreSQL (declared in CLAUDE.md)
-#
-# Jobs are gated: a failing earlier job blocks later ones. The full chain
-# must pass before a PR can merge to dev or main per branching-rules.md.
-#
-# Template-aware: a `detect-stack` job runs first, checks out the repo, and
-# publishes `has-node` and `has-php` outputs based on the presence of
-# package.json / composer.json. Every other job depends on those outputs.
-# On a fresh template (no stack files), all stack jobs SKIP and `ci-passed`
-# still succeeds. Once /bootstrap creates a real stack, the gates flip and
-# the real pipeline runs.
-#
-# Layout assumed:
-#   apps/api      - backend (Node/TS or PHP)
-#   apps/web      - React frontend
-#   packages/*    - shared packages (domain, shared, services, repositories)
+# CI Workflow - validates the ai-scaffold CLI package.
 
 name: CI
 
@@ -25,392 +9,61 @@ on:
     branches: [main, dev]
   workflow_dispatch: {}
 
-# Cancel superseded runs on the same ref to save CI minutes
 concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
 
+permissions:
+  contents: read
+
 env:
   NODE_VERSION: "20"
-  PHP_VERSION: "8.3"
-  POSTGRES_VERSION: "16-alpine"
 
 jobs:
-
-  # ============================================================
-  # Detect stack - publishes has-node / has-php for downstream gates
-  # Always runs. Required by every other job.
-  # ============================================================
-  detect-stack:
-    name: Detect stack
+  cli-checks:
+    name: CLI package checks
     runs-on: ubuntu-latest
-    timeout-minutes: 2
-    outputs:
-      has-node: ${{ steps.detect.outputs.has-node }}
-      has-php: ${{ steps.detect.outputs.has-php }}
-      template-mode: ${{ steps.detect.outputs.template-mode }}
-    steps:
-      - uses: actions/checkout@v4
-      - id: detect
-        run: |
-          if [ -f package.json ]; then
-            echo "has-node=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "has-node=false" >> "$GITHUB_OUTPUT"
-          fi
-          if [ -f composer.json ]; then
-            echo "has-php=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "has-php=false" >> "$GITHUB_OUTPUT"
-          fi
-          if [ ! -f package.json ] && [ ! -f composer.json ]; then
-            echo "template-mode=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "template-mode=false" >> "$GITHUB_OUTPUT"
-          fi
-          echo "Detected: has-node=$(cat $GITHUB_OUTPUT | grep has-node) has-php=$(cat $GITHUB_OUTPUT | grep has-php) template-mode=$(cat $GITHUB_OUTPUT | grep template-mode)"
+    timeout-minutes: 15
 
-  # ============================================================
-  # Lint + typecheck - fast feedback, runs first
-  # ============================================================
-  lint:
-    name: Lint & typecheck
-    needs: detect-stack
-    if: needs.detect-stack.outputs.has-node == 'true' || needs.detect-stack.outputs.has-php == 'true'
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
       - name: Setup Node
-        if: needs.detect-stack.outputs.has-node == 'true'
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: npm
 
-      - name: Install Node dependencies
-        if: needs.detect-stack.outputs.has-node == 'true'
+      - name: Install dependencies
         run: npm ci
 
-      - name: Run ESLint
-        if: needs.detect-stack.outputs.has-node == 'true'
+      - name: Lint
         run: npm run lint
 
-      - name: Run TypeScript typecheck
-        if: needs.detect-stack.outputs.has-node == 'true'
+      - name: Typecheck
         run: npm run typecheck
 
-      # npm pack check — ensure package.json.files is correct
-      - name: Check npm pack contents
-        if: needs.detect-stack.outputs.has-node == 'true'
-        run: |
-          # Use a fresh cache to avoid conflicts
-          mkdir -p /tmp/npm-cache
-          npm_config_cache=/tmp/npm-cache npm pack --dry-run | tee pack-dry-run.txt
-          echo "=== Pack dry-run result ==="
-          cat pack-dry-run.txt
-          # Check for template-local paths in the published package
-          grep -E "template(|s)/(|.*\.md$|.*\.json$|.*\.toml$|.*\.txt$)" pack-dry-run.txt | grep -v "templates/.cursorrules" | grep -v "templates/.gitleaks.toml" || true
+      - name: Test
+        run: npm test
 
-      # Uncomment when PHP backend is in use.
-      # - name: Setup PHP
-      #   if: needs.detect-stack.outputs.has-php == 'true'
-      #   uses: shivammathur/setup-php@v2
-      #   with:
-      #     php-version: ${{ env.PHP_VERSION }}
-      #     coverage: none
-      #     tools: composer:v2, php-cs-fixer, phpstan
-      # - if: needs.detect-stack.outputs.has-php == 'true'
-      #   run: composer install --no-interaction --prefer-dist
-      # - if: needs.detect-stack.outputs.has-php == 'true'
-      #   run: vendor/bin/php-cs-fixer fix --dry-run --diff
-      # - if: needs.detect-stack.outputs.has-php == 'true'
-      #   run: vendor/bin/phpstan analyse
+      - name: Pre-publish smoke
+        run: bash scripts/pre-publish-smoke.sh
 
-  # ============================================================
-  # Unit tests - pure, fast, no I/O
-  # ============================================================
-  test-unit:
-    name: Unit tests
-    needs: [detect-stack, lint]
-    if: needs.detect-stack.outputs.has-node == 'true' || needs.detect-stack.outputs.has-php == 'true'
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    steps:
-      - uses: actions/checkout@v4
-      - if: needs.detect-stack.outputs.has-node == 'true'
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: npm
-      - if: needs.detect-stack.outputs.has-node == 'true'
-        run: npm ci
-      - if: needs.detect-stack.outputs.has-node == 'true'
-        run: npm run test:unit
+      - name: Verify npm pack
+        run: npm_config_cache=/tmp/ai-scaffold-npm-cache npm pack --dry-run --json
 
-      # Uncomment for PHP backend
-      # - if: needs.detect-stack.outputs.has-php == 'true'
-      #   uses: shivammathur/setup-php@v2
-      #   with:
-      #     php-version: ${{ env.PHP_VERSION }}
-      #     coverage: xdebug
-      # - if: needs.detect-stack.outputs.has-php == 'true'
-      #   run: composer install --no-interaction --prefer-dist
-      # - if: needs.detect-stack.outputs.has-php == 'true'
-      #   run: vendor/bin/phpunit --testsuite=unit
-
-  # ============================================================
-  # Integration tests - real Postgres in service container
-  # ============================================================
-  test-integration:
-    name: Integration tests
-    needs: [detect-stack, lint]
-    if: needs.detect-stack.outputs.has-node == 'true' || needs.detect-stack.outputs.has-php == 'true'
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
-
-    services:
-      postgres:
-        image: postgres:16-alpine
-        env:
-          POSTGRES_USER: test
-          POSTGRES_PASSWORD: test
-          POSTGRES_DB: test
-        ports: ["5432:5432"]
-        options: >-
-          --health-cmd "pg_isready -U test"
-          --health-interval 5s
-          --health-timeout 3s
-          --health-retries 10
-
-    env:
-      DATABASE_URL: postgres://test:test@localhost:5432/test
-      NODE_ENV: test
-
-    steps:
-      - uses: actions/checkout@v4
-      - if: needs.detect-stack.outputs.has-node == 'true'
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: npm
-      - if: needs.detect-stack.outputs.has-node == 'true'
-        run: npm ci
-
-      - name: Run database migrations (Node)
-        if: needs.detect-stack.outputs.has-node == 'true'
-        run: npm run db:migrate
-
-      - name: Run integration tests (Node)
-        if: needs.detect-stack.outputs.has-node == 'true'
-        run: npm run test:integration
-
-      # Uncomment for PHP backend
-      # - if: needs.detect-stack.outputs.has-php == 'true'
-      #   uses: shivammathur/setup-php@v2
-      #   with:
-      #     php-version: ${{ env.PHP_VERSION }}
-      # - if: needs.detect-stack.outputs.has-php == 'true'
-      #   run: composer install --no-interaction --prefer-dist
-      # - if: needs.detect-stack.outputs.has-php == 'true'
-      #   run: php artisan migrate --force
-      #   env:
-      #     DB_CONNECTION: pgsql
-      #     DB_HOST: localhost
-      #     DB_PORT: 5432
-      #     DB_DATABASE: test
-      #     DB_USERNAME: test
-      #     DB_PASSWORD: test
-      # - if: needs.detect-stack.outputs.has-php == 'true'
-      #   run: vendor/bin/phpunit --testsuite=integration
-
-  # ============================================================
-  # Build - verifies the production build succeeds
-  # ============================================================
-  build:
-    name: Build
-    needs: [detect-stack, test-unit, test-integration]
-    if: needs.detect-stack.outputs.has-node == 'true' || needs.detect-stack.outputs.has-php == 'true'
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    steps:
-      - uses: actions/checkout@v4
-      - if: needs.detect-stack.outputs.has-node == 'true'
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: npm
-      - if: needs.detect-stack.outputs.has-node == 'true'
-        run: npm ci
-      - if: needs.detect-stack.outputs.has-node == 'true'
-        run: npm run build
-
-      - name: Upload build artifacts
-        if: needs.detect-stack.outputs.has-node == 'true'
-        uses: actions/upload-artifact@v4
-        with:
-          name: build-${{ github.sha }}
-          path: |
-            apps/api/dist/
-            apps/web/dist/
-          retention-days: 7
-
-  # ============================================================
-  # Dependency audit - fail on HIGH or CRITICAL CVEs
-  # ============================================================
-  audit:
-    name: Dependency audit
-    needs: [detect-stack, lint]
-    if: needs.detect-stack.outputs.has-node == 'true' || needs.detect-stack.outputs.has-php == 'true'
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-    steps:
-      - uses: actions/checkout@v4
-      - if: needs.detect-stack.outputs.has-node == 'true'
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: npm
-      - if: needs.detect-stack.outputs.has-node == 'true'
-        run: npm ci
-      - name: npm audit (high+)
-        if: needs.detect-stack.outputs.has-node == 'true'
-        run: npm audit --audit-level=high
-
-      # Secrets scan — catches accidental credential commits before merge
-      # Uses official gitleaks-action (no local install needed)
-      - name: Gitleaks secrets scan
-        uses: gitleaks/gitleaks-action@v2
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      # Uncomment for PHP backend
-      # - if: needs.detect-stack.outputs.has-php == 'true'
-      #   uses: shivammathur/setup-php@v2
-      #   with:
-      #     php-version: ${{ env.PHP_VERSION }}
-      # - if: needs.detect-stack.outputs.has-php == 'true'
-      #   run: composer install --no-interaction --prefer-dist
-      # - if: needs.detect-stack.outputs.has-php == 'true'
-      #   run: composer audit --abandoned=fail
-
-  # ============================================================
-  # Coverage gate - drops below baseline = fail
-  # Node-only for now; add PHP coverage if/when phpunit is wired.
-  # ============================================================
-  coverage:
-    name: Coverage gate
-    needs: [detect-stack, test-unit, test-integration]
-    if: needs.detect-stack.outputs.has-node == 'true'
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-
-    services:
-      postgres:
-        image: postgres:16-alpine
-        env:
-          POSTGRES_USER: test
-          POSTGRES_PASSWORD: test
-          POSTGRES_DB: test
-        ports: ["5432:5432"]
-        options: >-
-          --health-cmd "pg_isready -U test"
-          --health-interval 5s
-
-    env:
-      DATABASE_URL: postgres://test:test@localhost:5432/test
-
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: npm
-      - run: npm ci
-      - run: npm run db:migrate
-      - run: npm run test:coverage
-
-      - name: Upload coverage report
-        uses: actions/upload-artifact@v4
-        with:
-          name: coverage-${{ github.sha }}
-          path: coverage/
-          retention-days: 14
-
-      # Add Codecov / Coveralls upload here if used:
-      # - uses: codecov/codecov-action@v4
-
-  # ============================================================
-  # SAST — static analysis for security patterns (Semgrep)
-  # Catches hardcoded secrets, SQL injection, insecure crypto, common vulnerabilities.
-  # Runs against the full codebase; failures block merge.
-  # Reference: security-rules.md §OWASP Top 10 Mapping
-  # ============================================================
-  sast:
-    name: SAST (Semgrep)
-    needs: [detect-stack]
-    if: needs.detect-stack.outputs.has-node == 'true'
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    steps:
-      - uses: actions/checkout@v4
-      - uses: returntocorp/semgrep-action@v1
-        with:
-          config: >
-            p/owasp-top-10
-            p/nodejs
-            p/typescript
-          uploadOnFailure: true
-
-  # ============================================================
-  # Final gate - all required jobs must pass (or skip on template)
-  # Branch protection rule on dev / main should require this job.
-  # A SKIPPED job is acceptable (template state, no stack files).
-  # A FAILED job is not.
-  # ============================================================
   ci-passed:
     name: CI passed
     runs-on: ubuntu-latest
-    needs: [detect-stack, lint, test-unit, test-integration, build, audit, coverage, sast]
+    needs: [cli-checks]
     if: always()
-    outputs:
-      message: ${{ steps.result.outputs.message }}
-    steps:
-      - name: Determine result message
-        id: result
-        run: |
-          if [ "${{ needs.detect-stack.outputs.template-mode }}" == "true" ]; then
-            echo "message=Template validation passed — no project stack detected. Run /bootstrap to configure the stack." >> "$GITHUB_OUTPUT"
-          else
-            fail=0
-            for job in "detect-stack:${{ needs.detect-stack.result }}" \
-                       "lint:${{ needs.lint.result }}" \
-                       "test-unit:${{ needs.test-unit.result }}" \
-                       "test-integration:${{ needs.test-integration.result }}" \
-                       "build:${{ needs.build.result }}" \
-                       "audit:${{ needs.audit.result }}" \
-                       "coverage:${{ needs.coverage.result }}" \
-                       "sast:${{ needs.sast.result }}"; do
-              name="${job%%:*}"
-              result="${job##*:}"
-              case "$result" in
-                success|skipped)
-                  echo "ok   $name=$result"
-                  ;;
-                *)
-                  echo "fail $name=$result"
-                  fail=1
-                  ;;
-              esac
-            done
-            if [ "$fail" -eq 1 ]; then
-              echo "message=FAILED — one or more required CI jobs failed" >> "$GITHUB_OUTPUT"
-              exit 1
-            fi
-            echo "message=All required CI jobs passed." >> "$GITHUB_OUTPUT"
-          fi
-      - name: Report result
-        run: echo "${{ steps.result.outputs.message }}"
 
-  
+    steps:
+      - name: Determine result
+        run: |
+          if [ "${{ needs.cli-checks.result }}" != "success" ]; then
+            echo "FAILED - CLI package checks did not pass."
+            exit 1
+          fi
+          echo "All required CI jobs passed."

@@ -1,7 +1,7 @@
-# Publish workflow - publishes to npm on tags
+# Publish workflow - publishes to npm on v* tags.
 #
-# Only runs when a v* tag is pushed to main
-# Uses GitHub Actions trusted publishing (no npm token needed)
+# Uses npm trusted publishing. The npm package must be configured to trust this
+# GitHub repository and workflow.
 
 name: Publish to npm
 
@@ -22,6 +22,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -38,7 +40,7 @@ jobs:
           npm run lint
           npm run typecheck
           npm test
-          npm run build
+          bash scripts/pre-publish-smoke.sh
 
       - name: Verify package version
         id: version
@@ -53,8 +55,16 @@ jobs:
             exit 1
           fi
 
+      - name: Verify tag commit is on main
+        run: |
+          git fetch origin main
+          if ! git merge-base --is-ancestor "$GITHUB_SHA" origin/main; then
+            echo "Error: release tag commit is not contained in main"
+            exit 1
+          fi
+
       - name: Verify package contents
-        run: npm pack --dry-run
+        run: npm_config_cache=/tmp/ai-scaffold-npm-cache npm pack --dry-run --json
 
       - name: Publish to npm
-        run: npm publish --access public
+        run: npm publish --provenance --access public
