@@ -63,8 +63,10 @@
     "test": "node --experimental-vm-modules node_modules/vitest/vitest.mjs --run",
     "test:unit": "node --experimental-vm-modules node_modules/vitest/vitest.mjs run src/",
     "test:e2e": "node --experimental-vm-modules node_modules/vitest/vitest.mjs run tests/",
-    "lint": "echo 'No linter configured yet'",
-    "typecheck": "node --check bin/ai-scaffold.js"
+    "lint": "npm run typecheck",
+    "typecheck": "node --check bin/ai-scaffold.js",
+    "build": "echo 'Build validation: checking npm pack'",
+    "prepublishOnly": "npm test && npm run typecheck && npm run lint"
   },
   "keywords": [
     "scaffold",

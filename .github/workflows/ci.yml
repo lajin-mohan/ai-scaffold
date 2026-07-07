@@ -101,6 +101,18 @@ jobs:
         if: needs.detect-stack.outputs.has-node == 'true'
         run: npm run typecheck
 
+      # npm pack check — ensure package.json.files is correct
+      - name: Check npm pack contents
+        if: needs.detect-stack.outputs.has-node == 'true'
+        run: |
+          # Use a fresh cache to avoid conflicts
+          mkdir -p /tmp/npm-cache
+          npm_config_cache=/tmp/npm-cache npm pack --dry-run | tee pack-dry-run.txt
+          echo "=== Pack dry-run result ==="
+          cat pack-dry-run.txt
+          # Check for template-local paths in the published package
+          grep -E "template(|s)/(|.*\.md$|.*\.json$|.*\.toml$|.*\.txt$)" pack-dry-run.txt | grep -v "templates/.cursorrules" | grep -v "templates/.gitleaks.toml" || true
+
       # Uncomment when PHP backend is in use.
       # - name: Setup PHP
       #   if: needs.detect-stack.outputs.has-php == 'true'
@@ -401,3 +413,49 @@ jobs:
           fi
       - name: Report result
         run: echo "${{ steps.result.outputs.message }}"
+
+  # ============================================================
+  # Publish to npm on tags
+  # Only runs on main branch push with v* tag
+  # ============================================================
+  publish:
+    name: Publish to npm
+    needs: [ci-passed]
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v') && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          registry-url: 'https://registry.npmjs.org'
+          cache: npm
+
+      - name: Configure npm credentials
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          echo "//registry.npmjs.org/:_authToken=${NODE_AUTH_TOKEN}" > ~/.npmrc
+          echo "email=automation@github.com" >> ~/.npmrc
+          echo "always-auth=true" >> ~/.npmrc
+          cat ~/.npmrc
+
+      - name: Extract version from tag
+        id: version
+        run: echo "version=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+
+      - name: Verify package.json matches tag
+        run: |
+          PACKAGE_VERSION=$(node -p "require('./package.json').version")
+          if [ "$PACKAGE_VERSION" != "${{ steps.version.outputs.version }}" ]; then
+            echo "Error: package.json version ($PACKAGE_VERSION) doesn't match tag (${{ steps.version.outputs.version }})"
+            exit 1
+          fi
+
+      - name: Publish to npm
+        run: npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
