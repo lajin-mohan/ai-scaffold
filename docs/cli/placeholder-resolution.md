@@ -13,14 +13,18 @@ The CLI must collect these values through prompts or flags:
 | Project name | `billing-api` | Yes |
 | Display name | `Billing API` | Yes |
 | Purpose | `Subscription billing service` | Yes |
-| Project type | `SaaS`, `Internal Tool`, `API`, `Platform` | Yes |
+| Project type/kind | `api`, `web-app`, `full-stack`, `library`, `cli`, `mobile`, `infra`, `data`, `internal-tool`, `saas` | Yes |
+| Lifecycle stage | `discovery`, `active-development`, `production`, `maintenance`, `legacy-modernization` | Yes |
 | Owner email | `owner@example.com` | Yes |
 | Backend stack | `Laravel + PHP` | Yes |
-| Frontend stack | `None`, `React`, `Next.js` | Yes |
+| Frontend stack | `none`, `react`, `nextjs`, `vue`, `nuxt`, `flutter`, `other` | Yes |
 | Database | `PostgreSQL 16` | Yes |
 | Multi-tenant | `true` or `false` | Yes |
-| Compliance scope | `N/A`, `GDPR`, `ISO27001`, `HIPAA`, `SOC2`, `PCI-DSS` | Yes |
-| Profile | `generic`, `laravel` | Yes |
+| Data sensitivity | `public`, `internal`, `confidential`, `regulated` | Yes |
+| Compliance scope | `[]`, `["GDPR"]`, `["GDPR", "SOC2"]` | Yes |
+| Requirements source | `existing-docs`, `create-later`, `create-now` | Yes |
+| Requirements path | `docs/requirements/brd.md` or empty | Yes |
+| Profile | `generic`, `node`, `laravel` | Yes |
 
 Optional values may use defaults:
 
@@ -49,15 +53,21 @@ Suggested conservative defaults:
 
 ```json
 {
-  "projectType": "Platform",
-  "backend": "TBD",
-  "frontend": "TBD",
-  "database": "TBD",
+  "projectType": "saas",
+  "lifecycleStage": "active-development",
+  "backend": "none",
+  "frontend": "none",
+  "database": "none",
   "multiTenant": false,
-  "complianceScope": "N/A",
-  "cicd": "off"
+  "dataSensitivity": "internal",
+  "complianceScope": [],
+  "requirementsSource": "create-later"
 }
 ```
+
+Select prompts must use explicit `{ "title": "...", "value": "..." }`
+choices. Do not pass plain string choices to `prompts`; plain strings can be
+stored as numeric indexes, which makes generated project context useless.
 
 ## Pipeline
 
@@ -79,6 +89,8 @@ Suggested conservative defaults:
 These files are generated per project and should not be copied directly from the template:
 
 - `.ai-scaffold.json`
+- `.ai-scaffold/README.md`
+- `.ai-scaffold/context.md`
 - `README.md`
 - `.claude/MEMORY.md`
 - `.claude/settings-overrides.json`
@@ -102,6 +114,29 @@ Tracked template files:
   "installedAt": "2026-06-29",
   "updatedAt": "2026-06-29",
   "source": "ai-scaffold",
+  "project": {
+    "slug": "billing-api",
+    "displayName": "Billing API",
+    "purpose": "Subscription billing service",
+    "kind": "api",
+    "lifecycleStage": "active-development",
+    "owner": "owner@example.com"
+  },
+  "stack": {
+    "primary": "Node.js",
+    "backend": "Node.js",
+    "frontend": "none",
+    "database": "PostgreSQL"
+  },
+  "risk": {
+    "multiTenant": false,
+    "dataSensitivity": "internal",
+    "complianceScope": []
+  },
+  "requirements": {
+    "source": "existing-docs",
+    "paths": ["docs/requirements/brd.md"]
+  },
   "defaultedValues": [],
   "managedFiles": []
 }
@@ -115,6 +150,7 @@ Tracked template files:
 - `BLOCK`: managed files still contain `{{...}}`.
 - `HIGH`: `.claude/settings-overrides.json` is missing.
 - `HIGH`: `.claude/settings-overrides.json` contains placeholder values.
+- `MEDIUM`: setup context contains numeric prompt-choice values.
 - `MEDIUM`: required values were defaulted during `--yes`.
 - `MEDIUM`: `.claude/MEMORY.md` is missing.
 

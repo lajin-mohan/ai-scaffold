@@ -132,12 +132,20 @@ else
   fail "generated memory missing safety policy"
 fi
 
-# Check scaffold-owned docs are namespaced and noisy root folders are absent.
-for f in .ai-scaffold/HOW-TO-USE.md .ai-scaffold/docs/architecture/README.md .ai-scaffold/tasks/lessons.md; do
+# Check scaffold-owned core files are present and noisy folders are absent.
+for f in .ai-scaffold/README.md .ai-scaffold/context.md; do
   if [ -f "$SMOKE_DIR/smoke-project/$f" ]; then
     pass "$f generated"
   else
     fail "$f not generated"
+  fi
+done
+
+for d in .ai-scaffold/docs .ai-scaffold/tasks .ai-scaffold/_ai; do
+  if [ -d "$SMOKE_DIR/smoke-project/$d" ]; then
+    fail "create generated default $d/"
+  else
+    pass "create did not generate default $d/"
   fi
 done
 
@@ -201,11 +209,19 @@ for d in docs apps packages infra scripts tasks; do
   fi
 done
 
-for f in .ai-scaffold/HOW-TO-USE.md .ai-scaffold/docs/architecture/README.md .ai-scaffold/tasks/lessons.md; do
+for f in .ai-scaffold/README.md .ai-scaffold/context.md; do
   if [ -f "$INIT_DIR/$f" ]; then
     pass "init generated $f"
   else
     fail "init did not generate $f"
+  fi
+done
+
+for d in .ai-scaffold/docs .ai-scaffold/tasks .ai-scaffold/_ai; do
+  if [ -d "$INIT_DIR/$d" ]; then
+    fail "init generated default $d/"
+  else
+    pass "init did not generate default $d/"
   fi
 done
 

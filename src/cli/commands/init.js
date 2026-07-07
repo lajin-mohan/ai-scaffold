@@ -22,14 +22,22 @@ export function initCommand(cli) {
     .option('--project-name <name>', 'Override project name (slug)')
     .option('--display-name <name>', 'Display name')
     .option('--purpose <text>', 'One-line purpose')
-    .option('--project-type <type>', 'Project type (SaaS, Internal Tool, API, Platform, Library)')
+    .option('--project-type <type>', 'Project type/kind (api, web-app, full-stack, library, cli, mobile, infra, data, internal-tool, saas)')
     .option('--owner-email <email>', 'Owner email')
     .option('--backend-stack <stack>', 'Backend stack')
     .option('--frontend-stack <stack>', 'Frontend stack')
     .option('--database <db>', 'Database')
     .option('--multi-tenant', 'Enable multi-tenancy')
     .option('--no-multi-tenant', 'Disable multi-tenancy')
-    .option('--compliance <scope>', 'Compliance scope (N/A, GDPR, ISO27001, HIPAA, SOC2, PCI-DSS)')
+    .option('--compliance <scope>', 'Compliance scope, comma-separated when multiple (GDPR,SOC2)')
+    .option('--lifecycle-stage <stage>', 'Lifecycle stage (discovery, active-development, production, maintenance, legacy-modernization)')
+    .option('--data-sensitivity <level>', 'Data sensitivity (public, internal, confidential, regulated)')
+    .option('--requirements-source <source>', 'Requirements source (existing-docs, create-later, create-now)')
+    .option('--requirements-path <path>', 'Existing or intended requirements path')
+    .option('--test-command <command>', 'Test command')
+    .option('--lint-command <command>', 'Lint command')
+    .option('--typecheck-command <command>', 'Typecheck command')
+    .option('--build-command <command>', 'Build command')
     .example('ais init')
     .example('ais init ./my-existing-project --profile node --yes')
     .example('ais init --dry-run')
@@ -69,6 +77,14 @@ async function runInit(targetDir, options) {
     database: options.database,
     multiTenant: options.multiTenant,
     complianceScope: options.compliance || options.complianceScope,
+    lifecycleStage: options['lifecycle-stage'] || options.lifecycleStage,
+    dataSensitivity: options['data-sensitivity'] || options.dataSensitivity,
+    requirementsSource: options['requirements-source'] || options.requirementsSource,
+    requirementsPath: options['requirements-path'] || options.requirementsPath,
+    testCommand: options['test-command'] || options.testCommand,
+    lintCommand: options['lint-command'] || options.lintCommand,
+    typecheckCommand: options['typecheck-command'] || options.typecheckCommand,
+    buildCommand: options['build-command'] || options.buildCommand,
     profile,
   };
 

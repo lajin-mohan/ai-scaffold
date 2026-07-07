@@ -15,6 +15,26 @@ This file is configured with `merge=union` in `.gitattributes` so parallel addit
 
 ---
 
+## [0.8.0] - 2026-07-07
+
+### Added
+- Added generated `.ai-scaffold/README.md` and `.ai-scaffold/context.md` files to keep scaffold-owned setup context small and easy to inspect.
+- Added richer install metadata to `.ai-scaffold.json`, including project, stack, risk, requirements, command, and installed pack context.
+- Added setup prompt fields for lifecycle stage, data sensitivity, requirements source/path, and verification commands.
+- Added doctor validation for numeric legacy prompt-choice values in generated setup context.
+
+### Changed
+- Made the default install core-only: `create` and `init` no longer install `.ai-scaffold/docs/`, `.ai-scaffold/tasks/`, or `.ai-scaffold/_ai/` by default.
+- Removed the public `--minimal` create option because the default install is now the minimal/core install path.
+- Normalized setup prompt values so project type, frontend stack, profile, compliance scope, and related fields store stable values instead of prompt indexes.
+- Updated README, HOW-TO-USE, placeholder-resolution docs, tests, and pre-publish smoke gates for the quieter default install surface.
+
+### Fixed
+- Fixed `doctor` so optional docs/tasks packs are not reported as missing in a healthy core-only install.
+- Fixed generated settings and memory context so compliance scope supports arrays and normalized values.
+
+---
+
 ## [0.7.1] - 2026-07-06
 
 ### Added

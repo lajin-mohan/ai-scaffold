@@ -40,6 +40,7 @@ async function runDiagnostics(target) {
   const claudDir = path.join(target, '.claude');
   const memoryFile = path.join(target, '.claude', 'MEMORY.md');
   const settingsFile = path.join(target, '.claude', 'settings-overrides.json');
+  const contextFile = path.join(scaffoldDir, 'context.md');
 
   // 1. Scaffold file present
   checks.push({
@@ -109,10 +110,8 @@ async function runDiagnostics(target) {
     message: integrity.modified.length > 0 ? `Modified: ${integrity.modified.slice(0, 10).join(', ')}` : undefined,
   });
 
-  // 6. Check required managed files. v0.7.1 keeps AI entrypoints at root and
-  // moves longer scaffold docs under .ai-scaffold/. Older installs may still
-  // have all of these under .ai-scaffold/, so accept either location.
-  const requiredFiles = ['CLAUDE.md', 'AGENTS.md', 'HOW-TO-USE.md'];
+  // 6. Check required managed files. Longer docs/tasks are optional packs.
+  const requiredFiles = ['CLAUDE.md', 'AGENTS.md'];
   const missingRequired = [];
   for (const f of requiredFiles) {
     const rootExists = await fs.pathExists(path.join(target, f));
@@ -128,22 +127,31 @@ async function runDiagnostics(target) {
     message: missingRequired.length > 0 ? `Missing: ${missingRequired.join(', ')}` : undefined,
   });
 
-  // 7. Check docs/ and tasks/ directories
   checks.push({
-    name: '.ai-scaffold/docs/ directory',
-    passed: await fs.pathExists(path.join(scaffoldDir, 'docs')),
-    severity: 'low',
-    message: '.ai-scaffold/docs directory not found.',
+    name: 'Scaffold namespace (.ai-scaffold/)',
+    passed: await fs.pathExists(scaffoldDir),
+    severity: 'medium',
+    message: '.ai-scaffold/ directory not found.',
   });
 
   checks.push({
-    name: '.ai-scaffold/tasks/ directory',
-    passed: await fs.pathExists(path.join(scaffoldDir, 'tasks')),
-    severity: 'low',
-    message: '.ai-scaffold/tasks directory not found.',
+    name: 'Scaffold context (.ai-scaffold/context.md)',
+    passed: await fs.pathExists(contextFile),
+    severity: 'medium',
+    message: '.ai-scaffold/context.md not found.',
   });
 
-  // 8. Check .git/ directory
+  const invalidContextFields = await findNumericContextFields(manifestData, settingsFile);
+  checks.push({
+    name: 'Setup context values are meaningful',
+    passed: invalidContextFields.length === 0,
+    severity: 'medium',
+    message: invalidContextFields.length > 0
+      ? `Numeric choice values found: ${invalidContextFields.join(', ')}`
+      : undefined,
+  });
+
+  // 7. Check .git/ directory
   checks.push({
     name: 'Git repository (.git/)',
     passed: await fs.pathExists(path.join(target, '.git')),
@@ -159,6 +167,44 @@ async function runDiagnostics(target) {
   const allPassed = checks.every((c) => c.passed);
 
   return { target, checks, allPassed, criticalFailed, highFailed, mediumFailed, lowFailed, manifestData };
+}
+
+async function findNumericContextFields(manifestData, settingsFile) {
+  const invalid = [];
+  const manifestChecks = [
+    ['.ai-scaffold.json project.kind', manifestData?.project?.kind],
+    ['.ai-scaffold.json project.lifecycleStage', manifestData?.project?.lifecycleStage],
+    ['.ai-scaffold.json stack.frontend', manifestData?.stack?.frontend],
+    ['.ai-scaffold.json risk.dataSensitivity', manifestData?.risk?.dataSensitivity],
+    ['.ai-scaffold.json profile', manifestData?.profile],
+  ];
+
+  for (const [name, value] of manifestChecks) {
+    if (typeof value === 'number') {
+      invalid.push(name);
+    }
+  }
+
+  if (await fs.pathExists(settingsFile)) {
+    try {
+      const settings = await fs.readJson(settingsFile);
+      const settingsChecks = [
+        ['settings project.type', settings?.project?.type],
+        ['settings project.lifecycleStage', settings?.project?.lifecycleStage],
+        ['settings techStack.frontend', settings?.techStack?.frontend],
+        ['settings project.dataSensitivity', settings?.project?.dataSensitivity],
+      ];
+      for (const [name, value] of settingsChecks) {
+        if (typeof value === 'number') {
+          invalid.push(name);
+        }
+      }
+    } catch {
+      // The existing settings-valid check reports corrupt JSON separately.
+    }
+  }
+
+  return invalid;
 }
 
 async function findManagedFileIssues(target, manifestData) {

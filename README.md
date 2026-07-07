@@ -82,9 +82,9 @@ Tutorials:
 
 ## What To Expect
 
-For a new project, `create` generates a clean starter root with the project README, AI entry files, runtime Claude files, and scaffold-owned reference material under `.ai-scaffold/`.
+For a new project, `create` generates a clean starter root with the project README, AI entry files, runtime Claude files, and a small scaffold namespace containing `.ai-scaffold/README.md` and `.ai-scaffold/context.md`.
 
-For an existing project, `init` is designed to be safer and more isolated. Scaffold-owned operational files are installed under `.ai-scaffold/`, while generated runtime files such as `.ai-scaffold.json`, `.claude/MEMORY.md`, and `.claude/settings-overrides.json` stay at their expected project paths. `init` avoids creating root application folders such as `docs/`, `apps/`, `packages/`, `infra/`, `scripts/`, or `tasks/`.
+For an existing project, `init` is designed to be safer and more isolated. Scaffold-owned context goes under `.ai-scaffold/`, while generated runtime files such as `.ai-scaffold.json`, `.claude/MEMORY.md`, and `.claude/settings-overrides.json` stay at their expected project paths. `init` avoids creating root application folders such as `docs/`, `apps/`, `packages/`, `infra/`, `scripts/`, or `tasks/`, and it no longer installs `.ai-scaffold/docs/`, `.ai-scaffold/tasks/`, or `.ai-scaffold/_ai/` by default.
 
 ## When This Is A Good Fit
 
@@ -162,7 +162,9 @@ Additional profiles such as Next.js, Go, Python, Java, .NET, and Flutter are pla
 
 ## Install And Use
 
-Install and run with `npx`:
+You can run AI Scaffold directly with `npx`, or install it globally and use the shorter `ais` command.
+
+Use `npx` when you do not want a global install:
 
 ```bash
 npx @lajin.m/ai-scaffold my-project
@@ -171,7 +173,33 @@ npx @lajin.m/ai-scaffold create my-node-app --profile node
 npx @lajin.m/ai-scaffold create my-js-app --profile js
 ```
 
-Install into the current repository:
+Install globally when you want the `ais` command available everywhere:
+
+```bash
+npm install -g @lajin.m/ai-scaffold
+ais --help
+```
+
+### Create A New Project
+
+Use `create` when AI Scaffold should make a new project directory. A bare project name is treated as `create`.
+
+```bash
+npx @lajin.m/ai-scaffold my-project
+npx @lajin.m/ai-scaffold create my-project
+npx @lajin.m/ai-scaffold create my-node-app --profile node
+npx @lajin.m/ai-scaffold create my-laravel-app --profile laravel
+```
+
+After global install:
+
+```bash
+ais create my-project --profile node
+```
+
+### Install Into An Existing Repository
+
+Use `init` from the root of an existing repository when you want AI governance, rules, hooks, project memory, and role guides without moving application code. `init` keeps scaffold-owned setup context under `.ai-scaffold/` and protects existing app files such as `README.md`, `package.json`, `.env`, and workflow files.
 
 ```bash
 npx @lajin.m/ai-scaffold init
@@ -181,14 +209,47 @@ npx @lajin.m/ai-scaffold init --profile javascript
 npx @lajin.m/ai-scaffold init --profile laravel
 ```
 
-Use non-interactive defaults:
+After global install:
+
+```bash
+ais init --profile node
+ais . --profile node
+```
+
+### Choose A Profile
+
+Profiles tune generated defaults and stack guidance.
+
+| Profile | Use case |
+|---|---|
+| `generic` | Default profile for mixed or undecided stacks |
+| `node` | Node.js/JavaScript projects |
+| `js`, `javascript`, `nodejs` | Aliases for `node` |
+| `laravel` | PHP/Laravel projects |
+
+### Preview Before Writing
+
+Use `--dry-run` first on important existing repositories. It prints the file plan without changing files.
+
+```bash
+npx @lajin.m/ai-scaffold init --profile node --dry-run
+npx @lajin.m/ai-scaffold . --profile node --dry-run
+ais init --profile node --dry-run
+```
+
+### Non-Interactive Install
+
+Use `--yes` for CI, scripts, or fast local setup. When values are not provided, conservative defaults are used and recorded in `.ai-scaffold.json`.
 
 ```bash
 npx @lajin.m/ai-scaffold create my-project --yes
 npx @lajin.m/ai-scaffold init --profile node --yes
+ais init --profile node --yes
 ```
 
-Pass explicit project context:
+### Pass Explicit Project Context
+
+Use explicit flags when adopting an existing repo so project memory and generated settings start with useful context.
 
 ```bash
 npx @lajin.m/ai-scaffold init \
@@ -196,37 +257,66 @@ npx @lajin.m/ai-scaffold init \
   --project-name acme-api \
   --display-name "Acme API" \
   --purpose "Internal API for Acme operations" \
-  --project-type API \
+  --project-type api \
   --owner-email team@example.com \
   --backend-stack "Node.js" \
-  --frontend-stack "None" \
+  --frontend-stack none \
   --database "PostgreSQL" \
   --no-multi-tenant \
-  --compliance N/A
+  --data-sensitivity internal \
+  --requirements-source existing-docs \
+  --requirements-path docs/requirements/brd.md \
+  --compliance GDPR,SOC2 \
+  --test-command "npm test" \
+  --lint-command "npm run lint" \
+  --typecheck-command "npm run typecheck" \
+  --build-command "npm run build"
 ```
 
-Preview before writing:
+### Check An Installed Scaffold
+
+Use `status` for a quick summary of installed version, profile, managed-file count, and modified or missing managed files.
 
 ```bash
-npx @lajin.m/ai-scaffold init --profile node --dry-run
-npx @lajin.m/ai-scaffold . --dry-run
-```
-
-Check an installed scaffold:
-
-```bash
+npx @lajin.m/ai-scaffold status
+npx @lajin.m/ai-scaffold status ./my-project
 ais status
-ais doctor
+ais status ./my-project
 ```
 
-Update metadata only in this MVP release:
+Use `doctor` for deeper health checks: manifest validity, required files, project memory, settings overrides, managed-file integrity, and git presence.
 
 ```bash
+npx @lajin.m/ai-scaffold doctor
+npx @lajin.m/ai-scaffold doctor --json
+ais doctor
+ais doctor ./my-project --json
+```
+
+### Update An Installed Scaffold
+
+`update` exists in this MVP, but full managed-file migrations are planned for Phase 3. In `0.7.1`, it can compare/update scaffold metadata and should be treated cautiously. Use `--dry-run` first.
+
+```bash
+npx @lajin.m/ai-scaffold update --dry-run
+npx @lajin.m/ai-scaffold update --target-version 0.7.1
 ais update --dry-run
 ais update --target-version 0.7.1
 ```
 
 Full safe file updates, diffs, and version-pinned migrations are planned for Phase 3. Managed-file hashes are already recorded for `status` and `doctor` checks.
+
+### Command Reference
+
+| Command | Use when | Example |
+|---|---|---|
+| `create <dir>` | Start a new project from a profile template | `npx @lajin.m/ai-scaffold create my-app --profile node` |
+| `<dir>` | Short form for `create <dir>` | `npx @lajin.m/ai-scaffold my-app` |
+| `init [dir]` | Add AI Scaffold to an existing repository | `npx @lajin.m/ai-scaffold init --profile node --dry-run` |
+| `.` | Short form for `init` in the current directory | `npx @lajin.m/ai-scaffold . --profile node` |
+| `status [dir]` | Show installed profile, version, and managed-file status | `npx @lajin.m/ai-scaffold status` |
+| `doctor [dir]` | Diagnose missing, changed, or invalid scaffold files | `npx @lajin.m/ai-scaffold doctor --json` |
+| `update [dir]` | Update scaffold metadata in this MVP; full migrations are later | `npx @lajin.m/ai-scaffold update --dry-run` |
 
 ## Local Development
 

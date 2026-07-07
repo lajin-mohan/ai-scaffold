@@ -55,9 +55,11 @@ describe('CLI e2e smoke', () => {
     expect(await fs.pathExists(path.join(targetDir, '.claude', 'hooks', 'pre-dangerous-bash-guard.sh'))).toBe(true);
     expect(await fs.pathExists(path.join(targetDir, '.claude', 'hooks', 'governance-file-guard.sh'))).toBe(true);
     expect(await fs.pathExists(path.join(targetDir, 'README.md'))).toBe(true);
-    expect(await fs.pathExists(path.join(targetDir, '.ai-scaffold', 'HOW-TO-USE.md'))).toBe(true);
-    expect(await fs.pathExists(path.join(targetDir, '.ai-scaffold', 'docs', 'architecture', 'README.md'))).toBe(true);
-    expect(await fs.pathExists(path.join(targetDir, '.ai-scaffold', 'tasks', 'lessons.md'))).toBe(true);
+    expect(await fs.pathExists(path.join(targetDir, '.ai-scaffold', 'README.md'))).toBe(true);
+    expect(await fs.pathExists(path.join(targetDir, '.ai-scaffold', 'context.md'))).toBe(true);
+    expect(await fs.pathExists(path.join(targetDir, '.ai-scaffold', 'docs'))).toBe(false);
+    expect(await fs.pathExists(path.join(targetDir, '.ai-scaffold', 'tasks'))).toBe(false);
+    expect(await fs.pathExists(path.join(targetDir, '.ai-scaffold', '_ai'))).toBe(false);
     expect(await fs.pathExists(path.join(targetDir, 'HOW-TO-USE.md'))).toBe(false);
     expect(await fs.pathExists(path.join(targetDir, 'CONTRIBUTING.md'))).toBe(false);
     expect(await fs.pathExists(path.join(targetDir, 'docs'))).toBe(false);
@@ -81,6 +83,11 @@ describe('CLI e2e smoke', () => {
     expect(memory).toContain('Project memory only');
     expect(memory).toContain('production data');
     expect(memory).toContain('client-confidential text');
+
+    const manifest = await fs.readJson(path.join(targetDir, '.ai-scaffold.json'));
+    expect(manifest.project.kind).toBe('saas');
+    expect(manifest.project.lifecycleStage).toBe('active-development');
+    expect(manifest.risk.complianceScope).toEqual([]);
   });
 
   it('creates a Node.js project through the JavaScript profile alias', async () => {
@@ -103,7 +110,8 @@ describe('CLI e2e smoke', () => {
     expect(manifest.profile).toBe('node');
     expect(await fs.pathExists(path.join(targetDir, 'package.json'))).toBe(true);
     expect(await fs.pathExists(path.join(targetDir, 'docs'))).toBe(false);
-    expect(await fs.pathExists(path.join(targetDir, '.ai-scaffold', 'docs'))).toBe(true);
+    expect(await fs.pathExists(path.join(targetDir, '.ai-scaffold', 'docs'))).toBe(false);
+    expect(await fs.pathExists(path.join(targetDir, '.ai-scaffold', 'context.md'))).toBe(true);
 
     const readme = await fs.readFile(path.join(targetDir, 'README.md'), 'utf-8');
     expect(readme).toContain('Node profile smoke');
@@ -159,7 +167,11 @@ describe('CLI e2e smoke', () => {
     expect(await fs.pathExists(path.join(targetDir, '.claude', 'hooks', 'pre-secret-guard.sh'))).toBe(true);
     expect(await fs.pathExists(path.join(targetDir, '.claude', 'hooks', 'pre-dangerous-bash-guard.sh'))).toBe(true);
     expect(await fs.pathExists(path.join(targetDir, '.claude', 'hooks', 'governance-file-guard.sh'))).toBe(true);
-    expect(await fs.pathExists(path.join(targetDir, '.ai-scaffold', 'docs'))).toBe(true);
+    expect(await fs.pathExists(path.join(targetDir, '.ai-scaffold', 'README.md'))).toBe(true);
+    expect(await fs.pathExists(path.join(targetDir, '.ai-scaffold', 'context.md'))).toBe(true);
+    expect(await fs.pathExists(path.join(targetDir, '.ai-scaffold', 'docs'))).toBe(false);
+    expect(await fs.pathExists(path.join(targetDir, '.ai-scaffold', 'tasks'))).toBe(false);
+    expect(await fs.pathExists(path.join(targetDir, '.ai-scaffold', '_ai'))).toBe(false);
     expect(await fs.pathExists(path.join(targetDir, 'docs'))).toBe(false);
     expect(await fs.pathExists(path.join(targetDir, 'tasks'))).toBe(false);
     expect(await fs.pathExists(path.join(targetDir, '_ai'))).toBe(false);

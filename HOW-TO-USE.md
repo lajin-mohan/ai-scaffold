@@ -47,7 +47,7 @@ npx @lajin.m/ai-scaffold create my-node-app --profile node
 npx @lajin.m/ai-scaffold create my-js-app --profile js
 ```
 
-`create` generates a new project directory with the scaffold files, project README, `.ai-scaffold.json`, `.claude/MEMORY.md`, and `.claude/settings-overrides.json`.
+`create` generates a new project directory with the scaffold files, project README, `.ai-scaffold.json`, `.ai-scaffold/context.md`, `.claude/MEMORY.md`, and `.claude/settings-overrides.json`.
 
 ### Install into an existing project
 
@@ -82,13 +82,20 @@ npx @lajin.m/ai-scaffold init \
   --project-name acme-api \
   --display-name "Acme API" \
   --purpose "Internal API for Acme operations" \
-  --project-type API \
+  --project-type api \
   --owner-email team@example.com \
   --backend-stack "Node.js" \
-  --frontend-stack "None" \
+  --frontend-stack none \
   --database "PostgreSQL" \
   --no-multi-tenant \
-  --compliance N/A
+  --data-sensitivity internal \
+  --requirements-source existing-docs \
+  --requirements-path docs/requirements/brd.md \
+  --compliance GDPR,SOC2 \
+  --test-command "npm test" \
+  --lint-command "npm run lint" \
+  --typecheck-command "npm run typecheck" \
+  --build-command "npm run build"
 ```
 
 ### Check or update an installed scaffold

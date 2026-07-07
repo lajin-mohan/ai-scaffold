@@ -15,11 +15,14 @@ describe('version', () => {
 describe('resolveWithDefaults', () => {
   it('fills in defaulted values when flags are empty', () => {
     const { resolved, defaulted } = resolveWithDefaults({});
-    expect(resolved.projectType).toBe('SaaS');
-    expect(resolved.frontendStack).toBe('None');
-    expect(resolved.database).toBe('N/A');
+    expect(resolved.projectType).toBe('saas');
+    expect(resolved.lifecycleStage).toBe('active-development');
+    expect(resolved.frontendStack).toBe('none');
+    expect(resolved.database).toBe('none');
     expect(resolved.multiTenant).toBe(false);
-    expect(resolved.complianceScope).toBe('N/A');
+    expect(resolved.dataSensitivity).toBe('internal');
+    expect(resolved.complianceScope).toEqual([]);
+    expect(resolved.requirementsSource).toBe('create-later');
     expect(resolved.profile).toBe('generic');
     expect(defaulted).toContain('projectType');
     expect(defaulted).toContain('profile');
@@ -35,22 +38,31 @@ describe('resolveWithDefaults', () => {
 
   it('preserves user-provided values', () => {
     const { resolved, defaulted } = resolveWithDefaults({
-      projectType: 'API',
+      projectType: 'api',
       backendStack: 'PHP/Laravel',
-      frontendStack: 'React',
+      frontendStack: 'react',
       database: 'PostgreSQL 16',
       multiTenant: true,
-      complianceScope: 'GDPR',
+      dataSensitivity: 'confidential',
+      complianceScope: 'GDPR,SOC2',
+      requirementsSource: 'existing-docs',
+      requirementsPath: 'docs/requirements/brd.md',
       profile: 'laravel',
     });
-    expect(resolved.projectType).toBe('API');
+    expect(resolved.projectType).toBe('api');
     expect(resolved.backendStack).toBe('PHP/Laravel');
-    expect(resolved.frontendStack).toBe('React');
+    expect(resolved.frontendStack).toBe('react');
     expect(resolved.database).toBe('PostgreSQL 16');
     expect(resolved.multiTenant).toBe(true);
-    expect(resolved.complianceScope).toBe('GDPR');
+    expect(resolved.dataSensitivity).toBe('confidential');
+    expect(resolved.complianceScope).toEqual(['GDPR', 'SOC2']);
+    expect(resolved.requirementsSource).toBe('existing-docs');
+    expect(resolved.requirementsPath).toBe('docs/requirements/brd.md');
     expect(resolved.profile).toBe('laravel');
-    expect(defaulted).toHaveLength(0);
+    expect(defaulted).not.toContain('projectType');
+    expect(defaulted).not.toContain('frontendStack');
+    expect(defaulted).not.toContain('complianceScope');
+    expect(defaulted).not.toContain('profile');
   });
 
   it('normalizes JavaScript aliases to the node profile', () => {
@@ -72,9 +84,9 @@ describe('resolveWithDefaults', () => {
 });
 
 describe('MANAGED_PATHS', () => {
-  it('includes .claude/**, .cursor/**, and key scaffold files', () => {
+  it('includes the default core scaffold paths', () => {
     expect(MANAGED_PATHS.some(p => p.includes('.claude'))).toBe(true);
-    expect(MANAGED_PATHS.some(p => p.includes('.cursor'))).toBe(true);
+    expect(MANAGED_PATHS.some(p => p.includes('.ai-scaffold'))).toBe(true);
     expect(MANAGED_PATHS.some(p => p.includes('CLAUDE.md'))).toBe(true);
   });
 });
@@ -104,7 +116,7 @@ describe('buildFilePlan', () => {
     expect(plan.generate.map(f => f.rel)).toContain('README.md');
   });
 
-  it('keeps generic create root minimal and moves scaffold docs under .ai-scaffold', async () => {
+  it('keeps generic create core-only by default', async () => {
     const plan = await buildFilePlan(templatePath('generic'), '/tmp/out', { existingTarget: false });
     const rels = [...plan.copy.map(f => f.rel), ...plan.generate.map(f => f.rel)];
 
@@ -112,13 +124,15 @@ describe('buildFilePlan', () => {
     expect(rels).toContain('CLAUDE.md');
     expect(rels).toContain('AGENTS.md');
     expect(rels).toContain('.gitignore');
-    expect(rels).toContain('.ai-scaffold/HOW-TO-USE.md');
-    expect(rels).toContain('.ai-scaffold/docs/architecture/README.md');
-    expect(rels).toContain('.ai-scaffold/tasks/lessons.md');
+    expect(rels).toContain('.ai-scaffold/README.md');
+    expect(rels).toContain('.ai-scaffold/context.md');
 
     expect(rels).not.toContain('HOW-TO-USE.md');
     expect(rels).not.toContain('CONTRIBUTING.md');
     expect(rels).not.toContain('package.json');
+    expect(rels.some(r => r.startsWith('.ai-scaffold/docs/'))).toBe(false);
+    expect(rels.some(r => r.startsWith('.ai-scaffold/tasks/'))).toBe(false);
+    expect(rels.some(r => r.startsWith('.ai-scaffold/_ai/'))).toBe(false);
     expect(rels.some(r => r.startsWith('docs/'))).toBe(false);
     expect(rels.some(r => r.startsWith('tasks/'))).toBe(false);
     expect(rels.some(r => r.startsWith('_ai/'))).toBe(false);

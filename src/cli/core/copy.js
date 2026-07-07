@@ -133,6 +133,10 @@ async function generateFile(file, values, dryRun) {
   if (relPath.endsWith('README.md') && src) {
     const content = await fs.readFile(src, 'utf-8');
     await fs.writeFile(target, resolvePlaceholders(content, values));
+  } else if (relPath === '.ai-scaffold/README.md') {
+    await fs.writeFile(target, buildScaffoldReadme(values));
+  } else if (relPath === '.ai-scaffold/context.md') {
+    await fs.writeFile(target, buildContextFile(values));
   } else if (relPath === '.ai-scaffold.json') {
     await fs.writeFile(target, JSON.stringify({
       version: getVersion(),
@@ -142,6 +146,36 @@ async function generateFile(file, values, dryRun) {
       installedAt: new Date().toISOString().split('T')[0],
       updatedAt: new Date().toISOString().split('T')[0],
       source: 'ai-scaffold',
+      project: {
+        slug: values.projectName,
+        displayName: values.displayName,
+        purpose: values.purpose,
+        kind: values.projectType,
+        lifecycleStage: values.lifecycleStage,
+        owner: values.ownerEmail,
+      },
+      stack: {
+        primary: values.backendStack,
+        backend: values.backendStack,
+        frontend: values.frontendStack,
+        database: values.database,
+      },
+      risk: {
+        multiTenant: values.multiTenant,
+        dataSensitivity: values.dataSensitivity,
+        complianceScope: values.complianceScope ?? [],
+      },
+      requirements: {
+        source: values.requirementsSource,
+        paths: values.requirementsPath ? [values.requirementsPath] : [],
+      },
+      commands: {
+        test: values.testCommand,
+        lint: values.lintCommand,
+        typecheck: values.typecheckCommand,
+        build: values.buildCommand,
+      },
+      installedPacks: [],
       defaultedValues: values.defaulted ?? [],
       managedFiles: [],
     }, null, 2));
@@ -152,9 +186,13 @@ async function generateFile(file, values, dryRun) {
         displayName: values.displayName,
         purpose: values.purpose,
         type: values.projectType,
-        status: 'Active Development',
+        lifecycleStage: values.lifecycleStage,
+        status: lifecycleStageToStatus(values.lifecycleStage),
         multiTenant: values.multiTenant,
         complianceScope: values.complianceScope,
+        dataSensitivity: values.dataSensitivity,
+        requirementsSource: values.requirementsSource,
+        requirementsPath: values.requirementsPath,
         owner: values.ownerEmail,
         firstEpic: values.purpose,
       },
@@ -171,10 +209,16 @@ async function generateFile(file, values, dryRun) {
         cicd: 'GitHub Actions',
         projectMgmt: 'GitHub Projects',
       },
+      commands: {
+        test: values.testCommand,
+        lint: values.lintCommand,
+        typecheck: values.typecheckCommand,
+        build: values.buildCommand,
+      },
       features: {
         accessibility: false,
-        gdpr: values.complianceScope === 'GDPR',
-        iso27001: values.complianceScope === 'ISO27001',
+        gdpr: hasCompliance(values, 'GDPR'),
+        iso27001: hasCompliance(values, 'ISO27001'),
         sast: true,
         preCommitFull: true,
         iac: false,
@@ -197,6 +241,10 @@ Living index for project memory and session compactions.
 |---|---|
 | Project | ${values.displayName} |
 | Purpose | ${values.purpose} |
+| Project kind | ${values.projectType} |
+| Lifecycle stage | ${values.lifecycleStage} |
+| Data sensitivity | ${values.dataSensitivity} |
+| Compliance scope | ${formatCompliance(values.complianceScope)} |
 | Current epic | ${values.purpose} |
 | Active AI role | not configured |
 | Last updated | ${new Date().toISOString().split('T')[0]} |
@@ -282,11 +330,11 @@ function resolvePlaceholders(content, values) {
     '{{SaaS / Internal Tool / API / Platform}}': values.projectType ?? '',
     '{{Active Development / MVP / Production}}': 'Active Development',
     '{{IS_MULTI_TENANT}}': String(values.multiTenant ?? false),
-    '{{COMPLIANCE_SCOPE}}': values.complianceScope ?? 'N/A',
+    '{{COMPLIANCE_SCOPE}}': formatCompliance(values.complianceScope),
     '{{OWNER_EMAIL}}': values.ownerEmail ?? '',
     '{{EPIC_NAME}}': values.purpose ?? '',
     '{{BACKEND_STACK}}': values.backendStack ?? 'N/A',
-    '{{FRONTEND_STACK}}': values.frontendStack ?? 'N/A',
+    '{{FRONTEND_STACK}}': values.frontendStack ?? 'none',
     '{{DATABASE}}': values.database ?? 'N/A',
     '{{RUNTIME}}': values.backendStack ?? 'N/A',
     '{{REPO_URL}}': 'N/A',
@@ -315,6 +363,106 @@ function resolvePlaceholders(content, values) {
     result = result.split(token).join(value);
   }
   return result;
+}
+
+function buildScaffoldReadme(values) {
+  return `# AI Scaffold
+
+This folder contains AI Scaffold's project-local operating context for ${values.displayName}.
+
+## Installed Context
+
+- Profile: ${values.profile}
+- Project kind: ${values.projectType}
+- Lifecycle stage: ${values.lifecycleStage}
+- Data sensitivity: ${values.dataSensitivity}
+- Compliance scope: ${formatCompliance(values.complianceScope)}
+
+## Default Install Surface
+
+The default install keeps scaffold-owned reference material small. Larger docs,
+QA, UX, research, CI, and template packs should be added explicitly when needed.
+
+See \`.ai-scaffold/context.md\` for the project setup context collected during installation.
+`;
+}
+
+function buildContextFile(values) {
+  return `# AI Scaffold Context
+
+Generated during AI Scaffold setup. Keep this file factual and lightweight.
+
+## Project
+
+| Field | Value |
+|---|---|
+| Slug | ${values.projectName} |
+| Display name | ${values.displayName} |
+| Purpose | ${values.purpose} |
+| Kind | ${values.projectType} |
+| Lifecycle stage | ${values.lifecycleStage} |
+| Owner | ${values.ownerEmail ?? 'none'} |
+
+## Stack
+
+| Field | Value |
+|---|---|
+| Primary/backend | ${values.backendStack ?? 'none'} |
+| Frontend | ${values.frontendStack ?? 'none'} |
+| Database | ${values.database ?? 'none'} |
+
+## Risk And Governance
+
+| Field | Value |
+|---|---|
+| Multi-tenant | ${String(values.multiTenant ?? false)} |
+| Data sensitivity | ${values.dataSensitivity ?? 'internal'} |
+| Compliance scope | ${formatCompliance(values.complianceScope)} |
+
+## Requirements
+
+| Field | Value |
+|---|---|
+| Source | ${values.requirementsSource ?? 'create-later'} |
+| Path | ${values.requirementsPath || 'none'} |
+
+## Verification Commands
+
+| Command | Value |
+|---|---|
+| Test | ${values.testCommand ?? 'none'} |
+| Lint | ${values.lintCommand ?? 'none'} |
+| Typecheck | ${values.typecheckCommand ?? 'none'} |
+| Build | ${values.buildCommand ?? 'none'} |
+
+## Notes
+
+- Existing requirements documents should be indexed here, not moved.
+- Root \`docs/requirements/\` should only be created when explicitly requested.
+- Do not store secrets, credentials, tokens, production data, or client-confidential text here unless explicitly approved for this repository.
+`;
+}
+
+function formatCompliance(complianceScope) {
+  if (!Array.isArray(complianceScope) || complianceScope.length === 0) {
+    return 'none';
+  }
+  return complianceScope.join(', ');
+}
+
+function hasCompliance(values, scope) {
+  return Array.isArray(values.complianceScope) && values.complianceScope.includes(scope);
+}
+
+function lifecycleStageToStatus(stage) {
+  const labels = {
+    discovery: 'Discovery',
+    'active-development': 'Active Development',
+    production: 'Production',
+    maintenance: 'Maintenance',
+    'legacy-modernization': 'Legacy Modernization',
+  };
+  return labels[stage] ?? 'Active Development';
 }
 
 /**

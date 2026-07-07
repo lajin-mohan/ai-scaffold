@@ -9,26 +9,16 @@ import fs from 'fs-extra';
 import picomatch from 'picomatch';
 
 /**
- * Files always managed by the scaffold (relative to project root).
- * During init, these are installed under .ai-scaffold/ namespace.
- * During create, these are at project root.
+ * Files managed by the scaffold (relative to project root).
+ * Default installs keep the visible surface small; larger docs/tasks/examples
+ * are future optional packs.
  * @type {string[]}
  */
 export const MANAGED_PATHS = [
-  // Scaffold-owned directories (namespaced in init, root in create)
   '.ai-scaffold/**',
   '.claude/**',
-  '.cursor/**',
-  '_ai/**',
-  // Root-level scaffold files
-  '.github/copilot-instructions.md',
   'AGENTS.md',
   'CLAUDE.md',
-  'HOW-TO-USE.md',
-  'CONTRIBUTING.md',
-  'LICENSE',
-  'SECURITY.md',
-  'CHANGELOG.md',
 ];
 
 /**
@@ -50,25 +40,39 @@ const EXCLUDED_TEMPLATE_FILES = [
 
 const EXCLUDED_DEFAULT_PATTERNS = [
   '.vscode/**',
-  'tasks/ponytail-debt.md',
+  '.cursor/**',
+  '.github/**',
+  '_ai/**',
   'apps/**',
+  'docs/**',
   'packages/**',
   'infra/**',
   'scripts/**',
   'src/**',
+  'tasks/**',
   'templates/**',
+  '.cursorrules',
+  '.editorconfig',
+  '.env.example',
+  '.gitattributes',
+  '.gitleaks.toml',
+  'CHANGELOG.md',
+  'CONTRIBUTING.md',
+  'HOW-TO-USE.md',
+  'LICENSE',
+  'SECURITY.md',
 ];
 
 const ROOT_FILES = [
   '.claude/**',
   'AGENTS.md',
   'CLAUDE.md',
-  '.gitignore',
 ];
 
 const CREATE_ROOT_FILES_BY_PROFILE = {
+  generic: ['.gitignore'],
   node: ['package.json'],
-  laravel: ['package.json'],
+  laravel: ['composer.json', 'package.json'],
 };
 
 /**
@@ -135,11 +139,11 @@ export async function buildFilePlan(sourceDir, targetDir, options = {}) {
   const profileName = path.basename(sourceDir);
   const profileRootFiles = existingTarget
     ? []
-    : CREATE_ROOT_FILES_BY_PROFILE[profileName] ?? [];
+    : ['.gitignore', ...(CREATE_ROOT_FILES_BY_PROFILE[profileName] ?? [])];
 
   // Always-generate files: these have no template source; they are built
   // programmatically by copy.js generateFile().
-  const alwaysGenerate = ['.ai-scaffold.json'];
+  const alwaysGenerate = ['.ai-scaffold.json', '.ai-scaffold/README.md', '.ai-scaffold/context.md'];
 
   // Collect all source files from the template directory
   const sourceFiles = await collectSourceFiles(sourceDir);
@@ -147,6 +151,16 @@ export async function buildFilePlan(sourceDir, targetDir, options = {}) {
   for (const srcFile of sourceFiles) {
     const relPath = path.relative(sourceDir, srcFile);
     if (EXCLUDED_TEMPLATE_FILES.includes(relPath)) {
+      continue;
+    }
+
+    if (existingTarget && relPath === '.gitignore') {
+      plan.skipAppSource.push({ src: srcFile, rel: relPath, reason: 'existing-project-root-file' });
+      continue;
+    }
+
+    if (['composer.json', 'package.json'].includes(relPath) && !profileRootFiles.includes(relPath)) {
+      plan.skipAppSource.push({ src: srcFile, rel: relPath, reason: 'profile-root-file' });
       continue;
     }
 
@@ -163,9 +177,7 @@ export async function buildFilePlan(sourceDir, targetDir, options = {}) {
     const generatedRel = GENERATED_FILE_MAP[relPath];
     if (generatedRel) {
       const generatedRoot = generatedRel === 'README.md' && !existingTarget;
-      const genTargetRel = generatedRoot || generatedRel.startsWith('.claude/') || generatedRel === '.ai-scaffold.json'
-        ? generatedRel
-        : path.join('.ai-scaffold', generatedRel);
+      const genTargetRel = resolveGeneratedTargetRel(generatedRel, existingTarget, generatedRoot);
       if (existingTarget && genTargetRel === generatedRel && matchesAny(generatedRel, PROTECTED_PATHS)) {
         const targetExists = await fs.pathExists(path.join(targetDir, genTargetRel));
         if (targetExists) {
@@ -232,9 +244,7 @@ export async function buildFilePlan(sourceDir, targetDir, options = {}) {
 
     // .ai-scaffold.json stays at project root for both create and init —
     // it is the discovery entry point for status/doctor.
-    const genTargetRel = (existingTarget && genRel !== '.ai-scaffold.json')
-      ? path.join('.ai-scaffold', genRel)
-      : genRel;
+    const genTargetRel = resolveGeneratedTargetRel(genRel, existingTarget, false);
     const target = path.join(targetDir, genTargetRel);
     if (existingTarget && matchesAny(genRel, PROTECTED_PATHS)) {
       const targetExists = await fs.pathExists(target);
@@ -289,4 +299,19 @@ async function collectSourceFiles(dir) {
  */
 function matchesAny(pathStr, patterns) {
   return patterns.some((p) => picomatch(p, { dot: true })(pathStr));
+}
+
+function resolveGeneratedTargetRel(generatedRel, existingTarget, forceRoot) {
+  if (
+    forceRoot ||
+    generatedRel === '.ai-scaffold.json' ||
+    generatedRel.startsWith('.ai-scaffold/') ||
+    generatedRel.startsWith('.claude/')
+  ) {
+    return generatedRel;
+  }
+
+  return existingTarget
+    ? path.join('.ai-scaffold', generatedRel)
+    : generatedRel;
 }

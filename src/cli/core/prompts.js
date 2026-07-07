@@ -15,23 +15,82 @@ export const REQUIRED_VALUES = [
   'displayName',
   'purpose',
   'projectType',
+  'lifecycleStage',
   'ownerEmail',
   'backendStack',
   'frontendStack',
   'database',
   'multiTenant',
+  'dataSensitivity',
   'complianceScope',
+  'requirementsSource',
+  'requirementsPath',
   'profile',
 ];
+
+const PROJECT_TYPE_CHOICES = [
+  { title: 'SaaS product', value: 'saas' },
+  { title: 'Internal tool', value: 'internal-tool' },
+  { title: 'API / backend service', value: 'api' },
+  { title: 'Web application', value: 'web-app' },
+  { title: 'Full-stack application', value: 'full-stack' },
+  { title: 'Library / package', value: 'library' },
+  { title: 'CLI tool', value: 'cli' },
+  { title: 'Mobile app', value: 'mobile' },
+  { title: 'Infrastructure / DevOps', value: 'infra' },
+  { title: 'Data / analytics', value: 'data' },
+];
+
+const LIFECYCLE_STAGE_CHOICES = [
+  { title: 'Discovery / planning', value: 'discovery' },
+  { title: 'Active development', value: 'active-development' },
+  { title: 'Production', value: 'production' },
+  { title: 'Maintenance', value: 'maintenance' },
+  { title: 'Legacy modernization', value: 'legacy-modernization' },
+];
+
+const FRONTEND_STACK_CHOICES = [
+  { title: 'None', value: 'none' },
+  { title: 'React', value: 'react' },
+  { title: 'Next.js', value: 'nextjs' },
+  { title: 'Vue', value: 'vue' },
+  { title: 'Nuxt', value: 'nuxt' },
+  { title: 'Flutter', value: 'flutter' },
+  { title: 'Other', value: 'other' },
+];
+
+const DATA_SENSITIVITY_CHOICES = [
+  { title: 'Public', value: 'public' },
+  { title: 'Internal', value: 'internal' },
+  { title: 'Confidential', value: 'confidential' },
+  { title: 'Regulated', value: 'regulated' },
+];
+
+const COMPLIANCE_CHOICES = [
+  { title: 'GDPR', value: 'GDPR' },
+  { title: 'SOC 2', value: 'SOC2' },
+  { title: 'ISO 27001', value: 'ISO27001' },
+  { title: 'HIPAA', value: 'HIPAA' },
+  { title: 'PCI-DSS', value: 'PCI-DSS' },
+];
+
+const REQUIREMENTS_SOURCE_CHOICES = [
+  { title: 'Use existing docs/specs', value: 'existing-docs' },
+  { title: 'Create requirements later', value: 'create-later' },
+  { title: 'Create requirements now', value: 'create-now' },
+];
+
+const PROFILE_SELECT_CHOICES = PROFILE_CHOICES.map((profile) => ({
+  title: profile,
+  value: normalizeProfile(profile),
+}));
 
 /**
  * Collect bootstrap values from interactive prompts.
  * Used when --yes is not passed and flags are incomplete.
  */
 export async function collectBootstrapValues(overrides = {}) {
-  const projectTypeOptions = ['SaaS', 'Internal Tool', 'API', 'Platform', 'Library'];
-  const frontendStackOptions = ['None', 'React', 'Next.js', 'Vue', 'Nuxt'];
-  const complianceOptions = ['N/A', 'GDPR', 'ISO27001', 'HIPAA', 'SOC2', 'PCI-DSS'];
+  const normalizedOverrides = normalizeValues(overrides);
 
   const questions = [
     {
@@ -39,52 +98,59 @@ export async function collectBootstrapValues(overrides = {}) {
       type: 'text',
       message: 'Project name (slug, e.g. billing-api):',
       validate: (v) => /^[a-z0-9-]+$/.test(v) || 'Use lowercase letters, numbers, and hyphens only',
-      initial: overrides.projectName,
+      initial: normalizedOverrides.projectName,
     },
     {
       name: 'displayName',
       type: 'text',
       message: 'Display name (e.g. Billing API):',
-      initial: overrides.displayName,
+      initial: normalizedOverrides.displayName,
     },
     {
       name: 'purpose',
       type: 'text',
       message: 'One-line purpose:',
-      initial: overrides.purpose,
+      initial: normalizedOverrides.purpose,
     },
     {
       name: 'projectType',
       type: 'select',
-      message: 'Project type:',
-      choices: projectTypeOptions,
-      initial: projectTypeOptions.indexOf(overrides.projectType ?? 'SaaS'),
+      message: 'Project kind:',
+      choices: PROJECT_TYPE_CHOICES,
+      initial: choiceIndex(PROJECT_TYPE_CHOICES, normalizedOverrides.projectType ?? 'saas'),
+    },
+    {
+      name: 'lifecycleStage',
+      type: 'select',
+      message: 'Lifecycle stage:',
+      choices: LIFECYCLE_STAGE_CHOICES,
+      initial: choiceIndex(LIFECYCLE_STAGE_CHOICES, normalizedOverrides.lifecycleStage ?? 'active-development'),
     },
     {
       name: 'ownerEmail',
       type: 'text',
       message: 'Owner email:',
       validate: (v) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v) || 'Enter a valid email address',
-      initial: overrides.ownerEmail,
+      initial: normalizedOverrides.ownerEmail,
     },
     {
       name: 'backendStack',
       type: 'text',
-      message: 'Backend stack (e.g. Laravel + PHP):',
-      initial: overrides.backendStack ?? 'None',
+      message: 'Primary/backend stack (e.g. Node.js, Laravel + PHP):',
+      initial: normalizedOverrides.backendStack ?? 'none',
     },
     {
       name: 'frontendStack',
       type: 'select',
       message: 'Frontend stack:',
-      choices: frontendStackOptions,
-      initial: frontendStackOptions.indexOf(overrides.frontendStack ?? 'None'),
+      choices: FRONTEND_STACK_CHOICES,
+      initial: choiceIndex(FRONTEND_STACK_CHOICES, normalizedOverrides.frontendStack ?? 'none'),
     },
     {
       name: 'database',
       type: 'text',
       message: 'Database (e.g. PostgreSQL 16):',
-      initial: overrides.database ?? 'None',
+      initial: normalizedOverrides.database ?? 'none',
     },
     {
       name: 'multiTenant',
@@ -92,21 +158,66 @@ export async function collectBootstrapValues(overrides = {}) {
       message: 'Multi-tenant?',
       active: 'yes',
       inactive: 'no',
-      initial: overrides.multiTenant ?? false,
+      initial: normalizedOverrides.multiTenant ?? false,
+    },
+    {
+      name: 'dataSensitivity',
+      type: 'select',
+      message: 'Data sensitivity:',
+      choices: DATA_SENSITIVITY_CHOICES,
+      initial: choiceIndex(DATA_SENSITIVITY_CHOICES, normalizedOverrides.dataSensitivity ?? 'internal'),
     },
     {
       name: 'complianceScope',
-      type: 'select',
+      type: 'multiselect',
       message: 'Compliance scope:',
-      choices: complianceOptions,
-      initial: complianceOptions.indexOf(overrides.complianceScope ?? 'N/A'),
+      choices: COMPLIANCE_CHOICES,
+      initial: complianceInitialIndexes(normalizedOverrides.complianceScope),
+      hint: '- Space to select. Leave empty for none.',
+    },
+    {
+      name: 'requirementsSource',
+      type: 'select',
+      message: 'Requirements source:',
+      choices: REQUIREMENTS_SOURCE_CHOICES,
+      initial: choiceIndex(REQUIREMENTS_SOURCE_CHOICES, normalizedOverrides.requirementsSource ?? 'create-later'),
+    },
+    {
+      name: 'requirementsPath',
+      type: 'text',
+      message: 'Requirements path, if known:',
+      initial: normalizedOverrides.requirementsPath ?? '',
     },
     {
       name: 'profile',
       type: 'select',
       message: 'Scaffold profile:',
-      choices: PROFILE_CHOICES,
-      initial: Math.max(PROFILE_CHOICES.indexOf(overrides.profile ?? 'generic'), 0),
+      choices: PROFILE_SELECT_CHOICES,
+      initial: choiceIndex(PROFILE_SELECT_CHOICES, normalizeProfile(normalizedOverrides.profile ?? 'generic')),
+    },
+    {
+      name: 'testCommand',
+      type: 'text',
+      message: 'Test command:',
+      initial: normalizedOverrides.testCommand ?? 'none',
+    },
+    {
+      name: 'lintCommand',
+      type: 'text',
+      message: 'Lint command:',
+      initial: normalizedOverrides.lintCommand ?? 'none',
+    },
+    {
+      name: 'typecheckCommand',
+      type: 'text',
+      message: 'Typecheck command:',
+      initial: normalizedOverrides.typecheckCommand ?? 'none',
+    },
+    {
+      name: 'buildCommand',
+      type: 'text',
+      message: 'Build command:',
+      initial: normalizedOverrides.buildCommand ?? 'none',
     },
   ];
 
@@ -117,10 +228,7 @@ export async function collectBootstrapValues(overrides = {}) {
     },
   });
 
-  return {
-    ...answers,
-    profile: normalizeProfile(answers.profile),
-  };
+  return normalizeValues(answers);
 }
 
 /**
@@ -129,7 +237,7 @@ export async function collectBootstrapValues(overrides = {}) {
  */
 export function resolveWithDefaults(flags = {}) {
   const defaulted = [];
-  const resolved = { ...flags };
+  const resolved = normalizeValues(flags);
 
   if (resolved.profile !== undefined) {
     resolved.profile = normalizeProfile(resolved.profile);
@@ -146,11 +254,19 @@ export function resolveWithDefaults(flags = {}) {
   }
 
   const defaults = {
-    projectType: 'SaaS',
-    frontendStack: 'None',
-    database: 'N/A',
+    projectType: 'saas',
+    lifecycleStage: 'active-development',
+    frontendStack: 'none',
+    database: 'none',
     multiTenant: false,
-    complianceScope: 'N/A',
+    dataSensitivity: 'internal',
+    complianceScope: [],
+    requirementsSource: 'create-later',
+    requirementsPath: '',
+    testCommand: 'none',
+    lintCommand: 'none',
+    typecheckCommand: 'none',
+    buildCommand: 'none',
     profile: 'generic',
   };
 
@@ -170,25 +286,160 @@ function applyProfileDefaults(resolved, defaulted) {
   const defaultsByProfile = {
     laravel: {
       backendStack: 'PHP/Laravel',
-      frontendStack: 'optional',
+      frontendStack: 'none',
       database: 'MySQL or PostgreSQL',
+      testCommand: 'composer test',
     },
     node: {
       backendStack: 'Node.js',
-      frontendStack: 'None',
-      database: 'N/A',
+      frontendStack: 'none',
+      database: 'none',
+      testCommand: 'npm test',
+      lintCommand: 'npm run lint',
+      typecheckCommand: 'npm run typecheck',
+      buildCommand: 'npm run build',
     },
   };
 
   const profileDefaults = defaultsByProfile[resolved.profile] ?? {};
   for (const [key, value] of Object.entries(profileDefaults)) {
-    if (resolved[key] === undefined || resolved[key] === 'None' || resolved[key] === 'N/A') {
+    if (resolved[key] === undefined || resolved[key] === 'none' || resolved[key] === '') {
       resolved[key] = value;
       if (!defaulted.includes(key)) {
         defaulted.push(key);
       }
     }
   }
+}
+
+function normalizeValues(values = {}) {
+  const normalized = { ...values };
+
+  if (normalized.profile !== undefined) {
+    normalized.profile = normalizeProfile(normalized.profile);
+  }
+
+  if (normalized.projectType !== undefined) {
+    normalized.projectType = normalizeChoiceValue(normalized.projectType, {
+      SaaS: 'saas',
+      'Internal Tool': 'internal-tool',
+      API: 'api',
+      Platform: 'platform',
+      Library: 'library',
+    });
+  }
+
+  if (normalized.lifecycleStage !== undefined) {
+    normalized.lifecycleStage = normalizeChoiceValue(normalized.lifecycleStage, {
+      MVP: 'active-development',
+      Production: 'production',
+      'Active Development': 'active-development',
+    });
+  }
+
+  if (normalized.frontendStack !== undefined) {
+    normalized.frontendStack = normalizeChoiceValue(normalized.frontendStack, {
+      None: 'none',
+      'N/A': 'none',
+      React: 'react',
+      'Next.js': 'nextjs',
+      Vue: 'vue',
+      Nuxt: 'nuxt',
+      Flutter: 'flutter',
+    });
+  }
+
+  if (normalized.database !== undefined) {
+    normalized.database = normalizeNone(normalized.database);
+  }
+
+  if (normalized.dataSensitivity !== undefined) {
+    normalized.dataSensitivity = normalizeChoiceValue(normalized.dataSensitivity, {
+      Public: 'public',
+      Internal: 'internal',
+      Confidential: 'confidential',
+      Regulated: 'regulated',
+    });
+  }
+
+  if (normalized.requirementsSource !== undefined) {
+    normalized.requirementsSource = normalizeChoiceValue(normalized.requirementsSource, {
+      'Existing docs': 'existing-docs',
+      'Existing Docs': 'existing-docs',
+      'Create later': 'create-later',
+      'Create Later': 'create-later',
+      'Create now': 'create-now',
+      'Create Now': 'create-now',
+    });
+  }
+
+  if (normalized.complianceScope !== undefined) {
+    normalized.complianceScope = normalizeCompliance(normalized.complianceScope);
+  }
+
+  for (const commandKey of ['testCommand', 'lintCommand', 'typecheckCommand', 'buildCommand']) {
+    if (normalized[commandKey] !== undefined) {
+      normalized[commandKey] = normalizeNone(normalized[commandKey]);
+    }
+  }
+
+  return normalized;
+}
+
+function normalizeChoiceValue(value, legacyMap) {
+  if (value === undefined || value === null) {
+    return value;
+  }
+  const strValue = String(value).trim();
+  return legacyMap[strValue] ?? strValue.toLowerCase();
+}
+
+function normalizeNone(value) {
+  if (value === undefined || value === null) {
+    return value;
+  }
+  const strValue = String(value).trim();
+  if (strValue === '' || ['n/a', 'none', 'no', 'optional'].includes(strValue.toLowerCase())) {
+    return 'none';
+  }
+  return strValue;
+}
+
+function normalizeCompliance(value) {
+  if (Array.isArray(value)) {
+    return value.flatMap(normalizeCompliance).filter(Boolean);
+  }
+
+  if (value === undefined || value === null) {
+    return [];
+  }
+
+  const raw = String(value).trim();
+  if (raw === '' || ['n/a', 'none', 'no'].includes(raw.toLowerCase())) {
+    return [];
+  }
+
+  return raw
+    .split(',')
+    .map((item) => item.trim())
+    .filter(Boolean)
+    .map((item) => {
+      const normalized = item.toUpperCase().replace(/\s+/g, '').replace(/^SOC2$/, 'SOC2');
+      if (normalized === 'ISO27001' || normalized === 'ISO-27001') return 'ISO27001';
+      if (normalized === 'PCIDSS' || normalized === 'PCI-DSS') return 'PCI-DSS';
+      return normalized;
+    });
+}
+
+function choiceIndex(choices, value) {
+  return Math.max(choices.findIndex((choice) => choice.value === value), 0);
+}
+
+function complianceInitialIndexes(values = []) {
+  const selected = normalizeCompliance(values);
+  return COMPLIANCE_CHOICES
+    .map((choice, index) => selected.includes(choice.value) ? index : -1)
+    .filter((index) => index >= 0);
 }
 
 /**
