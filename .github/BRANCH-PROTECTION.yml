@@ -1,0 +1,54 @@
+# Branch Protection Configuration for ai-scaffold
+#
+# Use these settings in GitHub repo → Settings → Branches → Branch Protection Rules
+
+# Main branch protection
+pattern: main
+# Requirements:
+# - Pull requests required before merging
+# - Require status checks to pass before merging
+# - Require branches to be up to date before merging
+# - Require PR reviews (at least 2)
+# - Require review from code owners
+# - Restrict who can dismiss or bypass reviews
+# - Require conversation resolution before merging
+# - Require signed commits
+# - Allow force pushes (for maintainers to clean up)
+# - Allow deletions (for maintainers to clean up)
+# - Require linear history (optional)
+# - Require conversations to be resolved before merging (optional)
+# - Require status checks to pass before merging (optional)
+# - Require branches to be up to date before merging (optional)
+# - Require pull requests before merging (optional)
+# - Require code owner reviews (optional)
+# - Require signed commits (optional)
+# - Require signed commits to be verified (optional)
+# - Require authenticated committers (optional)
+# - Restrict pushes (optional)
+# - Restrict deletions (optional)
+# - Restrict dismissed reviews (optional)
+# - Restrict bypassing of required PR conversations (optional)
+# - Restrict dismissed reviews (optional)
+# - Require conversation resolution before merging (optional)
+# - Require status checks to pass before merging (optional)
+# - Require branches to be up to date before merging (optional)
+# - Require pull requests before merging (optional)
+# - Require code owner reviews (optional)
+# - Require signed commits (optional)
+# - Require signed commits to be verified (optional)
+# - Require authenticated committers (optional)
+# - Restrict pushes (optional)
+# - Restrict deletions (optional)
+# - Restrict dismissed reviews (optional)
+# - Restrict bypassing of required PR conversations (optional)
+
+# Tag protection for v*
+pattern: "v*"
+# Requirements:
+# - Required reviews (at least 2)
+# - Require status checks to pass before creating a matching ref
+# - Require branch to be up to date before merging
+# - Require linear history
+# - Require conversation resolution before merging
+# - Require signed commits
+# - Require signed commits to be verified
