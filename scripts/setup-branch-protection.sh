@@ -122,7 +122,7 @@ echo
 # main: production-stable
 # ------------------------------------------------------------
 
-echo "==> Protecting main (2 approvals, $STATUS_LABEL required, no force push)..."
+echo "==> Protecting main (1 approval, $STATUS_LABEL required, no force push)..."
 
 gh api -X PUT "repos/$REPO/branches/main/protection" \
   --header "Accept: application/vnd.github+json" \
@@ -137,7 +137,7 @@ gh api -X PUT "repos/$REPO/branches/main/protection" \
   "required_pull_request_reviews": {
     "dismiss_stale_reviews": true,
     "require_code_owner_reviews": false,
-    "required_approving_review_count": 2,
+    "required_approving_review_count": 1,
     "require_last_push_approval": true
   },
   "restrictions": null,

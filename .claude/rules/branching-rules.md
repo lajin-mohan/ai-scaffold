@@ -190,7 +190,7 @@ For `release/*` → `dev` sync-back, preserve release-fix traceability. Use a no
 
 ## Protected Branch Rules
 
-- `main`: no direct push, no force push, requires 2 approvals + required checks
+- `main`: no direct push, no force push, requires 1 approval + required checks
 - `dev`: no direct push except documented emergency admin bypass, requires 1 approval + required checks
 - Tags on `main` are immutable once pushed
 

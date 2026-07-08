@@ -58,7 +58,7 @@ Repo → **Settings** → **Branches** (left sidebar) → **Add classic branch p
 | --------------------------------------------------- | ----------------------------------------------------------- | ------------------------------------------------------------ |
 | Branch name pattern                                 | `main`                                                      | Apply to the production branch                               |
 | Require a pull request before merging               | **ON**                                                      | No direct pushes to production                               |
-| Required approvals                                  | **2**                                                       | Two-pair-of-eyes rule per branching-rules.md                 |
+| Required approvals                                  | **1**                                                       | Single approval is the default for solo/early-stage repos; raise to 2 when the contributor base grows |
 | Dismiss stale approvals when new commits are pushed | **ON**                                                      | Re-review required after changes                             |
 | Require review from Code Owners                     | ON if `CODEOWNERS` exists                                   | Otherwise leave OFF                                          |
 | Require approval of the most recent reviewable push | **ON**                                                      | Reviewers see the final state                                |
