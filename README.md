@@ -295,16 +295,16 @@ ais doctor ./my-project --json
 
 ### Update An Installed Scaffold
 
-`update` exists in this MVP, but full managed-file migrations are planned for Phase 3. In `0.7.1`, it can compare/update scaffold metadata and should be treated cautiously. Use `--dry-run` first.
+`update` exists in this MVP as a safe placeholder. Full managed-file migrations are planned for Phase 3. In `0.8.0`, it reports installed metadata but does not mutate `.ai-scaffold.json` or apply file updates.
 
 ```bash
 npx @lajin.m/ai-scaffold update --dry-run
-npx @lajin.m/ai-scaffold update --target-version 0.7.1
+npx @lajin.m/ai-scaffold update --target-version 0.8.0
 ais update --dry-run
-ais update --target-version 0.7.1
+ais update --target-version 0.8.0
 ```
 
-Full safe file updates, diffs, and version-pinned migrations are planned for Phase 3. Managed-file hashes are already recorded for `status` and `doctor` checks.
+Full safe file updates, diffs, and version-pinned migrations are planned for Phase 3. Until then, `update` exits without changing files when an actual version change would be required.
 
 ### Command Reference
 

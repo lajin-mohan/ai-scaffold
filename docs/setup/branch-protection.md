@@ -23,7 +23,7 @@ The single source of truth for what gets enforced lives in [`.claude/rules/branc
 ## Prerequisites
 
 - You have **Admin** access to the repository.
-- You know which status checks you want to require — for Day 1 this is `ci-passed`; add `ai-review-passed` after AI review automation exists.
+- You know which status checks you want to require — for Day 1 this is `CI passed`; add `ai-review-passed` after AI review automation exists.
 - You have decided who can push to `main` and `dev` (typically: Tech Lead + bots only for `main`; team + bots for `dev`).
 - If enabling Code Owners review, create and commit a valid `.github/CODEOWNERS` file first.
 - Confirm the release-bot or deployment actor has the minimum required permission and is included in the allowed push list if it must create release commits or tags.
@@ -64,7 +64,7 @@ Repo → **Settings** → **Branches** (left sidebar) → **Add classic branch p
 | Require approval of the most recent reviewable push | **ON**                                                      | Reviewers see the final state                                |
 | Require status checks to pass before merging        | **ON**                                                      | CI must be green                                             |
 | Require branches to be up to date before merging    | **ON**                                                      | Forces rebase on target                                      |
-| Status checks required                              | `ci-passed`; add `ai-review-passed` after automation exists | CI and AI review gates from branching-rules.md               |
+| Status checks required                              | `CI passed`; add `ai-review-passed` after automation exists | CI and AI review gates from branching-rules.md               |
 | Require conversation resolution before merging      | **ON**                                                      | No unresolved PR comments                                    |
 | Require signed commits                              | OFF (or ON if your team uses GPG)                           | Optional                                                     |
 | Require linear history                              | **ON**                                                      | No merge bubbles in main; use squash or rebase merge         |
@@ -92,7 +92,7 @@ Same dialog, new rule.
 | Require review from Code Owners                     | ON if `CODEOWNERS` exists                                           | Otherwise OFF                                                  |
 | Require status checks to pass before merging        | **ON**                                                              | CI must be green                                               |
 | Require branches to be up to date before merging    | **ON**                                                              | Forces rebase on target                                        |
-| Status checks required                              | `ci-passed`; add `ai-review-passed` after automation exists         | CI and AI review gates from branching-rules.md                 |
+| Status checks required                              | `CI passed`; add `ai-review-passed` after automation exists         | CI and AI review gates from branching-rules.md                 |
 | Require conversation resolution before merging      | **ON**                                                              | No unresolved PR comments                                      |
 | Require linear history                              | ON if you prefer linear; OFF if your team uses merge commits        | Discretionary                                                  |
 | Do not allow bypassing the above settings           | **OFF**                                                             | Allows documented emergency admin bypass on `dev`              |
@@ -135,7 +135,7 @@ After applying both rules:
 
 ## What if required checks don't show up in the status-checks dropdown?
 
-GitHub only lists status checks that have completed successfully in the repository recently. If `ci-passed` or `ai-review-passed` is missing:
+GitHub only lists status checks that have completed successfully in the repository recently. If `CI passed` or `ai-review-passed` is missing:
 
 1. Push any commit to a feature branch, or trigger the relevant workflow manually via **Actions**.
 2. Wait for the workflow to complete.
@@ -143,7 +143,7 @@ GitHub only lists status checks that have completed successfully in the reposito
 
 Do not require `ai-review-passed` until the AI review automation exists and has completed successfully in this repository within the past 7 days.
 
-Required status check names must exactly match the workflow job/check names reported by GitHub. If the workflow job is named `build`, GitHub will not treat it as `ci-passed` unless the workflow exposes a check with that exact name.
+Required status check names must exactly match the workflow job/check names reported by GitHub. If the workflow job is named `build`, GitHub will not treat it as `CI passed` unless the workflow exposes a check with that exact name.
 
 ---
 
@@ -151,5 +151,5 @@ Required status check names must exactly match the workflow job/check names repo
 
 - Rules: [`.claude/rules/branching-rules.md`](../../.claude/rules/branching-rules.md)
 - Automated alternative: [`scripts/setup-branch-protection.sh`](../../scripts/setup-branch-protection.sh)
-- CI workflow that produces `ci-passed`: [`.github/workflows/ci.yml`](../../.github/workflows/ci.yml)
+- CI workflow that produces `CI passed`: [`.github/workflows/ci.yml`](../../.github/workflows/ci.yml)
 - AI review automation should produce `ai-review-passed` before that check is enforced

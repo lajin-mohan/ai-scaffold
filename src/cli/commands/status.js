@@ -20,7 +20,6 @@ export function statusCommand(cli) {
 
 async function runStatus(targetDir, options) {
   const target = targetDir ? path.resolve(targetDir) : process.cwd();
-  const scaffoldFile = path.join(target, '.ai-scaffold.json');
 
   if (options.json) {
     const status = await getStatusObject(target);

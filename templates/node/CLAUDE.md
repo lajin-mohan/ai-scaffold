@@ -9,9 +9,11 @@ This file governs how Claude, Codex, and other AI tools collaborate on every pro
 >
 > If you see bracket-placeholders in the Project Identity or Tech Stack table below, the scaffold has not been bootstrapped for a real project yet. Do not treat them as bugs to fix or guess at values. Run `/bootstrap` instead — it walks through identity, stack, tenancy, and compliance one decision at a time and updates every file that holds a placeholder.
 >
-> While in template state, the operational gates are deliberately permissive:
-> - CI workflow's `detect-stack` job skips Node/PHP jobs when no `package.json` / `composer.json` exists, so a fresh template clone passes CI.
-> - `/review` runs with `PRE_REVIEW_ALLOW_UNCONFIGURED=1` set in `.claude/settings.json` so it works without configured lint/typecheck/test commands. `/bootstrap` removes this opt-out as part of stack configuration.
+> While in template state, generated projects do not receive a CI workflow by
+> default. Add CI through project-specific setup or a future AI Scaffold CI pack.
+> `/review` runs with `PRE_REVIEW_ALLOW_UNCONFIGURED=1` set in
+> `.claude/settings.json` so it works before lint/typecheck/test commands are
+> configured. `/bootstrap` removes this opt-out as part of stack configuration.
 >
 > If you are editing this template itself (improving rules, agents, commands), the placeholders stay. If you are starting a real project, run `/bootstrap` first.
 

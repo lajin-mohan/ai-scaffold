@@ -104,3 +104,31 @@ Application repositories should not copy these entries into their project memory
 
 ### Lesson (Pending)
 - Placeholder propagation is the #1 risk for CLI adoption — template files must never ship unresolved tokens
+
+---
+
+## 2026-07-08 — v0.8.0 Manual npm Publish and Governance Follow-up
+
+**Stage:** v0.8.0 published; post-release hardening opened
+
+### What Happened
+- `@lajin.m/ai-scaffold@0.8.0` was published to npm with the `ais` bin.
+- The GitHub Actions publish workflow reached npm provenance signing but failed
+  at the final npm publish step because npm trusted publishing was not fully
+  configured for the package.
+- The package was published manually after the workflow failure.
+- The `v0.8.0` tag was moved during release recovery.
+- Branch protection was not active on `main` during the release.
+
+### Follow-up Required
+- Configure and prove npm trusted publishing before the next tag.
+- Enable branch protection for `main`.
+- Treat failed publish attempts as a new patch tag instead of moving an existing
+  release tag.
+- Keep release bypasses documented when the project cannot follow its normal
+  governance path.
+
+### Lesson
+- Governance products must model their own governance. Manual release recovery
+  is acceptable only when documented and followed by controls that prevent a
+  repeat.

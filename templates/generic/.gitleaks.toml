@@ -14,23 +14,22 @@ global = true
 
 paths = [
   # .env.example contains placeholder values only — not real credentials
-  ".env.example",
-  ".env.example.bak",
+  "^\\.env\\.example$",
+  "^\\.env\\.example\\.bak$",
 
   # Test files contain fake credentials for testing purposes only
-  "tests/**/*.ts",
-  "tests/**/*.js",
-  "**/*.test.ts",
-  "**/*.fixture.ts",
-  "apps/api/src/**/test*.ts",
+  "^tests/.*\\.(ts|js)$",
+  "(^|/).*\\.test\\.ts$",
+  "(^|/).*\\.fixture\\.ts$",
+  "^apps/api/src/.*/test[^/]*\\.ts$",
 
   # Documentation examples use illustrative (not real) values
-  "docs/**/*.md",
-  "README.md",
-  "CONTRIBUTING.md",
+  "^docs/.*\\.md$",
+  "^README\\.md$",
+  "^CONTRIBUTING\\.md$",
 
   # Specific example files that contain fake credentials for demonstration
-  "apps/api/src/repositories/examples/applications.repository.integration-example.ts",
+  "^apps/api/src/repositories/examples/applications\\.repository\\.integration-example\\.ts$",
 ]
 
 # Example: suppress specific secret patterns in specific files

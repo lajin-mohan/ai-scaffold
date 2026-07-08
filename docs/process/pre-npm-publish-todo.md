@@ -1,459 +1,396 @@
-# Pre-NPM Publish TODO
+# Pre-Next-Publish TODO
 
-**Purpose:** Final cleanup checklist before publishing `ai-scaffold` for `npx @lajin.m/ai-scaffold ...` usage.
+**Purpose:** Release follow-up checklist for AI Scaffold after the `v0.8.0`
+npm publish.
 
-This combines the CLI plan with the release-readiness cleanup review. The goal is to make the package useful without taking over an existing repository's own `docs/`, `apps/`, `packages/`, `infra/`, `scripts/`, or CI structure.
+This file tracks what must be fixed before the next tag, what should follow
+soon after, and what can remain future roadmap work. It supersedes the older
+pre-`v0.8.0` checklist.
 
 ---
 
-## Release Decision
+## Current Release State
 
-Use this checklist to verify that the v0.7.x package keeps a smaller, safer install surface.
+`v0.8.0` is live on npm as:
 
-The CLI can be published as an MVP only after:
+```text
+@lajin.m/ai-scaffold@0.8.0
+CLI bin: ais
+```
 
-- Existing project installs are isolated.
-- New project creation remains useful but not noisy.
-- Node/JavaScript is available as a day-one profile.
-- npm package contents are explicitly controlled.
-- `npx @lajin.m/ai-scaffold .` behaves as documented.
-- Template hook safety is actually shipped in generated projects, not only in this scaffold repo.
-
-Already confirmed for v0.7.1:
+Confirmed for `v0.8.0`:
 
 - Package name is `@lajin.m/ai-scaffold`.
 - CLI bin is `ais`.
-- Default install remains project-local.
-- Clean root install surface is implemented and covered by smoke tests.
-- A stricter core-only install surface is still pending for the next version:
-  no default `.ai-scaffold/docs/`, `.ai-scaffold/tasks/`, or `.ai-scaffold/_ai/`.
+- Default install is project-local.
+- `create` and `init` use a core-only default install surface.
+- Default installs do not create root `docs/`, `tasks/`, `_ai/`, `apps/`,
+  `packages/`, `infra/`, or `scripts/`.
+- Default installs do not create `.ai-scaffold/docs/`,
+  `.ai-scaffold/tasks/`, or `.ai-scaffold/_ai/`.
+- `.ai-scaffold/README.md` and `.ai-scaffold/context.md` are generated.
+- Setup prompts store meaningful values instead of numeric select indexes.
+- Node/JavaScript profile is available from day one.
+- `js`, `javascript`, and `nodejs` resolve to `node`.
+- Starter hook safety is shipped in generated projects.
+- Memory safety policy is generated into project memory.
+- Publish smoke checks passed locally and in CI before manual npm publish.
+
+Important release caveat:
+
+- `v0.8.0` was published manually. The tag-based npm publish workflow did not
+  succeed, so the npm package does not have trusted-publishing provenance.
+
+Do not cut another tag until the P0 items below are resolved.
 
 ---
 
-## P0 — Must Fix Before Publish
+## P0 - Must Fix Before Next Tag
 
-Current v0.7.1 publish gates are complete. The remaining P0 items below are
-for the next npm-published CLI version because they affect release confidence,
-CI correctness, or the public installation surface.
+### 1. Configure And Prove Trusted npm Publishing
 
-### 1. Route `ais .` to `init` — Done For v0.7.1
+Status: partially done in `fix/p0-release-hardening`; external npm package
+settings still required.
 
-Previous behavior routed bare `.` to `create .`.
+Problem:
 
-Implemented behavior:
-
-```bash
-npx @lajin.m/ai-scaffold .
-```
-
-must behave like:
-
-```bash
-npx @lajin.m/ai-scaffold init
-```
-
-Acceptance:
-
-- `ais . --dry-run` runs the init flow.
-- Existing project files are protected.
-- E2E and publish smoke tests spawn the real CLI.
-
-### 2. Isolate Existing Project Installs — Done For v0.7.1
-
-For `init`, do not create or modify generic project-owned root folders by default.
-
-Do not install these by default into existing projects:
-
-```text
-docs/
-apps/
-packages/
-infra/
-scripts/
-tasks/
-.github/workflows/
-package.json
-composer.json
-README.md
-```
-
-Default existing-project install should be limited to scaffold-owned files:
-
-```text
-.ai-scaffold/
-.claude/
-.ai-scaffold.json
-AGENTS.md
-CLAUDE.md
-```
-
-Optional root files may be added only with explicit flags in a future pass.
-
-### 3. Add a Namespaced Scaffold Folder — Done For v0.7.1
-
-Move scaffold-owned docs and operational context out of the project root namespace.
-
-Target install namespace:
-
-```text
-.ai-scaffold/
-  README.md
-  docs/
-    workflow.md
-    roles.md
-    commands.md
-    context.md
-  manifest.json
-```
-
-This keeps scaffold guidance separate from the application's own documentation.
-
-### 4. Control npm Package Contents — Done For v0.7.1
-
-Add an explicit npm publish allowlist.
-
-Recommended `package.json` shape:
-
-```json
-{
-  "files": [
-    "bin/",
-    "src/",
-    "templates/",
-    "docs/cli/",
-    "docs/process/pre-npm-publish-todo.md",
-    "README.md",
-    "README.scaffold.md",
-    "LICENSE",
-    "CHANGELOG.md"
-  ]
-}
-```
-
-Acceptance:
-
-```bash
-npm_config_cache=/private/tmp/ai-scaffold-npm-cache npm pack --dry-run
-```
-
-shows only intentional package files.
-
-### 5. Split Create and Init Template Behavior — Done For v0.7.1
-
-`create` and `init` should not install the same full tree.
+- Both `v0.8.0` publish workflow runs failed at the final npm publish step.
+- The workflow reached provenance signing, then npm returned `E404` for
+  `@lajin.m/ai-scaffold`.
+- `v0.8.0` was later published manually, without workflow provenance.
 
 Required:
 
-- `create <project>` may generate a clean starter project.
-- `init` must stay minimal and non-invasive.
-- Both flows must generate `.ai-scaffold.json`, `.claude/MEMORY.md`, and `.claude/settings-overrides.json`.
-
-### 6. Ship Node/JS Profile From Day 1 — Done For v0.7.1
-
-Node/JavaScript is required for the first npm-published version.
-
-Required behavior:
-
-- `--profile node` works for `create` and `init`.
-- `--profile js`, `--profile javascript`, and `--profile nodejs` resolve to `node`.
-- Generated `.ai-scaffold.json` stores `"profile": "node"` after alias resolution.
-- Node profile README uses Node/npm defaults such as `npm install`, `npm run dev`, `npm test`, and `npm run lint`.
-- Node profile behavior is covered through the real CLI, not only core helpers.
+- Configure npm trusted publishing for:
+  - npm package: `@lajin.m/ai-scaffold`
+  - GitHub owner: `lajin-mohan`
+  - GitHub repo: `ai-scaffold`
+  - workflow filename: `publish.yml`
+- Ensure `.github/workflows/publish.yml` uses a supported Node/npm runtime for
+  trusted publishing. **Done in branch: workflow now uses Node 24.**
+- Validate with the next patch tag.
+- Do not move or re-point an existing release tag to retry publishing.
 
 Acceptance:
 
 ```bash
-node bin/ai-scaffold.js create /private/tmp/ai-scaffold-node-smoke --profile js --yes
-node bin/ai-scaffold.js init /private/tmp/ai-scaffold-node-init-smoke --profile javascript --yes --dry-run
+git tag -a v0.8.1 -m "Release v0.8.1"
+git push origin v0.8.1
+npm view @lajin.m/ai-scaffold version
 ```
 
-### 7. Sync Hook Safety Into Templates — Done For v0.7.1
+Expected result:
 
-The current scaffold repo has the starter hook safety layer, but generated
-projects must receive the same safety layer.
+- GitHub Actions publishes `@lajin.m/ai-scaffold@0.8.1`.
+- npm shows `0.8.1`.
+- The npm release has provenance/attestation from GitHub Actions.
+- `npm view @lajin.m/ai-scaffold@0.8.1 dist.attestations` or the npm package
+  page confirms provenance exists.
 
-Status: verified. The shipped profile templates include and wire the starter
-safety hooks, and the publish smoke gate checks generated output.
+### 2. Apply Branch Protection And Document The v0.8.0 Bypass
+
+Status: done in `fix/p0-release-hardening`; verified live on GitHub.
+
+Problem:
+
+- `main` was not branch protected during the `v0.8.0` release.
+- Release commits were pushed directly to `main`.
+- The `v0.8.0` tag was force-updated during release recovery.
+- That contradicts the scaffold's own branching governance.
 
 Required:
 
-- Copy these hooks into every shipped profile template:
-  - `.claude/hooks/pre-secret-guard.sh`
-  - `.claude/hooks/pre-dangerous-bash-guard.sh`
-  - `.claude/hooks/governance-file-guard.sh`
-- Update every `templates/*/.claude/settings.json` to wire the hooks.
-- Ensure generated projects have executable hook files.
-- Add smoke checks that `create` and `init` output include and wire these hooks.
-- Verify each template settings file references only hook files that exist in
-  that same template.
+- Enable branch protection for `main`. **Done: verified via GitHub API.**
+- Enable branch protection for `dev`. **Done: verified via GitHub API.**
+- Require the final CI status check. **Done: `CI passed` is required.**
+- Disallow force pushes and branch deletion on `main`. **Done.**
+- Prefer pull requests or a documented release branch for future releases.
+- Document the `v0.8.0` manual-publish and tag-move bypass in release notes or
+  `docs/process/scaffold-build-history.md`. **Done in branch.**
+- Adopt a release rule: failed publish means a new patch tag, not a moved tag.
+- Keep local `dev`, remote `dev`, and `main` synchronized before starting the
+  next release branch.
 
 Acceptance:
 
 ```bash
-node bin/ai-scaffold.js create /private/tmp/ai-scaffold-hook-smoke --profile node --yes
-test -f /private/tmp/ai-scaffold-hook-smoke/.claude/hooks/pre-secret-guard.sh
-test -f /private/tmp/ai-scaffold-hook-smoke/.claude/hooks/pre-dangerous-bash-guard.sh
-test -f /private/tmp/ai-scaffold-hook-smoke/.claude/hooks/governance-file-guard.sh
+gh api repos/lajin-mohan/ai-scaffold/branches/main/protection
 ```
 
-Final verification:
+returns branch-protection settings instead of `404`.
 
-```bash
-npm test
-bash scripts/pre-publish-smoke.sh
-```
+Verified:
 
-### 8. Add Memory Safety Policy — Done For v0.7.1
+- `main` requires `CI passed`, 2 approving reviews, linear history,
+  conversation resolution, admin enforcement, and blocks force pushes/deletion.
+- `dev` requires `CI passed`, 1 approving review, conversation resolution, and
+  blocks force pushes/deletion.
+- Repository default branch is `dev`.
 
-Persistent memory is useful but risky. Keep this lightweight for v0.7.x.
+### 3. Restore Security Gates In CI
 
-Status: verified. Generated `.claude/MEMORY.md` contains the lightweight
-project-memory safety policy.
+Status: done in `fix/p0-release-hardening`; must still pass on GitHub Actions.
+
+Problem:
+
+- The CLI CI rewrite removed the previous security gates.
+- The review found production dependencies clean, but dev dependencies had
+  audit findings through the Vitest/Vite/esbuild chain.
+- This repo ships governance as its product, so its own CI should model the
+  security posture it recommends.
 
 Required:
 
-- Document project memory only; no global/user-home memory install by default.
-- Forbid secrets, credentials, tokens, production data, and client-confidential text unless explicitly allowed.
-- Require review for memory changes.
-- Add this policy to scaffold rules/docs that generated projects receive.
-- Ensure generated project docs explain that memory is operational context, not
-  a place for private data, secrets, credentials, or unreviewed instructions.
+- Add `npm audit --audit-level=high` or an equivalent policy to CI.
+- Add gitleaks secret scanning to CI.
+- Decide whether Semgrep is required for this repo now or later. **Deferred;
+  npm audit and gitleaks are the restored P0 gate.**
+- Upgrade or pin dev tooling to resolve high/critical audit findings.
+- Keep production dependency audit clean.
 
 Acceptance:
 
-- Generated projects contain a clear memory safety policy.
-- `README.md` and/or `HOW-TO-USE.md` do not overstate memory as risk-free automation.
-- The policy appears in at least one scaffold-managed file that every shipped
-  profile receives.
-
-### 9. Fix CI For This CLI Repository
-
-Status: pending.
-
-The current `.github/workflows/ci.yml` is still shaped like a generated
-application pipeline. Because this repository has a root `package.json`, the
-workflow detects Node and then attempts app-style commands that do not exist in
-this CLI package:
-
-```text
-npm run db:migrate
-npm run test:integration
-npm run build
-npm run test:coverage
+```bash
+npm audit --audit-level=high
+gitleaks detect --source .
 ```
 
-Verified CI/CD findings from repo review:
+or equivalent CI steps pass on `main` and PRs.
 
-- Latest GitHub Actions runs on both `main` and `dev` were failing.
-- The integration job fails because `npm run db:migrate` is not defined in this
-  CLI package.
-- The workflow also references `npm run test:integration`, `npm run build`, and
-  `npm run test:coverage`, which are not defined in the current `package.json`.
-- The audit job fails on the current dev dependency chain around
-  `vitest`/`vite`/`esbuild`.
-- Local CLI checks pass:
-  - `npm test`
-  - `npm run typecheck`
-  - `bash scripts/pre-publish-smoke.sh`
-- The publish smoke gate passed locally with `71 OK / 0 FAIL`, so the main
-  problem is the GitHub workflow shape and audit policy, not the basic CLI smoke
+### 4. Remove Or Replace `.github/BRANCH-PROTECTION.yml`
+
+Status: done in `fix/p0-release-hardening`.
+
+Problem:
+
+- `.github/BRANCH-PROTECTION.yml` is not consumed by an enforced tool.
+- It contradicts `.claude/rules/branching-rules.md` by allowing force pushes
+  and deletions on `main`.
+- It creates a third source of truth for branch policy.
+
+Required:
+
+- Delete the file, or replace it with a generated/read-only artifact that
+  matches the real branch-protection policy.
+- Keep `.claude/rules/branching-rules.md`, setup docs, and any scripts aligned.
+
+Acceptance:
+
+- No repository policy file recommends force pushes or branch deletion for
+  protected release branches.
+
+### 5. Make `ais update` Safe While It Is Still A Placeholder
+
+Status: done in `fix/p0-release-hardening`.
+
+Problem:
+
+- The current update flow can create false confidence if it mutates metadata
+  without applying real file migrations.
+- `v0.7.x` installs and `v0.8.x` core-only installs have different managed-file
+  expectations.
+
+Required:
+
+- Keep `ais update` discoverable.
+- Do not mutate `.ai-scaffold.json` unless a real update plan is applied.
+- Let `ais update --dry-run` report installed version, CLI version, profile, and
+  "file update engine not implemented yet".
+- Refuse `--target-version` mutation until real migration/update logic exists.
+- Document this limitation clearly.
+
+Acceptance:
+
+- `ais update` writes nothing while update is still a placeholder.
+- `ais update --dry-run` exits successfully and writes nothing.
+- Tests cover placeholder update safety.
+
+### 6. Write The Managed-File Ownership Contract ADR
+
+Status: done in `fix/p0-release-hardening`.
+
+Problem:
+
+- `v0.8.0` changed the default install surface and managed-file contract.
+- Older manifests may still list docs/tasks files that users are expected to
+  edit.
+- Future `doctor`, `repair`, `uninstall`, and `update` cannot be safe unless
+  the ownership model is explicit.
+
+Required:
+
+- Add an ADR for managed file ownership contract v2.
+- Define what is scaffold-managed, user-editable, generated, optional pack
+  content, and protected app content.
+- Define the migration/re-baseline approach for `v0.7.x` manifests.
+- Make manifest re-baselining an explicit acceptance criterion for Phase 3
+  update work.
+
+Acceptance:
+
+- ADR exists under `docs/architecture/adr/`.
+- `update` and `doctor` roadmap tasks reference the ADR.
+
+### 7. Decide And Document The Downstream CI Story
+
+Status: done in `fix/p0-release-hardening`.
+
+Problem:
+
+- `v0.8.0` excludes `.github/**` from default installs.
+- Generated projects therefore receive no CI workflow by default.
+- Some scaffold docs still refer to a detect-stack CI workflow as if it exists
+  in generated projects.
+
+Required:
+
+- Decide whether template CI is:
+  - re-shipped by default, or
+  - moved behind an explicit `ci` pack. **Decision: CI remains out of the
+    default install and should become an explicit future `ci` pack.**
+- Fix `CLAUDE.md` and template docs so they do not claim generated projects
+  have CI files that are not installed.
+- Add a validation step for template workflow YAML if workflows remain in the
+  package or future packs.
+
+Acceptance:
+
+- Default generated projects do not claim missing CI exists.
+- CI pack behavior, if chosen, is explicit and documented.
+- Template workflow files are parsed or checked if they continue to ship.
+
+### 8. Validate Choice-Valued Flags And Stored Metadata
+
+Status: done in `fix/p0-release-hardening`.
+
+Problem:
+
+- Interactive prompt values are now meaningful, but explicit flags can still
+  persist out-of-vocabulary values.
+- `doctor` currently catches numeric legacy prompt indexes, but not every
+  invalid string value.
+
+Required:
+
+- Validate normalized values against allowed vocabularies before writing
+  `.ai-scaffold.json`.
+- Reject invalid `projectType`, `lifecycleStage`, `frontendStack`,
+  `dataSensitivity`, `profile`, and compliance values.
+- Print allowed values in CLI error messages.
+- Teach `doctor` to flag out-of-vocabulary values in existing manifests.
+
+Acceptance:
+
+```bash
+ais init --project-type Platform --yes
+ais init --compliance "iso 27001,PCI DSS,bogusscope" --yes
+```
+
+must reject invalid values or report them through `doctor`.
+
+### 9. Replace The Fake Lint Gate
+
+Status: done in `fix/p0-release-hardening`.
+
+Problem:
+
+- `npm run lint` currently delegates to `npm run typecheck`.
+- `typecheck` only syntax-checks `bin/ai-scaffold.js`.
+- `src/cli/**` is not checked by the current lint/typecheck gate.
+
+Required:
+
+- Either add a real lint gate, preferably ESLint flat config, or rename the
+  current check honestly as a syntax check.
+- Extend syntax or static validation across `src/cli/**`.
+- Update generated command defaults so downstream projects are not taught that
+  "lint equals typecheck one file".
+
+Acceptance:
+
+- `npm run lint` performs real linting, or docs/package scripts clearly state
+  no linter is configured yet.
+- CI does not run the same one-file syntax parse twice under different names.
+
+### 10. Add Tests For The Changed Release Surface
+
+Status: partially done in `fix/p0-release-hardening`; remaining coverage is
+tracked for follow-up.
+
+Required test coverage:
+
+- `doctor` recognizes healthy core-only installs.
+- `doctor` flags numeric legacy values and out-of-vocabulary strings. **Done for
+  out-of-vocabulary strings; numeric legacy coverage remains existing.**
+- `update` placeholder writes nothing. **Done.**
+- `--dry-run` writes nothing.
+- `init` on an already scaffolded project is idempotent.
+- Explicit flags flow correctly into `.ai-scaffold.json`.
+- Invalid explicit flags are rejected. **Done.**
+- `v0.7.x` shaped manifests do not get falsely marked as fully updated. **Done
+  for update placeholder safety.**
+
+Acceptance:
+
+- Tests cover the release claims in `CHANGELOG.md`.
+- The next release does not rely only on smoke-script assertions for core CLI
   behavior.
 
-Required for the scaffold platform repo:
-
-- Replace app-specific CI jobs with CLI-package checks.
-- Run `npm ci`.
-- Run `npm test`.
-- Run `npm run typecheck`.
-- Run `bash scripts/pre-publish-smoke.sh`.
-- Run `npm pack --dry-run` or equivalent package-content verification.
-- Keep npm audit and secret scanning if they are stable for this repo.
-- Keep one final required `ci-passed` job for branch protection.
-- Remove PostgreSQL service containers from this repo's CI unless a future test
-  actually requires them.
-- Avoid generated-app assumptions such as `apps/api/dist/` and `apps/web/dist/`
-  artifact uploads.
-
-Acceptance:
-
-```bash
-npm test
-npm run typecheck
-bash scripts/pre-publish-smoke.sh
-npm pack --dry-run
-```
-
-GitHub Actions must pass on `dev`, `main`, and pull requests into those
-branches.
-
-### 10. Add Tag-Based npm Publish Workflow
-
-Status: pending.
-
-Publish should be automatic when a version tag is pushed from `main`.
-
-Recommended behavior:
-
-- Trigger on tags matching `v*.*.*`.
-- Verify the tag commit is contained in `main`.
-- Run the same release checks as CI.
-- Publish with `npm publish --access public`.
-- Use `NODE_AUTH_TOKEN` from an npm automation token stored in GitHub Actions
-  secrets.
-- Use least-privilege GitHub permissions.
-- Do not publish on every push to `main`.
-
-Required repository secret:
-
-```text
-NPM_TOKEN
-```
-
-Acceptance:
-
-```bash
-git tag -a v0.7.2 -m "Release v0.7.2"
-git push origin v0.7.2
-```
-
-The GitHub release workflow publishes `@lajin.m/ai-scaffold@0.7.2` to npm.
-
-CI/CD research finding:
-
-- No tag-based npm publish workflow exists yet.
-- Manual `npm publish --access public` worked only after browser/OTP auth; for
-  automated releases, use an npm automation token stored as `NPM_TOKEN`.
-- The release workflow must depend on the fixed CLI-package CI gates above.
-
-### 11. Make `/update` / `ais update` Safe And Honest
-
-Status: pending.
-
-Current `ais update` is a placeholder that can write a new version into
-`.ai-scaffold.json` without applying file updates, diffs, migrations, or managed
-file reconciliation. That can create false confidence because a project may
-look updated while still containing old scaffold files.
-
-Required for the next CLI release:
-
-- Keep `update` available as a discoverable command.
-- Do not mutate `.ai-scaffold.json` unless real file update logic runs.
-- If full update logic is not implemented yet, make `update` report that it is
-  not available and exit safely.
-- `update --dry-run` may show installed version, CLI version, profile, and a
-  clear "file migrations not implemented yet" message.
-- `update --target-version` must not mark the project as updated unless the
-  selected version's files are actually applied.
-- Documentation must describe the current limitation clearly.
-
-Preferred interim behavior:
-
-```bash
-ais update --dry-run
-```
-
-prints:
-
-```text
-Installed version: 0.7.x
-CLI version: 0.7.x
-Profile: node
-File update engine: not implemented yet
-No files changed
-```
-
-Acceptance:
-
-- `ais update` does not change `.ai-scaffold.json` while update is still a
-  placeholder.
-- `ais update --dry-run` exits successfully and writes nothing.
-- `ais update --target-version <version>` refuses to mutate metadata until real
-  update plans exist.
-- Tests cover update placeholder safety.
-
 ---
 
-## P1 — Strongly Recommended Soon After Publish
+## P1 - Strongly Recommended After P0
 
-### 12. Reduce Root Template Surface — Done For v0.7.1
+### 11. Clean Internal Artifacts From Published Templates
 
-Status: completed for v0.7.1 as a root-folder cleanup, but superseded by item
-15 for the next release.
+Status: partially done in `fix/p0-release-hardening`.
 
-Implemented:
+Problem:
 
-- New `create` keeps the project root minimal and puts scaffold-owned docs/tasks under `.ai-scaffold/`.
-- Existing-project `init` stays namespaced and does not create root `docs/`, `tasks/`, `_ai/`, `apps/`, `packages/`, `infra/`, or `scripts/`.
-- Root `HOW-TO-USE.md`, `CONTRIBUTING.md`, `CHANGELOG.md`, `SECURITY.md`, `LICENSE`, `.env.example`, `.editorconfig`, `.gitattributes`, `.gitleaks.toml`, and `.cursorrules` are moved under `.ai-scaffold/`.
-- `tasks/ponytail-debt.md` and heavy example/source folders are excluded from the default install plan.
-- Publish smoke tests now fail if noisy root folders/files are generated.
+- The npm tarball still includes internal scaffold-history material inside
+  shipped templates, such as repo estimates, orchestration BRD notes, and real
+  task lessons.
+- No secrets were found, but these files increase noise and expose internal
+  development context.
 
-Next direction:
+Required:
 
-- Keep only the core operating layer in default installs.
-- Do not install `.ai-scaffold/docs/`, `.ai-scaffold/tasks/`, or `.ai-scaffold/_ai/` by default.
-- Add larger material through explicit packs.
+- Review `templates/*/docs/**`, `templates/*/tasks/**`, and
+  `templates/*/_ai/**`.
+- Move internal-only artifacts to this repo's own docs, not generated
+  templates.
+- Keep only content that should be installed into downstream projects or future
+  optional packs.
 
-Future optional packs can re-enable examples or heavier docs explicitly:
+Acceptance:
 
-```bash
-ais add docs
-ais add examples
-ais add ci
-ais add templates
-```
+- `npm pack --dry-run --json` shows no scaffold-internal planning artifacts in
+  shipped templates unless intentionally part of an optional pack.
 
-Moved from default install to scaffold-internal docs or future optional examples:
+### 12. Refactor `copy.js` Into Smaller Core Modules
 
-```text
-apps/
-packages/
-infra/
-scripts/
-docs/process/
-docs/estimates/
-docs/brd/role-based-orchestration-brd.md
-docs/architecture/ai-coding-scaffold-review.md
-tasks/ponytail-debt.md
-```
+Status: pending.
 
-For existing projects, do not create either root `docs/` or
-`.ai-scaffold/docs/` unless the user explicitly requests the docs pack.
+Problem:
 
-### 13. Decide Light Profile Status — Mostly Done For v0.7.1
+- `src/cli/core/copy.js` owns copying, manifest construction, settings
+  generation, memory generation, and content builders.
+- Lifecycle and vocabulary values are duplicated across multiple modules.
 
-Current Laravel and Node profiles are light profiles.
+Required:
 
-Known Laravel differences:
+- Extract manifest building into `src/cli/core/manifest.js`.
+- Extract generated content builders into `src/cli/core/content-templates.js`.
+- Centralize vocabularies shared by prompts, validation, and doctor.
+- Keep behavior unchanged while refactoring.
 
-- `composer.json`
-- `README.template.md`
+Acceptance:
 
-Known Node differences:
+- `copy.js` becomes primarily orchestration/copy logic.
+- Tests and smoke checks still pass.
 
-- `README.template.md`
-- `package.json`
-- default backend stack resolves to `Node.js`
-- `javascript`, `js`, and `nodejs` aliases resolve to `node`
+### 13. Add Dry-Run JSON Plan
 
-Decision options:
-
-1. Keep Node as a required day-one light profile and label it clearly.
-2. Keep Laravel only if docs clearly label it as a light profile.
-3. Convert profiles to overlays after v0.7.x.
-
-Recommended for v0.7.x:
-
-- Keep `generic`.
-- Keep `node` as the required JavaScript profile.
-- Keep `laravel` only if docs clearly call it a light profile.
-
-Remaining:
-
-- Keep docs honest that `laravel` is a light profile, not a full Laravel application scaffold.
-- Revisit profile overlays after v0.7.x.
-
-### 14. Add Dry-Run JSON Plan
+Status: pending.
 
 Enterprise users should be able to inspect what the CLI will do before writing.
 
@@ -473,242 +410,16 @@ Output should include:
 - protected files skipped
 - app/source paths skipped
 - conflicts
-- whether placeholders were defaulted
+- defaulted values
+- optional packs selected
 
-Recommended priority: v0.7.2 quick win.
-
-### 15. Make Core-Only Install And Meaningful Setup Context The Default
+### 14. Add Install Operation Records
 
 Status: pending.
 
-This combines two cleanup needs into one implementation task:
-
-1. Remove default docs/tasks/_ai install noise.
-2. Fix setup prompts so stored project context is meaningful and not numeric
-   choice indexes.
-
-Do not add a separate `--minimal` flag unless backward compatibility later
-requires it. The better product model is:
-
-- `create` and `init` install the core operating layer by default.
-- Larger docs, examples, QA, UX, research, CI, and templates are optional packs.
-- Users add packs only when needed.
-- Initial setup collects only context that helps AI agents work safely and
-  accurately.
-- Selected prompt values must be stored as meaningful values, not numeric choice
-  indexes.
-- Prompt, flag, and `--yes` flows must all produce the same normalized metadata
-  shape.
-
-Default core install should include:
-
-```text
-.ai-scaffold.json
-AGENTS.md
-CLAUDE.md
-.claude/                         # hidden AI operating layer: rules, commands, agents, hooks, roles, skills
-.ai-scaffold/README.md
-.ai-scaffold/context.md
-```
-
-The cleanup target is the visible/default scaffold reference surface, not the
-hidden `.claude/` operating layer. Removing `.claude/commands/`,
-`.claude/agents/`, or `.claude/rules/` would make the install quieter but would
-also remove much of the scaffold's day-one value.
-
-Optional pack model:
-
-```bash
-ais add docs
-ais add qa
-ais add ux
-ais add research
-ais add ci
-ais add templates
-ais init --with-docs
-ais init --with-qa
-ais init --with-ux
-ais init --with-research
-ais init --with-ci
-```
-
-Pack examples:
-
-```text
-docs      -> .ai-scaffold/packs/docs/
-qa        -> .ai-scaffold/packs/qa/
-ux        -> .ai-scaffold/packs/ux/
-research  -> .ai-scaffold/packs/research/
-ci        -> .ai-scaffold/packs/ci/
-templates -> .ai-scaffold/packs/templates/
-```
-
-Do not install by default:
-
-```text
-.ai-scaffold/docs/
-.ai-scaffold/tasks/
-.ai-scaffold/_ai/
-large BRD/architecture/example documents
-UX packs
-QA browser testing packs
-research packs
-generated-app CI workflows
-```
-
-Setup/context collection issue found:
-
-- `prompts` `select` choices are currently passed as plain strings.
-- In `prompts`, plain string choices become `{ title: string, value: index }`.
-- This can store `0`, `1`, etc. into fields such as `projectType`,
-  `frontendStack`, `complianceScope`, or `profile`.
-- Numeric indexes do not help humans, AI agents, `doctor`, or future updates.
-- Existing numeric values should be treated as legacy/invalid context and
-  repaired or warned about by `doctor`.
-
-Required setup prompt model:
-
-Ask fewer questions, but ask the ones that shape AI behavior:
-
-| Field | Why it matters | Store as |
-|---|---|---|
-| Project slug | Stable machine/project id | `billing-api` |
-| Display name | Human-friendly project name | `Billing API` |
-| Purpose | Gives AI the main product intent | `Subscription billing service` |
-| Project kind | Routes guidance and expectations | `api`, `web-app`, `full-stack`, `library`, `cli`, `mobile`, `infra`, `data`, `internal-tool`, `saas` |
-| Lifecycle stage | Changes risk posture | `discovery`, `active-development`, `production`, `maintenance`, `legacy-modernization` |
-| Owner/team | Human accountability | email or team slug |
-| Primary stack | Helps pick rules and commands | detected or explicit string |
-| Frontend stack | Helps UX/frontend guidance | `none`, `react`, `nextjs`, `vue`, `nuxt`, `flutter`, `other` |
-| Database | Affects API/data/testing guidance | detected or explicit string |
-| Requirements source | Tells AI where truth lives | `existing-docs`, `create-later`, `create-now` |
-| Requirements path | Index existing BRD/functional docs | `docs/requirements/`, `.ai-scaffold/context.md`, or explicit path |
-| Multi-tenant | Affects auth/data rules | boolean |
-| Data sensitivity | Affects memory/security policy | `public`, `internal`, `confidential`, `regulated` |
-| Compliance scope | Affects review gates | array such as `["GDPR", "SOC2"]` or `[]` |
-| Test command | Verification command | `npm test`, `composer test`, etc. |
-| Lint/typecheck command | Verification command | explicit string or `none` |
-| Build command | Verification command | explicit string or `none` |
-
-Use object choices for every select prompt:
-
-```js
-{
-  title: 'API / backend service',
-  value: 'api'
-}
-```
-
-Never store raw select indexes. Store normalized values and, where useful,
-store a display label as metadata.
-
-Example stored context:
-
-```json
-{
-  "profile": "node",
-  "project": {
-    "slug": "billing-api",
-    "displayName": "Billing API",
-    "kind": "api",
-    "lifecycleStage": "active-development",
-    "purpose": "Subscription billing service"
-  },
-  "stack": {
-    "primary": "Node.js",
-    "frontend": "none",
-    "database": "PostgreSQL"
-  },
-  "risk": {
-    "multiTenant": false,
-    "dataSensitivity": "internal",
-    "complianceScope": []
-  },
-  "requirements": {
-    "source": "existing-docs",
-    "paths": ["docs/requirements/brd.md"]
-  },
-  "commands": {
-    "test": "npm test",
-    "lint": "npm run lint",
-    "typecheck": "npm run typecheck",
-    "build": "npm run build"
-  }
-}
-```
-
-Prompt implementation rules:
-
-- Replace string select choices with `{ title, value }` objects.
-- Use `multiselect` or an explicit comma-separated parser for compliance
-  scopes so teams can store more than one scope.
-- Normalize profile aliases before writing metadata: `js`, `javascript`, and
-  `nodejs` become `node`.
-- Normalize "none" values consistently rather than mixing `None`, `N/A`,
-  `optional`, and numeric indexes.
-- Preserve user-supplied explicit flag values where valid, but validate them
-  before writing `.ai-scaffold.json`.
-- Store defaults in `defaultedValues` so teams can revisit assumptions later.
-
-Requirements/BRD handling:
-
-- During `init`, detect existing documentation paths but do not create root
-  `docs/` by default.
-- If existing BRD, functional requirements, specs, ADRs, or user stories are
-  found, index them in `.ai-scaffold/context.md`.
-- If none are found, record `requirements.source = "create-later"` and print a
-  next step.
-- Only create requirements files when explicitly requested.
-
-Future explicit commands:
-
-```bash
-ais add requirements
-ais add requirements --target docs
-ais add requirements --target .ai-scaffold
-ais create my-app --with-requirements
-ais init --with-requirements
-```
-
-Recommended generated files when explicitly requested:
-
-```text
-docs/requirements/brd.md
-docs/requirements/functional-requirements.md
-```
-
-or, for teams that want no root docs:
-
-```text
-.ai-scaffold/packs/requirements/brd.md
-.ai-scaffold/packs/requirements/functional-requirements.md
-```
-
-Acceptance:
-
-- Default `create` and `init` do not create root `docs/`, `tasks/`, `_ai/`,
-  `apps/`, `packages/`, `infra/`, or `scripts/`.
-- Default `create` and `init` do not create `.ai-scaffold/docs/`,
-  `.ai-scaffold/tasks/`, or `.ai-scaffold/_ai/`.
-- `doctor` understands a core-only install and does not report optional packs as
-  missing.
-- Optional packs are explicitly requested and recorded in `.ai-scaffold.json`.
-- `--minimal` is not introduced unless there is a backward-compatibility reason.
-- Interactive select prompts use `{ title, value }` choices, not string arrays.
-- `.ai-scaffold.json`, `.claude/settings-overrides.json`, `.claude/MEMORY.md`,
-  and `.ai-scaffold/context.md` never store prompt choice indexes for project
-  type, frontend stack, compliance scope, profile, or lifecycle stage.
-- Existing docs/requirements are indexed, not moved.
-- Root `docs/requirements/` is created only with explicit confirmation or a
-  flag such as `--with-requirements`.
-
-Recommended priority: v0.7.2 because it lowers first-install trust cost.
-
-### 16. Add Install Operation Records
-
 Extend `.ai-scaffold.json` beyond a flat managed file list.
 
-Add operation records such as:
+Example:
 
 ```json
 {
@@ -728,37 +439,23 @@ Add operation records such as:
 }
 ```
 
-This will power future `doctor`, `repair`, `uninstall`, and safe `update`.
+This powers future `doctor`, `repair`, `uninstall`, and safe `update`.
 
-Recommended priority: v0.8.0 because this shapes future repair/update logic.
+### 15. Add Automatic Context Detection For Existing Projects
 
-### 17. Add Automatic Context Detection For Existing Projects
-
-After item 15 fixes the core setup questions and stored values, add deeper
-automatic detection during `init`.
+Status: pending.
 
 Detect where possible:
 
-- Test command
-- Lint/typecheck command
-- Build command
-- Deployment target
-- Existing docs/requirements paths
-- Package manager
-- Framework/library hints
+- package manager
+- primary stack/framework
+- test command
+- lint/typecheck command
+- build command
+- deployment target
+- existing docs/requirements paths
 - CI provider
-- Compliance/security hints from docs or config
-
-```text
-package.json
-composer.json
-pyproject.toml
-requirements.txt
-go.mod
-pom.xml
-build.gradle
-.github/workflows/
-```
+- compliance/security hints from docs or config
 
 Write confirmed context to:
 
@@ -769,62 +466,70 @@ Write confirmed context to:
 .ai-scaffold/context.md
 ```
 
-Recommended priority: v0.8.0. Keep this separate from item 15 so v0.7.2 can
-fix the most important prompt/storage behavior without overbuilding detection.
+Do not create root `docs/` by default. Existing docs should be indexed, not
+moved.
 
-### 18. Add Starter Hooks Safety Roadmap
+### 16. Improve Hooks Roadmap
 
-Current hook state is a useful starter layer, not a full enterprise-safe hooks
-pack. Keep public docs accurate unless these controls are implemented.
+Status: pending.
 
-Done:
+Done in `v0.8.0`:
 
-- Claude Code hook wiring in `.claude/settings.json`.
-- `/review` pre-review hook.
-- Pre-edit fact-check hook.
-- Post-edit debug-log warning hook.
-- Bash pre-commit quality gate for `git commit` / `git push`.
-- Git pre-commit hook with branch, lint, typecheck, test, and optional gitleaks checks.
-- Branch protection docs/scripts.
-- CI secret scanning.
-- Secret path guard file exists: `.claude/hooks/pre-secret-guard.sh`.
-- Dangerous Bash guard file exists: `.claude/hooks/pre-dangerous-bash-guard.sh`.
-- Governance file guard file exists: `.claude/hooks/governance-file-guard.sh`.
-- Template `.gitignore` files were strengthened for env files, private keys, cloud credentials, Terraform state, and secret directories.
-- New Claude Code hooks parse JSON payloads from stdin.
-- Blocking guards exit with Claude Code's blocking status (`2`).
-- Hook simulation tests are part of `scripts/pre-publish-smoke.sh`.
-- Package manifests such as `composer.json` are not treated as secrets by default.
-- `.env.example`, `.env.sample`, and `.env.template` remain explicitly allowed in template `.gitignore` files.
+- Secret path guard.
+- Dangerous Bash guard.
+- Governance file guard.
+- Hook simulation checks in the publish smoke script.
+- Template hook wiring for generated projects.
 
-Pending P1 hook improvements:
+Pending:
 
-- Add `ais hooks doctor` to report hook install/config health.
-- Add template hook parity checks for every shipped profile.
-- Add a `pre-push` safety hook for secret scan, lint, typecheck, tests, and protected branch warnings.
-- Add a `commit-msg` policy hook for useful commit messages and optional ticket references.
-- Add `post-merge` and `post-checkout` warning hooks for changed lockfiles, hooks, `.env.example`, or dependency manifests.
-- Document clearly that local hooks can be bypassed and CI/repository policy remains authoritative.
+- `ais hooks doctor`.
+- Template hook parity checks for every shipped profile.
+- Optional `pre-push` safety hook.
+- Optional `commit-msg` policy hook.
+- Optional `post-merge` and `post-checkout` warning hooks.
+- Clear docs that local hooks can be bypassed and CI/repository policy remains
+  authoritative.
 
-Recommended priority: keep `ais hooks doctor` as v0.7.2 quick win; keep the
-larger enterprise hooks pack for P2.
+### 17. Documentation Honesty Pass
 
-### 19. Add Optional Deep Research Agent/Skill
+Status: pending.
+
+Required:
+
+- Replace stale `0.7.1` references where they describe the current release.
+- Update stale "current state" docs that still mention `v0.7.0`.
+- Reword `CHANGELOG.md` if it claims a public `--minimal` option was removed;
+  that option was planned but never shipped.
+- Fix root and template `CLAUDE.md` claims about CI behavior.
+- Wire this repo's actual checks into `/review` and remove
+  `PRE_REVIEW_ALLOW_UNCONFIGURED=1` for the scaffold repo itself if checks are
+  now configured.
+
+### 18. Publish Workflow Cleanup
+
+Status: pending.
+
+Required:
+
+- Remove ignored/invalid workflow inputs such as `package-manager-cache: false`
+  if they are not supported by the action.
+- Decide whether `prepublishOnly` should continue duplicating workflow checks.
+- Keep `prepublishOnly` until trusted publishing has passed at least once.
+- After provenance publishing is proven, reduce duplicate check runs only if CI
+  still protects manual publishes.
+
+### 19. Add Optional Deep Research Command/Agent
 
 Status: pending design.
 
-Deep research should be available to developers before or during planning, but
-it must not become a mandatory question or automatic step for every task.
-
 Decision:
 
-- Add deep research as an opt-in command/agent/skill.
-- Do not run deep research automatically during `create`, `init`, `/start-task`,
-  or normal planning.
-- Do not ask the developer every time whether they want deep research.
-- Let the developer invoke it when the task involves uncertainty, unfamiliar
-  technology, external facts, product/market research, security/regulatory
-  claims, or architectural tradeoffs.
+- Deep research should be opt-in, not a mandatory prompt during every planning
+  flow.
+- It should help developers research unfamiliar technologies, external facts,
+  security/regulatory claims, vendor choices, or architecture tradeoffs.
+- It should not write production code directly.
 
 Recommended shape:
 
@@ -854,34 +559,29 @@ Confidence level
 Follow-up questions, if any
 ```
 
-Use cases:
+### 20. Small Code Cleanup From Review
 
-- Research an unfamiliar library, framework, API, protocol, or vendor tool.
-- Compare implementation options before an ADR or architecture plan.
-- Verify current external facts before making docs, compliance, security, or
-  dependency recommendations.
-- Produce evidence-backed notes for BRDs, estimates, spike reports, or
-  implementation planning.
+Status: pending.
 
-Acceptance:
+Required:
 
-- `/research` is optional and developer-invoked.
-- Research outputs separate facts, assumptions, and recommendations.
-- Current/external claims require citations or clear source notes.
-- The researcher does not write production code directly; it informs planning
-  and decisions.
-- Default install remains lightweight; research docs/skill are included only if
-  they do not materially increase install noise, or are placed behind a future
-  `--with-research` optional pack.
+- Remove the dead no-op `.replace(/^SOC2$/, 'SOC2')` in compliance
+  normalization. **Done.**
+- Decide whether `installedPacks: []` should become a real manifest field or be
+  dropped until optional packs exist. **Dropped for now.**
+- Keep `prepublishOnly` for now, but revisit duplicated checks after trusted
+  publishing succeeds. **Kept for now.**
 
 ---
 
-## P2 — Can Ship After MVP
+## P2 - Future Roadmap
 
-### 20. Implement Real Update Flow
+### 21. Implement Real Update Flow
 
-Current `update` is a placeholder. After the P0 update-safety fix above, this
-P2 item is the full implementation of safe managed-file updates.
+Status: pending.
+
+Build full safe update support after the P0 update placeholder safety and the
+managed-file ownership ADR are done.
 
 Pending:
 
@@ -890,9 +590,12 @@ Pending:
 - safe diff plan
 - confirmation before overwrite
 - `update --target-version`
-- manifest updates after file writes
+- manifest re-baselining
+- optional pack update behavior
 
-### 21. Improve `status` and `doctor`
+### 22. Improve `status` And `doctor`
+
+Status: pending.
 
 Pending:
 
@@ -904,12 +607,13 @@ Pending:
 - hook presence checks
 - profile validity checks
 - version mismatch checks
+- optional pack health checks
 
-### 22. Add Repair And Uninstall Dry Runs
+### 23. Add Repair And Uninstall Dry Runs
 
-Do not implement destructive repair/uninstall behavior first. Start with preview-only.
+Status: pending.
 
-Future commands:
+Start with preview-only commands:
 
 ```bash
 ais repair --dry-run
@@ -918,9 +622,11 @@ ais uninstall --dry-run
 
 These should rely on install operation records and managed file hashes.
 
-### 23. Add Missing CLI Docs
+### 24. Add Missing CLI Docs
 
-Create:
+Status: pending.
+
+Create or refresh:
 
 ```text
 docs/cli/installation.md
@@ -932,51 +638,18 @@ docs/cli/conflict-handling.md
 
 Keep scaffold process/history docs out of generated project installs.
 
-### 24. Expand Tests
+### 25. Optional QA Browser Testing Pack
 
-Add coverage for:
-
-- hook safety files are present in generated projects
-- template `.claude/settings.json` references only hooks that exist
-- `--dry-run --json` returns a machine-readable file plan
-- install operation records are written
-- existing `README.md`, `package.json`, workflows, and app dirs are preserved
-- Laravel profile behavior is explicitly tested or removed
-
-Already covered:
-
-- `ais .` routes to init.
-- `init` does not create root `docs/`, `apps/`, `packages/`, `infra/`, `scripts/`, or `tasks/` by default.
-- Minimal install writes `.ai-scaffold/`.
-- Package allowlist excludes unintended root files.
-- Node profile behavior is tested through the real CLI.
-
-### 25. Improve QA Profile With Browser Testing Guidance
-
-Status: pending scope.
-
-This should not make generated projects depend on Playwright or Selenium by
-default. Instead, provide profile guidance and optional install packs that help
-teams choose and verify their browser testing approach.
+Status: pending design.
 
 Decision:
 
-- Do not include Playwright or Selenium in the default install.
-- Do not add browser-test dependencies to generated `package.json` unless the
-  user explicitly asks for that pack.
-- Treat browser testing as an optional QA capability pack, not a required core
-  scaffold feature.
+- Do not include Playwright or Selenium by default.
+- Provide optional guidance/config packs only when requested.
+- Do not add browser binaries or browser-test CI jobs to generated projects
+  unless explicitly requested.
 
-Recommended split:
-
-- Keep default QA guidance framework-neutral.
-- Add optional Playwright guidance for modern web app E2E testing.
-- Add optional Selenium guidance for teams with existing Selenium/Grid
-  infrastructure.
-- Require implementation and verification by the project development team
-  before CI gates rely on either tool.
-
-Future optional flags:
+Future options:
 
 ```bash
 ais init --with-qa
@@ -984,51 +657,18 @@ ais init --with-playwright
 ais init --with-selenium
 ```
 
-Optional pack behavior:
-
-- `--with-qa` adds QA workflow docs, test-plan templates, and review guidance.
-- `--with-playwright` adds Playwright-specific guidance and optional example
-  config/templates only after confirmation.
-- `--with-selenium` adds Selenium/Grid-specific guidance and optional example
-  config/templates only after confirmation.
-- CI examples must be disabled or clearly gated unless dependencies are
-  installed in the target project.
-
-Acceptance:
-
-- QA docs explain when to use Playwright vs Selenium.
-- Generated CI does not fail because optional test tools are missing.
-- Any template CI additions are gated behind detected dependencies or explicit
-  install flags.
-- Default `create` and `init` do not install Playwright, Selenium, browser
-  binaries, or browser-test CI jobs.
-
-### 26. Add UI/UX Profile
+### 26. Optional UI/UX Pack
 
 Status: pending design.
 
-Create a dedicated UI/UX profile or optional UX pack only after the core
-install surface is stable.
-
 Decision:
 
-- Do not add UI/UX material to the default existing-project install beyond the
-  current lightweight governance guidance.
-- Prefer `--with-ux` as an optional pack before introducing a standalone `ux`
-  profile.
-- A future `ux` profile should be for design-heavy repositories, not a default
-  install path for backend/API projects.
+- Do not add heavy UX material to default existing-project installs.
+- Prefer `--with-ux` before a standalone `ux` profile.
+- Keep default installs suitable for backend, API, CLI, library, and infra
+  repositories.
 
-Potential scope:
-
-- UX review workflow.
-- Accessibility checklist.
-- Responsive/state coverage checklist.
-- Design handoff templates.
-- Frontend-specific AI review prompts.
-- Optional Playwright visual/interaction testing guidance.
-
-Future optional flags:
+Future options:
 
 ```bash
 ais init --with-ux
@@ -1036,17 +676,9 @@ ais init --with-accessibility
 ais init --with-visual-testing
 ```
 
-Acceptance:
-
-- Does not install heavy UX material into existing projects unless requested.
-- Works as either `--profile ux` for design-heavy projects or `--with-ux` as an
-  optional pack on top of another profile.
-- Default `init` remains suitable for backend, API, CLI, library, and
-  infrastructure repositories without UI/UX clutter.
-
 ### 27. Enterprise Safe Hooks Pack
 
-Build a reusable enterprise-safe hooks profile after the MVP surface is stable.
+Status: pending design.
 
 Future commands:
 
@@ -1059,119 +691,44 @@ ais hooks test
 ais hooks uninstall
 ```
 
-Future AI hook architecture:
+Future controls:
 
-```text
-.ai-scaffold/
-  hooks/
-    ai/
-      guard-pretool.js
-      guard-posttool.js
-      guard-stop.js
-      guard-user-prompt.js
-      policies/
-        dangerous-commands.json
-        protected-files.json
-        secret-paths.json
-    git/
-      commit-msg-policy.sh
-      forbid-dangerous-files.sh
-      forbid-env-files.sh
-      pre-push-safety.sh
-```
-
-Future enterprise controls:
-
-- Policy-file-driven AI secret path guard.
+- Policy-file-driven secret path guard.
 - Policy-file-driven dangerous command guard.
-- Policy-file-driven protected governance file guard.
-- Stop hook requiring changed-files, tests, security, and manual verification evidence.
-- Hook simulation tests such as `--simulate-env-read` and `--simulate-secret-commit`.
-- Optional `.pre-commit-config.yaml` integration for teams that standardize on the pre-commit framework.
+- Policy-file-driven governance file guard.
+- Stop hook requiring changed-files, tests, security, and manual verification
+  evidence.
+- Hook simulation tests.
+- Optional `.pre-commit-config.yaml` integration.
 - CODEOWNERS and branch-protection verification in `ais hooks doctor`.
 
 ---
 
-## Proposed Install Modes
-
-### New Project
-
-```bash
-npx @lajin.m/ai-scaffold my-project
-```
-
-Creates a clean starter project:
-
-```text
-my-project/
-  .ai-scaffold/
-    README.md
-    context.md
-  .claude/
-  .ai-scaffold.json
-  AGENTS.md
-  CLAUDE.md
-  README.md
-```
-
-Optional future packs:
-
-```bash
-ais add docs
-ais add qa
-ais add ux
-ais add research
-ais add ci
-ais add templates
-```
-
-### Existing Project
-
-```bash
-npx @lajin.m/ai-scaffold init
-npx @lajin.m/ai-scaffold .
-```
-
-Installs only scaffold-owned assets:
-
-```text
-.ai-scaffold.json
-.ai-scaffold/
-  README.md
-  context.md
-.claude/
-AGENTS.md
-CLAUDE.md
-```
-
-No root project folders are created by default. No `.ai-scaffold/docs/`,
-`.ai-scaffold/tasks/`, or `.ai-scaffold/_ai/` folders are created unless a pack
-is explicitly requested.
-
----
-
-## Publish Gate
+## Standard Publish Gate
 
 Before tagging:
 
 ```bash
+git status --short --branch
 npm test
 npm run typecheck
+npm run lint
+bash scripts/pre-publish-smoke.sh
 npm_config_cache=/private/tmp/ai-scaffold-npm-cache npm pack --dry-run
-node bin/ai-scaffold.js /private/tmp/ai-scaffold-create-smoke --yes
-node bin/ai-scaffold.js create /private/tmp/ai-scaffold-node-smoke --profile js --yes
-node bin/ai-scaffold.js init /private/tmp/ai-scaffold-init-smoke --yes --dry-run
-node bin/ai-scaffold.js init /private/tmp/ai-scaffold-node-init-smoke --profile javascript --yes --dry-run
-node bin/ai-scaffold.js . --yes --dry-run
 ```
 
 Publish only when:
 
+- git is clean
 - tests pass
-- pack contents are intentional
+- lint/typecheck are meaningful and pass
+- package contents are intentional
 - existing-project install is isolated
 - Node/JS profile aliases resolve to `node`
 - `ais .` routes to init
-- no generated README or settings file has unresolved project placeholders
+- no generated README/settings/context file has unresolved project placeholders
 - generated projects include the starter hook safety layer
 - generated projects include a clear memory safety policy
+- branch protection is active
+- trusted publishing has been configured for the package
+- failed publish attempts will use a new patch tag, not a moved existing tag
