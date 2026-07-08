@@ -102,7 +102,7 @@ Required:
 
 - Enable branch protection for `main`. **Done: verified via GitHub API.**
 - Enable branch protection for `dev`. **Done: verified via GitHub API.**
-- Require the final CI status check. **Done: `ci-passed` is required.**
+- Require the final CI status check. **Done: `CI passed` is required.**
 - Disallow force pushes and branch deletion on `main`. **Done.**
 - Prefer pull requests or a documented release branch for future releases.
 - Document the `v0.8.0` manual-publish and tag-move bypass in release notes or
@@ -121,9 +121,9 @@ returns branch-protection settings instead of `404`.
 
 Verified:
 
-- `main` requires `ci-passed`, 2 approving reviews, linear history,
+- `main` requires `CI passed`, 2 approving reviews, linear history,
   conversation resolution, admin enforcement, and blocks force pushes/deletion.
-- `dev` requires `ci-passed`, 1 approving review, conversation resolution, and
+- `dev` requires `CI passed`, 1 approving review, conversation resolution, and
   blocks force pushes/deletion.
 - Repository default branch is `dev`.
 

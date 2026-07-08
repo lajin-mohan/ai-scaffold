@@ -213,7 +213,7 @@ below is the single source of truth — if it changes, propagate to:
 | Dismiss stale reviews on new push | Yes |
 | Require last-push approval | Yes |
 | Require status checks before merge | Yes |
-| Required status checks | `ci-passed`; add `ai-review-passed` after AI review automation exists |
+| Required status checks | `CI passed`; add `ai-review-passed` after AI review automation exists |
 | Require branch up to date with target | Yes (forces rebase before merge) |
 | Require conversation resolution | Yes |
 | Require linear history | Yes |
@@ -230,7 +230,7 @@ below is the single source of truth — if it changes, propagate to:
 | Required approvals | 1 |
 | Dismiss stale reviews on new push | Yes |
 | Require status checks before merge | Yes |
-| Required status checks | `ci-passed`; add `ai-review-passed` after AI review automation exists |
+| Required status checks | `CI passed`; add `ai-review-passed` after AI review automation exists |
 | Require branch up to date with target | Yes |
 | Require conversation resolution | Yes |
 | Require linear history | Discretionary (team preference) |

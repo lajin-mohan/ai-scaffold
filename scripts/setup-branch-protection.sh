@@ -69,14 +69,14 @@ echo "Applying branch protection to: $REPO"
 echo "This script will update branch protection for main and dev."
 echo
 
-STATUS_CONTEXTS='["ci-passed"]'
-STATUS_LABEL="ci-passed"
+STATUS_CONTEXTS='["CI passed"]'
+STATUS_LABEL="CI passed"
 if [ "${REQUIRE_AI_REVIEW_CHECK:-0}" = "1" ]; then
   echo "WARNING: ai-review-passed will be required."
   echo "Ensure this check exists and has completed at least once."
   echo
-  STATUS_CONTEXTS='["ci-passed","ai-review-passed"]'
-  STATUS_LABEL="ci-passed + ai-review-passed"
+  STATUS_CONTEXTS='["CI passed","ai-review-passed"]'
+  STATUS_LABEL="CI passed + ai-review-passed"
 fi
 
 # ------------------------------------------------------------
