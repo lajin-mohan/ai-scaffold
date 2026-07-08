@@ -64,7 +64,7 @@
     "test:unit": "node --experimental-vm-modules node_modules/vitest/vitest.mjs run src/",
     "test:e2e": "node --experimental-vm-modules node_modules/vitest/vitest.mjs run tests/",
     "lint": "eslint .",
-    "typecheck": "node scripts/check-js-syntax.js",
+    "typecheck": "node scripts/check-js-syntax.js && node scripts/check-gitleaks-config.js",
     "build": "echo 'Build validation: checking npm pack'",
     "prepublishOnly": "npm test && npm run typecheck && npm run lint"
   },
