@@ -121,7 +121,7 @@ returns branch-protection settings instead of `404`.
 
 Verified:
 
-- `main` requires `CI passed`, 2 approving reviews, linear history,
+- `main` requires `CI passed`, 1 approving review, linear history,
   conversation resolution, admin enforcement, and blocks force pushes/deletion.
 - `dev` requires `CI passed`, 1 approving review, conversation resolution, and
   blocks force pushes/deletion.
