@@ -132,3 +132,57 @@ Application repositories should not copy these entries into their project memory
 - Governance products must model their own governance. Manual release recovery
   is acceptable only when documented and followed by controls that prevent a
   repeat.
+
+---
+
+## 2026-07-08 — v0.8.1 Trusted Publishing Proven
+
+**Stage:** v0.8.1 published through GitHub Actions trusted publishing
+
+### What Shipped
+- Hardened CI with real ESLint, syntax checks, npm audit, and gitleaks.
+- Made `ais update` a safe placeholder that refuses to mutate metadata until a
+  real update engine exists.
+- Added setup-value validation and `doctor` reporting for invalid stored
+  context values.
+- Added ADR-002 for managed-file ownership.
+- Removed the stale `.github/BRANCH-PROTECTION.yml` policy file.
+- Corrected branch protection to require the real `CI passed` check.
+- Reduced the `main` branch approval requirement to one approval while keeping
+  CI, stale-review dismissal, latest-push approval, admin enforcement, no force
+  pushes, no deletions, conversation resolution, and linear history.
+
+### Release Outcome
+- Tag: `v0.8.1`
+- npm package: `@lajin.m/ai-scaffold@0.8.1`
+- Publish method: GitHub Actions with npm provenance
+- Trusted publishing: verified after npm package trusted-publisher settings were
+  configured for `lajin-mohan/ai-scaffold` and `publish.yml`
+
+### Lesson
+- The tag workflow can be correct while npm still rejects the publish if the
+  package-level trusted publisher is missing. Prove trusted publishing with one
+  patch tag before relying on it for larger releases.
+
+---
+
+## 2026-07-08 — v0.8.2 Housekeeping and Package Surface Cleanup
+
+**Stage:** v0.8.2 cleanup prepared
+
+### Decisions Made
+- Keep template `docs/`, `tasks/`, and `_ai/` source files in the repository for
+  future optional packs and reference work.
+- Stop publishing those template folders in the npm package until optional pack
+  installation exists.
+- Enforce the cleaner package surface in `scripts/pre-publish-smoke.sh`.
+
+### Verification
+- `npm pack --dry-run` produced `@lajin.m/ai-scaffold@0.8.2` with no
+  `templates/*/docs/`, `templates/*/tasks/`, or `templates/*/_ai/` entries.
+- `scripts/pre-publish-smoke.sh` passed all 75 gates.
+
+### Lesson
+- Default install cleanup and npm package cleanup are separate concerns. Even
+  when the CLI does not install noisy folders, the package allowlist can still
+  expose them unless it is tested explicitly.

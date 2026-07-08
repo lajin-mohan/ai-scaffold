@@ -3,9 +3,12 @@
 # application-like examples and local/editor-only files if they are matched.
 
 templates/*/apps/
+templates/*/_ai/
+templates/*/docs/
 templates/*/infra/
 templates/*/packages/
 templates/*/scripts/
+templates/*/tasks/
 templates/*/.vscode/
 templates/*/.claude/settings.local.json
 

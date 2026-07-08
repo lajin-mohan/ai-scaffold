@@ -1,27 +1,29 @@
 # Pre-Next-Publish TODO
 
-**Purpose:** Release follow-up checklist for AI Scaffold after the `v0.8.0`
-npm publish.
+**Purpose:** Release follow-up checklist for AI Scaffold after the `v0.8.1`
+trusted-publishing release.
 
-This file tracks what must be fixed before the next tag, what should follow
-soon after, and what can remain future roadmap work. It supersedes the older
-pre-`v0.8.0` checklist.
+This file tracks housekeeping, near-term product improvements, and future
+roadmap work. It supersedes the older pre-`v0.8.0` checklist.
 
 ---
 
 ## Current Release State
 
-`v0.8.0` is live on npm as:
+`v0.8.1` is live on npm as:
 
 ```text
-@lajin.m/ai-scaffold@0.8.0
+@lajin.m/ai-scaffold@0.8.1
 CLI bin: ais
 ```
 
-Confirmed for `v0.8.0`:
+Confirmed for `v0.8.1`:
 
 - Package name is `@lajin.m/ai-scaffold`.
 - CLI bin is `ais`.
+- Trusted publishing from GitHub Actions to npm is configured and proven.
+- `v0.8.1` was published by the tag workflow with npm provenance.
+- `main` and `dev` are protected and require the real `CI passed` check.
 - Default install is project-local.
 - `create` and `init` use a core-only default install surface.
 - Default installs do not create root `docs/`, `tasks/`, `_ai/`, `apps/`,
@@ -34,23 +36,22 @@ Confirmed for `v0.8.0`:
 - `js`, `javascript`, and `nodejs` resolve to `node`.
 - Starter hook safety is shipped in generated projects.
 - Memory safety policy is generated into project memory.
-- Publish smoke checks passed locally and in CI before manual npm publish.
+- Publish smoke checks passed locally, in CI, and in the publish workflow.
 
-Important release caveat:
+`v0.8.2` housekeeping scope:
 
-- `v0.8.0` was published manually. The tag-based npm publish workflow did not
-  succeed, so the npm package does not have trusted-publishing provenance.
-
-Do not cut another tag until the P0 items below are resolved.
+- Clean stale release TODO/history docs.
+- Keep package metadata aligned with the next patch version.
+- Remove template `docs/`, `tasks/`, and `_ai/` folders from the published npm
+  package surface until optional packs exist.
 
 ---
 
-## P0 - Must Fix Before Next Tag
+## P0 - Completed In v0.8.1
 
 ### 1. Configure And Prove Trusted npm Publishing
 
-Status: partially done in `fix/p0-release-hardening`; external npm package
-settings still required.
+Status: done in `v0.8.1`; verified by successful GitHub Actions npm publish.
 
 Problem:
 
@@ -66,9 +67,10 @@ Required:
   - GitHub owner: `lajin-mohan`
   - GitHub repo: `ai-scaffold`
   - workflow filename: `publish.yml`
+  **Done.**
 - Ensure `.github/workflows/publish.yml` uses a supported Node/npm runtime for
-  trusted publishing. **Done in branch: workflow now uses Node 24.**
-- Validate with the next patch tag.
+  trusted publishing. **Done: workflow uses Node 24.**
+- Validate with the next patch tag. **Done: `v0.8.1` published.**
 - Do not move or re-point an existing release tag to retry publishing.
 
 Acceptance:
@@ -81,15 +83,15 @@ npm view @lajin.m/ai-scaffold version
 
 Expected result:
 
-- GitHub Actions publishes `@lajin.m/ai-scaffold@0.8.1`.
-- npm shows `0.8.1`.
-- The npm release has provenance/attestation from GitHub Actions.
+- GitHub Actions publishes `@lajin.m/ai-scaffold@0.8.1`. **Done.**
+- npm shows `0.8.1`. **Done.**
+- The npm release has provenance/attestation from GitHub Actions. **Done.**
 - `npm view @lajin.m/ai-scaffold@0.8.1 dist.attestations` or the npm package
   page confirms provenance exists.
 
 ### 2. Apply Branch Protection And Document The v0.8.0 Bypass
 
-Status: done in `fix/p0-release-hardening`; verified live on GitHub.
+Status: done in `v0.8.1`; verified live on GitHub.
 
 Problem:
 
@@ -129,7 +131,7 @@ Verified:
 
 ### 3. Restore Security Gates In CI
 
-Status: done in `fix/p0-release-hardening`; must still pass on GitHub Actions.
+Status: done in `v0.8.1`; passes on GitHub Actions.
 
 Problem:
 
@@ -159,7 +161,7 @@ or equivalent CI steps pass on `main` and PRs.
 
 ### 4. Remove Or Replace `.github/BRANCH-PROTECTION.yml`
 
-Status: done in `fix/p0-release-hardening`.
+Status: done in `v0.8.1`.
 
 Problem:
 
@@ -181,7 +183,7 @@ Acceptance:
 
 ### 5. Make `ais update` Safe While It Is Still A Placeholder
 
-Status: done in `fix/p0-release-hardening`.
+Status: done in `v0.8.1`.
 
 Problem:
 
@@ -207,7 +209,7 @@ Acceptance:
 
 ### 6. Write The Managed-File Ownership Contract ADR
 
-Status: done in `fix/p0-release-hardening`.
+Status: done in `v0.8.1`.
 
 Problem:
 
@@ -233,7 +235,7 @@ Acceptance:
 
 ### 7. Decide And Document The Downstream CI Story
 
-Status: done in `fix/p0-release-hardening`.
+Status: done in `v0.8.1`.
 
 Problem:
 
@@ -261,7 +263,7 @@ Acceptance:
 
 ### 8. Validate Choice-Valued Flags And Stored Metadata
 
-Status: done in `fix/p0-release-hardening`.
+Status: done in `v0.8.1`.
 
 Problem:
 
@@ -290,7 +292,7 @@ must reject invalid values or report them through `doctor`.
 
 ### 9. Replace The Fake Lint Gate
 
-Status: done in `fix/p0-release-hardening`.
+Status: done in `v0.8.1`.
 
 Problem:
 
@@ -314,8 +316,8 @@ Acceptance:
 
 ### 10. Add Tests For The Changed Release Surface
 
-Status: partially done in `fix/p0-release-hardening`; remaining coverage is
-tracked for follow-up.
+Status: partially done in `v0.8.1`; remaining coverage is tracked for
+follow-up.
 
 Required test coverage:
 
@@ -342,7 +344,8 @@ Acceptance:
 
 ### 11. Clean Internal Artifacts From Published Templates
 
-Status: partially done in `fix/p0-release-hardening`.
+Status: done in `chore/v0.8.2-housekeeping-cleanup`; verified locally by
+`npm pack --dry-run` and `scripts/pre-publish-smoke.sh`.
 
 Problem:
 
@@ -355,11 +358,14 @@ Problem:
 Required:
 
 - Review `templates/*/docs/**`, `templates/*/tasks/**`, and
-  `templates/*/_ai/**`.
+  `templates/*/_ai/**`. **Done.**
 - Move internal-only artifacts to this repo's own docs, not generated
-  templates.
+  templates. **Decision for v0.8.2: keep source files in-repo, but exclude them
+  from the published npm package until optional packs exist.**
 - Keep only content that should be installed into downstream projects or future
-  optional packs.
+  optional packs. **Done for npm package contents.**
+- Keep the smoke gate enforcing that template `docs/`, `tasks/`, and `_ai/`
+  folders are not published by default. **Done.**
 
 Acceptance:
 
@@ -508,16 +514,16 @@ Required:
 
 ### 18. Publish Workflow Cleanup
 
-Status: pending.
+Status: pending follow-up; trusted publishing is now proven in `v0.8.1`.
 
 Required:
 
 - Remove ignored/invalid workflow inputs such as `package-manager-cache: false`
   if they are not supported by the action.
 - Decide whether `prepublishOnly` should continue duplicating workflow checks.
-- Keep `prepublishOnly` until trusted publishing has passed at least once.
-- After provenance publishing is proven, reduce duplicate check runs only if CI
-  still protects manual publishes.
+- Trusted publishing has passed at least once. **Done in `v0.8.1`.**
+- Reduce duplicate `prepublishOnly` check runs only if CI still protects manual
+  publishes, or keep the duplicate checks as a conservative release guard.
 
 ### 19. Add Optional Deep Research Command/Agent
 
