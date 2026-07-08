@@ -69,7 +69,7 @@ else
   echo "  $PACK_OUTPUT" | head -3
 fi
 
-FORBIDDEN_PACK_PATHS='templates/.*/apps/|templates/.*/infra/|templates/.*/packages/|templates/.*/scripts/|templates/.*/\.vscode/|templates/.*/\.claude/settings.local.json|src/__tests__|tests/'
+FORBIDDEN_PACK_PATHS='templates/.*/_ai/|templates/.*/apps/|templates/.*/docs/|templates/.*/infra/|templates/.*/packages/|templates/.*/scripts/|templates/.*/tasks/|templates/.*/\.vscode/|templates/.*/\.claude/settings.local.json|src/__tests__|tests/'
 if grep -Eq "$FORBIDDEN_PACK_PATHS" <<< "$PACK_OUTPUT"; then
   fail "npm package excludes heavy/template-local paths"
 else

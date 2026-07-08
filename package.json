@@ -1,6 +1,6 @@
 {
   "name": "@lajin.m/ai-scaffold",
-  "version": "0.8.1",
+  "version": "0.8.2",
   "description": "Reusable AI engineering scaffold with CLI distribution",
   "type": "module",
   "bin": {
@@ -32,9 +32,6 @@
     "templates/*/.claude/settings.json",
     "templates/*/.claude/settings.local.example.json",
     "templates/*/.github/copilot-instructions.md",
-    "templates/*/_ai/**",
-    "templates/*/docs/**",
-    "templates/*/tasks/**",
     "templates/*/.cursorrules",
     "templates/*/.editorconfig",
     "templates/*/.env.example",
