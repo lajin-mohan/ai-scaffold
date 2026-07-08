@@ -15,6 +15,27 @@ This file is configured with `merge=union` in `.gitattributes` so parallel addit
 
 ---
 
+## [0.8.1] - 2026-07-08
+
+### Added
+- Added a managed-file ownership ADR to define scaffold-managed files, generated project context, optional pack files, and protected application files.
+- Added real ESLint-based linting and repository JavaScript syntax checking.
+- Added CLI tests for placeholder update safety and invalid setup-context validation.
+
+### Changed
+- Prepared the tag-based npm publish workflow for trusted publishing by moving the publish runtime to Node 24.
+- Restored CI security gates with high-severity npm audit checks and gitleaks scanning.
+- Made `ais update` a safe placeholder: dry runs report metadata, and real update attempts refuse to mutate files or `.ai-scaffold.json` until the update engine is implemented.
+- Updated setup-value validation so invalid project type, compliance, stack, and lifecycle values are rejected instead of stored silently.
+- Clarified generated-project CI expectations: AI Scaffold does not install project CI workflows by default.
+
+### Fixed
+- Fixed `doctor` to report invalid stored setup context values, not only legacy numeric prompt indexes.
+- Removed the stale `.github/BRANCH-PROTECTION.yml` policy file that conflicted with the live branch-protection model.
+- Documented the `v0.8.0` manual publish and tag-move recovery so future releases use new patch tags instead of re-pointing release tags.
+
+---
+
 ## [0.8.0] - 2026-07-07
 
 ### Added
@@ -25,7 +46,7 @@ This file is configured with `merge=union` in `.gitattributes` so parallel addit
 
 ### Changed
 - Made the default install core-only: `create` and `init` no longer install `.ai-scaffold/docs/`, `.ai-scaffold/tasks/`, or `.ai-scaffold/_ai/` by default.
-- Removed the public `--minimal` create option because the default install is now the minimal/core install path.
+- Decided against adding a public `--minimal` create option because the default install is now the core install path.
 - Normalized setup prompt values so project type, frontend stack, profile, compliance scope, and related fields store stable values instead of prompt indexes.
 - Updated README, HOW-TO-USE, placeholder-resolution docs, tests, and pre-publish smoke gates for the quieter default install surface.
 

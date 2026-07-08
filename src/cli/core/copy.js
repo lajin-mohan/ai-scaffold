@@ -175,7 +175,6 @@ async function generateFile(file, values, dryRun) {
         typecheck: values.typecheckCommand,
         build: values.buildCommand,
       },
-      installedPacks: [],
       defaultedValues: values.defaulted ?? [],
       managedFiles: [],
     }, null, 2));

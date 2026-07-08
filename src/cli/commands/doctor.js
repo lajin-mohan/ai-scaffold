@@ -7,6 +7,7 @@ import path from 'path';
 import fs from 'fs-extra';
 import chalk from 'chalk';
 import crypto from 'crypto';
+import { validateManifestContext } from '../core/prompts.js';
 
 export function doctorCommand(cli) {
   cli.command('doctor [target-dir]', 'Diagnose scaffold installation health')
@@ -141,13 +142,13 @@ async function runDiagnostics(target) {
     message: '.ai-scaffold/context.md not found.',
   });
 
-  const invalidContextFields = await findNumericContextFields(manifestData, settingsFile);
+  const invalidContextFields = await findInvalidContextFields(manifestData, settingsFile);
   checks.push({
     name: 'Setup context values are meaningful',
     passed: invalidContextFields.length === 0,
     severity: 'medium',
     message: invalidContextFields.length > 0
-      ? `Numeric choice values found: ${invalidContextFields.join(', ')}`
+      ? `Invalid setup values found: ${invalidContextFields.join(', ')}`
       : undefined,
   });
 
@@ -169,7 +170,7 @@ async function runDiagnostics(target) {
   return { target, checks, allPassed, criticalFailed, highFailed, mediumFailed, lowFailed, manifestData };
 }
 
-async function findNumericContextFields(manifestData, settingsFile) {
+async function findInvalidContextFields(manifestData, settingsFile) {
   const invalid = [];
   const manifestChecks = [
     ['.ai-scaffold.json project.kind', manifestData?.project?.kind],
@@ -185,14 +186,15 @@ async function findNumericContextFields(manifestData, settingsFile) {
     }
   }
 
+  let settingsData = null;
   if (await fs.pathExists(settingsFile)) {
     try {
-      const settings = await fs.readJson(settingsFile);
+      settingsData = await fs.readJson(settingsFile);
       const settingsChecks = [
-        ['settings project.type', settings?.project?.type],
-        ['settings project.lifecycleStage', settings?.project?.lifecycleStage],
-        ['settings techStack.frontend', settings?.techStack?.frontend],
-        ['settings project.dataSensitivity', settings?.project?.dataSensitivity],
+        ['settings project.type', settingsData?.project?.type],
+        ['settings project.lifecycleStage', settingsData?.project?.lifecycleStage],
+        ['settings techStack.frontend', settingsData?.techStack?.frontend],
+        ['settings project.dataSensitivity', settingsData?.project?.dataSensitivity],
       ];
       for (const [name, value] of settingsChecks) {
         if (typeof value === 'number') {
@@ -204,7 +206,7 @@ async function findNumericContextFields(manifestData, settingsFile) {
     }
   }
 
-  return invalid;
+  return [...new Set([...invalid, ...validateManifestContext(manifestData ?? {}, settingsData)])];
 }
 
 async function findManagedFileIssues(target, manifestData) {

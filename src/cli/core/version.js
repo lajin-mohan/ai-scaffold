@@ -10,7 +10,7 @@ export function getVersion() {
   try {
     return fs.readJsonSync(path.join(PKG_ROOT, 'package.json')).version;
   } catch {
-    return '0.7.1';
+    return '0.8.1';
   }
 }
 

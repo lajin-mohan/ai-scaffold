@@ -81,8 +81,8 @@ Add to `.github/workflows/ci.yml` as a separate job (requires frontend to be run
 ```yaml
 accessibility:
   name: Accessibility (axe-core)
-  needs: [detect-stack, build]
-  if: needs.detect-stack.outputs.has-node == 'true'
+  needs: [build]
+  if: success()
   runs-on: ubuntu-latest
   timeout-minutes: 15
   steps:

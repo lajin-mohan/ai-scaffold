@@ -176,4 +176,62 @@ describe('CLI e2e smoke', () => {
     expect(await fs.pathExists(path.join(targetDir, 'tasks'))).toBe(false);
     expect(await fs.pathExists(path.join(targetDir, '_ai'))).toBe(false);
   });
+
+  it('update placeholder does not mutate installed metadata', async () => {
+    const targetDir = path.join(tmpDir, 'update-placeholder');
+    const createResult = runCli([
+      'create',
+      targetDir,
+      '--yes',
+      '--purpose',
+      'Update placeholder smoke',
+      '--owner-email',
+      'test@example.com',
+    ]);
+
+    expect(createResult.status, createResult.stderr || createResult.stdout).toBe(0);
+
+    const manifestPath = path.join(targetDir, '.ai-scaffold.json');
+    const manifest = await fs.readJson(manifestPath);
+    manifest.version = '0.7.1';
+    await fs.writeJson(manifestPath, manifest, { spaces: 2 });
+
+    const dryRunResult = runCli(['update', targetDir, '--dry-run']);
+    expect(dryRunResult.status, dryRunResult.stderr || dryRunResult.stdout).toBe(0);
+    expect(await fs.readJson(manifestPath)).toMatchObject({ version: '0.7.1' });
+
+    const updateResult = runCli(['update', targetDir, '--target-version', '0.8.0']);
+    expect(updateResult.status).toBe(1);
+    expect(updateResult.stderr).toContain('not implemented yet');
+    expect(await fs.readJson(manifestPath)).toMatchObject({ version: '0.7.1' });
+  });
+
+  it('doctor reports invalid stored context values', async () => {
+    const targetDir = path.join(tmpDir, 'invalid-context-doctor');
+    const createResult = runCli([
+      'create',
+      targetDir,
+      '--yes',
+      '--purpose',
+      'Doctor invalid context smoke',
+      '--owner-email',
+      'test@example.com',
+    ]);
+
+    expect(createResult.status, createResult.stderr || createResult.stdout).toBe(0);
+
+    const manifestPath = path.join(targetDir, '.ai-scaffold.json');
+    const manifest = await fs.readJson(manifestPath);
+    manifest.project.kind = 'platform';
+    manifest.risk.complianceScope = ['GDPR', 'BOGUSSCOPE'];
+    await fs.writeJson(manifestPath, manifest, { spaces: 2 });
+
+    const doctorResult = runCli(['doctor', targetDir, '--json']);
+    expect(doctorResult.status, doctorResult.stderr || doctorResult.stdout).toBe(0);
+    const diagnostics = JSON.parse(doctorResult.stdout);
+    const contextCheck = diagnostics.checks.find((check) => check.name === 'Setup context values are meaningful');
+    expect(contextCheck.passed).toBe(false);
+    expect(contextCheck.message).toContain('project.kind');
+    expect(contextCheck.message).toContain('BOGUSSCOPE');
+  });
 });

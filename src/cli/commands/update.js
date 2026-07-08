@@ -50,6 +50,12 @@ async function runUpdate(targetDir, options) {
   const currentVersion = currentData.version;
   const cliVersion = getVersion();
 
+  if (!semver.valid(currentVersion)) {
+    console.error(chalk.red(`✗ Installed scaffold version is invalid: ${currentVersion}`));
+    console.error(chalk.gray('  Run `ais doctor` and reinstall or repair the scaffold metadata before updating.'));
+    process.exit(1);
+  }
+
   // 3. Determine target version
   let resolvedVersion;
   if (targetVersion) {
@@ -63,47 +69,36 @@ async function runUpdate(targetDir, options) {
     resolvedVersion = cliVersion;
   }
 
+  console.log(chalk.cyan(`  Installed version:  ${currentVersion}`));
+  console.log(chalk.cyan(`  CLI version:        ${cliVersion}`));
+  console.log(chalk.cyan(`  Target version:     ${resolvedVersion}`));
+  console.log(chalk.cyan(`  Profile:            ${currentData.profile ?? 'unknown'}`));
+  console.log(chalk.yellow(`  File update engine: not implemented yet`));
+  console.log('');
+
   // 4. Compare versions
   const comparison = semver.compare(resolvedVersion, currentVersion);
 
   if (comparison === 0 && !force) {
     console.log(chalk.green(`✓ Already at version ${currentVersion}`));
-    console.log(chalk.gray('  Use --force to re-apply the same version.'));
+    console.log(chalk.gray('  No files changed.'));
     return;
   }
 
   if (comparison < 0 && !force) {
     console.log(chalk.yellow(`⚠ Target version ${resolvedVersion} is older than current ${currentVersion}.`));
-    console.log(chalk.gray('  Use --force to downgrade.'));
+    console.log(chalk.gray('  Downgrade migrations are not implemented. No files changed.'));
     return;
   }
 
-  if (comparison > 0) {
-    console.log(chalk.cyan(`  Current:  ${currentVersion}`));
-    console.log(chalk.cyan(`  Target:   ${resolvedVersion}`));
-    console.log(chalk.cyan(`  Profile:  ${currentData.profile}`));
-    console.log('');
-
-    if (dryRun) {
-      console.log(chalk.gray(`[dry-run] Would update from ${currentVersion} to ${resolvedVersion}`));
-      console.log(chalk.gray('  Note: Delta update logic is not yet implemented (Phase 3).'));
-      return;
-    }
-
-    // 5. Apply update
-    // Phase 3 will implement delta updates and migration strategies
-    // For now, this is a placeholder that updates the version field
-    const updatedData = {
-      ...currentData,
-      version: resolvedVersion,
-      updatedAt: new Date().toISOString().split('T')[0],
-    };
-
-    await fs.writeJson(scaffoldFile, updatedData, { spaces: 2 });
-
-    console.log(chalk.green(`✓ Updated from ${currentVersion} to ${resolvedVersion}`));
-    console.log(chalk.gray('\n  Note: Full delta updates and migration strategies coming in Phase 3.'));
+  if (dryRun) {
+    console.log(chalk.gray(`[dry-run] No files changed.`));
+    console.log(chalk.gray('  Full managed-file updates, diffs, and manifest migrations are planned for Phase 3.'));
+    return;
   }
 
-  console.log('');
+  console.error(chalk.red('✗ Safe file update logic is not implemented yet. No files changed.'));
+  console.error(chalk.gray('  Use `ais update --dry-run` to inspect installed metadata.'));
+  console.error(chalk.gray('  Wait for the Phase 3 update engine before changing scaffold versions.'));
+  process.exit(1);
 }

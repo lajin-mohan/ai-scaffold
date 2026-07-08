@@ -9,9 +9,9 @@ This file governs how Claude, Codex, and other AI tools collaborate on every pro
 >
 > If you see bracket-placeholders in the Project Identity or Tech Stack table below, the scaffold has not been bootstrapped for a real project yet. Do not treat them as bugs to fix or guess at values. Run `/bootstrap` instead — it walks through identity, stack, tenancy, and compliance one decision at a time and updates every file that holds a placeholder.
 >
-> While in template state, the operational gates are deliberately permissive:
-> - CI workflow's `detect-stack` job skips Node/PHP jobs when no `package.json` / `composer.json` exists, so a fresh template clone passes CI.
-> - `/review` runs with `PRE_REVIEW_ALLOW_UNCONFIGURED=1` set in `.claude/settings.json` so it works without configured lint/typecheck/test commands. `/bootstrap` removes this opt-out as part of stack configuration.
+> While in template state, generated projects do not receive a CI workflow by
+> default. Add CI through project-specific setup or a future AI Scaffold CI pack.
+> This scaffold repository itself runs the configured CLI checks for `/review`.
 >
 > If you are editing this template itself (improving rules, agents, commands), the placeholders stay. If you are starting a real project, run `/bootstrap` first.
 
@@ -468,7 +468,7 @@ The legacy `tasks/todo.md` is gitignored and untracked — do not commit it. It 
 
 > Update this section at the start of each epic.
 
-- **Current Epic**: CLI distribution and profile support (v0.7.0)
-- **Next Milestone**: Phase 1 CLI MVP — `create`, `init`, `status`, `doctor` commands
-- **Blockers**: None
-- **In-Flight Branches**: `dev` — Phase 0 committed, Phase 1 next
+- **Current Epic**: Post-v0.8.0 release hardening
+- **Next Milestone**: v0.8.1 — trusted publishing, branch protection, update safety, and validation hardening
+- **Blockers**: Trusted npm publishing and branch protection must be proven before the next tag
+- **In-Flight Branches**: `fix/p0-release-hardening`

@@ -1,8 +1,8 @@
 import { describe, it, expect } from 'vitest';
-import { resolveWithDefaults } from '../cli/core/prompts.js';
+import { resolveWithDefaults, validateBootstrapValues } from '../cli/core/prompts.js';
 import { buildFilePlan } from '../cli/core/file-plan.js';
 import { MANAGED_PATHS, PROTECTED_PATHS, APP_SOURCE_PATHS } from '../cli/core/file-plan.js';
-import { detectConflicts, printConflictReport } from '../cli/core/conflicts.js';
+import { detectConflicts } from '../cli/core/conflicts.js';
 import { getVersion } from '../cli/core/version.js';
 import { normalizeProfile, templatePath } from '../cli/core/paths.js';
 
@@ -80,6 +80,32 @@ describe('resolveWithDefaults', () => {
     expect(resolved.profile).toBe('node');
     expect(resolved.backendStack).toBe('Node.js');
     expect(defaulted).toContain('backendStack');
+  });
+
+  it('rejects invalid choice-valued flags', () => {
+    expect(() => resolveWithDefaults({
+      projectName: 'bad-context',
+      projectType: 'Platform',
+      ownerEmail: 'test@example.com',
+    })).toThrow(/projectType/);
+
+    expect(() => resolveWithDefaults({
+      projectName: 'bad-compliance',
+      complianceScope: 'ISO 27001,PCI DSS,bogusscope',
+      ownerEmail: 'test@example.com',
+    })).toThrow(/complianceScope/);
+  });
+
+  it('validates normalized choice values', () => {
+    expect(validateBootstrapValues({
+      projectType: 'api',
+      lifecycleStage: 'active-development',
+      frontendStack: 'none',
+      dataSensitivity: 'internal',
+      requirementsSource: 'create-later',
+      profile: 'node',
+      complianceScope: ['GDPR', 'SOC2'],
+    })).toEqual([]);
   });
 });
 
