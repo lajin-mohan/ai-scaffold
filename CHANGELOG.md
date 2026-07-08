@@ -15,6 +15,22 @@ This file is configured with `merge=union` in `.gitattributes` so parallel addit
 
 ---
 
+## [0.8.2] - 2026-07-08
+
+### Changed
+- Reduced the published npm package surface by excluding template `docs/`,
+  `tasks/`, and `_ai/` folders from the package allowlist.
+- Kept internal template planning/history material in the source repository
+  while preventing it from shipping in the npm tarball.
+- Updated the pre-publish smoke gate so package checks fail if template
+  docs/tasks/_ai folders are accidentally included again.
+
+### Documentation
+- Updated post-release TODOs and release history after the successful
+  trusted-publishing `v0.8.1` release.
+
+---
+
 ## [0.8.1] - 2026-07-08
 
 ### Added
