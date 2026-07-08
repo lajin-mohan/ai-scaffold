@@ -69,13 +69,13 @@ echo "Applying branch protection to: $REPO"
 echo "This script will update branch protection for main and dev."
 echo
 
-STATUS_CHECKS='[{"context":"ci-passed"}]'
+STATUS_CONTEXTS='["ci-passed"]'
 STATUS_LABEL="ci-passed"
 if [ "${REQUIRE_AI_REVIEW_CHECK:-0}" = "1" ]; then
   echo "WARNING: ai-review-passed will be required."
   echo "Ensure this check exists and has completed at least once."
   echo
-  STATUS_CHECKS='[{"context":"ci-passed"},{"context":"ai-review-passed"}]'
+  STATUS_CONTEXTS='["ci-passed","ai-review-passed"]'
   STATUS_LABEL="ci-passed + ai-review-passed"
 fi
 
@@ -131,8 +131,7 @@ gh api -X PUT "repos/$REPO/branches/main/protection" \
 {
   "required_status_checks": {
     "strict": true,
-    "contexts": [],
-    "checks": $STATUS_CHECKS
+    "contexts": $STATUS_CONTEXTS
   },
   "enforce_admins": true,
   "required_pull_request_reviews": {
@@ -168,8 +167,7 @@ gh api -X PUT "repos/$REPO/branches/dev/protection" \
 {
   "required_status_checks": {
     "strict": true,
-    "contexts": [],
-    "checks": $STATUS_CHECKS
+    "contexts": $STATUS_CONTEXTS
   },
   "enforce_admins": false,
   "required_pull_request_reviews": {

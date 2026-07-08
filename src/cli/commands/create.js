@@ -6,7 +6,6 @@
 import path from 'path';
 import fs from 'fs-extra';
 import chalk from 'chalk';
-import { CAC } from 'cac';
 import { collectBootstrapValues, resolveWithDefaults } from '../core/prompts.js';
 import { buildFilePlan } from '../core/file-plan.js';
 import { detectConflicts, printConflictReport } from '../core/conflicts.js';
@@ -86,9 +85,15 @@ async function runCreate(projectName, options) {
     profile,
   };
 
-  const resolved = yes
-    ? resolveWithDefaults(flags).resolved
-    : await collectBootstrapValues(flags);
+  let resolved;
+  try {
+    resolved = yes
+      ? resolveWithDefaults(flags).resolved
+      : await collectBootstrapValues(flags);
+  } catch (error) {
+    console.error(chalk.red(`✗ ${error.message}`));
+    process.exit(1);
+  }
 
   // 3. Build file plan — target is new, so no protected-file logic needed
   console.log(chalk.gray('Building file plan...'));

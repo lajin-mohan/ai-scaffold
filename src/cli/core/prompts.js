@@ -28,7 +28,7 @@ export const REQUIRED_VALUES = [
   'profile',
 ];
 
-const PROJECT_TYPE_CHOICES = [
+export const PROJECT_TYPE_CHOICES = [
   { title: 'SaaS product', value: 'saas' },
   { title: 'Internal tool', value: 'internal-tool' },
   { title: 'API / backend service', value: 'api' },
@@ -41,7 +41,7 @@ const PROJECT_TYPE_CHOICES = [
   { title: 'Data / analytics', value: 'data' },
 ];
 
-const LIFECYCLE_STAGE_CHOICES = [
+export const LIFECYCLE_STAGE_CHOICES = [
   { title: 'Discovery / planning', value: 'discovery' },
   { title: 'Active development', value: 'active-development' },
   { title: 'Production', value: 'production' },
@@ -49,7 +49,7 @@ const LIFECYCLE_STAGE_CHOICES = [
   { title: 'Legacy modernization', value: 'legacy-modernization' },
 ];
 
-const FRONTEND_STACK_CHOICES = [
+export const FRONTEND_STACK_CHOICES = [
   { title: 'None', value: 'none' },
   { title: 'React', value: 'react' },
   { title: 'Next.js', value: 'nextjs' },
@@ -59,14 +59,14 @@ const FRONTEND_STACK_CHOICES = [
   { title: 'Other', value: 'other' },
 ];
 
-const DATA_SENSITIVITY_CHOICES = [
+export const DATA_SENSITIVITY_CHOICES = [
   { title: 'Public', value: 'public' },
   { title: 'Internal', value: 'internal' },
   { title: 'Confidential', value: 'confidential' },
   { title: 'Regulated', value: 'regulated' },
 ];
 
-const COMPLIANCE_CHOICES = [
+export const COMPLIANCE_CHOICES = [
   { title: 'GDPR', value: 'GDPR' },
   { title: 'SOC 2', value: 'SOC2' },
   { title: 'ISO 27001', value: 'ISO27001' },
@@ -74,7 +74,7 @@ const COMPLIANCE_CHOICES = [
   { title: 'PCI-DSS', value: 'PCI-DSS' },
 ];
 
-const REQUIREMENTS_SOURCE_CHOICES = [
+export const REQUIREMENTS_SOURCE_CHOICES = [
   { title: 'Use existing docs/specs', value: 'existing-docs' },
   { title: 'Create requirements later', value: 'create-later' },
   { title: 'Create requirements now', value: 'create-now' },
@@ -84,6 +84,16 @@ const PROFILE_SELECT_CHOICES = PROFILE_CHOICES.map((profile) => ({
   title: profile,
   value: normalizeProfile(profile),
 }));
+
+const VALUE_SETS = {
+  projectType: choiceValues(PROJECT_TYPE_CHOICES),
+  lifecycleStage: choiceValues(LIFECYCLE_STAGE_CHOICES),
+  frontendStack: choiceValues(FRONTEND_STACK_CHOICES),
+  dataSensitivity: choiceValues(DATA_SENSITIVITY_CHOICES),
+  complianceScope: choiceValues(COMPLIANCE_CHOICES),
+  requirementsSource: choiceValues(REQUIREMENTS_SOURCE_CHOICES),
+  profile: new Set(PROFILE_CHOICES.map((profile) => normalizeProfile(profile))),
+};
 
 /**
  * Collect bootstrap values from interactive prompts.
@@ -228,7 +238,9 @@ export async function collectBootstrapValues(overrides = {}) {
     },
   });
 
-  return normalizeValues(answers);
+  const normalizedAnswers = normalizeValues(answers);
+  assertValidBootstrapValues(normalizedAnswers);
+  return normalizedAnswers;
 }
 
 /**
@@ -278,6 +290,7 @@ export function resolveWithDefaults(flags = {}) {
   }
 
   applyProfileDefaults(resolved, defaulted);
+  assertValidBootstrapValues(resolved);
 
   return { resolved, defaulted };
 }
@@ -324,7 +337,6 @@ function normalizeValues(values = {}) {
       SaaS: 'saas',
       'Internal Tool': 'internal-tool',
       API: 'api',
-      Platform: 'platform',
       Library: 'library',
     });
   }
@@ -424,11 +436,93 @@ function normalizeCompliance(value) {
     .map((item) => item.trim())
     .filter(Boolean)
     .map((item) => {
-      const normalized = item.toUpperCase().replace(/\s+/g, '').replace(/^SOC2$/, 'SOC2');
+      const normalized = item.toUpperCase().replace(/\s+/g, '');
       if (normalized === 'ISO27001' || normalized === 'ISO-27001') return 'ISO27001';
       if (normalized === 'PCIDSS' || normalized === 'PCI-DSS') return 'PCI-DSS';
       return normalized;
     });
+}
+
+export function validateBootstrapValues(values = {}) {
+  const errors = [];
+  checkValue(errors, 'projectType', values.projectType, VALUE_SETS.projectType);
+  checkValue(errors, 'lifecycleStage', values.lifecycleStage, VALUE_SETS.lifecycleStage);
+  checkValue(errors, 'frontendStack', values.frontendStack, VALUE_SETS.frontendStack);
+  checkValue(errors, 'dataSensitivity', values.dataSensitivity, VALUE_SETS.dataSensitivity);
+  checkValue(errors, 'requirementsSource', values.requirementsSource, VALUE_SETS.requirementsSource);
+  checkValue(errors, 'profile', values.profile, VALUE_SETS.profile);
+
+  const complianceScope = values.complianceScope ?? [];
+  if (!Array.isArray(complianceScope)) {
+    errors.push(`complianceScope must be an array or comma-separated list`);
+  } else {
+    for (const scope of complianceScope) {
+      checkValue(errors, 'complianceScope', scope, VALUE_SETS.complianceScope);
+    }
+  }
+
+  return errors;
+}
+
+export function assertValidBootstrapValues(values = {}) {
+  const errors = validateBootstrapValues(values);
+  if (errors.length > 0) {
+    throw new Error(`Invalid scaffold setup value(s):\n${errors.map((error) => `  - ${error}`).join('\n')}`);
+  }
+}
+
+export function validateManifestContext(manifestData = {}, settingsData = null) {
+  const invalid = [];
+
+  checkStoredValue(invalid, '.ai-scaffold.json project.kind', manifestData?.project?.kind, VALUE_SETS.projectType);
+  checkStoredValue(invalid, '.ai-scaffold.json project.lifecycleStage', manifestData?.project?.lifecycleStage, VALUE_SETS.lifecycleStage);
+  checkStoredValue(invalid, '.ai-scaffold.json stack.frontend', manifestData?.stack?.frontend, VALUE_SETS.frontendStack);
+  checkStoredValue(invalid, '.ai-scaffold.json risk.dataSensitivity', manifestData?.risk?.dataSensitivity, VALUE_SETS.dataSensitivity);
+  checkStoredValue(invalid, '.ai-scaffold.json requirements.source', manifestData?.requirements?.source, VALUE_SETS.requirementsSource);
+  checkStoredValue(invalid, '.ai-scaffold.json profile', manifestData?.profile, VALUE_SETS.profile);
+
+  const complianceScope = manifestData?.risk?.complianceScope;
+  if (complianceScope !== undefined) {
+    if (!Array.isArray(complianceScope)) {
+      invalid.push('.ai-scaffold.json risk.complianceScope');
+    } else {
+      for (const scope of complianceScope) {
+        checkStoredValue(invalid, `.ai-scaffold.json risk.complianceScope:${scope}`, scope, VALUE_SETS.complianceScope);
+      }
+    }
+  }
+
+  if (settingsData) {
+    checkStoredValue(invalid, 'settings project.type', settingsData?.project?.type, VALUE_SETS.projectType);
+    checkStoredValue(invalid, 'settings project.lifecycleStage', settingsData?.project?.lifecycleStage, VALUE_SETS.lifecycleStage);
+    checkStoredValue(invalid, 'settings techStack.frontend', settingsData?.techStack?.frontend, VALUE_SETS.frontendStack);
+    checkStoredValue(invalid, 'settings project.dataSensitivity', settingsData?.project?.dataSensitivity, VALUE_SETS.dataSensitivity);
+    checkStoredValue(invalid, 'settings project.requirementsSource', settingsData?.project?.requirementsSource, VALUE_SETS.requirementsSource);
+  }
+
+  return invalid;
+}
+
+function choiceValues(choices) {
+  return new Set(choices.map((choice) => choice.value));
+}
+
+function checkValue(errors, field, value, allowedValues) {
+  if (value === undefined || value === null) {
+    return;
+  }
+  if (!allowedValues.has(value)) {
+    errors.push(`${field}=${JSON.stringify(value)}; allowed: ${[...allowedValues].join(', ')}`);
+  }
+}
+
+function checkStoredValue(invalid, field, value, allowedValues) {
+  if (value === undefined || value === null) {
+    return;
+  }
+  if (typeof value === 'number' || !allowedValues.has(value)) {
+    invalid.push(field);
+  }
 }
 
 function choiceIndex(choices, value) {

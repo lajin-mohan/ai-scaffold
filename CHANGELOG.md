@@ -25,7 +25,7 @@ This file is configured with `merge=union` in `.gitattributes` so parallel addit
 
 ### Changed
 - Made the default install core-only: `create` and `init` no longer install `.ai-scaffold/docs/`, `.ai-scaffold/tasks/`, or `.ai-scaffold/_ai/` by default.
-- Removed the public `--minimal` create option because the default install is now the minimal/core install path.
+- Decided against adding a public `--minimal` create option because the default install is now the core install path.
 - Normalized setup prompt values so project type, frontend stack, profile, compliance scope, and related fields store stable values instead of prompt indexes.
 - Updated README, HOW-TO-USE, placeholder-resolution docs, tests, and pre-publish smoke gates for the quieter default install surface.
 
