@@ -76,6 +76,16 @@ else
   pass "npm package excludes heavy/template-local paths"
 fi
 
+# Hook wiring must ship: .claude/settings.json is what turns the hooks on in a
+# generated project. A nested template .gitignore rule once dropped it from the
+# package, leaving hooks inert — assert it ships for every profile.
+SETTINGS_IN_PACK=$(grep -oE 'templates/[^/"]+/\.claude/settings\.json' <<< "$PACK_OUTPUT" | sort -u | wc -l | tr -d ' ')
+if [ "$SETTINGS_IN_PACK" -ge 3 ]; then
+  pass "npm package ships template .claude/settings.json for all profiles"
+else
+  fail "npm package ships only ${SETTINGS_IN_PACK}/3 template .claude/settings.json (hooks would be inert)"
+fi
+
 # ── Gate 4: create smoke test ──────────────────────────────────────────
 echo ""
 echo ">> Gate 4: Create Smoke Test"
@@ -150,7 +160,7 @@ for d in .ai-scaffold/docs .ai-scaffold/tasks .ai-scaffold/_ai; do
   fi
 done
 
-for f in HOW-TO-USE.md CONTRIBUTING.md CHANGELOG.md SECURITY.md LICENSE .env.example .editorconfig .gitattributes .gitleaks.toml .cursorrules; do
+for f in HOW-TO-USE.md CONTRIBUTING.md SECURITY.md LICENSE .env.example .editorconfig .gitleaks.toml .cursorrules; do
   if [ -e "$SMOKE_DIR/smoke-project/$f" ]; then
     fail "create left root $f"
   else
@@ -158,13 +168,43 @@ for f in HOW-TO-USE.md CONTRIBUTING.md CHANGELOG.md SECURITY.md LICENSE .env.exa
   fi
 done
 
-for d in docs tasks _ai apps packages infra scripts; do
+for d in docs _ai apps packages infra scripts; do
   if [ -d "$SMOKE_DIR/smoke-project/$d" ]; then
     fail "create created root $d/"
   else
     pass "create did not create root $d/"
   fi
 done
+
+# Governance skeleton is required on create so the shipped CLAUDE.md workflow
+# references (tasks/lessons.md, CHANGELOG.md, tasks/todo, tasks/done) resolve.
+for f in CHANGELOG.md tasks/lessons.md tasks/todo/.gitkeep tasks/done/.gitkeep; do
+  if [ -e "$SMOKE_DIR/smoke-project/$f" ]; then
+    pass "create generated skeleton $f"
+  else
+    fail "create did not generate skeleton $f"
+  fi
+done
+
+if [ -f "$SMOKE_DIR/smoke-project/.gitattributes" ] \
+  && grep -q "CHANGELOG.md.*merge=union" "$SMOKE_DIR/smoke-project/.gitattributes" \
+  && grep -q "tasks/lessons.md.*merge=union" "$SMOKE_DIR/smoke-project/.gitattributes"; then
+  pass "create generated .gitattributes with union merge rules"
+else
+  fail "create did not generate expected .gitattributes"
+fi
+
+if git -C "$SMOKE_DIR/smoke-project" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+  pass "create initialized git repository"
+else
+  fail "create did not initialize git repository"
+fi
+
+if git -C "$SMOKE_DIR/smoke-project" rev-parse --verify HEAD >/dev/null 2>&1; then
+  pass "create made initial git commit"
+else
+  fail "create did not make initial git commit"
+fi
 
 # ── Gate 5: init --yes smoke test ──────────────────────────────────────
 echo ""

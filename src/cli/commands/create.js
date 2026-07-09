@@ -6,6 +6,7 @@
 import path from 'path';
 import fs from 'fs-extra';
 import chalk from 'chalk';
+import { spawnSync } from 'child_process';
 import { collectBootstrapValues, resolveWithDefaults } from '../core/prompts.js';
 import { buildFilePlan } from '../core/file-plan.js';
 import { detectConflicts, printConflictReport } from '../core/conflicts.js';
@@ -18,6 +19,7 @@ export function createCommand(cli) {
     .option('--yes', 'Use defaults for all options, no prompts')
     .option('--dry-run', 'Show what would be created without writing files')
     .option('--force', 'Overwrite existing files without prompting')
+    .option('--no-git', 'Skip git init and the initial scaffold commit')
     .option('--project-name <name>', 'Project name (slug)')
     .option('--display-name <name>', 'Display name')
     .option('--purpose <text>', 'One-line purpose')
@@ -47,6 +49,7 @@ export function createCommand(cli) {
 
 async function runCreate(projectName, options) {
   const { profile = 'generic', yes = false, dryRun = false, force = false } = options;
+  const shouldInitGit = options.git !== false;
 
   console.log(chalk.bold(`\n🔧 AI Scaffold create — ${projectName}\n`));
 
@@ -111,12 +114,80 @@ async function runCreate(projectName, options) {
   console.log(chalk.gray('\nCopying files...'));
   const result = await copyFiles(plan, resolved, { dryRun, force, targetDir });
 
-  // 6. Summary
+  // 6. Initialize git for new projects unless explicitly disabled.
+  const gitResult = !dryRun && shouldInitGit
+    ? initializeGitRepository(targetDir)
+    : null;
+
+  // 7. Summary
   if (dryRun) {
     console.log(chalk.gray(`\n[dry-run] Would create ${result.copied} files, skip ${result.skipped}`));
   } else {
     console.log(chalk.green(`\n✓ Done! Created ${result.copied} files in ./${projectName}/`));
     console.log(chalk.gray(`  Profile: ${resolved.profile ?? profile}`));
+    if (gitResult?.initialized) {
+      console.log(chalk.gray(`  Git: initialized${gitResult.committed ? ' with initial commit' : ''}`));
+    } else if (gitResult?.warning) {
+      console.log(chalk.yellow(`  Git: ${gitResult.warning}`));
+    }
     console.log(chalk.gray(`  Bootstrap: ${resolved.profile ?? profile}\n`));
   }
+}
+
+function initializeGitRepository(targetDir) {
+  const gitAvailable = runGit(['--version'], process.cwd());
+  if (gitAvailable.status !== 0) {
+    return { initialized: false, committed: false, warning: 'git not available; skipped initialization' };
+  }
+
+  const init = runGit(['init'], targetDir);
+  if (init.status !== 0) {
+    return {
+      initialized: false,
+      committed: false,
+      warning: `git init failed; skipped initial commit (${summarizeGitError(init)})`,
+    };
+  }
+
+  const add = runGit(['add', '--all'], targetDir);
+  if (add.status !== 0) {
+    return {
+      initialized: true,
+      committed: false,
+      warning: `git initialized, but git add failed (${summarizeGitError(add)})`,
+    };
+  }
+
+  const commit = runGit([
+    '-c',
+    'user.name=AI Scaffold',
+    '-c',
+    'user.email=ai-scaffold@example.invalid',
+    'commit',
+    '-m',
+    'Initial scaffold commit',
+  ], targetDir);
+
+  if (commit.status !== 0) {
+    return {
+      initialized: true,
+      committed: false,
+      warning: `git initialized, but initial commit failed (${summarizeGitError(commit)})`,
+    };
+  }
+
+  return { initialized: true, committed: true };
+}
+
+function runGit(args, cwd) {
+  return spawnSync('git', args, {
+    cwd,
+    encoding: 'utf-8',
+    stdio: ['ignore', 'pipe', 'pipe'],
+  });
+}
+
+function summarizeGitError(result) {
+  const output = `${result.stderr ?? ''}\n${result.stdout ?? ''}`.trim();
+  return output.split('\n').find(Boolean)?.trim() || `exit ${result.status}`;
 }

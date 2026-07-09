@@ -1,10 +1,12 @@
 import { describe, it, expect } from 'vitest';
-import { resolveWithDefaults, validateBootstrapValues } from '../cli/core/prompts.js';
+import { readFileSync } from 'node:fs';
+import path from 'node:path';
+import { applyInteractiveDefaults, resolveWithDefaults, validateBootstrapValues } from '../cli/core/prompts.js';
 import { buildFilePlan } from '../cli/core/file-plan.js';
 import { MANAGED_PATHS, PROTECTED_PATHS, APP_SOURCE_PATHS } from '../cli/core/file-plan.js';
 import { detectConflicts } from '../cli/core/conflicts.js';
 import { getVersion } from '../cli/core/version.js';
-import { normalizeProfile, templatePath } from '../cli/core/paths.js';
+import { normalizeProfile, templatePath, toPosixPath, SUPPORTED_PROFILES } from '../cli/core/paths.js';
 
 describe('version', () => {
   it('returns a semver-compliant version', () => {
@@ -79,7 +81,28 @@ describe('resolveWithDefaults', () => {
 
     expect(resolved.profile).toBe('node');
     expect(resolved.backendStack).toBe('Node.js');
+    expect(resolved.testCommand).toBe('npm test');
+    expect(resolved.lintCommand).toBe('npm run lint');
+    expect(resolved.typecheckCommand).toBe('npm run typecheck');
+    expect(resolved.buildCommand).toBe('npm run build');
     expect(defaulted).toContain('backendStack');
+  });
+
+  it('applies profile command defaults for interactive prompt values', () => {
+    const resolved = applyInteractiveDefaults({
+      projectName: 'node-api',
+      profile: 'javascript',
+      testCommand: 'none',
+      lintCommand: 'none',
+      typecheckCommand: 'none',
+      buildCommand: 'none',
+    });
+
+    expect(resolved.profile).toBe('node');
+    expect(resolved.testCommand).toBe('npm test');
+    expect(resolved.lintCommand).toBe('npm run lint');
+    expect(resolved.typecheckCommand).toBe('npm run typecheck');
+    expect(resolved.buildCommand).toBe('npm run build');
   });
 
   it('rejects invalid choice-valued flags', () => {
@@ -150,6 +173,7 @@ describe('buildFilePlan', () => {
     expect(rels).toContain('CLAUDE.md');
     expect(rels).toContain('AGENTS.md');
     expect(rels).toContain('.gitignore');
+    expect(rels).toContain('.gitattributes');
     expect(rels).toContain('.ai-scaffold/README.md');
     expect(rels).toContain('.ai-scaffold/context.md');
 
@@ -160,10 +184,16 @@ describe('buildFilePlan', () => {
     expect(rels.some(r => r.startsWith('.ai-scaffold/tasks/'))).toBe(false);
     expect(rels.some(r => r.startsWith('.ai-scaffold/_ai/'))).toBe(false);
     expect(rels.some(r => r.startsWith('docs/'))).toBe(false);
-    expect(rels.some(r => r.startsWith('tasks/'))).toBe(false);
     expect(rels.some(r => r.startsWith('_ai/'))).toBe(false);
     expect(rels.some(r => r.startsWith('apps/'))).toBe(false);
-    expect(rels).not.toContain('.ai-scaffold/tasks/ponytail-debt.md');
+
+    // Governance skeleton ships on create so the shipped CLAUDE.md workflow
+    // references resolve; the rest of tasks/ (e.g. ponytail-debt) does not.
+    expect(rels).toContain('tasks/lessons.md');
+    expect(rels).toContain('tasks/todo/.gitkeep');
+    expect(rels).toContain('tasks/done/.gitkeep');
+    expect(rels).toContain('CHANGELOG.md');
+    expect(rels).not.toContain('tasks/ponytail-debt.md');
   });
 
   it('keeps Node profile package.json at root for new project creation', async () => {
@@ -183,4 +213,33 @@ describe('detectConflicts', () => {
     expect(report).toHaveProperty('claudDirExists');
     expect(Array.isArray(report.protectedExists)).toBe(true);
   });
+});
+
+describe('toPosixPath', () => {
+  it('normalizes OS-native separators to posix', () => {
+    const native = ['.claude', 'settings.json'].join(path.sep);
+    expect(toPosixPath(native)).toBe('.claude/settings.json');
+  });
+
+  it('leaves posix paths unchanged', () => {
+    expect(toPosixPath('.claude/rules/ai-coding-rules.md')).toBe('.claude/rules/ai-coding-rules.md');
+  });
+
+  it('normalizes literal Windows backslashes on any OS', () => {
+    expect(toPosixPath('.claude\\settings.json')).toBe('.claude/settings.json');
+    expect(toPosixPath('tasks\\todo\\.gitkeep')).toBe('tasks/todo/.gitkeep');
+  });
+});
+
+describe('template .gitignore ships hook wiring', () => {
+  // A bare `settings.json` rule matches .claude/settings.json at any depth, and
+  // npm pack honors nested .gitignore files — that dropped the hook wiring from
+  // the published package. Anchor to root (/settings.json) instead.
+  for (const profile of SUPPORTED_PROFILES) {
+    it(`${profile}: does not gitignore .claude/settings.json`, () => {
+      const gitignore = readFileSync(templatePath(profile, '.gitignore'), 'utf-8');
+      const lines = gitignore.split('\n').map((line) => line.trim());
+      expect(lines).not.toContain('settings.json');
+    });
+  }
 });

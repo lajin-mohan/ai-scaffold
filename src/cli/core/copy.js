@@ -7,6 +7,7 @@ import path from 'path';
 import chalk from 'chalk';
 import crypto from 'crypto';
 import { getVersion } from './version.js';
+import { toPosixPath } from './paths.js';
 
 /**
  * Copy staged files to target directory.
@@ -292,13 +293,48 @@ Before debugging or investigating:
 Update this index when new memory files are created or existing memory files are archived.
 `;
     await fs.writeFile(target, memoryContent);
+  } else if (relPath.endsWith('CHANGELOG.md')) {
+    await fs.writeFile(target, buildStarterChangelog(values));
+  } else if (relPath.endsWith('tasks/lessons.md')) {
+    await fs.writeFile(target, buildStarterLessons(values));
+  } else if (relPath.endsWith('.gitkeep')) {
+    await fs.writeFile(target, '');
   }
 
   console.log(chalk.green(`✓ ${relPath} (generated)`));
 }
 
+function buildStarterChangelog(values) {
+  return `# Changelog
+
+All notable changes to ${values.displayName} are documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+Each merging PR adds an entry under [Unreleased].
+
+---
+
+## [Unreleased]
+`;
+}
+
+function buildStarterLessons(values) {
+  return `# Lessons
+
+Root-cause and process lessons for ${values.displayName}. Append an entry after
+every user correction or non-obvious bug fix: what failed, why it happened, and
+the rule that prevents it recurring.
+
+Queried by \`/lessons\`. Read at the start of every session before doing anything else.
+
+---
+`;
+}
+
 async function buildManagedFileRecords(targetDir, relPaths) {
-  const uniquePaths = [...new Set(relPaths)]
+  const uniquePaths = [...new Set(relPaths.map(toPosixPath))]
     .filter((relPath) => relPath !== '.ai-scaffold.json')
     .sort();
 

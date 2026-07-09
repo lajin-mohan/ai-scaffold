@@ -63,12 +63,20 @@ describe('CLI e2e smoke', () => {
     expect(await fs.pathExists(path.join(targetDir, 'HOW-TO-USE.md'))).toBe(false);
     expect(await fs.pathExists(path.join(targetDir, 'CONTRIBUTING.md'))).toBe(false);
     expect(await fs.pathExists(path.join(targetDir, 'docs'))).toBe(false);
-    expect(await fs.pathExists(path.join(targetDir, 'tasks'))).toBe(false);
     expect(await fs.pathExists(path.join(targetDir, '_ai'))).toBe(false);
     expect(await fs.pathExists(path.join(targetDir, 'apps'))).toBe(false);
+
+    // Governance skeleton ships on create so the CLAUDE.md workflow refs resolve
+    expect(await fs.pathExists(path.join(targetDir, 'tasks', 'lessons.md'))).toBe(true);
+    expect(await fs.pathExists(path.join(targetDir, 'tasks', 'todo', '.gitkeep'))).toBe(true);
+    expect(await fs.pathExists(path.join(targetDir, 'CHANGELOG.md'))).toBe(true);
+    expect(await fs.pathExists(path.join(targetDir, '.gitattributes'))).toBe(true);
     expect(await fs.pathExists(path.join(targetDir, 'packages'))).toBe(false);
     expect(await fs.pathExists(path.join(targetDir, 'infra'))).toBe(false);
     expect(await fs.pathExists(path.join(targetDir, 'scripts'))).toBe(false);
+
+    const gitHead = spawnSync('git', ['-C', targetDir, 'rev-parse', '--verify', 'HEAD'], { encoding: 'utf-8' });
+    expect(gitHead.status, gitHead.stderr || gitHead.stdout).toBe(0);
 
     const readme = await fs.readFile(path.join(targetDir, 'README.md'), 'utf-8');
     expect(readme).toContain('Bare create smoke');
@@ -88,6 +96,24 @@ describe('CLI e2e smoke', () => {
     expect(manifest.project.kind).toBe('saas');
     expect(manifest.project.lifecycleStage).toBe('active-development');
     expect(manifest.risk.complianceScope).toEqual([]);
+  });
+
+  it('create --no-git skips git initialization', async () => {
+    const targetDir = path.join(tmpDir, 'no-git-create');
+    const result = runCli([
+      'create',
+      targetDir,
+      '--yes',
+      '--no-git',
+      '--purpose',
+      'No git smoke',
+      '--owner-email',
+      'test@example.com',
+    ]);
+
+    expect(result.status, result.stderr || result.stdout).toBe(0);
+    expect(await fs.pathExists(path.join(targetDir, '.git'))).toBe(false);
+    expect(await fs.pathExists(path.join(targetDir, '.gitattributes'))).toBe(true);
   });
 
   it('creates a Node.js project through the JavaScript profile alias', async () => {
