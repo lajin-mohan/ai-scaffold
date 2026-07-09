@@ -82,7 +82,7 @@ Tutorials:
 
 ## What To Expect
 
-For a new project, `create` generates a clean starter root with the project README, AI entry files, runtime Claude files, and a small scaffold namespace containing `.ai-scaffold/README.md` and `.ai-scaffold/context.md`.
+For a new project, `create` generates a clean starter root with the project README, AI entry files, runtime Claude files, and a small scaffold namespace containing `.ai-scaffold/README.md` and `.ai-scaffold/context.md`. It also initializes a git repository by default, creates an initial scaffold commit when git is available, and writes `.gitattributes` with union merge rules for append-only governance files. Use `--no-git` if you want to initialize git yourself.
 
 For an existing project, `init` is designed to be safer and more isolated. Scaffold-owned context goes under `.ai-scaffold/`, while generated runtime files such as `.ai-scaffold.json`, `.claude/MEMORY.md`, and `.claude/settings-overrides.json` stay at their expected project paths. `init` avoids creating root application folders such as `docs/`, `apps/`, `packages/`, `infra/`, `scripts/`, or `tasks/`, and it no longer installs `.ai-scaffold/docs/`, `.ai-scaffold/tasks/`, or `.ai-scaffold/_ai/` by default.
 
@@ -189,13 +189,17 @@ npx @lajin.m/ai-scaffold my-project
 npx @lajin.m/ai-scaffold create my-project
 npx @lajin.m/ai-scaffold create my-node-app --profile node
 npx @lajin.m/ai-scaffold create my-laravel-app --profile laravel
+npx @lajin.m/ai-scaffold create my-project --no-git
 ```
 
 After global install:
 
 ```bash
 ais create my-project --profile node
+ais create my-project --profile node --no-git
 ```
+
+By default, `create` runs `git init`, stages the generated starter files, and creates an initial scaffold commit. It does not do this for `--dry-run`, and `--no-git` disables it.
 
 ### Install Into An Existing Repository
 
@@ -310,7 +314,7 @@ Full safe file updates, diffs, and version-pinned migrations are planned for Pha
 
 | Command | Use when | Example |
 |---|---|---|
-| `create <dir>` | Start a new project from a profile template | `npx @lajin.m/ai-scaffold create my-app --profile node` |
+| `create <dir>` | Start a new project from a profile template; initializes git unless `--no-git` is used | `npx @lajin.m/ai-scaffold create my-app --profile node` |
 | `<dir>` | Short form for `create <dir>` | `npx @lajin.m/ai-scaffold my-app` |
 | `init [dir]` | Add AI Scaffold to an existing repository | `npx @lajin.m/ai-scaffold init --profile node --dry-run` |
 | `.` | Short form for `init` in the current directory | `npx @lajin.m/ai-scaffold . --profile node` |
