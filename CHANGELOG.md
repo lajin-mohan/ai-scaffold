@@ -13,6 +13,20 @@ This file is configured with `merge=union` in `.gitattributes` so parallel addit
 
 ## [Unreleased]
 
+### Added
+- `ais list [commands|agents|skills|rules]` — discover the installed scaffold
+  assets without opening `.claude/` (supports `--json` and a target directory).
+- README: a "How It Works" architecture diagram and a "Core 6 — Start Here"
+  on-ramp so new users are not faced with all 35 commands at once.
+
+### Fixed
+- Synced the scaffold's own `.ai-scaffold.json` version to `package.json`; a test
+  now keeps them in lockstep so the self-marker cannot silently drift again.
+
+---
+
+## [0.8.3] - 2026-07-09
+
 ### Fixed
 - **Generated projects now get live Claude Code hooks.** A bare `settings.json`
   rule in the template `.gitignore` files matched `.claude/settings.json` at any
