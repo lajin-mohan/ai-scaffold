@@ -25,6 +25,7 @@ async function runDoctor(targetDir, options) {
   if (options.json) {
     const diagnostics = await runDiagnostics(target);
     console.log(JSON.stringify(diagnostics, null, 2));
+    setExitCode(diagnostics);
     return;
   }
 
@@ -32,6 +33,15 @@ async function runDoctor(targetDir, options) {
 
   const diagnostics = await runDiagnostics(target);
   printDiagnostics(diagnostics);
+  setExitCode(diagnostics);
+}
+
+// A failing critical/high check means the installation is broken or a core
+// guarantee is inert — exit non-zero so CI and scripts can gate on it.
+function setExitCode(diagnostics) {
+  if (diagnostics.criticalFailed > 0 || diagnostics.highFailed > 0) {
+    process.exitCode = 1;
+  }
 }
 
 async function runDiagnostics(target) {
@@ -160,6 +170,17 @@ async function runDiagnostics(target) {
     message: 'Not a git repository. Recommended for version control.',
   });
 
+  // 8. Claude Code hooks wired — the deterministic enforcement layer is inert
+  // if settings.json has no hooks block, even when the hook scripts are present.
+  checks.push(await checkHooksWired(target));
+
+  // 9. Verification configured — a bootstrapped project with no test/lint/
+  // typecheck/build commands cannot satisfy the verification mandate.
+  checks.push(checkVerificationConfigured(manifestData));
+
+  // 10. Governance skeleton — files the shipped CLAUDE.md workflow references.
+  checks.push(await checkGovernanceSkeleton(target));
+
   // Summary
   const criticalFailed = checks.filter((c) => c.severity === 'critical' && !c.passed).length;
   const highFailed = checks.filter((c) => c.severity === 'high' && !c.passed).length;
@@ -233,6 +254,56 @@ async function findManagedFileIssues(target, manifestData) {
   }
 
   return { modified, missing };
+}
+
+async function checkHooksWired(target) {
+  const settingsPath = path.join(target, '.claude', 'settings.json');
+  let wired = false;
+  if (await fs.pathExists(settingsPath)) {
+    try {
+      const settings = await fs.readJson(settingsPath);
+      wired = !!settings.hooks && Object.keys(settings.hooks).length > 0;
+    } catch {
+      wired = false;
+    }
+  }
+  return {
+    name: 'Claude Code hooks wired (.claude/settings.json)',
+    passed: wired,
+    severity: 'high',
+    message: wired ? undefined : 'No hooks block in .claude/settings.json — deterministic enforcement is inert.',
+  };
+}
+
+function checkVerificationConfigured(manifestData) {
+  const commands = manifestData?.commands ?? {};
+  const values = [commands.test, commands.lint, commands.typecheck, commands.build];
+  const allNone = values.every((command) => !command || command === 'none');
+  const flagged = manifestData?.bootstrapped === true && allNone;
+  return {
+    name: 'Verification commands configured',
+    passed: !flagged,
+    severity: 'medium',
+    message: flagged
+      ? 'Bootstrapped but test/lint/typecheck/build are all "none" — configure them so /review and verification gates work.'
+      : undefined,
+  };
+}
+
+async function checkGovernanceSkeleton(target) {
+  const required = ['tasks/lessons.md', 'CHANGELOG.md'];
+  const missing = [];
+  for (const rel of required) {
+    if (!(await fs.pathExists(path.join(target, rel)))) {
+      missing.push(rel);
+    }
+  }
+  return {
+    name: 'Governance skeleton present',
+    passed: missing.length === 0,
+    severity: 'medium',
+    message: missing.length > 0 ? `Missing files the CLAUDE.md workflow references: ${missing.join(', ')}` : undefined,
+  };
 }
 
 function printDiagnostics(diagnostics) {

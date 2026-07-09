@@ -5,7 +5,7 @@ License: https://github.com/DietrichGebert/ponytail/blob/main/LICENSE
 
 Adapted: rule extracted and rephrased to match this scaffold's governance voice;
 SessionStart activation, statusline, MCP server, persona, and cross-agent packaging
-intentionally not taken. See HOW-TO-USE.md "Ponytail Integration" for what was taken.
+intentionally not taken.
 -->
 
 # Ponytail Ladder — The Decision Flow
@@ -79,6 +79,5 @@ When the agent is invoked *without* `--intensity`, the ladder is not active. The
 ## Cross-References
 
 - [coding-standards.md "Shortcut Markers"](./coding-standards.md) — the `ponytail:` comment convention used to mark deliberate simplifications
-- [HOW-TO-USE.md "Ponytail Integration"](../../HOW-TO-USE.md) — user-facing overview of what was integrated
 - `/ponytail-audit` — whole-repo over-engineering scan
 - `/ponytail-debt` — shortcut debt ledger (harvests `ponytail:` comments)

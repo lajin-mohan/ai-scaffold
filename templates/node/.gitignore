@@ -81,7 +81,8 @@ authorized_keys
 
 # Application config (commonly contain secrets)
 config.json
-settings.json
+# Anchored to repo root so .claude/settings.json (Claude Code hook wiring) stays tracked and ships
+/settings.json
 private*.json
 
 # Build secrets & deployment

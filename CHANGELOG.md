@@ -13,6 +13,42 @@ This file is configured with `merge=union` in `.gitattributes` so parallel addit
 
 ## [Unreleased]
 
+### Fixed
+- **Generated projects now get live Claude Code hooks.** A bare `settings.json`
+  rule in the template `.gitignore` files matched `.claude/settings.json` at any
+  depth; `npm pack` honors nested `.gitignore` files, so the hook-wiring
+  `settings.json` was stripped from the published package and never copied into
+  generated projects (hooks were installed but inert). The rule is now anchored
+  to repo root (`/settings.json`), preserving app-config secret hygiene while
+  shipping the wiring. Regression test added.
+- **Scaffold manifest paths are now posix-normalized.** `managedFiles` in
+  `.ai-scaffold.json` stored `path.join`/`path.relative` output, producing
+  backslash paths on Windows that broke `doctor`/`status` drift checks
+  cross-platform. Paths are normalized via `toPosixPath()`. Regression test added.
+
+### Added
+- **`create` ships a governance skeleton** so the shipped `CLAUDE.md` workflow
+  references resolve: a clean starter `tasks/lessons.md`, `CHANGELOG.md`, and
+  `tasks/todo` / `tasks/done` placeholders (generated, not copied — no scaffold
+  content leaks). `init` leaves existing repos untouched.
+- **`create` initializes git by default** and creates an initial scaffold commit
+  when git is available. Use `--no-git` to opt out. Generated projects now also
+  receive `.gitattributes` with union merge rules for append-only governance
+  files such as `CHANGELOG.md` and `tasks/lessons.md`.
+- **`doctor` is now a real gate.** It exits non-zero when a critical/high check
+  fails, and adds checks for: Claude Code hooks wired in `.claude/settings.json`
+  (catches the inert-hooks class of bug), verification commands configured, and
+  governance-skeleton presence.
+
+### Changed
+- Reworded the shipped template `CLAUDE.md` and `ponytail-ladder.md` so they no
+  longer point at files the default install does not ship (the `apps/api/src`
+  reference example, `docs/process/task-size-policy.md`, `scripts/install-hooks.sh`,
+  and `HOW-TO-USE.md`) — the docs now match what a generated project actually contains.
+- Interactive setup now applies profile verification-command defaults too, so a
+  selected Node/JavaScript profile no longer stores `test`, `lint`, `typecheck`,
+  and `build` as `none` unless a user explicitly chooses a different profile.
+
 ---
 
 ## [0.8.2] - 2026-07-08

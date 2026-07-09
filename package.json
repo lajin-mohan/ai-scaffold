@@ -1,6 +1,6 @@
 {
   "name": "@lajin.m/ai-scaffold",
-  "version": "0.8.2",
+  "version": "0.8.3",
   "description": "Reusable AI engineering scaffold with CLI distribution",
   "type": "module",
   "bin": {
