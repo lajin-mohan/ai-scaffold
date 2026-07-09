@@ -145,6 +145,14 @@ export async function buildFilePlan(sourceDir, targetDir, options = {}) {
   // programmatically by copy.js generateFile().
   const alwaysGenerate = ['.ai-scaffold.json', '.ai-scaffold/README.md', '.ai-scaffold/context.md'];
 
+  // Governance skeleton — generated (not copied) so fresh projects get a clean
+  // starter rather than the scaffold's own lessons/changelog, and so the shipped
+  // CLAUDE.md workflow references resolve. Only for `create`: existing repos
+  // (`init`) manage their own tasks/CHANGELOG and must not have them imposed.
+  if (!existingTarget) {
+    alwaysGenerate.push('tasks/lessons.md', 'tasks/todo/.gitkeep', 'tasks/done/.gitkeep', 'CHANGELOG.md');
+  }
+
   // Collect all source files from the template directory
   const sourceFiles = await collectSourceFiles(sourceDir);
 

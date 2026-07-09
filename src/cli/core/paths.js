@@ -61,3 +61,12 @@ export function pkgPath(...segments) {
 export function templatePath(profile, ...segments) {
   return path.resolve(TEMPLATES_DIR, normalizeProfile(profile), ...segments);
 }
+
+/**
+ * Normalize a relative path to posix separators so manifests are portable.
+ * On Windows, path.join/path.relative emit backslashes; a manifest written on
+ * one OS must resolve on another.
+ */
+export function toPosixPath(relPath) {
+  return relPath.replace(/\\/g, '/');
+}
