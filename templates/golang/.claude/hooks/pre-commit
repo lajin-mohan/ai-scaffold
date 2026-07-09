@@ -1,0 +1,143 @@
+#!/bin/bash
+# pre-commit — developer helper: catches issues before they reach CI.
+#
+# What it does:
+#   - Branch name validation (always)
+#   - Stack-specific checks: lint, typecheck, unit tests (if tools installed)
+#   - Secrets scan (if gitleaks installed)
+#
+# Stack detection by file presence:
+#   package.json    → Node/TypeScript (npm run lint, npm run typecheck, npm run test:unit)
+#   composer.json   → PHP (PHP CS Fixer, PHPStan, PHPUnit)
+#   pyproject.toml  → Python (ruff, pyright/mypy, pytest)
+#   *.csproj        → .NET (dotnet build, dotnet test)
+#
+# IMPORTANT: This is a developer convenience tool, not a hard quality gate.
+# Missing tools → checks are silently skipped (see "skipping" messages below).
+# CI is the authoritative gate — it runs all configured checks with all tools available.
+#
+# Install:
+#   ./scripts/install-hooks.sh
+#   (sets core.hooksPath + chmod +x on all hooks in one command)
+#
+# To bypass (emergency only): git commit --no-verify
+
+set -euo pipefail
+
+PASS=0
+FAIL=0
+
+run_check() {
+  local name="$1"
+  local cmd="$2"
+  echo ">> pre-commit: $name"
+  if eval "$cmd" > /tmp/check_output 2>&1; then
+    echo "   OK: $name"
+    PASS=$((PASS + 1))
+  else
+    echo "   FAIL: $name"
+    cat /tmp/check_output
+    FAIL=$((FAIL + 1))
+  fi
+}
+
+echo "========================================"
+echo " Pre-commit checks"
+echo "========================================"
+
+# Template / pre-bootstrap state — no stack files found
+if [ ! -f package.json ] && [ ! -f composer.json ] && [ ! -f pyproject.toml ] && ! ls *.csproj 1>/dev/null 2>&1; then
+  echo "(no project stack detected — template state, skipping checks)"
+  echo "Template validation passed. Run /bootstrap to configure checks."
+  exit 0
+fi
+
+# Branch name validation — always runs
+BRANCH_NAME=$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo "")
+if [ -n "$BRANCH_NAME" ] && [ "$BRANCH_NAME" != "HEAD" ]; then
+  if ! echo "$BRANCH_NAME" | grep -qE '^(feature|fix|chore|hotfix|release)/[a-zA-Z0-9._-]+$'; then
+    echo "   FAIL: Branch name '$BRANCH_NAME' does not match required pattern:"
+    echo "         feature/*, fix/*, chore/*, hotfix/*, release/*"
+    echo "         See .claude/rules/branching-rules.md"
+    FAIL=$((FAIL + 1))
+  else
+    echo "   OK: Branch name '$BRANCH_NAME'"
+  fi
+fi
+
+# ── Node / TypeScript ──────────────────────────────────────────
+if [ -f package.json ]; then
+  if command -v npm &>/dev/null; then
+    run_check "ESLint" "npm run lint -- --max-warnings 0"
+    run_check "TypeScript" "npm run typecheck"
+    run_check "Unit Tests" "npm run test:unit -- --run"
+  else
+    echo "(npm not found — skipping Node checks)"
+  fi
+fi
+
+# ── PHP / Laravel ──────────────────────────────────────────────
+if [ -f composer.json ]; then
+  if command -v composer &>/dev/null && [ -d vendor ]; then
+    run_check "PHP CS Fixer" "vendor/bin/php-cs-fixer fix --dry-run --diff"
+    run_check "PHPStan" "vendor/bin/phpstan analyse"
+    run_check "PHPUnit" "vendor/bin/phpunit --testsuite=unit"
+  else
+    echo "(composer not found or no vendor/ — skipping PHP checks)"
+  fi
+fi
+
+# ── Python ─────────────────────────────────────────────────────
+if [ -f pyproject.toml ] || [ -f requirements.txt ]; then
+  if command -v ruff &>/dev/null; then
+    run_check "Ruff" "ruff check ."
+  else
+    echo "(ruff not found — skipping Ruff)"
+  fi
+  if command -v pyright &>/dev/null; then
+    run_check "Pyright" "pyright"
+  elif command -v mypy &>/dev/null; then
+    run_check "MyPy" "mypy ."
+  else
+    echo "(pyright/mypy not found — skipping type check)"
+  fi
+  if command -v pytest &>/dev/null; then
+    run_check "pytest" "pytest tests/unit/ -v"
+  else
+    echo "(pytest not found — skipping tests)"
+  fi
+fi
+
+# ── .NET / C# ─────────────────────────────────────────────────
+if ls *.csproj 1>/dev/null 2>&1; then
+  if command -v dotnet &>/dev/null; then
+    run_check "dotnet build" "dotnet build --no-restore"
+    run_check "dotnet test" "dotnet test --no-build"
+  else
+    echo "(dotnet not found — skipping .NET checks)"
+  fi
+fi
+
+# ── Secrets scanning — always runs if installed ─────────────────
+if command -v gitleaks &>/dev/null; then
+  run_check "Gitleaks" "gitleaks detect --staged --exit-code"
+else
+  echo "(gitleaks not installed — skipping secrets scan)"
+  echo "  Install: brew install gitleaks (macOS) or go install github.com/gitleaks/gitleaks@latest"
+fi
+
+echo ""
+echo "========================================"
+echo " Results: $PASS OK / $FAIL FAIL"
+echo "========================================"
+
+if [ $FAIL -gt 0 ]; then
+  echo ""
+  echo "Pre-commit checks failed. Fix the failures above before committing."
+  echo "For emergency commits, use: git commit --no-verify"
+  echo "Document the bypass in your PR description."
+  exit 1
+fi
+
+echo "OK: Ready to commit."
+exit 0

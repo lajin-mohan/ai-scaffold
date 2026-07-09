@@ -157,8 +157,12 @@ Full operating guide: [HOW-TO-USE.md](./HOW-TO-USE.md).
 | `node` | Supported | Day-one Node.js/JavaScript profile |
 | `js`, `javascript`, `nodejs` | Aliases | Resolve to `node` |
 | `laravel` | Light profile | PHP/Laravel defaults; still intentionally lightweight |
+| `python` | Supported | Ships `pyproject.toml`; pytest/ruff/mypy defaults |
+| `golang` | Supported | Ships `go.mod`; go test/vet/build defaults |
+| `py`, `python3` | Aliases | Resolve to `python` |
+| `go` | Alias | Resolves to `golang` |
 
-Additional profiles such as Next.js, Go, Python, Java, .NET, and Flutter are planned after the CLI fundamentals are stable.
+Additional profiles such as Next.js, Java, .NET, and Flutter are planned after the CLI fundamentals are stable.
 
 ## Install And Use
 

@@ -319,6 +319,24 @@ function applyProfileDefaults(resolved, defaulted) {
       typecheckCommand: 'npm run typecheck',
       buildCommand: 'npm run build',
     },
+    python: {
+      backendStack: 'Python',
+      frontendStack: 'none',
+      database: 'none',
+      testCommand: 'pytest',
+      lintCommand: 'ruff check .',
+      typecheckCommand: 'mypy .',
+      buildCommand: 'python -m build',
+    },
+    golang: {
+      backendStack: 'Go',
+      frontendStack: 'none',
+      database: 'none',
+      testCommand: 'go test ./...',
+      lintCommand: 'go vet ./...',
+      typecheckCommand: 'go build ./...',
+      buildCommand: 'go build ./...',
+    },
   };
 
   const profileDefaults = defaultsByProfile[resolved.profile] ?? {};

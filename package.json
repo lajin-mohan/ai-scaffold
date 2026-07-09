@@ -47,6 +47,8 @@
     "templates/*/README.template.md",
     "templates/*/SECURITY.md",
     "templates/*/package.json",
+    "templates/*/pyproject.toml",
+    "templates/*/go.mod",
     "README.md",
     "README.scaffold.md",
     "CODE_OF_CONDUCT.md",

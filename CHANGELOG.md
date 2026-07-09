@@ -27,6 +27,11 @@ This file is configured with `merge=union` in `.gitattributes` so parallel addit
   cross-platform. Paths are normalized via `toPosixPath()`. Regression test added.
 
 ### Added
+- **Python and Go stack profiles** — `--profile python` / `--profile golang`
+  (with `py`, `python3`, and `go` aliases). Each ships its build file
+  (`pyproject.toml` / `go.mod`) and profile-appropriate verification defaults
+  (pytest/ruff/mypy; go test/vet/build). Build files were added to the package
+  `files` allowlist so they actually ship.
 - **`create` ships a governance skeleton** so the shipped `CLAUDE.md` workflow
   references resolve: a clean starter `tasks/lessons.md`, `CHANGELOG.md`, and
   `tasks/todo` / `tasks/done` placeholders (generated, not copied — no scaffold

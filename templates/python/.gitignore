@@ -1,0 +1,167 @@
+# Local Claude overrides — personal, not shared
+CLAUDE.local.md
+
+# === Environment & Secrets ===
+# Core env files (always ignored)
+.env
+.env.local
+.env.*.local
+
+# All .env variants — allow only safe templates with placeholder values
+.env.*
+!.env.example
+!.env.sample
+!.env.template
+
+# Package manager credentials
+.npmrc
+.yarnrc
+.yarnrc.yml
+
+# Private keys & certificates
+*.key
+*.pem
+*.p12
+*.p8
+*.pk8
+*.p7b
+*.p7r
+*.crt
+*.cer
+*.der
+*.jks
+*.pfx
+id_rsa*
+id_ecdsa*
+id_ed25519*
+*.keystore
+*.truststore
+
+# Cloud / service account credentials
+*credentials*.json
+*credential*.json
+*secrets*.json
+*secret*.json
+*auth*.json
+service-account*.json
+account*.json
+client-secret*.json
+gcloud*.json
+*.gcloud
+google-application-credentials.json
+
+# AWS credentials
+.aws/
+aws_credentials
+
+# Azure credentials
+.azure/
+azure*.json
+
+# GCP / Firebase
+gcp*.json
+
+# Terraform state & secrets
+*.tfstate
+*.tfstate.*
+*.tfvars
+*.tfvars.json
+
+# Vault / secrets manager
+vault*.json
+secrets/
+credentials/
+
+# SSH & GPG
+*.gpg
+*.pgp
+.gnupg/
+.ssh/
+known_hosts
+authorized_keys
+
+# Application config (commonly contain secrets)
+config.json
+# Anchored to repo root so .claude/settings.json (Claude Code hook wiring) stays tracked and ships
+/settings.json
+private*.json
+
+# Database dumps
+*.sql
+*.sqlite
+*.sqlite3
+*.db
+
+# Build secrets & deployment
+build.secrets
+deploy.secrets
+ci.secrets
+
+# Dependency cache
+.pnpm-store/
+.npm/
+.yarn/
+.cache/
+.m2/
+
+# Logs with potential sensitive data
+*.log
+
+# === Dependencies ===
+node_modules/
+vendor/
+.venv/
+__pycache__/
+
+# === Build outputs ===
+dist/
+build/
+out/
+.next/
+.nuxt/
+
+# === OS ===
+.DS_Store
+Thumbs.db
+
+# === IDE ===
+.idea/
+*.iml
+.vscode/
+
+# === AI staging area — generated content not for production ===
+_ai/generated/
+_ai/drafts/
+_ai/experiments/
+
+# === AI ephemera — planning, scratch, intermediate outputs ===
+.claude/work/
+
+# === Local project memory ===
+.claude/MEMORY.md
+.claude/memory/*.local.md
+
+# === Local Claude settings overrides ===
+.claude/settings-overrides.json
+.claude/settings.local.json
+
+# === Gitleaks personal allowlist ===
+.gitleaksignore
+
+# === Command memory files ===
+.claude/memory/health-history.jsonl
+.claude/memory/health-stack.json
+.claude/memory/investigate-scope.txt
+.claude/memory/audit-log.jsonl
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.egg-info/
+dist/
+build/

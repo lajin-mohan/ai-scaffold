@@ -72,6 +72,8 @@ const CREATE_ROOT_FILES_BY_PROFILE = {
   generic: ['.gitignore'],
   node: ['package.json'],
   laravel: ['composer.json', 'package.json'],
+  python: ['pyproject.toml'],
+  golang: ['go.mod'],
 };
 
 /**

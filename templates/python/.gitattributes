@@ -1,0 +1,72 @@
+# Normalise line endings across platforms.
+# Without this, Windows clients show CRLF warnings on every checkout.
+
+# Default: auto-detect text vs binary
+* text=auto eol=lf
+
+# Source files: always LF
+*.ts        text eol=lf
+*.tsx       text eol=lf
+*.js        text eol=lf
+*.jsx       text eol=lf
+*.mjs       text eol=lf
+*.cjs       text eol=lf
+*.json      text eol=lf
+*.md        text eol=lf
+*.yml       text eol=lf
+*.yaml      text eol=lf
+*.html      text eol=lf
+*.css       text eol=lf
+*.scss      text eol=lf
+*.php       text eol=lf
+*.py        text eol=lf
+*.sql       text eol=lf
+
+# Shell scripts MUST be LF — CRLF breaks them
+*.sh        text eol=lf
+*.bash      text eol=lf
+
+# Windows batch files: CRLF
+*.bat       text eol=crlf
+*.cmd       text eol=crlf
+*.ps1       text eol=crlf
+
+# Binary — never modify
+*.png       binary
+*.jpg       binary
+*.jpeg      binary
+*.gif       binary
+*.ico       binary
+*.svg       text eol=lf
+*.pdf       binary
+*.zip       binary
+*.gz        binary
+*.tar       binary
+*.woff      binary
+*.woff2     binary
+*.ttf       binary
+*.eot       binary
+*.mp4       binary
+*.webm      binary
+
+# GitHub linguist hints — exclude generated content from language stats
+_ai/**          linguist-generated=true
+**/dist/**      linguist-generated=true
+**/build/**     linguist-generated=true
+docs/**         linguist-documentation=true
+
+# Diff drivers — readable diffs for lockfiles
+package-lock.json    -diff
+yarn.lock            -diff
+composer.lock        -diff
+poetry.lock          -diff
+pnpm-lock.yaml       -diff
+
+# Merge drivers — append-only files auto-resolve via union strategy.
+# Parallel additions from different branches are combined instead of conflicting.
+# Use ONLY for files that are genuinely append-only or where reordered entries
+# are acceptable. Do NOT add status-tracking files where the same line is edited
+# in place (e.g., per-ticket markdown is fine; a shared todo list is not).
+CHANGELOG.md             merge=union
+tasks/lessons.md         merge=union
+docs/architecture/adr/** merge=union

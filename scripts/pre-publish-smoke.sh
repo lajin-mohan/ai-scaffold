@@ -86,6 +86,15 @@ else
   fail "npm package ships only ${SETTINGS_IN_PACK}/3 template .claude/settings.json (hooks would be inert)"
 fi
 
+# Profile build files must ship or that profile's create fails — new root files
+# have to be added to the package.json "files" allowlist (same class as the
+# settings.json packaging bug).
+if grep -q 'templates/python/pyproject.toml' <<< "$PACK_OUTPUT" && grep -q 'templates/golang/go.mod' <<< "$PACK_OUTPUT"; then
+  pass "npm package ships python/golang build files"
+else
+  fail "npm package missing python pyproject.toml or golang go.mod"
+fi
+
 # ── Gate 4: create smoke test ──────────────────────────────────────────
 echo ""
 echo ">> Gate 4: Create Smoke Test"

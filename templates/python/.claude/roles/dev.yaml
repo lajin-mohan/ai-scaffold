@@ -1,0 +1,39 @@
+---
+name: dev
+description: Feature implementation, bug fixing, review fixes, and commits. Use this role when building, modifying, or verifying production code.
+default_entry: /start-task
+
+allowed_commands:
+  - /start-task
+  - /gen-tests
+  - /review
+  - /debug-fix
+  - /investigate
+  - /commit-changes
+  - /loop
+  - /lessons
+  - /reflect
+  - /health
+
+recommended_agents:
+  - backend-reviewer
+  - frontend-reviewer
+  - critic
+
+required_evidence:
+  - lint_pass
+  - typecheck_pass
+  - tests_pass
+  - build_pass
+  - review_blocks_resolved
+
+blocked_actions:
+  - merge_main
+  - deploy_production
+  - destructive_changes
+  - secrets_access
+  - schema_migration_without_approval
+
+output_style:
+  format: implementation_report
+  severity: BLOCK_HIGH_MEDIUM

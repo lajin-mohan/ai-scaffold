@@ -1,0 +1,15 @@
+[project]
+name = "{{PROJECT_NAME}}"
+version = "0.1.0"
+description = "{{PROJECT_DESCRIPTION}}"
+requires-python = ">=3.11"
+dependencies = []
+
+[project.optional-dependencies]
+dev = ["pytest", "ruff", "mypy"]
+
+[tool.ruff]
+line-length = 100
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
