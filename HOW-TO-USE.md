@@ -45,9 +45,10 @@ npx @lajin.m/ai-scaffold my-project
 npx @lajin.m/ai-scaffold create my-project
 npx @lajin.m/ai-scaffold create my-node-app --profile node
 npx @lajin.m/ai-scaffold create my-js-app --profile js
+npx @lajin.m/ai-scaffold create my-project --no-git
 ```
 
-`create` generates a new project directory with the scaffold files, project README, `.ai-scaffold.json`, `.ai-scaffold/context.md`, `.claude/MEMORY.md`, and `.claude/settings-overrides.json`.
+`create` generates a new project directory with the scaffold files, project README, `.ai-scaffold.json`, `.ai-scaffold/context.md`, `.claude/MEMORY.md`, and `.claude/settings-overrides.json`. It initializes git by default, creates an initial scaffold commit when git is available, and writes `.gitattributes` for append-only governance files. Use `--no-git` if you want to initialize git yourself.
 
 ### Install into an existing project
 
@@ -686,9 +687,10 @@ Claude will write the lesson to `tasks/lessons.md` immediately.
 
 1. Run `npx @lajin.m/ai-scaffold create <project-name> --profile <profile>`.
 2. Review generated project identity and stack values in `.claude/settings-overrides.json`.
-3. Run `/what-next` — it should report the next project stage.
-4. Run `/kickoff` at the start of every epic to verify all gates are met.
-5. Follow the 10-stage workflow — no skipping gates.
+3. Confirm the generated initial scaffold commit, or use `--no-git` when you need to manage git initialization yourself.
+4. Run `/what-next` — it should report the next project stage.
+5. Run `/kickoff` at the start of every epic to verify all gates are met.
+6. Follow the 10-stage workflow — no skipping gates.
 
 ### Existing project setup
 

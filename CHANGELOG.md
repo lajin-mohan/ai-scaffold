@@ -31,6 +31,10 @@ This file is configured with `merge=union` in `.gitattributes` so parallel addit
   references resolve: a clean starter `tasks/lessons.md`, `CHANGELOG.md`, and
   `tasks/todo` / `tasks/done` placeholders (generated, not copied — no scaffold
   content leaks). `init` leaves existing repos untouched.
+- **`create` initializes git by default** and creates an initial scaffold commit
+  when git is available. Use `--no-git` to opt out. Generated projects now also
+  receive `.gitattributes` with union merge rules for append-only governance
+  files such as `CHANGELOG.md` and `tasks/lessons.md`.
 - **`doctor` is now a real gate.** It exits non-zero when a critical/high check
   fails, and adds checks for: Claude Code hooks wired in `.claude/settings.json`
   (catches the inert-hooks class of bug), verification commands configured, and
@@ -41,6 +45,9 @@ This file is configured with `merge=union` in `.gitattributes` so parallel addit
   longer point at files the default install does not ship (the `apps/api/src`
   reference example, `docs/process/task-size-policy.md`, `scripts/install-hooks.sh`,
   and `HOW-TO-USE.md`) — the docs now match what a generated project actually contains.
+- Interactive setup now applies profile verification-command defaults too, so a
+  selected Node/JavaScript profile no longer stores `test`, `lint`, `typecheck`,
+  and `build` as `none` unless a user explicitly chooses a different profile.
 
 ---
 
