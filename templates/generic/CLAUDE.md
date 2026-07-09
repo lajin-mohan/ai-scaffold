@@ -56,7 +56,7 @@ This file governs how Claude, Codex, and other AI tools collaborate on every pro
 
 ## Development Workflow
 
-**Every production feature follows the full path unless it qualifies for a documented fast lane** (see task-size policy in `docs/process/task-size-policy.md`).
+**Every production feature follows the full path unless it qualifies for a documented fast lane** (the fast lanes are summarized below).
 
 ```
 Full path: 1. Analysis → 2. Plan → 3. Arch Design → 4. UX Design → 5. Execution → 6. AI Review → 7. Manual Review → 8. QA → 9. CI/CD → 10. Deploy
@@ -92,14 +92,11 @@ project-root/
 
 ### Reference example
 
-A working layered example lives in `apps/api/src/` — read it before generating new code:
-- `apps/api/src/routes/applications.route.ts` — thin route handler with validation + auth
-- `apps/api/src/services/applications.service.ts` — business logic, side effects, typed errors
-- `apps/api/src/repositories/applications.repository.ts` — SQL only, returns domain types
-- `packages/domain/src/application.ts` — pure entity with state machine
-- `apps/api/migrations/0001_create_applications.sql` — reversible migration with tenant scoping
-
-See `apps/api/src/README.md` for the layered architecture quick reference.
+The scaffold ships an optional layered reference example (thin route → service →
+repository → domain, plus a reversible tenant-scoped migration). It is **not
+installed by default** — the default install keeps the surface small. See the
+scaffold repository's own example when you want a concrete pattern to follow
+before generating new code.
 
 ### Architectural Invariants
 
@@ -283,7 +280,7 @@ Wired in `.claude/settings.json` and fired deterministically by Claude Code at t
 | `.claude/hooks/pre-commit` | git pre-commit | Branch name + stack detection + lint/typecheck/test + gitleaks. |
 | `.claude/hooks/pre-commit-secrets` | git pre-commit (extended) | Heuristic secret detection for common API key patterns. |
 
-All hooks fail open in template state (exit 0 with no checks run) so the scaffold itself stays CI-green before `/bootstrap` configures the stack. Disable any hook with `ECC_<HOOK>_DISABLED=1`. Make hooks executable with `scripts/install-hooks.sh`.
+All hooks fail open in template state (exit 0 with no checks run) so the scaffold itself stays CI-green before `/bootstrap` configures the stack. Disable any hook with `ECC_<HOOK>_DISABLED=1`. Hooks run via `bash .claude/hooks/<name>.sh`, so they fire without needing an executable bit.
 
 ---
 
