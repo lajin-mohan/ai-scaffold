@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
-import { resolveWithDefaults, validateBootstrapValues } from '../cli/core/prompts.js';
+import { applyInteractiveDefaults, resolveWithDefaults, validateBootstrapValues } from '../cli/core/prompts.js';
 import { buildFilePlan } from '../cli/core/file-plan.js';
 import { MANAGED_PATHS, PROTECTED_PATHS, APP_SOURCE_PATHS } from '../cli/core/file-plan.js';
 import { detectConflicts } from '../cli/core/conflicts.js';
@@ -81,7 +81,28 @@ describe('resolveWithDefaults', () => {
 
     expect(resolved.profile).toBe('node');
     expect(resolved.backendStack).toBe('Node.js');
+    expect(resolved.testCommand).toBe('npm test');
+    expect(resolved.lintCommand).toBe('npm run lint');
+    expect(resolved.typecheckCommand).toBe('npm run typecheck');
+    expect(resolved.buildCommand).toBe('npm run build');
     expect(defaulted).toContain('backendStack');
+  });
+
+  it('applies profile command defaults for interactive prompt values', () => {
+    const resolved = applyInteractiveDefaults({
+      projectName: 'node-api',
+      profile: 'javascript',
+      testCommand: 'none',
+      lintCommand: 'none',
+      typecheckCommand: 'none',
+      buildCommand: 'none',
+    });
+
+    expect(resolved.profile).toBe('node');
+    expect(resolved.testCommand).toBe('npm test');
+    expect(resolved.lintCommand).toBe('npm run lint');
+    expect(resolved.typecheckCommand).toBe('npm run typecheck');
+    expect(resolved.buildCommand).toBe('npm run build');
   });
 
   it('rejects invalid choice-valued flags', () => {
@@ -152,6 +173,7 @@ describe('buildFilePlan', () => {
     expect(rels).toContain('CLAUDE.md');
     expect(rels).toContain('AGENTS.md');
     expect(rels).toContain('.gitignore');
+    expect(rels).toContain('.gitattributes');
     expect(rels).toContain('.ai-scaffold/README.md');
     expect(rels).toContain('.ai-scaffold/context.md');
 

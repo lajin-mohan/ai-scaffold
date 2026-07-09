@@ -160,7 +160,7 @@ for d in .ai-scaffold/docs .ai-scaffold/tasks .ai-scaffold/_ai; do
   fi
 done
 
-for f in HOW-TO-USE.md CONTRIBUTING.md SECURITY.md LICENSE .env.example .editorconfig .gitattributes .gitleaks.toml .cursorrules; do
+for f in HOW-TO-USE.md CONTRIBUTING.md SECURITY.md LICENSE .env.example .editorconfig .gitleaks.toml .cursorrules; do
   if [ -e "$SMOKE_DIR/smoke-project/$f" ]; then
     fail "create left root $f"
   else
@@ -185,6 +185,26 @@ for f in CHANGELOG.md tasks/lessons.md tasks/todo/.gitkeep tasks/done/.gitkeep; 
     fail "create did not generate skeleton $f"
   fi
 done
+
+if [ -f "$SMOKE_DIR/smoke-project/.gitattributes" ] \
+  && grep -q "CHANGELOG.md.*merge=union" "$SMOKE_DIR/smoke-project/.gitattributes" \
+  && grep -q "tasks/lessons.md.*merge=union" "$SMOKE_DIR/smoke-project/.gitattributes"; then
+  pass "create generated .gitattributes with union merge rules"
+else
+  fail "create did not generate expected .gitattributes"
+fi
+
+if git -C "$SMOKE_DIR/smoke-project" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+  pass "create initialized git repository"
+else
+  fail "create did not initialize git repository"
+fi
+
+if git -C "$SMOKE_DIR/smoke-project" rev-parse --verify HEAD >/dev/null 2>&1; then
+  pass "create made initial git commit"
+else
+  fail "create did not make initial git commit"
+fi
 
 # ── Gate 5: init --yes smoke test ──────────────────────────────────────
 echo ""

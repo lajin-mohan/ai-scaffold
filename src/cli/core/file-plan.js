@@ -54,7 +54,6 @@ const EXCLUDED_DEFAULT_PATTERNS = [
   '.cursorrules',
   '.editorconfig',
   '.env.example',
-  '.gitattributes',
   '.gitleaks.toml',
   'CHANGELOG.md',
   'CONTRIBUTING.md',
@@ -139,7 +138,7 @@ export async function buildFilePlan(sourceDir, targetDir, options = {}) {
   const profileName = path.basename(sourceDir);
   const profileRootFiles = existingTarget
     ? []
-    : ['.gitignore', ...(CREATE_ROOT_FILES_BY_PROFILE[profileName] ?? [])];
+    : ['.gitignore', '.gitattributes', ...(CREATE_ROOT_FILES_BY_PROFILE[profileName] ?? [])];
 
   // Always-generate files: these have no template source; they are built
   // programmatically by copy.js generateFile().
@@ -162,7 +161,7 @@ export async function buildFilePlan(sourceDir, targetDir, options = {}) {
       continue;
     }
 
-    if (existingTarget && relPath === '.gitignore') {
+    if (existingTarget && ['.gitignore', '.gitattributes'].includes(relPath)) {
       plan.skipAppSource.push({ src: srcFile, rel: relPath, reason: 'existing-project-root-file' });
       continue;
     }

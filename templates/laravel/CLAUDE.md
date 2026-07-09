@@ -92,10 +92,10 @@ project-root/
 
 ### Reference example
 
-The scaffold ships an optional layered reference example (thin route → service →
-repository → domain, plus a reversible tenant-scoped migration). It is **not
-installed by default** — the default install keeps the surface small. See the
-scaffold repository's own example when you want a concrete pattern to follow
+The scaffold repository includes a layered reference example (thin route →
+service → repository → domain, plus a reversible tenant-scoped migration). It is
+**not installed by default** — the default install keeps the surface small. See
+the scaffold repository's own example when you want a concrete pattern to follow
 before generating new code.
 
 ### Architectural Invariants

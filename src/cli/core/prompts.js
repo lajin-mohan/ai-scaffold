@@ -100,7 +100,7 @@ const VALUE_SETS = {
  * Used when --yes is not passed and flags are incomplete.
  */
 export async function collectBootstrapValues(overrides = {}) {
-  const normalizedOverrides = normalizeValues(overrides);
+  const normalizedOverrides = applyInteractiveDefaults(overrides);
 
   const questions = [
     {
@@ -238,9 +238,16 @@ export async function collectBootstrapValues(overrides = {}) {
     },
   });
 
-  const normalizedAnswers = normalizeValues(answers);
+  const normalizedAnswers = applyInteractiveDefaults(answers);
   assertValidBootstrapValues(normalizedAnswers);
   return normalizedAnswers;
+}
+
+export function applyInteractiveDefaults(values = {}) {
+  const normalized = normalizeValues(values);
+  const defaulted = [];
+  applyProfileDefaults(normalized, defaulted);
+  return normalized;
 }
 
 /**

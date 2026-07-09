@@ -1,10 +1,10 @@
-# Release Plan — v0.9.0 (Correctness) + v0.10.0 (Curation & DX)
+# Release Plan — v0.8.3 (Correctness) + v0.10.0 (Curation & DX)
 
-Status: v0.9.0 in progress on branch `fix/v0.9.0-correctness`. **Done + verified:**
+Status: v0.8.3 in progress on branch `fix/v0.8.3-correctness`. **Done + verified:**
 live hooks (packaging fix), posix manifest paths, governance skeleton on `create`,
-`doctor` as a real gate, template doc reword (dangling refs), plus smoke-gate +
-pack-regression coverage. **Deferred to a v0.9.0 follow-up:** `git init` + shipped
-`.gitattributes` on `create`, and interactive profile verification-command defaults.
+`doctor` as a real gate, template doc reword (dangling refs), `git init` +
+shipped `.gitattributes` on `create`, interactive profile verification-command
+defaults, plus smoke-gate + pack-regression coverage.
 Grounded in defects verified against a real generated project
 (`/Users/lajinmohan/website/test-app`, node profile, CLI 0.8.2) and a gap review of
 commands, agents, skills, rules, hooks, and templates. Verify against generated
@@ -14,34 +14,34 @@ output, not the working tree — the working tree hides packaging defects.
 
 ## 1. Why two releases
 
-- **v0.9.0 "Generated projects work"** — correctness. A freshly generated project
+- **v0.8.3 "Generated projects work"** — correctness. A freshly generated project
   must have live hooks, no dangling references, be a git repo, and pass `doctor`.
   Ship this before any dev team touches the CLI.
 - **v0.10.0 "Curation & profiles"** — DX and extensibility. Profile packs (ship a
   curated subset while keeping everything in the repo), new stack profiles, a
   reusable defaults file, discoverability, and the README/tutorial rewrite.
 
-Rule: v0.9.0 makes it correct; v0.10.0 makes it adoptable. Do not let v0.10.0
-features block the v0.9.0 correctness fixes.
+Rule: v0.8.3 makes it correct; v0.10.0 makes it adoptable. Do not let v0.10.0
+features block the v0.8.3 correctness fixes.
 
 ---
 
-## 2. Gap analysis — what is missing that adds value
+## 2. Gap analysis — corrected or planned value adds
 
 | Gap | Evidence | Value | Release |
 |---|---|---|---|
-| Hooks inert in generated projects | `templates/*/.gitignore` bare `settings.json` rule (node:84, generic:85); `npm pack` ships zero `settings.json`; test-app has hook scripts but no `.claude/settings.json` | Restores the core value prop | v0.9.0 |
-| Dangling doc references | test-app `CLAUDE.md` cites 27 paths that do not exist (tasks/lessons.md×8, tasks/todo×6, apps/api/src×5, CHANGELOG.md×4, scripts/install-hooks.sh, task-size-policy.md; ponytail-ladder→HOW-TO-USE×2) | Stops self-contradiction (H1/H3) | v0.9.0 |
-| `doctor` blind + never fails | `doctor.js` exits 0 on test-app; no settings.json/hooks/verification/dangling checks; no non-zero exit | Makes doctor a real gate | v0.9.0 |
-| No git init on `create` | `create.js` steps 1–6, no git; `.gitattributes` excluded | Branching/commit governance works | v0.9.0 |
-| `bootstrapped:true` + verification `none` | test-app (node/react) commands all `none`; profile defaults only apply on `--yes`, not interactive | Verification mandate is real | v0.9.0 |
-| Manifest paths not posix | `buildManagedFileRecords` stores `path.join`/`path.relative` output → backslashes on Windows; breaks `doctor` drift check cross-platform | Cross-platform correctness | v0.9.0 |
+| Hooks inert in generated projects | `templates/*/.gitignore` bare `settings.json` rule (node:84, generic:85); `npm pack` ships zero `settings.json`; test-app has hook scripts but no `.claude/settings.json` | Restores the core value prop | v0.8.3 done |
+| Dangling doc references | test-app `CLAUDE.md` cites 27 paths that do not exist (tasks/lessons.md×8, tasks/todo×6, apps/api/src×5, CHANGELOG.md×4, scripts/install-hooks.sh, task-size-policy.md; ponytail-ladder→HOW-TO-USE×2) | Stops self-contradiction (H1/H3) | v0.8.3 done |
+| `doctor` blind + never fails | `doctor.js` exits 0 on test-app; no settings.json/hooks/verification/dangling checks; no non-zero exit | Makes doctor a real gate | v0.8.3 done |
+| No git init on `create` | `create.js` steps 1–6, no git; `.gitattributes` excluded | Branching/commit governance works | v0.8.3 done |
+| `bootstrapped:true` + verification `none` | test-app (node/react) commands all `none`; profile defaults only apply on `--yes`, not interactive | Verification mandate is real | v0.8.3 done |
+| Manifest paths not posix | `buildManagedFileRecords` stores `path.join`/`path.relative` output → backslashes on Windows; breaks `doctor` drift check cross-platform | Cross-platform correctness | v0.8.3 done |
 | No profile→asset filtering | `file-plan.js` MANAGED_PATHS ships `.claude/**` wholesale | "Keep in repo, ship a subset per profile"; foundation for weight tiers | v0.10.0 |
 | Profile↔stack mismatch | 8 stack overlays in `.claude/rules/stacks/`, only 3 CLI profiles | Python/Go/.NET/Java/PHP users can scaffold | v0.10.0 |
 | No reusable defaults file | flags + `--yes` exist, but no user/org preset; interactive re-asks everything | Fast, repeatable setup | v0.10.0 |
 | No discoverability command | CLI has 5 subcommands; no `ais list` for the 35 slash-commands/agents/skills | Right command for the right job | v0.10.0 |
 | No architecture diagram / Core-6 on-ramp | README has no diagram; no "start with N commands" | Onboarding | v0.10.0 (docs) |
-| README/tutorial reality pass | README references full workflow the minimal install can't fully run | Trust | v0.9.0 (docs) |
+| README/tutorial reality pass | README references full workflow the minimal install can't fully run | Trust | v0.8.3 (docs) |
 
 Not defects (verified false): encoding/mojibake (zero), missing skeleton in the
 scaffold repo (all present), settings.json "ghost" (it is real — inert hooks).
@@ -51,8 +51,10 @@ scaffold repo (all present), settings.json "ghost" (it is real — inert hooks).
 ## 3. Prioritized backlog
 
 Priority: P0 = ship-blocker · P1 = high · P2 = medium. Effort: S <1h · M few h · L day+.
+Items 1-6 are implemented for the v0.8.3 correctness patch; items 7-8 are the
+remaining documentation/product polish.
 
-### v0.9.0 — Correctness
+### v0.8.3 — Correctness
 
 | # | Item | Pri | Effort | Where |
 |---|---|---|---|---|
@@ -65,7 +67,7 @@ Priority: P0 = ship-blocker · P1 = high · P2 = medium. Effort: S <1h · M few 
 | 7 | Investigate root `README.md` not generated in test-app; sync scaffold self-marker `.ai-scaffold.json`→0.8.2 + assert-equal test | P2 | S | `file-plan.js`/`copy.js`, `.ai-scaffold.json` |
 | 8 | README reality pass + add Core-6 on-ramp + architecture diagram | P1 | M | `README.md`, `templates/*/README.template.md` |
 
-**v0.9.0 exit gate (make it a CLI integration test):** on a clean
+**v0.8.3 exit gate (make it a CLI integration test):** on a clean
 `ais create demo --profile node --yes`, then `cd demo`: `.claude/settings.json`
 present with a `hooks` block; `ais doctor` exits 0 with new checks green; zero
 dangling refs (every path cited in `CLAUDE.md` resolves); it is a git repo;
@@ -166,7 +168,7 @@ flowchart TD
 
 ---
 
-## 7. README/tutorial rewrite spec (v0.9.0 docs + v0.10.0 polish)
+## 7. README/tutorial rewrite spec (v0.8.3 docs + v0.10.0 polish)
 
 README must, in order:
 1. **Problem it solves + how** — AI coding without guardrails ships hallucinated,
@@ -182,7 +184,7 @@ README must, in order:
 6. **Core 6 on-ramp** — `/what-next`, `/start-task`, `/review`, `/debug-fix`,
    `/commit-changes`, `/lessons`; everything else opt-in.
 7. **Reality pass** — remove/curate references to files the default install does
-   not ship (align with v0.9.0 item 2).
+   not ship (align with v0.8.3 item 2).
 
 HOW-TO-USE.md: add the Core-6 on-ramp near the top; reality-pass the stage guide so
 it matches the minimal install.
