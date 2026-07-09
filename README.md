@@ -149,6 +149,30 @@ The scaffold includes:
 
 Full operating guide: [HOW-TO-USE.md](./HOW-TO-USE.md).
 
+## How It Works
+
+`ais create` / `ais init` collects your answers (or a `--yes` profile default),
+selects the files for your profile, resolves placeholders, and writes a governed
+project — including the `.claude/settings.json` that wires deterministic hooks into
+Claude Code. `ais doctor` then verifies the install is healthy.
+
+```mermaid
+flowchart TD
+  Dev[Developer] -->|ais create / init| CLI
+  subgraph CLI[ais CLI]
+    PR[prompts: collect + defaults] --> FP[file-plan: select per profile] --> CO[copy: resolve placeholders + generate]
+  end
+  TPL[(templates per profile)] --> FP
+  CO --> GP
+  subgraph GP[Generated project]
+    CLA[.claude: commands, agents, skills, rules, hooks, settings.json]
+    DOC[CLAUDE.md, AGENTS.md]
+    SKEL[tasks/, CHANGELOG.md]
+  end
+  GP -.->|ais doctor / status / list| CLI
+  CLA -->|settings.json wires hooks| CC[Claude Code: governance at tool-call time]
+```
+
 ## Supported Profiles
 
 | Profile | Status | Notes |
@@ -163,6 +187,20 @@ Full operating guide: [HOW-TO-USE.md](./HOW-TO-USE.md).
 | `go` | Alias | Resolves to `golang` |
 
 Additional profiles such as Next.js, Java, .NET, and Flutter are planned after the CLI fundamentals are stable.
+
+## The Core 6 — Start Here
+
+You do not need all 35 commands on day one. Start with these six; everything else is
+opt-in as the work calls for it. Run `ais list` in a scaffolded project to see the full set.
+
+| Command | Use it to |
+|---|---|
+| `/what-next` | Get the exact next action for the current project state |
+| `/start-task` | Plan → confirm → implement → verify a change |
+| `/review` | Run the parallel AI review before a PR |
+| `/debug-fix` | Root-cause a bug before touching code |
+| `/commit-changes` | Commit with the project's git rules enforced |
+| `/lessons` | Recall past root causes so mistakes do not repeat |
 
 ## Install And Use
 

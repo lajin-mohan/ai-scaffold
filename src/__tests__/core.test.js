@@ -269,3 +269,14 @@ describe('python and golang profiles', () => {
     expect(go.resolved.testCommand).toBe('go test ./...');
   });
 });
+
+describe('scaffold self-marker', () => {
+  // The scaffold dogfoods itself; its own .ai-scaffold.json version drifted to
+  // 0.6.2 while the package was 0.8.x. Keep them in lockstep — a release bump
+  // must touch both.
+  it('.ai-scaffold.json version matches package.json', () => {
+    const pkg = JSON.parse(readFileSync(new URL('../../package.json', import.meta.url), 'utf-8'));
+    const marker = JSON.parse(readFileSync(new URL('../../.ai-scaffold.json', import.meta.url), 'utf-8'));
+    expect(marker.version).toBe(pkg.version);
+  });
+});

@@ -13,6 +13,25 @@ This file is configured with `merge=union` in `.gitattributes` so parallel addit
 
 ## [Unreleased]
 
+### Added
+- **Python and Go stack profiles** — `--profile python` / `--profile golang`
+  (with `py`, `python3`, and `go` aliases). Each ships its build file
+  (`pyproject.toml` / `go.mod`) and profile-appropriate verification defaults
+  (pytest/ruff/mypy; go test/vet/build). Build files were added to the package
+  `files` allowlist so they actually ship.
+- `ais list [commands|agents|skills|rules]` — discover the installed scaffold
+  assets without opening `.claude/` (supports `--json` and a target directory).
+- README: a "How It Works" architecture diagram and a "Core 6 — Start Here"
+  on-ramp so new users are not faced with all 35 commands at once.
+
+### Fixed
+- Synced the scaffold's own `.ai-scaffold.json` version to `package.json`; a test
+  now keeps them in lockstep so the self-marker cannot silently drift again.
+
+---
+
+## [0.8.3] - 2026-07-09
+
 ### Fixed
 - **Generated projects now get live Claude Code hooks.** A bare `settings.json`
   rule in the template `.gitignore` files matched `.claude/settings.json` at any
@@ -27,11 +46,6 @@ This file is configured with `merge=union` in `.gitattributes` so parallel addit
   cross-platform. Paths are normalized via `toPosixPath()`. Regression test added.
 
 ### Added
-- **Python and Go stack profiles** — `--profile python` / `--profile golang`
-  (with `py`, `python3`, and `go` aliases). Each ships its build file
-  (`pyproject.toml` / `go.mod`) and profile-appropriate verification defaults
-  (pytest/ruff/mypy; go test/vet/build). Build files were added to the package
-  `files` allowlist so they actually ship.
 - **`create` ships a governance skeleton** so the shipped `CLAUDE.md` workflow
   references resolve: a clean starter `tasks/lessons.md`, `CHANGELOG.md`, and
   `tasks/todo` / `tasks/done` placeholders (generated, not copied — no scaffold

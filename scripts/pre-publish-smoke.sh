@@ -195,6 +195,14 @@ for f in CHANGELOG.md tasks/lessons.md tasks/todo/.gitkeep tasks/done/.gitkeep; 
   fi
 done
 
+# ais list surfaces the installed assets in a generated project
+LIST_JSON=$(node bin/ai-scaffold.js list commands "$SMOKE_DIR/smoke-project" --json 2>/dev/null)
+if echo "$LIST_JSON" | grep -q '"start-task"'; then
+  pass "ais list surfaces installed commands"
+else
+  fail "ais list did not surface installed commands"
+fi
+
 if [ -f "$SMOKE_DIR/smoke-project/.gitattributes" ] \
   && grep -q "CHANGELOG.md.*merge=union" "$SMOKE_DIR/smoke-project/.gitattributes" \
   && grep -q "tasks/lessons.md.*merge=union" "$SMOKE_DIR/smoke-project/.gitattributes"; then
