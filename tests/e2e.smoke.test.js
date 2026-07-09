@@ -63,9 +63,13 @@ describe('CLI e2e smoke', () => {
     expect(await fs.pathExists(path.join(targetDir, 'HOW-TO-USE.md'))).toBe(false);
     expect(await fs.pathExists(path.join(targetDir, 'CONTRIBUTING.md'))).toBe(false);
     expect(await fs.pathExists(path.join(targetDir, 'docs'))).toBe(false);
-    expect(await fs.pathExists(path.join(targetDir, 'tasks'))).toBe(false);
     expect(await fs.pathExists(path.join(targetDir, '_ai'))).toBe(false);
     expect(await fs.pathExists(path.join(targetDir, 'apps'))).toBe(false);
+
+    // Governance skeleton ships on create so the CLAUDE.md workflow refs resolve
+    expect(await fs.pathExists(path.join(targetDir, 'tasks', 'lessons.md'))).toBe(true);
+    expect(await fs.pathExists(path.join(targetDir, 'tasks', 'todo', '.gitkeep'))).toBe(true);
+    expect(await fs.pathExists(path.join(targetDir, 'CHANGELOG.md'))).toBe(true);
     expect(await fs.pathExists(path.join(targetDir, 'packages'))).toBe(false);
     expect(await fs.pathExists(path.join(targetDir, 'infra'))).toBe(false);
     expect(await fs.pathExists(path.join(targetDir, 'scripts'))).toBe(false);
