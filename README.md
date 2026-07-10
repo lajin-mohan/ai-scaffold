@@ -45,7 +45,7 @@ Without a scaffold, AI-assisted development usually breaks down in predictable w
 - **Cleaner existing-repo adoption:** `init` is designed to protect application files and keep scaffold-owned material separate.
 - **Repeatable delivery habits:** teams get a common language for BRDs, estimates, ADRs, API contracts, UX handoffs, QA, UAT, and deployment reviews.
 - **Better human oversight:** the scaffold makes AI work reviewable by requiring plans, evidence, tests, and explicit approval points.
-- **Profile-based setup:** start neutral with `generic`, use `node`/`js` for JavaScript projects, or use the light `laravel` profile for PHP/Laravel teams.
+- **Profile-based setup:** start neutral with `generic`, use `node`/`js`, `python`/`py`, `golang`/`go`, or use the light `laravel` profile for PHP/Laravel teams.
 
 ## Who It Helps
 
@@ -151,26 +151,100 @@ Full operating guide: [HOW-TO-USE.md](./HOW-TO-USE.md).
 
 ## How It Works
 
-`ais create` / `ais init` collects your answers (or a `--yes` profile default),
-selects the files for your profile, resolves placeholders, and writes a governed
-project — including the `.claude/settings.json` that wires deterministic hooks into
-Claude Code. `ais doctor` then verifies the install is healthy.
+AI Scaffold works best when the project has a clear BRD or FRD and each task
+points back to it. The scaffold does not make vague requirements safe; it makes
+good requirements easier to execute, review, test, and hand off.
+
+When you run `/start-task`, the command reads the linked spec, project memory,
+rules, lessons, and role guidance before it proposes a plan. After one explicit
+approval, implementation runs inside that approved scope. Hooks guard dangerous
+tool use, verification proves the result, and `/review` gives the work a second
+AI review before human PR review.
 
 ```mermaid
 flowchart TD
-  Dev[Developer] -->|ais create / init| CLI
-  subgraph CLI[ais CLI]
-    PR[prompts: collect + defaults] --> FP[file-plan: select per profile] --> CO[copy: resolve placeholders + generate]
+  FRD[BRD / FRD / ticket spec] --> ST[/start-task --spec path]
+  CTX[.ai-scaffold/context.md] --> ST
+  MEM[.claude/MEMORY.md + tasks/lessons.md] --> ST
+  RULES[.claude/rules] --> ST
+  ROLES[.claude/roles + agents + skills] --> ST
+  ST --> PLAN[Plan + files + verification]
+  PLAN --> APPROVAL[Human says go]
+  APPROVAL --> EXEC[AI implementation]
+  subgraph Runtime Guards
+    HOOKS[.claude/settings.json wires hooks]
+    SECRET[secret/path guard]
+    BASH[dangerous bash guard]
+    GOV[governance file guard]
   end
-  TPL[(templates per profile)] --> FP
-  CO --> GP
-  subgraph GP[Generated project]
-    CLA[.claude: commands, agents, skills, rules, hooks, settings.json]
-    DOC[CLAUDE.md, AGENTS.md]
-    SKEL[tasks/, CHANGELOG.md]
-  end
-  GP -.->|ais doctor / status / list| CLI
-  CLA -->|settings.json wires hooks| CC[Claude Code: governance at tool-call time]
+  EXEC --> HOOKS
+  HOOKS --> SECRET
+  HOOKS --> BASH
+  HOOKS --> GOV
+  EXEC --> VERIFY[lint / typecheck / tests / AC checks]
+  VERIFY --> REVIEW[/review: backend + frontend + security + QA + architecture]
+  REVIEW --> PR[Human PR review / merge decision]
+```
+
+## Requirements First
+
+The most important setup step is linking the project to its requirements source.
+Use an existing BRD/FRD when you have one:
+
+```bash
+npx @lajin.m/ai-scaffold init \
+  --profile node \
+  --requirements-source existing-docs \
+  --requirements-path docs/requirements/frd.md
+```
+
+If the project does not have requirements yet, choose `create-later` during setup
+and create the document before serious feature work:
+
+```text
+1. Run `ais doctor` to confirm the scaffold is healthy.
+2. Create or link the BRD/FRD.
+3. Break the BRD/FRD into task IDs and acceptance criteria.
+4. Start each task with `/start-task --spec <requirements-or-task-path>`.
+5. Approve the plan once.
+6. Let the AI implement only the approved scope.
+7. Run `/review`, then QA and human PR review.
+```
+
+After initialization, update project context manually here when reality changes:
+
+| File | What to update |
+|---|---|
+| `.ai-scaffold.json` | Install metadata and requirements source/path; do not hand-edit version or managed-file hashes unless recovering from a known migration issue |
+| `.ai-scaffold/context.md` | Human-readable project setup summary and requirements link |
+| `.claude/settings-overrides.json` | Project identity, stack, lifecycle, compliance, and verification commands |
+| `.claude/MEMORY.md` | Long-lived project memory, requirements notes, safety policy, team context |
+| `CLAUDE.md` | Main AI operating guide for the project |
+| `AGENTS.md` | Short cross-agent guide for Codex, Cursor, Copilot, and other assistants |
+| `tasks/lessons.md` | Recurring mistakes, decisions, and patterns learned over time |
+| `CHANGELOG.md` | Shipped changes and release notes |
+
+Run `ais doctor` after manual changes. `doctor` is the scaffold health check: it
+validates the manifest, required files, project memory, settings overrides,
+managed files, meaningful setup values, wired hooks, verification commands, and
+git presence.
+
+## CLI Install Flow
+
+`ais create` and `ais init` collect your setup answers, choose the requested
+profile, resolve placeholders, generate runtime files, and write scaffold
+metadata. Use `ais status`, `ais doctor`, and `ais list` to inspect the installed
+scaffold.
+
+```mermaid
+flowchart TD
+  User[User] --> CLI[ais create / init]
+  CLI --> Prompt[collect flags or prompts]
+  Prompt --> Profile[resolve profile and aliases]
+  Profile --> Plan[file plan]
+  Plan --> Copy[copy files + generate runtime context]
+  Copy --> Project[project with .claude, .ai-scaffold.json, AGENTS.md, CLAUDE.md]
+  Project --> Doctor[ais doctor]
 ```
 
 ## Supported Profiles
@@ -272,6 +346,10 @@ Profiles tune generated defaults and stack guidance.
 | `node` | Node.js/JavaScript projects |
 | `js`, `javascript`, `nodejs` | Aliases for `node` |
 | `laravel` | PHP/Laravel projects |
+| `python` | Python projects with pytest/ruff/mypy defaults |
+| `py`, `python3` | Aliases for `python` |
+| `golang` | Go projects with go test/vet/build defaults |
+| `go` | Alias for `golang` |
 
 ### Preview Before Writing
 
@@ -341,13 +419,13 @@ ais doctor ./my-project --json
 
 ### Update An Installed Scaffold
 
-`update` exists in this MVP as a safe placeholder. Full managed-file migrations are planned for Phase 3. In `0.8.0`, it reports installed metadata but does not mutate `.ai-scaffold.json` or apply file updates.
+`update` exists in this MVP as a safe placeholder. Full managed-file migrations are planned for Phase 3. It reports installed metadata but does not mutate `.ai-scaffold.json` or apply file updates.
 
 ```bash
 npx @lajin.m/ai-scaffold update --dry-run
-npx @lajin.m/ai-scaffold update --target-version 0.8.0
+npx @lajin.m/ai-scaffold update --target-version 0.8.5
 ais update --dry-run
-ais update --target-version 0.8.0
+ais update --target-version 0.8.5
 ```
 
 Full safe file updates, diffs, and version-pinned migrations are planned for Phase 3. Until then, `update` exits without changing files when an actual version change would be required.
@@ -395,6 +473,8 @@ bash scripts/pre-publish-smoke.sh
 | `templates/generic/` | Generic profile source |
 | `templates/laravel/` | Laravel profile source |
 | `templates/node/` | Node.js/JavaScript profile source |
+| `templates/python/` | Python profile source |
+| `templates/golang/` | Go profile source |
 | `docs/ai-os/` | Human guide for AI roles |
 | `docs/cli/` | CLI behavior specs |
 | `docs/process/` | Scaffold planning and process records |
