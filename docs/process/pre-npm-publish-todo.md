@@ -1,28 +1,36 @@
 # Pre-Next-Publish TODO
 
-**Purpose:** Release follow-up checklist for AI Scaffold after the `v0.8.1`
-trusted-publishing release.
+**Purpose:** Release follow-up checklist for AI Scaffold after the `v0.8.5`
+CLI publish and docs/profile hardening work.
 
 This file tracks housekeeping, near-term product improvements, and future
-roadmap work. It supersedes the older pre-`v0.8.0` checklist.
+roadmap work for the `v0.8.x` release line. It supersedes the older
+pre-`v0.8.0` checklist.
+
+Version policy for this list:
+
+- Small correctness/docs fixes should ship as `v0.8.6`, `v0.8.7`, etc.
+- Larger feature packs should still stay in `v0.8.x` unless they introduce a
+  breaking install/update contract.
+- Do not reserve these items for a later minor release by default.
 
 ---
 
 ## Current Release State
 
-`v0.8.1` is live on npm as:
+`v0.8.5` is live on npm as:
 
 ```text
-@lajin.m/ai-scaffold@0.8.1
+@lajin.m/ai-scaffold@0.8.5
 CLI bin: ais
 ```
 
-Confirmed for `v0.8.1`:
+Confirmed for `v0.8.5`:
 
 - Package name is `@lajin.m/ai-scaffold`.
 - CLI bin is `ais`.
 - Trusted publishing from GitHub Actions to npm is configured and proven.
-- `v0.8.1` was published by the tag workflow with npm provenance.
+- `v0.8.5` was published by the tag workflow with npm provenance.
 - `main` and `dev` are protected and require the real `CI passed` check.
 - Default install is project-local.
 - `create` and `init` use a core-only default install surface.
@@ -34,9 +42,12 @@ Confirmed for `v0.8.1`:
 - Setup prompts store meaningful values instead of numeric select indexes.
 - Node/JavaScript profile is available from day one.
 - `js`, `javascript`, and `nodejs` resolve to `node`.
+- Python profile is available with pytest/ruff/mypy defaults.
+- Go profile is available with `go test`, `go vet`, and `go build` defaults.
 - Starter hook safety is shipped in generated projects.
 - Memory safety policy is generated into project memory.
 - Publish smoke checks passed locally, in CI, and in the publish workflow.
+- Current post-release docs work is tracked in PR #47.
 
 `v0.8.2` housekeeping scope:
 
@@ -341,9 +352,50 @@ Acceptance:
 
 ---
 
-## P1 - Strongly Recommended After P0
+## P0 - Next v0.8.x Patch
 
-### 11. Clean Internal Artifacts From Published Templates
+### 11. Add Install And Dev Command Defaults Per Profile
+
+Status: pending.
+Priority: high.
+Target: `v0.8.6`.
+
+Problem:
+
+- Generated READMEs still render some "Getting Started" commands as `N/A`,
+  especially for non-Node profiles.
+- `src/cli/core/copy.js` hardcodes `{{INSTALL_COMMAND}}`,
+  `{{MIGRATION_COMMAND}}`, and `{{DEV_COMMAND}}` to `N/A`.
+- New users should be able to run the generated starter without guessing the
+  first install or dev command.
+
+Required:
+
+- Add `installCommand`, `migrationCommand`, and `devCommand` to resolved
+  bootstrap values where relevant.
+- Wire placeholder replacement through `commandOrNA(values.installCommand)`,
+  `commandOrNA(values.migrationCommand)`, and `commandOrNA(values.devCommand)`.
+- Add sensible per-profile defaults:
+  - `node`: `npm install`, `npm run dev` when a dev script exists.
+  - `python`: `pip install -e ".[dev]"`, no dev server by default.
+  - `golang`: `go mod download`, no dev server by default.
+  - `laravel`: `composer install`, `php artisan serve`.
+  - `generic`: `N/A` unless the user passes explicit commands.
+- Add tests or smoke assertions that generated README command blocks do not show
+  `N/A` when a supported profile has a real default.
+
+Acceptance:
+
+- Fresh `node`, `python`, `golang`, and `laravel` projects show useful install
+  commands in `README.md`.
+- Fresh Python README no longer says `Install dependencies -> N/A`.
+- Existing-project installs still preserve protected application files.
+
+---
+
+## P1 - Strongly Recommended In v0.8.x
+
+### 12. Clean Internal Artifacts From Published Templates
 
 Status: done in `chore/v0.8.2-housekeeping-cleanup`; verified locally by
 `npm pack --dry-run` and `scripts/pre-publish-smoke.sh`.
@@ -373,7 +425,7 @@ Acceptance:
 - `npm pack --dry-run --json` shows no scaffold-internal planning artifacts in
   shipped templates unless intentionally part of an optional pack.
 
-### 12. Refactor `copy.js` Into Smaller Core Modules
+### 13. Refactor `copy.js` Into Smaller Core Modules
 
 Status: pending.
 Priority: medium.
@@ -396,7 +448,7 @@ Acceptance:
 - `copy.js` becomes primarily orchestration/copy logic.
 - Tests and smoke checks still pass.
 
-### 13. Add Dry-Run JSON Plan
+### 14. Add Dry-Run JSON Plan
 
 Status: pending.
 Priority: high.
@@ -422,7 +474,7 @@ Output should include:
 - defaulted values
 - optional packs selected
 
-### 14. Add Install Operation Records
+### 15. Add Install Operation Records
 
 Status: pending.
 Priority: high.
@@ -451,7 +503,7 @@ Example:
 
 This powers future `doctor`, `repair`, `uninstall`, and safe `update`.
 
-### 15. Add Automatic Context Detection For Existing Projects
+### 16. Add Automatic Context Detection For Existing Projects
 
 Status: pending.
 Priority: high.
@@ -480,7 +532,7 @@ Write confirmed context to:
 Do not create root `docs/` by default. Existing docs should be indexed, not
 moved.
 
-### 16. Move Lessons Capture Into `.ai-scaffold/`
+### 17. Move Lessons Capture Into `.ai-scaffold/`
 
 Status: pending.
 Priority: high.
@@ -523,7 +575,7 @@ Acceptance:
   root `tasks/` folder.
 - Smoke tests cover the new canonical path and legacy fallback.
 
-### 17. Improve Hooks Roadmap
+### 18. Improve Hooks Roadmap
 
 Status: pending.
 Priority: medium.
@@ -546,7 +598,82 @@ Pending:
 - Clear docs that local hooks can be bypassed and CI/repository policy remains
   authoritative.
 
-### 18. Documentation Honesty Pass
+### 19. Add Per-Profile CI Pack
+
+Status: pending design.
+Priority: high.
+Target: `v0.8.x`.
+
+Problem:
+
+- Generated projects currently receive rules, hooks, commands, and guidance, but
+  no CI workflow by default.
+- That means governance can remain advisory unless the adopting team adds its
+  own CI.
+- The scaffold's strongest value is not just guidance; it is making quality
+  checks repeatable on every PR.
+
+Decision needed:
+
+- Prefer an explicit CI pack first, for example `ais init --with-ci`, to avoid
+  surprising existing repos.
+- Consider enabling CI by default for `ais create` only after the explicit pack
+  proves stable.
+
+Required:
+
+- Add per-profile GitHub Actions workflow templates for supported profiles.
+- Keep workflows out of default `init` until the user requests `--with-ci`.
+- Include profile-appropriate checks:
+  - `node`: install, lint, typecheck, test, audit.
+  - `python`: install dev extras, ruff, mypy, pytest, optional pip-audit.
+  - `golang`: go mod download, go vet, go test, go build.
+  - `laravel`: composer install, PHP lint/static checks where configured, tests.
+- Add package allowlist and smoke checks so CI pack files ship only when intended.
+- Update docs so generated projects do not claim CI exists unless the pack is
+  installed.
+
+Acceptance:
+
+- `ais create --with-ci --profile node|python|golang|laravel` produces a valid
+  workflow.
+- `ais init --with-ci --dry-run` shows the workflow plan without writing.
+- Default existing-project `init` still does not create `.github/workflows/**`.
+- Smoke checks parse or validate packed workflow YAML.
+
+### 20. Add Release Mergeability And Main-Dev Sync Gate
+
+Status: pending.
+Priority: high.
+Target: `v0.8.x`.
+
+Problem:
+
+- Squash-promoting release PRs can leave `main` and `dev` with non-linear or
+  divergent histories.
+- Green CI does not mean a PR is mergeable.
+- Recent releases needed conflict repair even though checks were green.
+
+Required:
+
+- Add a release checklist step that verifies PR mergeability before tagging.
+- Add a standing post-release step: merge or PR `main` back into `dev` after
+  every tag publish.
+- Consider a small script or GitHub check that reports:
+  - `git merge-base --is-ancestor origin/main origin/dev`
+  - PR mergeability state
+  - required checks present and passing
+  - no stale release branch.
+- Document whether release branches are allowed, and when direct `dev -> main`
+  PRs are preferred.
+
+Acceptance:
+
+- Release checklist catches "green but blocked/unmergeable" PRs.
+- After a tag publish, `main` and `dev` are reconciled before new feature work
+  starts.
+
+### 21. Documentation Honesty Pass
 
 Status: pending.
 Priority: medium.
@@ -562,7 +689,7 @@ Required:
   `PRE_REVIEW_ALLOW_UNCONFIGURED=1` for the scaffold repo itself if checks are
   now configured.
 
-### 19. Publish Workflow Cleanup
+### 22. Publish Workflow Cleanup
 
 Status: pending follow-up; trusted publishing is now proven in `v0.8.1`.
 Priority: low.
@@ -576,7 +703,7 @@ Required:
 - Reduce duplicate `prepublishOnly` check runs only if CI still protects manual
   publishes, or keep the duplicate checks as a conservative release guard.
 
-### 20. Add Optional Deep Research Command/Agent
+### 23. Add Optional Deep Research Command/Agent
 
 Status: pending design.
 Priority: medium.
@@ -617,7 +744,7 @@ Confidence level
 Follow-up questions, if any
 ```
 
-### 21. Small Code Cleanup From Review
+### 24. Small Code Cleanup From Review
 
 Status: pending.
 Priority: low.
@@ -633,9 +760,9 @@ Required:
 
 ---
 
-## P2 - Future Roadmap
+## P2 - v0.8.x Backlog
 
-### 22. Implement Real Update Flow
+### 25. Implement Real Update Flow
 
 Status: pending.
 Priority: high.
@@ -653,7 +780,7 @@ Pending:
 - manifest re-baselining
 - optional pack update behavior
 
-### 23. Improve `status` And `doctor`
+### 26. Improve `status` And `doctor`
 
 Status: pending.
 Priority: high.
@@ -670,7 +797,7 @@ Pending:
 - version mismatch checks
 - optional pack health checks
 
-### 24. Add Repair And Uninstall Dry Runs
+### 27. Add Repair And Uninstall Dry Runs
 
 Status: pending.
 Priority: medium.
@@ -684,7 +811,7 @@ ais uninstall --dry-run
 
 These should rely on install operation records and managed file hashes.
 
-### 25. Add Missing CLI Docs
+### 28. Add Missing CLI Docs
 
 Status: pending.
 Priority: medium.
@@ -701,7 +828,59 @@ docs/cli/conflict-handling.md
 
 Keep scaffold process/history docs out of generated project installs.
 
-### 26. Optional QA Browser Testing Pack
+### 29. Resolve Stray Historical `v1.0` Tag
+
+Status: pending decision.
+Priority: low.
+Target: `v0.8.x`.
+
+Problem:
+
+- A legacy `v1.0` tag exists outside the current `v0.8.x` release line.
+- Local and remote `v1.0` may point to different commits.
+- This can confuse release history, npm expectations, and future maintainers.
+
+Required:
+
+- Decide whether `v1.0` should be deleted or documented as a historical
+  pre-semver/pre-npm tag.
+- Do not delete or rewrite remote tags without explicit maintainer approval.
+- If keeping it, document it in release history.
+- If deleting it, delete both local and remote tags and record why.
+
+Acceptance:
+
+- `git tag --list 'v*'` has no confusing undocumented tag above the active
+  release line.
+
+### 30. Add More Stack Profiles
+
+Status: pending design.
+Priority: medium.
+Target: `v0.8.x`.
+
+Candidate profiles:
+
+- `.NET`
+- Java
+- Rust
+- Next.js
+- Flutter
+
+Required:
+
+- Each profile must be useful on day one, not just a renamed generic profile.
+- Each profile must ship real starter commands, build/test files, README command
+  defaults, package allowlist entries, and smoke coverage.
+- Avoid adding profiles until the install/dev command defaults task is done, so
+  new profiles do not repeat the `N/A` command issue.
+
+Acceptance:
+
+- `ais create --profile <profile> --yes` creates a project whose advertised
+  install/test/lint/build commands work or are honestly marked unavailable.
+
+### 31. Optional QA Browser Testing Pack
 
 Status: pending design.
 Priority: medium.
@@ -721,7 +900,7 @@ ais init --with-playwright
 ais init --with-selenium
 ```
 
-### 27. Optional UI/UX Pack
+### 32. Optional UI/UX Pack
 
 Status: pending design.
 Priority: medium.
@@ -741,7 +920,7 @@ ais init --with-accessibility
 ais init --with-visual-testing
 ```
 
-### 28. Enterprise Safe Hooks Pack
+### 33. Enterprise Safe Hooks Pack
 
 Status: pending design.
 Priority: medium.
@@ -770,12 +949,44 @@ Future controls:
 
 ---
 
+## P3 - v0.8.x Maintainability Backlog
+
+### 34. De-Duplicate Profile Templates
+
+Status: pending design.
+Priority: low.
+Target: `v0.8.x`.
+
+Problem:
+
+- Supported profiles currently duplicate a large number of near-identical
+  scaffold files.
+- Duplication increases maintenance cost and makes it easy for fixes to land in
+  one profile but not another.
+
+Required:
+
+- Design a build-time or packaging-time profile composition flow.
+- Keep runtime installs simple: the CLI should still copy from a resolved
+  complete profile directory or packaged file list.
+- Add parity checks so shared files stay synchronized across profiles.
+- Do not make this a blocker for user-facing fixes.
+
+Acceptance:
+
+- Shared scaffold files can be updated once and propagated consistently.
+- Packaged output remains predictable and smoke-tested.
+
+---
+
 ## Standard Publish Gate
 
 Before tagging:
 
 ```bash
 git status --short --branch
+git fetch --all --prune
+git merge-base --is-ancestor origin/main HEAD
 npm test
 npm run typecheck
 npm run lint
@@ -796,5 +1007,7 @@ Publish only when:
 - generated projects include the starter hook safety layer
 - generated projects include a clear memory safety policy
 - branch protection is active
+- release PR is mergeable, not merely green
+- `main` and `dev` sync plan is explicit after publishing
 - trusted publishing has been configured for the package
 - failed publish attempts will use a new patch tag, not a moved existing tag
