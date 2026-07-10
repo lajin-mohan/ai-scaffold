@@ -36,7 +36,7 @@
     "templates/*/.editorconfig",
     "templates/*/.env.example",
     "templates/*/.gitattributes",
-    "templates/*/.gitignore",
+    "templates/*/gitignore",
     "templates/*/.gitleaks.toml",
     "templates/*/AGENTS.md",
     "templates/*/CHANGELOG.md",
