@@ -318,6 +318,7 @@ Acceptance:
 
 Status: partially done in `v0.8.1`; remaining coverage is tracked for
 follow-up.
+Priority: high.
 
 Required test coverage:
 
