@@ -10,8 +10,13 @@ REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 PASS=0
 FAIL=0
 TOTAL=0
+SMOKE_DIR=""
+INIT_DIR=""
+DOT_DIR=""
 PY_DIR=""
 GO_DIR=""
+JSON_CREATE_DIR=""
+JSON_INIT_DIR=""
 PROJECT_VERSION=$(node -p "require('./package.json').version")
 
 pass() {
@@ -27,7 +32,7 @@ fail() {
 }
 
 cleanup() {
-  rm -rf "$SMOKE_DIR" "$INIT_DIR" "$DOT_DIR" "$PY_DIR" "$GO_DIR" 2>/dev/null || true
+  rm -rf "$SMOKE_DIR" "$INIT_DIR" "$DOT_DIR" "$PY_DIR" "$GO_DIR" "$JSON_CREATE_DIR" "$JSON_INIT_DIR" 2>/dev/null || true
 }
 
 trap cleanup EXIT
@@ -100,6 +105,20 @@ fi
 # ── Gate 4: create smoke test ──────────────────────────────────────────
 echo ""
 echo ">> Gate 4: Create Smoke Test"
+JSON_CREATE_DIR=$(mktemp -d)/json-create
+CREATE_JSON=$(node bin/ai-scaffold.js create "$JSON_CREATE_DIR" --profile node --yes --dry-run --json 2>&1) || true
+if PLAN_JSON="$CREATE_JSON" node -e 'const p=JSON.parse(process.env.PLAN_JSON); if (p.command !== "create" || !p.dryRun || p.profile !== "node" || !p.files.generate.some((f) => f.path === "README.md")) process.exit(1);' >/dev/null 2>&1; then
+  pass "create --dry-run --json emits parseable file plan"
+else
+  fail "create --dry-run --json emits parseable file plan"
+  echo "  Output: $(echo "$CREATE_JSON" | head -3)"
+fi
+if [ -e "$JSON_CREATE_DIR" ]; then
+  fail "create --dry-run --json wrote target files"
+else
+  pass "create --dry-run --json writes nothing"
+fi
+
 SMOKE_DIR=$(mktemp -d)
 CREATE_OUTPUT=$(node bin/ai-scaffold.js create "$SMOKE_DIR/smoke-project" --yes 2>&1) || true
 if echo "$CREATE_OUTPUT" | grep -q "Done!"; then
@@ -236,8 +255,9 @@ PY_DIR=$(mktemp -d)/py-smoke
 node bin/ai-scaffold.js create "$PY_DIR" --profile python --yes >/dev/null 2>&1 || true
 if [ -f "$PY_DIR/README.md" ] \
   && grep -q "pytest" "$PY_DIR/README.md" \
-  && grep -q "ruff check ." "$PY_DIR/README.md"; then
-  pass "python README shows real commands (pytest, ruff)"
+  && grep -q "ruff check ." "$PY_DIR/README.md" \
+  && grep -q "pip install" "$PY_DIR/README.md"; then
+  pass "python README shows real commands (install, pytest, ruff)"
 else
   fail "python README missing real commands (shows N/A or not generated)"
 fi
@@ -252,8 +272,9 @@ GO_DIR=$(mktemp -d)/go-smoke
 node bin/ai-scaffold.js create "$GO_DIR" --profile golang --yes >/dev/null 2>&1 || true
 if [ -f "$GO_DIR/README.md" ] \
   && grep -q "go test ./..." "$GO_DIR/README.md" \
-  && grep -q "go vet ./..." "$GO_DIR/README.md"; then
-  pass "golang README shows real commands (go test, go vet)"
+  && grep -q "go vet ./..." "$GO_DIR/README.md" \
+  && grep -q "go mod download" "$GO_DIR/README.md"; then
+  pass "golang README shows real commands (install, go test, go vet)"
 else
   fail "golang README missing real commands (shows N/A or not generated)"
 fi
@@ -272,9 +293,40 @@ else
   echo "  – skipped fresh golang verification (go not installed)"
 fi
 
+# ── Gate 4c: generated doc links ───────────────────────────────────────
+echo ""
+echo ">> Gate 4c: Generated Doc Links"
+if node scripts/check-generated-links.js "$PY_DIR" >/dev/null 2>&1; then
+  pass "python project has no broken doc links or unresolved identity tokens"
+else
+  fail "python project has broken doc links or unresolved identity tokens"
+  node scripts/check-generated-links.js "$PY_DIR" 2>&1 | head -8
+fi
+if node scripts/check-generated-links.js "$GO_DIR" >/dev/null 2>&1; then
+  pass "golang project has no broken doc links or unresolved identity tokens"
+else
+  fail "golang project has broken doc links or unresolved identity tokens"
+  node scripts/check-generated-links.js "$GO_DIR" 2>&1 | head -8
+fi
+
 # ── Gate 5: init --yes smoke test ──────────────────────────────────────
 echo ""
 echo ">> Gate 5: Init --yes Smoke Test"
+JSON_INIT_DIR=$(mktemp -d)
+echo "# Keep My README" > "$JSON_INIT_DIR/README.md"
+INIT_JSON=$(node bin/ai-scaffold.js init "$JSON_INIT_DIR" --profile python --yes --dry-run --json 2>&1) || true
+if PLAN_JSON="$INIT_JSON" node -e 'const p=JSON.parse(process.env.PLAN_JSON); if (p.command !== "init" || !p.dryRun || p.profile !== "python" || !p.existingTarget || !p.files.generate.some((f) => f.path === ".ai-scaffold/README.md")) process.exit(1);' >/dev/null 2>&1; then
+  pass "init --dry-run --json emits parseable file plan"
+else
+  fail "init --dry-run --json emits parseable file plan"
+  echo "  Output: $(echo "$INIT_JSON" | head -3)"
+fi
+if [ ! -d "$JSON_INIT_DIR/.claude" ] && [ ! -f "$JSON_INIT_DIR/.ai-scaffold.json" ] && grep -q "Keep My README" "$JSON_INIT_DIR/README.md"; then
+  pass "init --dry-run --json writes nothing"
+else
+  fail "init --dry-run --json wrote files or changed README"
+fi
+
 INIT_DIR=$(mktemp -d)
 echo "# Keep My README" > "$INIT_DIR/README.md"
 echo '{"name":"keep-me"}' > "$INIT_DIR/package.json"

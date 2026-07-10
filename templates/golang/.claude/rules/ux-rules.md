@@ -33,7 +33,7 @@ Use semantic tokens (action-primary / success / warning / danger) for meaning. D
 
 Role badges are neutral by default — semantic color only when status is the message.
 
-See [.claude/skills/ux-system/DESIGN_TOKENS.md](../../skills/ux-system/DESIGN_TOKENS.md) for the complete token system including dark mode values and status color scale.
+See [.claude/skills/ux-system/DESIGN_TOKENS.md](../skills/ux-system/DESIGN_TOKENS.md) for the complete token system including dark mode values and status color scale.
 
 ### Typography
 

@@ -229,6 +229,24 @@ export async function collectBootstrapValues(overrides = {}) {
       message: 'Build command:',
       initial: normalizedOverrides.buildCommand ?? 'none',
     },
+    {
+      name: 'installCommand',
+      type: 'text',
+      message: 'Install command:',
+      initial: normalizedOverrides.installCommand ?? 'none',
+    },
+    {
+      name: 'devCommand',
+      type: 'text',
+      message: 'Dev/serve command:',
+      initial: normalizedOverrides.devCommand ?? 'none',
+    },
+    {
+      name: 'migrationCommand',
+      type: 'text',
+      message: 'Migration command:',
+      initial: normalizedOverrides.migrationCommand ?? 'none',
+    },
   ];
 
   const answers = await prompts(questions, {
@@ -286,6 +304,9 @@ export function resolveWithDefaults(flags = {}) {
     lintCommand: 'none',
     typecheckCommand: 'none',
     buildCommand: 'none',
+    installCommand: 'none',
+    devCommand: 'none',
+    migrationCommand: 'none',
     profile: 'generic',
   };
 
@@ -309,6 +330,9 @@ function applyProfileDefaults(resolved, defaulted) {
       frontendStack: 'none',
       database: 'MySQL or PostgreSQL',
       testCommand: 'composer test',
+      installCommand: 'composer install',
+      devCommand: 'php artisan serve',
+      migrationCommand: 'php artisan migrate',
     },
     node: {
       backendStack: 'Node.js',
@@ -318,6 +342,8 @@ function applyProfileDefaults(resolved, defaulted) {
       lintCommand: 'npm run lint',
       typecheckCommand: 'npm run typecheck',
       buildCommand: 'npm run build',
+      installCommand: 'npm install',
+      devCommand: 'npm run dev',
     },
     python: {
       backendStack: 'Python',
@@ -327,6 +353,7 @@ function applyProfileDefaults(resolved, defaulted) {
       lintCommand: 'ruff check .',
       typecheckCommand: 'mypy .',
       buildCommand: 'python -m compileall .',
+      installCommand: 'pip install -e ".[dev]"',
     },
     golang: {
       backendStack: 'Go',
@@ -336,6 +363,7 @@ function applyProfileDefaults(resolved, defaulted) {
       lintCommand: 'go vet ./...',
       typecheckCommand: 'go build ./...',
       buildCommand: 'go build ./...',
+      installCommand: 'go mod download',
     },
   };
 
@@ -414,7 +442,7 @@ function normalizeValues(values = {}) {
     normalized.complianceScope = normalizeCompliance(normalized.complianceScope);
   }
 
-  for (const commandKey of ['testCommand', 'lintCommand', 'typecheckCommand', 'buildCommand']) {
+  for (const commandKey of ['testCommand', 'lintCommand', 'typecheckCommand', 'buildCommand', 'installCommand', 'devCommand', 'migrationCommand']) {
     if (normalized[commandKey] !== undefined) {
       normalized[commandKey] = normalizeNone(normalized[commandKey]);
     }

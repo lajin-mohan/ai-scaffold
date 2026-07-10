@@ -5,6 +5,7 @@ import { applyInteractiveDefaults, resolveWithDefaults, validateBootstrapValues 
 import { buildFilePlan } from '../cli/core/file-plan.js';
 import { MANAGED_PATHS, PROTECTED_PATHS, APP_SOURCE_PATHS } from '../cli/core/file-plan.js';
 import { detectConflicts } from '../cli/core/conflicts.js';
+import { buildDryRunPlan, emptyConflicts } from '../cli/core/dry-run-plan.js';
 import { getVersion } from '../cli/core/version.js';
 import { normalizeProfile, templatePath, toPosixPath, SUPPORTED_PROFILES } from '../cli/core/paths.js';
 
@@ -215,6 +216,33 @@ describe('detectConflicts', () => {
   });
 });
 
+describe('buildDryRunPlan', () => {
+  it('serializes create/init file plans for automation', async () => {
+    const bootstrap = resolveWithDefaults({ projectName: 'json-plan', profile: 'node' });
+    const plan = await buildFilePlan(templatePath('node'), '/tmp/json-plan', { existingTarget: false });
+    const dryRunPlan = buildDryRunPlan({
+      command: 'create',
+      targetDir: '/tmp/json-plan',
+      profile: 'node',
+      plan,
+      conflicts: emptyConflicts(),
+      values: bootstrap.resolved,
+      defaultedValues: bootstrap.defaulted,
+      existingTarget: false,
+    });
+
+    expect(dryRunPlan.command).toBe('create');
+    expect(dryRunPlan.dryRun).toBe(true);
+    expect(dryRunPlan.profile).toBe('node');
+    expect(dryRunPlan.optionalPacks).toEqual([]);
+    expect(dryRunPlan.defaultedValues).toContain('projectType');
+    expect(dryRunPlan.counts.copy).toBe(plan.copy.length);
+    expect(dryRunPlan.counts.generate).toBe(plan.generate.length);
+    expect(dryRunPlan.files.generate.map((file) => file.path)).toContain('README.md');
+    expect(dryRunPlan.files.copy.some((file) => file.path === '.claude/settings.json')).toBe(true);
+  });
+});
+
 describe('toPosixPath', () => {
   it('normalizes OS-native separators to posix', () => {
     const native = ['.claude', 'settings.json'].join(path.sep);
@@ -267,6 +295,24 @@ describe('python and golang profiles', () => {
     const go = resolveWithDefaults({ profile: 'go' });
     expect(go.resolved.profile).toBe('golang');
     expect(go.resolved.testCommand).toBe('go test ./...');
+  });
+
+  it('sets install/dev/migration command defaults per profile', () => {
+    const py = resolveWithDefaults({ profile: 'python' }).resolved;
+    expect(py.installCommand).toBe('pip install -e ".[dev]"');
+    expect(py.devCommand).toBe('none');
+    expect(py.migrationCommand).toBe('none');
+
+    const go = resolveWithDefaults({ profile: 'golang' }).resolved;
+    expect(go.installCommand).toBe('go mod download');
+
+    const laravel = resolveWithDefaults({ profile: 'laravel' }).resolved;
+    expect(laravel.installCommand).toBe('composer install');
+    expect(laravel.devCommand).toBe('php artisan serve');
+    expect(laravel.migrationCommand).toBe('php artisan migrate');
+
+    // Generic has no defaults; install renders as N/A in the generated README.
+    expect(resolveWithDefaults({ profile: 'generic' }).resolved.installCommand).toBe('none');
   });
 });
 
