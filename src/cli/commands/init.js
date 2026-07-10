@@ -10,6 +10,7 @@ import { collectBootstrapValues, resolveWithDefaults } from '../core/prompts.js'
 import { buildFilePlan } from '../core/file-plan.js';
 import { detectConflicts, printConflictReport } from '../core/conflicts.js';
 import { copyFiles } from '../core/copy.js';
+import { buildDryRunPlan } from '../core/dry-run-plan.js';
 import { templatePath } from '../core/paths.js';
 
 export function initCommand(cli) {
@@ -17,6 +18,7 @@ export function initCommand(cli) {
     .option('--profile <profile>', 'Scaffold profile to use (generic, node, python, golang, laravel; aliases: js, py, go)', { default: 'generic' })
     .option('--yes', 'Use defaults for all options, no prompts')
     .option('--dry-run', 'Show what would be installed without writing files')
+    .option('--json', 'Print machine-readable dry-run plan as JSON')
     .option('--force', 'Overwrite existing files without prompting')
     .option('--project-name <name>', 'Override project name (slug)')
     .option('--display-name <name>', 'Display name')
@@ -46,12 +48,19 @@ export function initCommand(cli) {
 }
 
 async function runInit(targetDir, options) {
-  const { profile = 'generic', yes = false, dryRun = false, force = false } = options;
+  const { profile = 'generic', yes = false, dryRun = false, json = false, force = false } = options;
+
+  if (json && !dryRun) {
+    console.error(chalk.red('✗ --json is only supported with --dry-run'));
+    process.exit(1);
+  }
 
   // Default to current directory if no target specified
   const resolvedTarget = targetDir ? path.resolve(targetDir) : process.cwd();
 
-  console.log(chalk.bold(`\n🔧 AI Scaffold init — ${resolvedTarget}\n`));
+  if (!json) {
+    console.log(chalk.bold(`\n🔧 AI Scaffold init — ${resolvedTarget}\n`));
+  }
 
   // 1. Verify target exists
   if (!dryRun && !(await fs.pathExists(resolvedTarget))) {
@@ -87,28 +96,51 @@ async function runInit(targetDir, options) {
     profile,
   };
 
-  let resolved;
+  // --json is a machine-readable mode — never drop into interactive prompts,
+  // which would pollute stdout and corrupt the JSON. Resolve non-interactively
+  // whenever --json or --yes is set.
+  const nonInteractive = yes || json;
+  let bootstrap;
   try {
-    resolved = yes
-      ? resolveWithDefaults(flags).resolved
-      : await collectBootstrapValues(flags);
+    bootstrap = nonInteractive
+      ? resolveWithDefaults(flags)
+      : { resolved: await collectBootstrapValues(flags), defaulted: [] };
   } catch (error) {
     console.error(chalk.red(`✗ ${error.message}`));
     process.exit(1);
   }
+  const resolved = bootstrap.resolved;
 
   // 4. Build file plan
-  console.log(chalk.gray('Building file plan...'));
+  if (!json) {
+    console.log(chalk.gray('Building file plan...'));
+  }
   const templateDir = templatePath(profile);
   const plan = await buildFilePlan(templateDir, resolvedTarget, { existingTarget: true });
 
   // 5. Detect conflicts
   const conflicts = await detectConflicts(resolvedTarget, plan);
-  printConflictReport(conflicts);
+  if (!json) {
+    printConflictReport(conflicts);
+  }
+
+  if (json) {
+    console.log(JSON.stringify(buildDryRunPlan({
+      command: 'init',
+      targetDir: resolvedTarget,
+      profile,
+      plan,
+      conflicts,
+      values: resolved,
+      defaultedValues: bootstrap.defaulted ?? [],
+      existingTarget: true,
+    }), null, 2));
+    return;
+  }
 
   // 6. Copy files
   console.log(chalk.gray('\nInstalling scaffold...'));
-  const result = await copyFiles(plan, resolved, { dryRun, force, yes, targetDir: resolvedTarget });
+  const result = await copyFiles(plan, bootstrap, { dryRun, force, yes, targetDir: resolvedTarget });
 
   // 7. Summary
   if (dryRun) {

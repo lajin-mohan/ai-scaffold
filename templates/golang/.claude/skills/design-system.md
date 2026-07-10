@@ -34,11 +34,11 @@ Scaffold projects use a **3-layer token model**:
 | `--color-border-strong` | `#C1C7D0` | Emphasized borders |
 | `--color-border-focus` | `#00C875` | Focus rings |
 
-For the complete token system including dark mode values, brand/base token definitions, and component-level token aliases, see [.claude/skills/ux-system/DESIGN_TOKENS.md](.claude/skills/ux-system/DESIGN_TOKENS.md).
+For the complete token system including dark mode values, brand/base token definitions, and component-level token aliases, see [.claude/skills/ux-system/DESIGN_TOKENS.md](ux-system/DESIGN_TOKENS.md).
 
 ### Status Color Scale
 
-Full scale with background/border/text variants for success, warning, danger states. See [DESIGN_TOKENS.md](.claude/skills/ux-system/DESIGN_TOKENS.md) for the complete 50/200/500/700 status scale.
+Full scale with background/border/text variants for success, warning, danger states. See [DESIGN_TOKENS.md](ux-system/DESIGN_TOKENS.md) for the complete 50/200/500/700 status scale.
 
 ### Text Colors
 
@@ -79,7 +79,7 @@ Theme colors are organization-configurable. The values in this document are the 
 | `--color-border-strong` | `#C1C7D0` | `#44546F` |
 | `--color-border-focus` | `#00C875` | `#21D789` |
 
-For full dark mode implementation pattern and the complete token system including status scale, see [DESIGN_TOKENS.md](.claude/skills/ux-system/DESIGN_TOKENS.md).
+For full dark mode implementation pattern and the complete token system including status scale, see [DESIGN_TOKENS.md](ux-system/DESIGN_TOKENS.md).
 
 ```css
 /* Implementation pattern */
@@ -327,7 +327,7 @@ For full dark mode implementation pattern and the complete token system includin
 - With dot: 6px filled circle, same color as text, 6px left of label
 - Dismissible: ×icon 12px, 4px left margin
 
-Status color scale: `--color-success-50`/`--color-success-700`, `--color-warning-50`/`--color-warning-700`, `--color-danger-50`/`--color-danger-700` are defined in [DESIGN_TOKENS.md](.claude/skills/ux-system/DESIGN_TOKENS.md).
+Status color scale: `--color-success-50`/`--color-success-700`, `--color-warning-50`/`--color-warning-700`, `--color-danger-50`/`--color-danger-700` are defined in [DESIGN_TOKENS.md](ux-system/DESIGN_TOKENS.md).
 
 ### Avatar
 - Shape: circle (`--radius-full`)

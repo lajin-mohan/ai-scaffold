@@ -47,9 +47,11 @@ Confirmed for `v0.8.5`:
 - Starter hook safety is shipped in generated projects.
 - Memory safety policy is generated into project memory.
 - Publish smoke checks passed locally, in CI, and in the publish workflow.
-- Current post-release docs work is tracked in PR #47.
+- Docs quick-wins from PR #47 are merged.
+- Per-profile install/dev/migration command defaults are implemented in the
+  `v0.8.6` workstream.
 
-`v0.8.2` housekeeping scope:
+Completed `v0.8.2` housekeeping scope:
 
 - Clean stale release TODO/history docs.
 - Keep package metadata aligned with the next patch version.
@@ -327,9 +329,9 @@ Acceptance:
 
 ### 10. Add Tests For The Changed Release Surface
 
-Status: partially done in `v0.8.1`; remaining coverage is tracked for
-follow-up.
-Priority: high.
+Status: done for the `v0.8.1` release surface; remaining broader health
+coverage is tracked under the later `doctor`, release-gate, and smoke-test
+items.
 
 Required test coverage:
 
@@ -352,19 +354,19 @@ Acceptance:
 
 ---
 
-## P0 - Next v0.8.x Patch
+## P0 - Completed In v0.8.6 Work
 
 ### 11. Add Install And Dev Command Defaults Per Profile
 
-Status: pending.
+Status: done in the `v0.8.6` workstream.
 Priority: high.
 Target: `v0.8.6`.
 
-Problem:
+Problem (resolved in `v0.8.6`):
 
-- Generated READMEs still render some "Getting Started" commands as `N/A`,
+- Generated READMEs used to render some "Getting Started" commands as `N/A`,
   especially for non-Node profiles.
-- `src/cli/core/copy.js` hardcodes `{{INSTALL_COMMAND}}`,
+- `src/cli/core/copy.js` used to hardcode `{{INSTALL_COMMAND}}`,
   `{{MIGRATION_COMMAND}}`, and `{{DEV_COMMAND}}` to `N/A`.
 - New users should be able to run the generated starter without guessing the
   first install or dev command.
@@ -387,9 +389,26 @@ Required:
 Acceptance:
 
 - Fresh `node`, `python`, `golang`, and `laravel` projects show useful install
-  commands in `README.md`.
-- Fresh Python README no longer says `Install dependencies -> N/A`.
-- Existing-project installs still preserve protected application files.
+  commands in `README.md`. **Done.**
+- Fresh Python README no longer says `Install dependencies -> N/A`. **Done.**
+- Existing-project installs still preserve protected application files. **Done.**
+
+Notes:
+
+- `src/cli/core/prompts.js` now resolves `installCommand`, `devCommand`, and
+  `migrationCommand` defaults by profile.
+- `src/cli/core/copy.js` now renders `{{INSTALL_COMMAND}}`,
+  `{{DEV_COMMAND}}`, `{{MIGRATION_COMMAND}}`, and `{{MIGRATE_COMMAND}}` through
+  `commandOrNA(...)`.
+- Smoke coverage asserts generated Python and Go READMEs show real install
+  commands.
+
+## P0 - Remaining Release Blockers
+
+Status: none currently identified.
+
+The remaining high-priority work below is important for rollout quality, but it
+is tracked as P1/P2 follow-up rather than a current P0 release blocker.
 
 ---
 
@@ -427,7 +446,7 @@ Acceptance:
 
 ### 13. Refactor `copy.js` Into Smaller Core Modules
 
-Status: pending.
+Status: done in the current `v0.8.6` workstream.
 Priority: medium.
 
 Problem:
@@ -438,19 +457,30 @@ Problem:
 
 Required:
 
-- Extract manifest building into `src/cli/core/manifest.js`.
+- Extract manifest building into `src/cli/core/manifest.js`. **Done.**
 - Extract generated content builders into `src/cli/core/content-templates.js`.
-- Centralize vocabularies shared by prompts, validation, and doctor.
-- Keep behavior unchanged while refactoring.
+  **Done.**
+- Keep dry-run JSON serialization outside copy orchestration in
+  `src/cli/core/dry-run-plan.js`. **Done.**
+- Keep behavior unchanged while refactoring. **Verified by tests/smoke before
+  release.**
 
 Acceptance:
 
-- `copy.js` becomes primarily orchestration/copy logic.
-- Tests and smoke checks still pass.
+- `copy.js` becomes primarily orchestration/copy logic. **Done: reduced from
+  the earlier large mixed-responsibility module to focused copy/generate
+  orchestration.**
+- Tests and smoke checks still pass. **Verification required before merge.**
+
+Follow-up:
+
+- If more validation fields are added, consider extracting choice vocabularies
+  from `prompts.js` into a dedicated `context-schema.js` module. Current
+  prompt/doctor validation already shares the existing prompt module.
 
 ### 14. Add Dry-Run JSON Plan
 
-Status: pending.
+Status: done in the current `v0.8.6` workstream.
 Priority: high.
 
 Enterprise users should be able to inspect what the CLI will do before writing.
@@ -464,15 +494,15 @@ ais create my-project --profile node --dry-run --json
 
 Output should include:
 
-- profile
-- target path
-- files to copy
-- files to generate
-- protected files skipped
-- app/source paths skipped
-- conflicts
-- defaulted values
-- optional packs selected
+- profile **Done**
+- target path **Done**
+- files to copy **Done**
+- files to generate **Done**
+- protected files skipped **Done**
+- app/source paths skipped **Done**
+- conflicts **Done**
+- defaulted values **Done**
+- optional packs selected **Done: currently `[]` until optional packs ship**
 
 ### 15. Add Install Operation Records
 
@@ -534,7 +564,8 @@ moved.
 
 ### 17. Move Lessons Capture Into `.ai-scaffold/`
 
-Status: pending.
+Status: pending implementation; decision is captured, but the code still
+generates/checks root `tasks/lessons.md` in some paths.
 Priority: high.
 
 Problem:
@@ -746,7 +777,7 @@ Follow-up questions, if any
 
 ### 24. Small Code Cleanup From Review
 
-Status: pending.
+Status: done.
 Priority: low.
 
 Required:
@@ -991,6 +1022,7 @@ npm test
 npm run typecheck
 npm run lint
 bash scripts/pre-publish-smoke.sh
+node bin/ai-scaffold.js init --profile node --dry-run --json >/tmp/ais-init-plan.json
 npm_config_cache=/private/tmp/ai-scaffold-npm-cache npm pack --dry-run
 ```
 
@@ -1004,6 +1036,7 @@ Publish only when:
 - Node/JS profile aliases resolve to `node`
 - `ais .` routes to init
 - no generated README/settings/context file has unresolved project placeholders
+- `--dry-run --json` output parses cleanly and writes nothing
 - generated projects include the starter hook safety layer
 - generated projects include a clear memory safety policy
 - branch protection is active

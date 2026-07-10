@@ -5,6 +5,7 @@ import { applyInteractiveDefaults, resolveWithDefaults, validateBootstrapValues 
 import { buildFilePlan } from '../cli/core/file-plan.js';
 import { MANAGED_PATHS, PROTECTED_PATHS, APP_SOURCE_PATHS } from '../cli/core/file-plan.js';
 import { detectConflicts } from '../cli/core/conflicts.js';
+import { buildDryRunPlan, emptyConflicts } from '../cli/core/dry-run-plan.js';
 import { getVersion } from '../cli/core/version.js';
 import { normalizeProfile, templatePath, toPosixPath, SUPPORTED_PROFILES } from '../cli/core/paths.js';
 
@@ -212,6 +213,33 @@ describe('detectConflicts', () => {
     expect(report).toHaveProperty('managedMissing');
     expect(report).toHaveProperty('claudDirExists');
     expect(Array.isArray(report.protectedExists)).toBe(true);
+  });
+});
+
+describe('buildDryRunPlan', () => {
+  it('serializes create/init file plans for automation', async () => {
+    const bootstrap = resolveWithDefaults({ projectName: 'json-plan', profile: 'node' });
+    const plan = await buildFilePlan(templatePath('node'), '/tmp/json-plan', { existingTarget: false });
+    const dryRunPlan = buildDryRunPlan({
+      command: 'create',
+      targetDir: '/tmp/json-plan',
+      profile: 'node',
+      plan,
+      conflicts: emptyConflicts(),
+      values: bootstrap.resolved,
+      defaultedValues: bootstrap.defaulted,
+      existingTarget: false,
+    });
+
+    expect(dryRunPlan.command).toBe('create');
+    expect(dryRunPlan.dryRun).toBe(true);
+    expect(dryRunPlan.profile).toBe('node');
+    expect(dryRunPlan.optionalPacks).toEqual([]);
+    expect(dryRunPlan.defaultedValues).toContain('projectType');
+    expect(dryRunPlan.counts.copy).toBe(plan.copy.length);
+    expect(dryRunPlan.counts.generate).toBe(plan.generate.length);
+    expect(dryRunPlan.files.generate.map((file) => file.path)).toContain('README.md');
+    expect(dryRunPlan.files.copy.some((file) => file.path === '.claude/settings.json')).toBe(true);
   });
 });
 

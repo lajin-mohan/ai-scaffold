@@ -260,6 +260,13 @@ flowchart TD
 | `py`, `python3` | Aliases | Resolve to `python` |
 | `go` | Alias | Resolves to `golang` |
 
+Each profile also seeds install, dev/serve, and migration command defaults (for
+example `pip install -e ".[dev]"` for `python`, `composer install` +
+`php artisan serve` for `laravel`) so a generated project's `README.md` shows
+runnable commands instead of `N/A`. These are profile defaults and interactive
+prompt values, not `create`/`init` flags — see the per-profile table in
+[HOW-TO-USE.md](HOW-TO-USE.md).
+
 Additional profiles such as Next.js, Java, .NET, and Flutter are planned after the CLI fundamentals are stable.
 
 ## The Core 6 — Start Here
@@ -359,6 +366,14 @@ Use `--dry-run` first on important existing repositories. It prints the file pla
 npx @lajin.m/ai-scaffold init --profile node --dry-run
 npx @lajin.m/ai-scaffold . --profile node --dry-run
 ais init --profile node --dry-run
+```
+
+Use `--dry-run --json` when you want a machine-readable plan for review gates,
+automation, or change approval.
+
+```bash
+ais init --profile node --dry-run --json
+ais create my-project --profile python --dry-run --json
 ```
 
 ### Non-Interactive Install
