@@ -245,6 +245,8 @@ Living index for project memory and session compactions.
 | Lifecycle stage | ${values.lifecycleStage} |
 | Data sensitivity | ${values.dataSensitivity} |
 | Compliance scope | ${formatCompliance(values.complianceScope)} |
+| Requirements source | ${values.requirementsSource ?? 'create-later'} |
+| Requirements path | ${values.requirementsPath || 'none'} |
 | Current epic | ${values.purpose} |
 | Active AI role | not configured |
 | Last updated | ${new Date().toISOString().split('T')[0]} |
@@ -270,6 +272,8 @@ At the start of every session:
 3. Run \`/lessons --recent 3\` when lessons exist.
 
 Before planning or architecture work:
+- Read the linked BRD/FRD/ticket path from this file or \`.ai-scaffold/context.md\`.
+- Start implementation tasks with \`/start-task --spec <requirements-or-task-path>\`.
 - Read \`.claude/memory/architecture-decisions.md\`.
 - Read \`.claude/memory/business-rules.md\`.
 
@@ -401,6 +405,8 @@ function resolvePlaceholders(content, values) {
 }
 
 function buildScaffoldReadme(values) {
+  const requirementsPath = values.requirementsPath || 'not linked yet';
+
   return `# AI Scaffold
 
 This folder contains AI Scaffold's project-local operating context for ${values.displayName}.
@@ -413,12 +419,29 @@ This folder contains AI Scaffold's project-local operating context for ${values.
 - Data sensitivity: ${values.dataSensitivity}
 - Compliance scope: ${formatCompliance(values.complianceScope)}
 
+## Requirements Link
+
+- Source: ${values.requirementsSource ?? 'create-later'}
+- Path: ${requirementsPath}
+
+AI work is strongest when every task links to a BRD, FRD, ticket, or acceptance
+criteria document. If the path is not linked yet, update \`.ai-scaffold/context.md\`,
+\`.claude/settings-overrides.json\`, and \`.claude/MEMORY.md\` before serious
+feature work.
+
+Use:
+
+\`\`\`text
+/start-task --spec <requirements-or-task-path>
+\`\`\`
+
 ## Default Install Surface
 
 The default install keeps scaffold-owned reference material small. Larger docs,
 QA, UX, research, CI, and template packs should be added explicitly when needed.
 
-See \`.ai-scaffold/context.md\` for the project setup context collected during installation.
+See \`.ai-scaffold/context.md\` for the project setup context collected during
+installation. Run \`ais doctor\` after changing scaffold settings.
 `;
 }
 

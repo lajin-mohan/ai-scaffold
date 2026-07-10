@@ -14,7 +14,7 @@ import { templatePath } from '../core/paths.js';
 
 export function initCommand(cli) {
   cli.command('init [target-dir]', 'Install scaffold into an existing directory')
-    .option('--profile <profile>', 'Scaffold profile to use (generic, laravel, node)', { default: 'generic' })
+    .option('--profile <profile>', 'Scaffold profile to use (generic, node, python, golang, laravel; aliases: js, py, go)', { default: 'generic' })
     .option('--yes', 'Use defaults for all options, no prompts')
     .option('--dry-run', 'Show what would be installed without writing files')
     .option('--force', 'Overwrite existing files without prompting')
