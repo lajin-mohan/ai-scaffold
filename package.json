@@ -69,6 +69,7 @@
     "typecheck": "node scripts/check-js-syntax.js && node scripts/check-gitleaks-config.js",
     "build": "echo 'Build validation: checking npm pack'",
     "release:check": "bash scripts/check-release-readiness.sh",
+    "sync:main-dev": "bash scripts/sync-main-into-dev.sh",
     "prepublishOnly": "npm test && npm run typecheck && npm run lint"
   },
   "keywords": [
