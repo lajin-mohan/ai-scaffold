@@ -375,6 +375,7 @@ Acceptance:
 ### 12. Refactor `copy.js` Into Smaller Core Modules
 
 Status: pending.
+Priority: medium.
 
 Problem:
 
@@ -397,6 +398,7 @@ Acceptance:
 ### 13. Add Dry-Run JSON Plan
 
 Status: pending.
+Priority: high.
 
 Enterprise users should be able to inspect what the CLI will do before writing.
 
@@ -422,6 +424,7 @@ Output should include:
 ### 14. Add Install Operation Records
 
 Status: pending.
+Priority: high.
 
 Extend `.ai-scaffold.json` beyond a flat managed file list.
 
@@ -450,6 +453,7 @@ This powers future `doctor`, `repair`, `uninstall`, and safe `update`.
 ### 15. Add Automatic Context Detection For Existing Projects
 
 Status: pending.
+Priority: high.
 
 Detect where possible:
 
@@ -475,9 +479,53 @@ Write confirmed context to:
 Do not create root `docs/` by default. Existing docs should be indexed, not
 moved.
 
-### 16. Improve Hooks Roadmap
+### 16. Move Lessons Capture Into `.ai-scaffold/`
 
 Status: pending.
+Priority: high.
+
+Problem:
+
+- `tasks/lessons.md` conflicts with the current clean install model.
+- Existing projects may already use `tasks/` for Jira exports, sprint planning,
+  Linear syncs, project work queues, or application-specific task tracking.
+- Lessons are scaffold-owned institutional memory, not application source or
+  project task management.
+
+Decision:
+
+- Make `.ai-scaffold/lessons.md` the canonical lessons file for new installs.
+- Keep `tasks/lessons.md` as a legacy/backward-compatible read path when it
+  already exists.
+- Do not create root `tasks/` by default during `init`.
+
+Required:
+
+- Generate `.ai-scaffold/lessons.md` for `create` and `init`.
+- Update `/lessons`, `/reflect`, `/compact`, `/investigate`, `/debug-fix`, and
+  `/start-task` guidance to read/write `.ai-scaffold/lessons.md`.
+- Update `.claude/MEMORY.md`, `AGENTS.md`, README, HOW-TO-USE, and generated
+  `.ai-scaffold/README.md` references.
+- Update `doctor` to check `.ai-scaffold/lessons.md` instead of requiring root
+  `tasks/lessons.md`.
+- Keep a migration note: if `tasks/lessons.md` exists, read it and optionally
+  suggest moving entries into `.ai-scaffold/lessons.md`.
+- Stop generating root `tasks/lessons.md`, `tasks/todo/`, and `tasks/done/`
+  unless a future optional task-management pack is selected.
+
+Acceptance:
+
+- `ais create` and `ais init` both produce `.ai-scaffold/lessons.md`.
+- Existing-project installs do not create root `tasks/` by default.
+- `/lessons` works when only `.ai-scaffold/lessons.md` exists.
+- `doctor` passes for a healthy install with `.ai-scaffold/lessons.md` and no
+  root `tasks/` folder.
+- Smoke tests cover the new canonical path and legacy fallback.
+
+### 17. Improve Hooks Roadmap
+
+Status: pending.
+Priority: medium.
 
 Done in `v0.8.0`:
 
@@ -497,9 +545,10 @@ Pending:
 - Clear docs that local hooks can be bypassed and CI/repository policy remains
   authoritative.
 
-### 17. Documentation Honesty Pass
+### 18. Documentation Honesty Pass
 
 Status: pending.
+Priority: medium.
 
 Required:
 
@@ -512,9 +561,10 @@ Required:
   `PRE_REVIEW_ALLOW_UNCONFIGURED=1` for the scaffold repo itself if checks are
   now configured.
 
-### 18. Publish Workflow Cleanup
+### 19. Publish Workflow Cleanup
 
 Status: pending follow-up; trusted publishing is now proven in `v0.8.1`.
+Priority: low.
 
 Required:
 
@@ -525,9 +575,10 @@ Required:
 - Reduce duplicate `prepublishOnly` check runs only if CI still protects manual
   publishes, or keep the duplicate checks as a conservative release guard.
 
-### 19. Add Optional Deep Research Command/Agent
+### 20. Add Optional Deep Research Command/Agent
 
 Status: pending design.
+Priority: medium.
 
 Decision:
 
@@ -565,9 +616,10 @@ Confidence level
 Follow-up questions, if any
 ```
 
-### 20. Small Code Cleanup From Review
+### 21. Small Code Cleanup From Review
 
 Status: pending.
+Priority: low.
 
 Required:
 
@@ -582,9 +634,10 @@ Required:
 
 ## P2 - Future Roadmap
 
-### 21. Implement Real Update Flow
+### 22. Implement Real Update Flow
 
 Status: pending.
+Priority: high.
 
 Build full safe update support after the P0 update placeholder safety and the
 managed-file ownership ADR are done.
@@ -599,9 +652,10 @@ Pending:
 - manifest re-baselining
 - optional pack update behavior
 
-### 22. Improve `status` And `doctor`
+### 23. Improve `status` And `doctor`
 
 Status: pending.
+Priority: high.
 
 Pending:
 
@@ -615,9 +669,10 @@ Pending:
 - version mismatch checks
 - optional pack health checks
 
-### 23. Add Repair And Uninstall Dry Runs
+### 24. Add Repair And Uninstall Dry Runs
 
 Status: pending.
+Priority: medium.
 
 Start with preview-only commands:
 
@@ -628,9 +683,10 @@ ais uninstall --dry-run
 
 These should rely on install operation records and managed file hashes.
 
-### 24. Add Missing CLI Docs
+### 25. Add Missing CLI Docs
 
 Status: pending.
+Priority: medium.
 
 Create or refresh:
 
@@ -644,9 +700,10 @@ docs/cli/conflict-handling.md
 
 Keep scaffold process/history docs out of generated project installs.
 
-### 25. Optional QA Browser Testing Pack
+### 26. Optional QA Browser Testing Pack
 
 Status: pending design.
+Priority: medium.
 
 Decision:
 
@@ -663,9 +720,10 @@ ais init --with-playwright
 ais init --with-selenium
 ```
 
-### 26. Optional UI/UX Pack
+### 27. Optional UI/UX Pack
 
 Status: pending design.
+Priority: medium.
 
 Decision:
 
@@ -682,9 +740,10 @@ ais init --with-accessibility
 ais init --with-visual-testing
 ```
 
-### 27. Enterprise Safe Hooks Pack
+### 28. Enterprise Safe Hooks Pack
 
 Status: pending design.
+Priority: medium.
 
 Future commands:
 
