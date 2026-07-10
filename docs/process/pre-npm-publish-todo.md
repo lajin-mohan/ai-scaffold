@@ -405,6 +405,31 @@ Notes:
 - Smoke coverage asserts generated Python and Go READMEs show real install
   commands.
 
+## P0 - Completed In v0.8.7 Work
+
+### 11b. Ship `.gitignore` In Generated Projects
+
+Status: done in `v0.8.7` workstream (PR #56).
+Priority: high.
+Target: `v0.8.7`.
+
+Problem (found reviewing published `v0.8.6`):
+
+- `npm pack` hard-excludes any file literally named `.gitignore` from the
+  tarball, so the published package shipped none. Every `ais create` produced a
+  git-initialized project with **nothing ignored** — a later `.env`,
+  `node_modules`, or secret was immediately committable.
+- Same class as the `v0.8.3` inert-hooks bug; invisible to smoke because smoke
+  ran from source, not the packed tarball.
+
+Fix:
+
+- Templates ship the ignore file as `gitignore` (no dot); `file-plan.js`
+  `RENAME_ON_COPY` renames it to `.gitignore` on copy. `package.json` `files`
+  updated. Verified against a real `npm pack` → install → create (all 5 profiles).
+- Added a packaging-aware smoke gate (tarball must contain `templates/*/gitignore`
+  and zero `.gitignore`), plus generated-project + E2E + unit regressions.
+
 ## P0 - Remaining Release Blockers
 
 Status: none currently identified.
@@ -1052,3 +1077,212 @@ Publish only when:
 - `main` and `dev` sync plan is explicit after publishing
 - trusted publishing has been configured for the package
 - failed publish attempts will use a new patch tag, not a moved existing tag
+
+---
+
+## Post-`v0.8.6` Review Follow-Ups (added 2026-07-10)
+
+From a detailed review of the published `v0.8.6` artifact (installed from npm,
+all 5 profiles generated and tested). The `.gitignore` fix (item 11b above) was
+found in the same review and already shipped in `v0.8.7`. The rest are queued
+below by priority.
+
+### P1 — Strongly Recommended (next `v0.8.x`)
+
+#### 35. Replace The Node Profile's Stub `package.json` Test
+
+Priority: high. Target: `v0.8.7`/`v0.8.8`.
+
+Problem:
+
+- The node profile ships `"test": "echo \"Configure your Node.js test command\""`,
+  which exits 0 while testing nothing. `npm test` "passes" day-one on a fresh
+  project. This is a stub that ships — it contradicts the scaffold's own
+  production-grade rule and makes node second-class vs. python/golang, which ship
+  real runnable starters (`test_smoke.py`, `main_test.go`).
+
+Required:
+
+- Ship a zero-dependency `node --test` smoke file (e.g. `test/smoke.test.js`) so
+  a fresh node project passes a real test day-one, mirroring python/golang.
+- Point the `package.json` `test` script at `node --test`.
+- Add a pre-publish smoke assertion that a fresh node project's `npm test`
+  actually runs a test, not an echo.
+
+#### 36. Generation Gate That Runs Against The Packed Tarball
+
+Priority: high. Target: `v0.8.7`/`v0.8.8`.
+
+Problem:
+
+- The "npm silently strips a shipped file" class has now bitten twice
+  (`settings.json` in `v0.8.3`, `.gitignore` in `v0.8.6`). Both slipped through
+  because the smoke suite generates from the source tree, where the files exist.
+  Per-file pack assertions catch known cases but not the next unknown one.
+
+Required:
+
+- Add a gate that runs `npm pack`, installs the tarball into a temp dir, runs
+  `ais create` for each profile from the installed CLI, then runs `doctor` +
+  `scripts/check-generated-links.js` + a structural check (`.gitignore`,
+  `.claude/settings.json`, profile build file present). This is the only gate
+  that proves the *published* artifact works.
+- Flag any file whose name npm treats specially (`.gitignore`, `.npmignore`) that
+  is added to a template in future.
+
+#### 37. Remove Fictional Inheritance From Shipped Rules And Agents
+
+Priority: high (content quality). Target: `v0.8.x`.
+
+Problem:
+
+- Shipped `.claude/` rules/agents reference a different codebase's constitution:
+  `HIRE-142`-style tickets, Techversant multi-tenant SaaS assumptions, and
+  `apps/api/src` layered-architecture examples that do not exist in a generated
+  CLI, library, or single-tenant project. An AI reading these in a generated
+  project is being taught from the wrong project — a mild H1/H3 violation baked
+  into the product.
+
+Required:
+
+- Neutralize hardcoded ticket IDs, org names, and stack-specific layer examples
+  in shipped rules/agents, or gate them behind profile/opt-in so they only appear
+  where they apply. Keep the principle, drop the fictional specifics.
+
+#### 38. Laravel Fresh-Create Ships No `composer.json`
+
+Priority: medium. Target: `v0.8.x`.
+
+Problem:
+
+- The laravel profile's configured `composer install` / `composer test` commands
+  fail on a fresh `ais create` because no `composer.json` ships. Fine for `init`
+  into an existing Laravel app (the realistic path), but fresh-create contradicts
+  its own configured commands.
+
+Required:
+
+- Ship a minimal `composer.json` for laravel create, OR document laravel as
+  `init`-only and adjust its default commands so a fresh create is internally
+  consistent.
+
+### P2 — Strategic / Backlog
+
+#### 39. Progressive Disclosure + A Project Constitution
+
+Priority: medium (0.9 theme).
+
+Problem:
+
+- A generated project lands with 152 files, 35 commands, 17 agents, 17 rules on
+  day one with no in-project ramp. The README "Core 6" helps, but a new dev
+  opening `.claude/commands/` faces a wall. This is the top adoption risk.
+
+Required:
+
+- Borrow Spec Kit's `constitution.md`: generate a single, small, project-supreme
+  principles file distilling the non-negotiables (the current 17 rule files have
+  no supremacy order). Add an in-project "start here" ramp.
+
+#### 40. Prune Commands/Agents That Restate Native Claude Code Behavior
+
+Priority: medium (0.9 theme).
+
+Problem:
+
+- Some commands duplicate what Claude Code now does natively (plan mode, etc.).
+  Agent OS v3 explicitly stopped doing this. A smaller, sharper surface beats 35
+  commands of overlapping scope.
+
+Required:
+
+- Audit commands/agents against native Claude Code capabilities; retire or merge
+  the redundant ones; keep only what adds project-specific value.
+
+#### 41. Decide The Fate Of Untested Example Hooks
+
+Priority: low.
+
+Problem:
+
+- `jira-sync.py` / `notify-review.py` ship as clearly-labeled examples (creds via
+  env vars, safe) but are dead weight for most teams and untested.
+
+Required:
+
+- Move them to an optional integrations pack, or keep them as documented examples
+  outside the default install. Decide, don't leave ambiguous.
+
+#### 42. Enforce Artifact-Handoff Chains Between Agents
+
+Priority: medium (strategic; borrow from BMAD).
+
+Problem:
+
+- Agents describe roles but do not enforce a versioned-artifact chain (each role
+  producing an artifact the next consumes). BMAD's traceability comes from this.
+
+Required:
+
+- Define the artifact each stage/agent produces and consumes; enforce the chain
+  in the workflow so work is traceable from business logic to code.
+
+#### 43. Add A Change-Approval Audit Trail
+
+Priority: medium (strategic; borrow from OpenSpec).
+
+Problem:
+
+- The scaffold frames itself around GDPR/ISO but has no first-class
+  change-approval audit record. OpenSpec is built for exactly the regulated /
+  review-board case this scaffold targets.
+
+Required:
+
+- Add an opt-in audit-trail artifact for spec/change approvals suitable for
+  regulated teams.
+
+### P3 — Housekeeping
+
+#### 44. Clean Stray Cruft From Source Template Dirs
+
+Priority: low (quick).
+
+Problem:
+
+- `templates/{golang,python}/apps/api/migrations/`, `.vscode/`, and
+  `.claude/settings.local.json` are untracked cruft in the source templates.
+  Excluded from the pack (so they do not ship), but they should not be in the
+  tree.
+
+Required:
+
+- Remove the stray files and confirm the repo's own `.gitignore` covers
+  `settings.local.json` / `.vscode/` under `templates/`.
+
+#### 45. Upgrade GitHub Actions To Silence Node 20 Deprecation
+
+Priority: low (housekeeping).
+
+Problem:
+
+- CI shows a Node 20 deprecation annotation for `actions/checkout@v4` /
+  `actions/setup-node@v4` even though the workflow runs on Node 24.
+
+Required:
+
+- Bump the actions to their current major versions to clear the annotation.
+
+#### 46. Fix The Repo's Own `.claude` `DESIGN_TOKENS.md` Link
+
+Priority: low.
+
+Problem:
+
+- The scaffold repo's own (non-shipped) `.claude/rules/ux-rules.md` /
+  `.claude/skills/design-system.md` carry the same relative-path typo that was
+  fixed in the templates in `v0.8.6`. Internal tooling only, but inconsistent.
+
+Required:
+
+- Apply the same `DESIGN_TOKENS.md` link-path fix to the repo's own `.claude/`.
