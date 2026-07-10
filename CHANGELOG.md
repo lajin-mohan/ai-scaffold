@@ -13,6 +13,8 @@ This file is configured with `merge=union` in `.gitattributes` so parallel addit
 
 ## [Unreleased]
 
+## [0.8.7] - 2026-07-10
+
 ### Fixed
 - **Generated projects now ship a `.gitignore`.** `npm pack` hard-excludes any
   file literally named `.gitignore` from the tarball, so the published package
