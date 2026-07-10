@@ -243,3 +243,40 @@ describe('template .gitignore ships hook wiring', () => {
     });
   }
 });
+
+describe('python and golang profiles', () => {
+  it('python create ships pyproject.toml, not package.json', async () => {
+    const plan = await buildFilePlan(templatePath('python'), '/tmp/out-py', { existingTarget: false });
+    const rels = [...plan.copy.map((f) => f.rel), ...plan.generate.map((f) => f.rel)];
+    expect(rels).toContain('pyproject.toml');
+    expect(rels).not.toContain('package.json');
+  });
+
+  it('golang create ships go.mod, not package.json', async () => {
+    const plan = await buildFilePlan(templatePath('golang'), '/tmp/out-go', { existingTarget: false });
+    const rels = [...plan.copy.map((f) => f.rel), ...plan.generate.map((f) => f.rel)];
+    expect(rels).toContain('go.mod');
+    expect(rels).not.toContain('package.json');
+  });
+
+  it('applies python defaults and resolves the go alias to golang', () => {
+    const py = resolveWithDefaults({ profile: 'python' });
+    expect(py.resolved.backendStack).toBe('Python');
+    expect(py.resolved.testCommand).toBe('pytest');
+
+    const go = resolveWithDefaults({ profile: 'go' });
+    expect(go.resolved.profile).toBe('golang');
+    expect(go.resolved.testCommand).toBe('go test ./...');
+  });
+});
+
+describe('scaffold self-marker', () => {
+  // The scaffold dogfoods itself; its own .ai-scaffold.json version drifted to
+  // 0.6.2 while the package was 0.8.x. Keep them in lockstep — a release bump
+  // must touch both.
+  it('.ai-scaffold.json version matches package.json', () => {
+    const pkg = JSON.parse(readFileSync(new URL('../../package.json', import.meta.url), 'utf-8'));
+    const marker = JSON.parse(readFileSync(new URL('../../.ai-scaffold.json', import.meta.url), 'utf-8'));
+    expect(marker.version).toBe(pkg.version);
+  });
+});

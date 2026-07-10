@@ -32,9 +32,12 @@ export const PROFILE_ALIASES = {
   js: 'node',
   javascript: 'node',
   nodejs: 'node',
+  py: 'python',
+  python3: 'python',
+  go: 'golang',
 };
 
-export const SUPPORTED_PROFILES = ['generic', 'laravel', 'node'];
+export const SUPPORTED_PROFILES = ['generic', 'laravel', 'node', 'python', 'golang'];
 
 export const PROFILE_CHOICES = [...SUPPORTED_PROFILES, 'javascript', 'js'];
 

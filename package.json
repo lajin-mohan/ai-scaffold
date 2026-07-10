@@ -1,6 +1,6 @@
 {
   "name": "@lajin.m/ai-scaffold",
-  "version": "0.8.3",
+  "version": "0.8.5",
   "description": "Reusable AI engineering scaffold with CLI distribution",
   "type": "module",
   "bin": {
@@ -47,6 +47,11 @@
     "templates/*/README.template.md",
     "templates/*/SECURITY.md",
     "templates/*/package.json",
+    "templates/*/pyproject.toml",
+    "templates/*/test_smoke.py",
+    "templates/*/go.mod",
+    "templates/*/main.go",
+    "templates/*/main_test.go",
     "README.md",
     "README.scaffold.md",
     "CODE_OF_CONDUCT.md",

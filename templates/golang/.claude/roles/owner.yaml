@@ -1,0 +1,41 @@
+---
+name: owner
+description: All-inclusive project view and orchestration. Use this role when reviewing project-wide status, risks, blockers, or orchestrating across multiple workstreams.
+default_entry: /what-next
+
+allowed_commands:
+  - /what-next
+  - /health
+  - /review
+  - /qa-review
+  - /deployment-review
+  - /loop
+  - /reflect
+  - /lessons
+  - /compact
+
+recommended_agents:
+  - supervisor
+  - critic
+
+required_evidence:
+  - gate_status_surfaced
+  - blockers_identified
+  - risks_acknowledged
+  - qa_ready
+  - review_ready
+  - ci_ready
+  - deploy_ready
+  - human_approvals_obtained
+
+blocked_actions:
+  - merge_main
+  - deploy_production
+  - destructive_changes
+  - secrets_access
+  - schema_migration_without_approval
+  - direct_commit_to_main
+
+output_style:
+  format: project_summary
+  severity: BLOCK_HIGH

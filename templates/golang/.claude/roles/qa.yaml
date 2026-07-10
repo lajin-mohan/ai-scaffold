@@ -1,0 +1,36 @@
+---
+name: qa
+description: Test planning, test generation, QA review, and live browser verification. Use this role when designing, executing, or signing off on quality assurance work.
+default_entry: /qa-plan
+
+allowed_commands:
+  - /qa-plan
+  - /gen-tests
+  - /qa-review
+  - /qa-auth
+  - /qa
+  - /lessons
+  - /reflect
+
+recommended_agents:
+  - qa-reviewer
+
+required_evidence:
+  - schema_validation
+  - response_contract
+  - db_validation
+  - business_rule_validation
+  - timing_performance
+  - idempotency
+  - security
+
+blocked_actions:
+  - merge_main
+  - deploy_production
+  - destructive_changes
+  - secrets_access
+  - schema_migration_without_approval
+
+output_style:
+  format: qa_report
+  severity: BLOCK_HIGH_MEDIUM_LOW

@@ -1,0 +1,13 @@
+{
+  "name": "{{PROJECT_NAME}}",
+  "version": "0.1.0",
+  "private": true,
+  "description": "{{PROJECT_DESCRIPTION}}",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"No test command configured yet\"",
+    "lint": "echo \"No lint command configured yet\"",
+    "typecheck": "echo \"No typecheck command configured yet\""
+  },
+  "license": "{{LICENSE}}"
+}
