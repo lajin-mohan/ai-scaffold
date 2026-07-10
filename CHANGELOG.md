@@ -13,6 +13,8 @@ This file is configured with `merge=union` in `.gitattributes` so parallel addit
 
 ## [Unreleased]
 
+## [0.8.5] - 2026-07-10
+
 ### Added
 - **Python and Go stack profiles** — `--profile python` / `--profile golang`
   (with `py`, `python3`, and `go` aliases). Each ships its build file
