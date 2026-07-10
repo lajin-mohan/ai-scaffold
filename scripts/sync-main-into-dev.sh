@@ -27,7 +27,11 @@ set -euo pipefail
 AUTO_MERGE=1
 [ "${1:-}" = "--no-auto-merge" ] && AUTO_MERGE=0
 
-git fetch origin main dev --tags --quiet
+# Fetch branches only — NOT --tags. A divergent historical tag (e.g. a stray
+# v1.0) can make `--tags` fail with "would clobber existing tag", and this
+# script only needs the branch refs; the release tag for the branch name comes
+# from local tags via `git describe` below (falls back to "latest").
+git fetch origin main dev --quiet
 
 if git merge-base --is-ancestor origin/main origin/dev; then
   echo "OK: main is already an ancestor of dev — nothing to sync."
