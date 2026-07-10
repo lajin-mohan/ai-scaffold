@@ -13,6 +13,42 @@ This file is configured with `merge=union` in `.gitattributes` so parallel addit
 
 ## [Unreleased]
 
+## [0.8.6] - 2026-07-10
+
+### Added
+- **`--dry-run --json` for `create` and `init`** — emits a machine-readable file
+  plan (command, profile, target, counts, per-category file lists, and conflicts)
+  and writes nothing, for CI/PR-review automation. `--json` implies
+  non-interactive resolution, so it never drops into prompts. Covered by unit,
+  E2E (write-nothing/target-preserved), and pre-publish smoke gates.
+- **Release readiness guard** — `npm run release:check` verifies that `main` is
+  already contained in the branch being promoted. CI runs it on PRs targeting
+  `main`, so green tests cannot hide a conflicted promotion path.
+
+### Changed
+- Refactored `copy.js` (≈570→176 lines) by extracting `content-templates.js`
+  (placeholder + generated content), `manifest.js` (`.ai-scaffold.json` /
+  settings-overrides / managed-file records), and `dry-run-plan.js` (JSON plan
+  serialization). No behavior change to generated output.
+
+### Fixed
+- **Broken doc links in generated projects.** `.claude/rules/ux-rules.md` and
+  `.claude/skills/design-system.md` linked to
+  `.claude/skills/ux-system/DESIGN_TOKENS.md` with wrong relative paths
+  (`../../skills/...` escaped to repo root; `.claude/skills/...` doubled the
+  path), so the link 404'd in every generated project even though the file ships.
+  Fixed across all five profile templates. Added `scripts/check-generated-links.js`
+  and pre-publish smoke Gate 4c so broken links / unresolved identity tokens fail
+  the gate instead of shipping.
+- Generated project READMEs now show real per-profile **install / dev / migration**
+  commands instead of `N/A`: python `pip install -e ".[dev]"`, golang
+  `go mod download`, laravel `composer install` / `php artisan serve` /
+  `php artisan migrate`, node `npm install` / `npm run dev`. `copy.js` wires
+  `{{INSTALL_COMMAND}}` / `{{DEV_COMMAND}}` / `{{MIGRATION_COMMAND}}` /
+  `{{MIGRATE_COMMAND}}` through `commandOrNA(...)`; generic stays `N/A` unless the
+  user provides explicit commands. Pre-publish smoke asserts the install command
+  renders for the python and golang profiles.
+
 ## [0.8.5] - 2026-07-10
 
 ### Added

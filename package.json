@@ -1,6 +1,6 @@
 {
   "name": "@lajin.m/ai-scaffold",
-  "version": "0.8.5",
+  "version": "0.8.6",
   "description": "Reusable AI engineering scaffold with CLI distribution",
   "type": "module",
   "bin": {
@@ -68,6 +68,7 @@
     "lint": "eslint .",
     "typecheck": "node scripts/check-js-syntax.js && node scripts/check-gitleaks-config.js",
     "build": "echo 'Build validation: checking npm pack'",
+    "release:check": "bash scripts/check-release-readiness.sh",
     "prepublishOnly": "npm test && npm run typecheck && npm run lint"
   },
   "keywords": [

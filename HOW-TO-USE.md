@@ -45,6 +45,14 @@ ais init --profile node
 `--dry-run` previews the file plan without writing files. Use it first on
 existing repositories.
 
+For automation or pull-request review, add `--json` to get a machine-readable
+plan:
+
+```bash
+ais init --profile node --dry-run --json
+ais create my-project --profile python --dry-run --json
+```
+
 ---
 
 ## 2. Pick A Profile
@@ -59,6 +67,25 @@ existing repositories.
 | `golang` | Go projects with go test/vet/build defaults |
 | `go` | Alias for `golang` |
 | `laravel` | Light PHP/Laravel profile |
+
+### Command defaults per profile
+
+Each profile seeds command defaults so a generated `README.md` shows real,
+runnable commands instead of `N/A`. Install, dev/serve, and migration commands
+are **profile defaults you can also change at the interactive prompt** — they
+are not `create`/`init` CLI flags. (The verification commands do have flags:
+`--test-command`, `--lint-command`, `--typecheck-command`, `--build-command`.)
+
+| Profile | Install | Dev / serve | Migration |
+|---|---|---|---|
+| `node` | `npm install` | `npm run dev` | — |
+| `python` | `pip install -e ".[dev]"` | — | — |
+| `golang` | `go mod download` | — | — |
+| `laravel` | `composer install` | `php artisan serve` | `php artisan migrate` |
+| `generic` | — | — | — |
+
+A `—` resolves to `N/A` in the generated README. Accept the profile default or
+set an explicit command when prompted.
 
 ---
 

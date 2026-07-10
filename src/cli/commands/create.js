@@ -11,6 +11,7 @@ import { collectBootstrapValues, resolveWithDefaults } from '../core/prompts.js'
 import { buildFilePlan } from '../core/file-plan.js';
 import { detectConflicts, printConflictReport } from '../core/conflicts.js';
 import { copyFiles } from '../core/copy.js';
+import { buildDryRunPlan, emptyConflicts } from '../core/dry-run-plan.js';
 import { templatePath } from '../core/paths.js';
 
 export function createCommand(cli) {
@@ -18,6 +19,7 @@ export function createCommand(cli) {
     .option('--profile <profile>', 'Scaffold profile to use (generic, node, python, golang, laravel; aliases: js, py, go)', { default: 'generic' })
     .option('--yes', 'Use defaults for all options, no prompts')
     .option('--dry-run', 'Show what would be created without writing files')
+    .option('--json', 'Print machine-readable dry-run plan as JSON')
     .option('--force', 'Overwrite existing files without prompting')
     .option('--no-git', 'Skip git init and the initial scaffold commit')
     .option('--project-name <name>', 'Project name (slug)')
@@ -48,10 +50,17 @@ export function createCommand(cli) {
 }
 
 async function runCreate(projectName, options) {
-  const { profile = 'generic', yes = false, dryRun = false, force = false } = options;
+  const { profile = 'generic', yes = false, dryRun = false, json = false, force = false } = options;
   const shouldInitGit = options.git !== false;
 
-  console.log(chalk.bold(`\n🔧 AI Scaffold create — ${projectName}\n`));
+  if (json && !dryRun) {
+    console.error(chalk.red('✗ --json is only supported with --dry-run'));
+    process.exit(1);
+  }
+
+  if (!json) {
+    console.log(chalk.bold(`\n🔧 AI Scaffold create — ${projectName}\n`));
+  }
 
   // 1. Resolve project directory
   const targetDir = path.resolve(projectName);
@@ -88,31 +97,57 @@ async function runCreate(projectName, options) {
     profile,
   };
 
-  let resolved;
+  // --json is a machine-readable mode — never drop into interactive prompts,
+  // which would pollute stdout and corrupt the JSON. Resolve non-interactively
+  // whenever --json or --yes is set.
+  const nonInteractive = yes || json;
+  let bootstrap;
   try {
-    resolved = yes
-      ? resolveWithDefaults(flags).resolved
-      : await collectBootstrapValues(flags);
+    bootstrap = nonInteractive
+      ? resolveWithDefaults(flags)
+      : { resolved: await collectBootstrapValues(flags), defaulted: [] };
   } catch (error) {
     console.error(chalk.red(`✗ ${error.message}`));
     process.exit(1);
   }
+  const resolved = bootstrap.resolved;
 
   // 3. Build file plan — target is new, so no protected-file logic needed
-  console.log(chalk.gray('Building file plan...'));
+  if (!json) {
+    console.log(chalk.gray('Building file plan...'));
+  }
   const plan = await buildFilePlan(templateDir, targetDir, { existingTarget: false });
 
   // 4. Detect conflicts (only for dry-run / existing dirs)
+  let conflicts = emptyConflicts();
   if (fs.existsSync(targetDir)) {
-    const conflicts = await detectConflicts(targetDir, plan);
-    printConflictReport(conflicts);
+    conflicts = await detectConflicts(targetDir, plan);
+    if (!json) {
+      printConflictReport(conflicts);
+    }
   } else {
-    console.log(chalk.green('✓ Clean target directory'));
+    if (!json) {
+      console.log(chalk.green('✓ Clean target directory'));
+    }
+  }
+
+  if (json) {
+    console.log(JSON.stringify(buildDryRunPlan({
+      command: 'create',
+      targetDir,
+      profile,
+      plan,
+      conflicts,
+      values: resolved,
+      defaultedValues: bootstrap.defaulted ?? [],
+      existingTarget: false,
+    }), null, 2));
+    return;
   }
 
   // 5. Copy files
   console.log(chalk.gray('\nCopying files...'));
-  const result = await copyFiles(plan, resolved, { dryRun, force, targetDir });
+  const result = await copyFiles(plan, bootstrap, { dryRun, force, targetDir });
 
   // 6. Initialize git for new projects unless explicitly disabled.
   const gitResult = !dryRun && shouldInitGit

@@ -12,6 +12,12 @@ This file records patterns from mistakes and corrections. Claude reads this at t
 
 <!-- Add lessons below as they are captured. Most recent at the top. -->
 
+## 2026-07-10 - Release branches are metadata-only; sync main into dev first
+
+- **Mistake:** During the v0.8.6 promotion, the release branch was created from `dev` while `main` and `dev` had equivalent content through different merge histories. The PR to `main` became conflicted, and resolving it on the release branch created source-file conflict cleanup after the dev merge. That made the release branch behave like a development branch, which is not acceptable for a trusted publish path.
+- **Why:** The process checked code quality but did not enforce the branch graph. Green tests, lint, typecheck, and smoke checks do not prove that `main` is an ancestor of the branch being promoted. When `main` is not contained in `dev`, GitHub may require conflict resolution even if the final file contents look equivalent.
+- **Rule:** **Before any release or `dev` -> `main` promotion, verify `origin/main` is an ancestor of the candidate branch.** If it is not, stop the release, sync `main` into `dev` through a PR, rerun the full gate, then create a fresh promotion. Release branches are metadata-only: `package.json`, `package-lock.json`, `.ai-scaffold.json`, and `CHANGELOG.md`. Any source, template, docs, or test change must go through a feature PR into `dev` before release prep. Enforce with `npm run release:check`.
+
 ## 2026-07-10 - Release readiness requires mergeability checks, not just green tests
 
 - **Mistake:** The v0.8.5 release PR had green CI and passed local smoke checks, but the PR itself was still conflicted against `main`. The release branch carried the right code, but `main` was not an ancestor of the release/dev history, so GitHub could not merge the PR cleanly. We treated "tests pass on the branch" as enough evidence for release readiness.

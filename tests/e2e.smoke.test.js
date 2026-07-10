@@ -116,6 +116,70 @@ describe('CLI e2e smoke', () => {
     expect(await fs.pathExists(path.join(targetDir, '.gitattributes'))).toBe(true);
   });
 
+  it('create --dry-run --json prints a plan and writes nothing', async () => {
+    const targetDir = path.join(tmpDir, 'json-create');
+    const result = runCli([
+      'create',
+      targetDir,
+      '--yes',
+      '--profile',
+      'node',
+      '--dry-run',
+      '--json',
+      '--purpose',
+      'JSON create smoke',
+      '--owner-email',
+      'test@example.com',
+    ]);
+
+    expect(result.status, result.stderr || result.stdout).toBe(0);
+    const plan = JSON.parse(result.stdout);
+    expect(plan).toMatchObject({
+      command: 'create',
+      dryRun: true,
+      profile: 'node',
+      existingTarget: false,
+    });
+    expect(plan.defaultedValues).toContain('projectType');
+    expect(plan.files.generate.map((file) => file.path)).toContain('README.md');
+    expect(plan.files.copy.some((file) => file.path === '.claude/settings.json')).toBe(true);
+    expect(await fs.pathExists(targetDir)).toBe(false);
+  });
+
+  it('init --dry-run --json prints a plan and preserves the target', async () => {
+    const targetDir = path.join(tmpDir, 'json-init');
+    await fs.ensureDir(targetDir);
+    await fs.writeFile(path.join(targetDir, 'README.md'), '# Existing project\n');
+
+    const result = runCli([
+      'init',
+      targetDir,
+      '--yes',
+      '--profile',
+      'python',
+      '--dry-run',
+      '--json',
+      '--purpose',
+      'JSON init smoke',
+      '--owner-email',
+      'test@example.com',
+    ]);
+
+    expect(result.status, result.stderr || result.stdout).toBe(0);
+    const plan = JSON.parse(result.stdout);
+    expect(plan).toMatchObject({
+      command: 'init',
+      dryRun: true,
+      profile: 'python',
+      existingTarget: true,
+    });
+    expect(plan.files.generate.map((file) => file.path)).toContain('.ai-scaffold/README.md');
+    expect(plan.files.copy.some((file) => file.path === '.claude/settings.json')).toBe(true);
+    expect(await fs.readFile(path.join(targetDir, 'README.md'), 'utf-8')).toBe('# Existing project\n');
+    expect(await fs.pathExists(path.join(targetDir, '.claude'))).toBe(false);
+    expect(await fs.pathExists(path.join(targetDir, '.ai-scaffold.json'))).toBe(false);
+  });
+
   it('creates a Node.js project through the JavaScript profile alias', async () => {
     const targetDir = path.join(tmpDir, 'node-create');
     const result = runCli([
