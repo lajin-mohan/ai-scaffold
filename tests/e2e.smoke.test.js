@@ -71,6 +71,10 @@ describe('CLI e2e smoke', () => {
     expect(await fs.pathExists(path.join(targetDir, 'tasks', 'todo', '.gitkeep'))).toBe(true);
     expect(await fs.pathExists(path.join(targetDir, 'CHANGELOG.md'))).toBe(true);
     expect(await fs.pathExists(path.join(targetDir, '.gitattributes'))).toBe(true);
+    // .gitignore ships as template `gitignore` (npm strips dotfiles) and is
+    // renamed to `.gitignore` on copy — the actual file must exist, not the stub.
+    expect(await fs.pathExists(path.join(targetDir, '.gitignore'))).toBe(true);
+    expect(await fs.pathExists(path.join(targetDir, 'gitignore'))).toBe(false);
     expect(await fs.pathExists(path.join(targetDir, 'packages'))).toBe(false);
     expect(await fs.pathExists(path.join(targetDir, 'infra'))).toBe(false);
     expect(await fs.pathExists(path.join(targetDir, 'scripts'))).toBe(false);

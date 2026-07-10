@@ -93,6 +93,18 @@ else
   fail "npm package ships only ${SETTINGS_IN_PACK}/3 template .claude/settings.json (hooks would be inert)"
 fi
 
+# .gitignore ships as `gitignore` (no dot): npm pack HARD-EXCLUDES any file named
+# `.gitignore` from the tarball. Assert the renamed source ships and the dotted
+# name does NOT (a dotted match means the rename regressed → generated projects
+# would git-init with nothing ignored). Same class as the settings.json bug.
+GITIGNORE_IN_PACK=$(grep -oE 'templates/[^/"]+/gitignore"' <<< "$PACK_OUTPUT" | sort -u | wc -l | tr -d ' ')
+DOT_GITIGNORE_IN_PACK=$(grep -cE 'templates/[^/"]+/\.gitignore"' <<< "$PACK_OUTPUT" | tr -d ' ')
+if [ "$GITIGNORE_IN_PACK" -ge 5 ] && [ "$DOT_GITIGNORE_IN_PACK" -eq 0 ]; then
+  pass "npm package ships template gitignore (renamed) for all profiles"
+else
+  fail "npm package ships ${GITIGNORE_IN_PACK}/5 gitignore + ${DOT_GITIGNORE_IN_PACK} dotted (generated projects would lack .gitignore)"
+fi
+
 # Profile build files must ship or that profile's create fails — new root files
 # have to be added to the package.json "files" allowlist (same class as the
 # settings.json packaging bug).
@@ -266,6 +278,14 @@ if [ -f "$PY_DIR/README.md" ] && ! grep -qE "\.ai-scaffold/\.env\.example|HOW-TO
   pass "python README has no links to un-shipped files"
 else
   fail "python README links to files not installed in generated projects"
+fi
+
+# Generated project must have a real .gitignore (renamed from template gitignore),
+# not a leftover non-dot file.
+if [ -f "$PY_DIR/.gitignore" ] && [ ! -e "$PY_DIR/gitignore" ]; then
+  pass "generated project has .gitignore (renamed on copy, no stray gitignore)"
+else
+  fail "generated project missing .gitignore or leaked a non-dot gitignore"
 fi
 
 GO_DIR=$(mktemp -d)/go-smoke

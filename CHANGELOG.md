@@ -13,6 +13,19 @@ This file is configured with `merge=union` in `.gitattributes` so parallel addit
 
 ## [Unreleased]
 
+## [0.8.7] - 2026-07-10
+
+### Fixed
+- **Generated projects now ship a `.gitignore`.** `npm pack` hard-excludes any
+  file literally named `.gitignore` from the tarball, so the published package
+  carried none and `ais create` produced a git-initialized project with nothing
+  ignored (a later `.env` / `node_modules` was committable). Templates now ship
+  the ignore file as `gitignore` (no dot) and it is renamed to `.gitignore` on
+  copy — preserving each profile's ignore rules. Verified against a real
+  `npm pack` → install → create. Added a packaging-aware smoke gate (tarball
+  must contain `templates/*/gitignore` and zero `.gitignore`) plus generated-project
+  and unit regression tests. Same class as the v0.8.3 inert-hooks bug.
+
 ## [0.8.6] - 2026-07-10
 
 ### Added

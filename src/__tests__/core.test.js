@@ -259,13 +259,15 @@ describe('toPosixPath', () => {
   });
 });
 
-describe('template .gitignore ships hook wiring', () => {
-  // A bare `settings.json` rule matches .claude/settings.json at any depth, and
-  // npm pack honors nested .gitignore files — that dropped the hook wiring from
-  // the published package. Anchor to root (/settings.json) instead.
+describe('template gitignore ships hook wiring', () => {
+  // Templates ship the ignore file as `gitignore` (no dot) because npm pack
+  // hard-excludes `.gitignore` from tarballs; file-plan renames it to
+  // `.gitignore` on copy. A bare `settings.json` rule would also match
+  // .claude/settings.json at any depth and drop the hook wiring — anchor to
+  // root (/settings.json) instead.
   for (const profile of SUPPORTED_PROFILES) {
-    it(`${profile}: does not gitignore .claude/settings.json`, () => {
-      const gitignore = readFileSync(templatePath(profile, '.gitignore'), 'utf-8');
+    it(`${profile}: ships gitignore (not .gitignore) without ignoring settings.json`, () => {
+      const gitignore = readFileSync(templatePath(profile, 'gitignore'), 'utf-8');
       const lines = gitignore.split('\n').map((line) => line.trim());
       expect(lines).not.toContain('settings.json');
     });
