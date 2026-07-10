@@ -377,9 +377,9 @@ function resolvePlaceholders(content, values) {
     '{{MIGRATION_COMMAND}}': 'N/A',
     '{{MIGRATE_COMMAND}}': 'N/A',
     '{{DEV_COMMAND}}': 'N/A',
-    '{{BUILD_COMMAND}}': 'N/A',
-    '{{TEST_COMMAND}}': 'N/A',
-    '{{LINT_COMMAND}}': 'N/A',
+    '{{BUILD_COMMAND}}': commandOrNA(values.buildCommand),
+    '{{TEST_COMMAND}}': commandOrNA(values.testCommand),
+    '{{LINT_COMMAND}}': commandOrNA(values.lintCommand),
     '{{SEED_COMMAND}}': 'N/A',
     '{{CACHE_QUEUE}}': 'N/A',
     '{{AUTH_STRATEGY}}': 'N/A',
@@ -476,6 +476,12 @@ Generated during AI Scaffold setup. Keep this file factual and lightweight.
 - Root \`docs/requirements/\` should only be created when explicitly requested.
 - Do not store secrets, credentials, tokens, production data, or client-confidential text here unless explicitly approved for this repository.
 `;
+}
+
+// Show the real verification command in generated docs; fall back to N/A when a
+// profile did not configure one (e.g. generic).
+function commandOrNA(command) {
+  return command && command !== 'none' ? command : 'N/A';
 }
 
 function formatCompliance(complianceScope) {

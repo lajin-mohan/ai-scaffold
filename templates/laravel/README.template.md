@@ -26,8 +26,8 @@
 # Install dependencies
 {{INSTALL_COMMAND}}
 
-# Configure environment, if your project needs one
-cp .ai-scaffold/.env.example .env
+# Create a .env file if your project needs one
+# (the scaffold does not ship an .env.example into generated projects)
 
 # Run migrations
 {{MIGRATION_COMMAND}}
@@ -63,9 +63,8 @@ Read [CLAUDE.md](./CLAUDE.md) before starting implementation. It is the source o
 
 Useful entry points:
 
-- [HOW-TO-USE.md](./.ai-scaffold/HOW-TO-USE.md)
-- [CONTRIBUTING.md](./.ai-scaffold/CONTRIBUTING.md)
 - [AGENTS.md](./AGENTS.md)
+- [.claude/rules/ai-coding-rules.md](./.claude/rules/ai-coding-rules.md)
 
 ## License
 

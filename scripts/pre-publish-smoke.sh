@@ -10,6 +10,8 @@ REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 PASS=0
 FAIL=0
 TOTAL=0
+PY_DIR=""
+GO_DIR=""
 PROJECT_VERSION=$(node -p "require('./package.json').version")
 
 pass() {
@@ -25,7 +27,7 @@ fail() {
 }
 
 cleanup() {
-  rm -rf "$SMOKE_DIR" "$INIT_DIR" "$DOT_DIR" 2>/dev/null || true
+  rm -rf "$SMOKE_DIR" "$INIT_DIR" "$DOT_DIR" "$PY_DIR" "$GO_DIR" 2>/dev/null || true
 }
 
 trap cleanup EXIT
@@ -221,6 +223,53 @@ if git -C "$SMOKE_DIR/smoke-project" rev-parse --verify HEAD >/dev/null 2>&1; th
   pass "create made initial git commit"
 else
   fail "create did not make initial git commit"
+fi
+
+# ── Gate 4b: profile smoke (python + golang) ───────────────────────────
+# A fresh python/golang project must show real commands (not N/A) in its
+# README and — for golang — build day-one. Regression guard for the profile
+# packs added in v0.8.5.
+echo ""
+echo ">> Gate 4b: Profile Smoke (python + golang)"
+
+PY_DIR=$(mktemp -d)/py-smoke
+node bin/ai-scaffold.js create "$PY_DIR" --profile python --yes >/dev/null 2>&1 || true
+if [ -f "$PY_DIR/README.md" ] \
+  && grep -q "pytest" "$PY_DIR/README.md" \
+  && grep -q "ruff check ." "$PY_DIR/README.md"; then
+  pass "python README shows real commands (pytest, ruff)"
+else
+  fail "python README missing real commands (shows N/A or not generated)"
+fi
+
+if [ -f "$PY_DIR/README.md" ] && ! grep -qE "\.ai-scaffold/\.env\.example|HOW-TO-USE\.md|CONTRIBUTING\.md" "$PY_DIR/README.md"; then
+  pass "python README has no links to un-shipped files"
+else
+  fail "python README links to files not installed in generated projects"
+fi
+
+GO_DIR=$(mktemp -d)/go-smoke
+node bin/ai-scaffold.js create "$GO_DIR" --profile golang --yes >/dev/null 2>&1 || true
+if [ -f "$GO_DIR/README.md" ] \
+  && grep -q "go test ./..." "$GO_DIR/README.md" \
+  && grep -q "go vet ./..." "$GO_DIR/README.md"; then
+  pass "golang README shows real commands (go test, go vet)"
+else
+  fail "golang README missing real commands (shows N/A or not generated)"
+fi
+
+# Fresh golang project must build day-one: starter main.go + main_test.go so
+# `go vet` / `go test` pass on an empty scaffold. Only run when Go is installed.
+if command -v go >/dev/null 2>&1; then
+  ( cd "$GO_DIR" && go vet ./... >/dev/null 2>&1 ); GO_VET_STATUS=$?
+  ( cd "$GO_DIR" && go test ./... >/dev/null 2>&1 ); GO_TEST_STATUS=$?
+  if [ "$GO_VET_STATUS" -eq 0 ] && [ "$GO_TEST_STATUS" -eq 0 ]; then
+    pass "fresh golang project passes go vet + go test"
+  else
+    fail "fresh golang project fails go vet ($GO_VET_STATUS) or go test ($GO_TEST_STATUS)"
+  fi
+else
+  echo "  – skipped fresh golang verification (go not installed)"
 fi
 
 # ── Gate 5: init --yes smoke test ──────────────────────────────────────

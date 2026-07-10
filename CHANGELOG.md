@@ -16,15 +16,22 @@ This file is configured with `merge=union` in `.gitattributes` so parallel addit
 ### Added
 - **Python and Go stack profiles** — `--profile python` / `--profile golang`
   (with `py`, `python3`, and `go` aliases). Each ships its build file
-  (`pyproject.toml` / `go.mod`) and profile-appropriate verification defaults
-  (pytest/ruff/mypy; go test/vet/build). Build files were added to the package
-  `files` allowlist so they actually ship.
+  (`pyproject.toml` with a `[build-system]` + strict mypy config / `go.mod`),
+  a runnable starter (`test_smoke.py` / `main.go` + `main_test.go`) so a fresh
+  project passes `pytest` and `go test ./...` day-one, and profile-appropriate
+  verification defaults (pytest/ruff/mypy; go test/vet/build). Build and starter
+  files were added to the package `files` allowlist so they actually ship.
 - `ais list [commands|agents|skills|rules]` — discover the installed scaffold
   assets without opening `.claude/` (supports `--json` and a target directory).
 - README: a "How It Works" architecture diagram and a "Core 6 — Start Here"
   on-ramp so new users are not faced with all 35 commands at once.
 
 ### Fixed
+- Generated project READMEs now render the real per-profile commands (e.g.
+  `pytest`, `ruff check .`, `go test ./...`) instead of `N/A`, and no longer link
+  to files the scaffold does not install (`.ai-scaffold/.env.example`,
+  `HOW-TO-USE.md`, `CONTRIBUTING.md`). Pre-publish smoke now guards python/go
+  README contents and fresh-Go verification.
 - Synced the scaffold's own `.ai-scaffold.json` version to `package.json`; a test
   now keeps them in lockstep so the self-marker cannot silently drift again.
 

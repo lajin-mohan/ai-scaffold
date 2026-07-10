@@ -326,7 +326,7 @@ function applyProfileDefaults(resolved, defaulted) {
       testCommand: 'pytest',
       lintCommand: 'ruff check .',
       typecheckCommand: 'mypy .',
-      buildCommand: 'python -m build',
+      buildCommand: 'python -m compileall .',
     },
     golang: {
       backendStack: 'Go',
