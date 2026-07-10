@@ -13,6 +13,8 @@ This file is configured with `merge=union` in `.gitattributes` so parallel addit
 
 ## [Unreleased]
 
+## [0.8.6] - 2026-07-10
+
 ### Added
 - **`--dry-run --json` for `create` and `init`** — emits a machine-readable file
   plan (command, profile, target, counts, per-category file lists, and conflicts)
