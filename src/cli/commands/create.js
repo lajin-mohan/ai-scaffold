@@ -15,7 +15,7 @@ import { templatePath } from '../core/paths.js';
 
 export function createCommand(cli) {
   cli.command('create <project-name>', 'Create a new project from the scaffold')
-    .option('--profile <profile>', 'Scaffold profile to use (generic, laravel, node)', { default: 'generic' })
+    .option('--profile <profile>', 'Scaffold profile to use (generic, node, python, golang, laravel; aliases: js, py, go)', { default: 'generic' })
     .option('--yes', 'Use defaults for all options, no prompts')
     .option('--dry-run', 'Show what would be created without writing files')
     .option('--force', 'Overwrite existing files without prompting')
