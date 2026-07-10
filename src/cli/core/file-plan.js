@@ -33,6 +33,17 @@ const GENERATED_FILE_MAP = {
   '.claude/settings-overrides.template.json': '.claude/settings-overrides.json',
 };
 
+/**
+ * Template source filename → generated-project target filename.
+ * `npm pack` hard-excludes any file literally named `.gitignore` from the
+ * tarball (it treats them as ignore-rule files), so templates ship the content
+ * as `gitignore` (no dot) and it is renamed to `.gitignore` on copy.
+ * @type {Record<string, string>}
+ */
+const RENAME_ON_COPY = {
+  gitignore: '.gitignore',
+};
+
 const EXCLUDED_TEMPLATE_FILES = [
   '.claude/settings.local.json',
   '.DS_Store',
@@ -159,12 +170,15 @@ export async function buildFilePlan(sourceDir, targetDir, options = {}) {
 
   for (const srcFile of sourceFiles) {
     const relPath = path.relative(sourceDir, srcFile);
+    // Some template files ship under a rename (e.g. `gitignore` → `.gitignore`)
+    // to survive npm packaging; use the logical (target) name for all planning.
+    const logicalRel = RENAME_ON_COPY[relPath] ?? relPath;
     if (EXCLUDED_TEMPLATE_FILES.includes(relPath)) {
       continue;
     }
 
-    if (existingTarget && ['.gitignore', '.gitattributes'].includes(relPath)) {
-      plan.skipAppSource.push({ src: srcFile, rel: relPath, reason: 'existing-project-root-file' });
+    if (existingTarget && ['.gitignore', '.gitattributes'].includes(logicalRel)) {
+      plan.skipAppSource.push({ src: srcFile, rel: logicalRel, reason: 'existing-project-root-file' });
       continue;
     }
 
@@ -178,8 +192,8 @@ export async function buildFilePlan(sourceDir, targetDir, options = {}) {
       continue;
     }
 
-    const isRootFile = matchesAny(relPath, [...ROOT_FILES, ...profileRootFiles]);
-    const targetRel = isRootFile ? relPath : path.join('.ai-scaffold', relPath);
+    const isRootFile = matchesAny(logicalRel, [...ROOT_FILES, ...profileRootFiles]);
+    const targetRel = isRootFile ? logicalRel : path.join('.ai-scaffold', logicalRel);
     const targetFile = path.join(targetDir, targetRel);
 
     // Check if this file maps to a generated output (e.g. .template.md → .md)
