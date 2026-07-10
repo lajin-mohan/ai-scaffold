@@ -57,6 +57,14 @@ jobs:
       - name: Test
         run: npm test
 
+      - name: Release readiness
+        if: github.event_name == 'pull_request' && github.base_ref == 'main'
+        env:
+          HEAD_BRANCH: ${{ github.head_ref }}
+        run: |
+          git fetch origin main dev "${{ github.head_ref }}"
+          npm run release:check -- --main origin/main --candidate "origin/${{ github.head_ref }}" --head-branch "${{ github.head_ref }}"
+
       - name: Pre-publish smoke
         run: bash scripts/pre-publish-smoke.sh
 

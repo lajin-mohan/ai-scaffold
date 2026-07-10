@@ -50,6 +50,8 @@ Confirmed for `v0.8.5`:
 - Docs quick-wins from PR #47 are merged.
 - Per-profile install/dev/migration command defaults are implemented in the
   `v0.8.6` workstream.
+- Release readiness now has an automated `npm run release:check` guard for
+  `main` promotion PRs.
 
 Completed `v0.8.2` housekeeping scope:
 
@@ -674,7 +676,7 @@ Acceptance:
 
 ### 20. Add Release Mergeability And Main-Dev Sync Gate
 
-Status: pending.
+Status: done in the `v0.8.6` workstream.
 Priority: high.
 Target: `v0.8.x`.
 
@@ -688,19 +690,24 @@ Problem:
 Required:
 
 - Add a release checklist step that verifies PR mergeability before tagging.
+  **Done.**
 - Add a standing post-release step: merge or PR `main` back into `dev` after
-  every tag publish.
+  every tag publish. **Documented as required; enforce by running the same
+  readiness check before the next promotion.**
 - Consider a small script or GitHub check that reports:
-  - `git merge-base --is-ancestor origin/main origin/dev`
-  - PR mergeability state
-  - required checks present and passing
-  - no stale release branch.
+  - `git merge-base --is-ancestor origin/main <candidate>`. **Done in
+    `scripts/check-release-readiness.sh`.**
+  - PR mergeability state. **Covered by release checklist/GitHub UI.**
+  - required checks present and passing. **Covered by required `CI passed`.**
+  - no stale release branch. **Manual follow-up remains for branch cleanup.**
 - Document whether release branches are allowed, and when direct `dev -> main`
-  PRs are preferred.
+  PRs are preferred. **Done in `tasks/lessons.md`.**
 
 Acceptance:
 
 - Release checklist catches "green but blocked/unmergeable" PRs.
+- CI fails `main` promotion PRs when `origin/main` is not an ancestor of the
+  promoted branch. **Done.**
 - After a tag publish, `main` and `dev` are reconciled before new feature work
   starts.
 
@@ -1018,6 +1025,7 @@ Before tagging:
 git status --short --branch
 git fetch --all --prune
 git merge-base --is-ancestor origin/main HEAD
+npm run release:check
 npm test
 npm run typecheck
 npm run lint
