@@ -13,12 +13,17 @@ This file is configured with `merge=union` in `.gitattributes` so parallel addit
 
 ## [Unreleased]
 
+## [0.8.6] - 2026-07-10
+
 ### Added
 - **`--dry-run --json` for `create` and `init`** — emits a machine-readable file
   plan (command, profile, target, counts, per-category file lists, and conflicts)
   and writes nothing, for CI/PR-review automation. `--json` implies
   non-interactive resolution, so it never drops into prompts. Covered by unit,
   E2E (write-nothing/target-preserved), and pre-publish smoke gates.
+- **Release readiness guard** — `npm run release:check` verifies that `main` is
+  already contained in the branch being promoted. CI runs it on PRs targeting
+  `main`, so green tests cannot hide a conflicted promotion path.
 
 ### Changed
 - Refactored `copy.js` (≈570→176 lines) by extracting `content-templates.js`
