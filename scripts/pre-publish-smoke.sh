@@ -236,8 +236,9 @@ PY_DIR=$(mktemp -d)/py-smoke
 node bin/ai-scaffold.js create "$PY_DIR" --profile python --yes >/dev/null 2>&1 || true
 if [ -f "$PY_DIR/README.md" ] \
   && grep -q "pytest" "$PY_DIR/README.md" \
-  && grep -q "ruff check ." "$PY_DIR/README.md"; then
-  pass "python README shows real commands (pytest, ruff)"
+  && grep -q "ruff check ." "$PY_DIR/README.md" \
+  && grep -q "pip install" "$PY_DIR/README.md"; then
+  pass "python README shows real commands (install, pytest, ruff)"
 else
   fail "python README missing real commands (shows N/A or not generated)"
 fi
@@ -252,8 +253,9 @@ GO_DIR=$(mktemp -d)/go-smoke
 node bin/ai-scaffold.js create "$GO_DIR" --profile golang --yes >/dev/null 2>&1 || true
 if [ -f "$GO_DIR/README.md" ] \
   && grep -q "go test ./..." "$GO_DIR/README.md" \
-  && grep -q "go vet ./..." "$GO_DIR/README.md"; then
-  pass "golang README shows real commands (go test, go vet)"
+  && grep -q "go vet ./..." "$GO_DIR/README.md" \
+  && grep -q "go mod download" "$GO_DIR/README.md"; then
+  pass "golang README shows real commands (install, go test, go vet)"
 else
   fail "golang README missing real commands (shows N/A or not generated)"
 fi

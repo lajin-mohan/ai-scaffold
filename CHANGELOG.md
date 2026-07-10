@@ -13,6 +13,16 @@ This file is configured with `merge=union` in `.gitattributes` so parallel addit
 
 ## [Unreleased]
 
+### Fixed
+- Generated project READMEs now show real per-profile **install / dev / migration**
+  commands instead of `N/A`: python `pip install -e ".[dev]"`, golang
+  `go mod download`, laravel `composer install` / `php artisan serve` /
+  `php artisan migrate`, node `npm install` / `npm run dev`. `copy.js` wires
+  `{{INSTALL_COMMAND}}` / `{{DEV_COMMAND}}` / `{{MIGRATION_COMMAND}}` /
+  `{{MIGRATE_COMMAND}}` through `commandOrNA(...)`; generic stays `N/A` unless the
+  user provides explicit commands. Pre-publish smoke asserts the install command
+  renders for the python and golang profiles.
+
 ## [0.8.5] - 2026-07-10
 
 ### Added

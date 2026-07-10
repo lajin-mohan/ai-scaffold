@@ -268,6 +268,24 @@ describe('python and golang profiles', () => {
     expect(go.resolved.profile).toBe('golang');
     expect(go.resolved.testCommand).toBe('go test ./...');
   });
+
+  it('sets install/dev/migration command defaults per profile', () => {
+    const py = resolveWithDefaults({ profile: 'python' }).resolved;
+    expect(py.installCommand).toBe('pip install -e ".[dev]"');
+    expect(py.devCommand).toBe('none');
+    expect(py.migrationCommand).toBe('none');
+
+    const go = resolveWithDefaults({ profile: 'golang' }).resolved;
+    expect(go.installCommand).toBe('go mod download');
+
+    const laravel = resolveWithDefaults({ profile: 'laravel' }).resolved;
+    expect(laravel.installCommand).toBe('composer install');
+    expect(laravel.devCommand).toBe('php artisan serve');
+    expect(laravel.migrationCommand).toBe('php artisan migrate');
+
+    // Generic has no defaults; install renders as N/A in the generated README.
+    expect(resolveWithDefaults({ profile: 'generic' }).resolved.installCommand).toBe('none');
+  });
 });
 
 describe('scaffold self-marker', () => {
