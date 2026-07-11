@@ -46,10 +46,10 @@ User Acceptance Testing is the final gate before a release is approved for produ
 
 | Role | Name | Organisation |
 |---|---|---|
-| UAT Coordinator | | Techversant |
+| UAT Coordinator | | your organization |
 | UAT Tester(s) | | {{Client}} |
-| QA Support | | Techversant |
-| Tech Lead (escalation) | | Techversant |
+| QA Support | | your organization |
+| Tech Lead (escalation) | | your organization |
 
 ---
 
@@ -117,8 +117,8 @@ By signing below, the client confirms that the software meets the agreed accepta
 | Role | Name | Organisation | Signature | Date |
 |---|---|---|---|---|
 | Client Approver | | | | |
-| PM | | Techversant | | |
-| QA Lead | | Techversant | | |
+| PM | | your organization | | |
+| QA Lead | | your organization | | |
 
 ---
 

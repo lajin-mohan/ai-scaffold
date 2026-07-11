@@ -8,8 +8,8 @@ QA automation planning. Uses the `qa-reviewer` agent to design a full automation
 
 ```
 /qa-plan                               # interactive — prompted for feature/ticket
-/qa-plan "HIRE-142 csv import"         # feature description
-/qa-plan --ticket HIRE-142             # link to ticket
+/qa-plan "PROJ-142 csv import"         # feature description
+/qa-plan --ticket PROJ-142             # link to ticket
 ```
 
 ---

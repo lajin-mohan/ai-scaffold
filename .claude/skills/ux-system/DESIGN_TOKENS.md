@@ -155,7 +155,7 @@ Do not scale font size with viewport width. Keep letter spacing at `0`.
 ## Rules for Using Tokens
 
 1. **Never use hardcoded hex values in screens, specs, or UX docs.** Use semantic token names.
-2. **Never use brand names** (Techversant Green, Deep Green, etc.) in any UX artifact or rule.
+2. **Never use brand names** (your organization Green, Deep Green, etc.) in any UX artifact or rule.
 3. **Status badges use semantic scale** (success/warning/danger), not raw colors.
 4. **Role badges are neutral by default** — semantic color only when status is the message.
 5. **All colors resolve from CSS variables** — theme switching and brand overrides work without code changes.
