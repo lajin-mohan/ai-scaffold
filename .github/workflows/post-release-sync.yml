@@ -1,0 +1,58 @@
+# Post-release main -> dev sync.
+#
+# After "Publish to npm" succeeds on a v* tag, re-links main as an ancestor of
+# dev so the next release's `release:check` passes without a manual sync.
+# Delegates to scripts/sync-main-into-dev.sh (git merge -s ours: conflict-free,
+# ancestry-only, zero content change).
+#
+# ── One-time setup for FULL automation ──────────────────────────────────────
+# GitHub does not run workflows for PRs/pushes made with the default
+# GITHUB_TOKEN, so the required "CI passed" check would never run on the
+# auto-created sync PR and auto-merge would stall. To get end-to-end auto-merge:
+#
+#   1. Create a fine-grained PAT (or GitHub App token) scoped to THIS repo with
+#      Contents: read/write and Pull requests: read/write.
+#   2. Add it as the repo secret `SYNC_PAT`.
+#   3. Repo Settings → General → Pull Requests → enable "Allow auto-merge".
+#   4. Repo Settings → Actions → General → enable
+#      "Allow GitHub Actions to create and approve pull requests".
+#
+# Without SYNC_PAT the workflow still opens the sync PR (via GITHUB_TOKEN), but
+# you must re-trigger CI on it (e.g. close/reopen) before it can merge.
+
+name: Post-release sync
+
+on:
+  workflow_run:
+    workflows: ["Publish to npm"]
+    types:
+      - completed
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  sync:
+    name: Sync main into dev
+    # Only after a successful publish, or on manual dispatch.
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout dev (full history + tags)
+        uses: actions/checkout@v4
+        with:
+          ref: dev
+          fetch-depth: 0
+          token: ${{ secrets.SYNC_PAT || github.token }}
+
+      - name: Configure git identity
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Sync main into dev
+        env:
+          GH_TOKEN: ${{ secrets.SYNC_PAT || github.token }}
+        run: bash scripts/sync-main-into-dev.sh

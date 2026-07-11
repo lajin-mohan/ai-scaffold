@@ -717,8 +717,12 @@ Required:
 - Add a release checklist step that verifies PR mergeability before tagging.
   **Done.**
 - Add a standing post-release step: merge or PR `main` back into `dev` after
-  every tag publish. **Documented as required; enforce by running the same
-  readiness check before the next promotion.**
+  every tag publish. **Automated in `v0.8.8`:** `scripts/sync-main-into-dev.sh`
+  (`npm run sync:main-dev`) does a conflict-free `git merge -s ours origin/main`
+  (ancestry-only, zero content change), opens a `main→dev` PR, and enables
+  auto-merge with the merge-commit method (never squash). `.github/workflows/post-release-sync.yml`
+  runs it after "Publish to npm". Full auto-merge needs a `SYNC_PAT` secret so the
+  bot PR triggers CI (GITHUB_TOKEN PRs do not); see the workflow header.
 - Consider a small script or GitHub check that reports:
   - `git merge-base --is-ancestor origin/main <candidate>`. **Done in
     `scripts/check-release-readiness.sh`.**

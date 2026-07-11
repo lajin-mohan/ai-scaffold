@@ -13,6 +13,19 @@ This file is configured with `merge=union` in `.gitattributes` so parallel addit
 
 ## [Unreleased]
 
+### Added
+- **Automated post-release `main→dev` sync.** After every release, `main`
+  diverged from `dev` (release squash) and blocked the next release's
+  `release:check` until a manual, error-prone sync. Now
+  `scripts/sync-main-into-dev.sh` (`npm run sync:main-dev`) does a conflict-free
+  `git merge -s ours origin/main` (ancestry-only, zero content change), opens a
+  `main→dev` PR, and enables auto-merge with the **merge-commit** method (a
+  squash re-breaks the ancestry). `.github/workflows/post-release-sync.yml` runs
+  it automatically after "Publish to npm" (full auto-merge needs a `SYNC_PAT`
+  secret; see the workflow header).
+
+## [0.8.7] - 2026-07-10
+
 ### Fixed
 - **Generated projects now ship a `.gitignore`.** `npm pack` hard-excludes any
   file literally named `.gitignore` from the tarball, so the published package
