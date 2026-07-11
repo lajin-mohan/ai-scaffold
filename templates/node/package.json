@@ -7,7 +7,7 @@
   "scripts": {
     "dev": "echo \"Configure your Node.js dev command\"",
     "build": "echo \"Configure your Node.js build command\"",
-    "test": "echo \"Configure your Node.js test command\"",
+    "test": "node --test",
     "lint": "echo \"Configure your Node.js lint command\"",
     "typecheck": "echo \"Configure your Node.js typecheck command\""
   },

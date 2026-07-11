@@ -149,7 +149,7 @@ This codebase is not MVP. Code that lands in `apps/` or `packages/` runs in prod
 |---|---|---|
 | P1 | **No half-implementations.** A function with a `throw new Error('TODO')` body cannot be committed. Either finish it or don't add it. | BLOCK |
 | P2 | **No stubs that ship.** A handler that returns `{ ok: true }` without doing the work cannot be committed even temporarily. Use a feature flag if the work is staged. | BLOCK |
-| P3 | **No `TODO` without a ticket.** Every `// TODO` must reference a real ticket: `// TODO(HIRE-142): handle CSV with BOM`. Bare TODOs are lint failures. | BLOCK |
+| P3 | **No `TODO` without a ticket.** Every `// TODO` must reference a real ticket: `// TODO(PROJ-142): handle CSV with BOM`. Bare TODOs are lint failures. | BLOCK |
 | P4 | **No "good enough for demo".** Demos run on production builds. There is no demo branch. | Required behaviour |
 | P5 | **Edge cases handled, not deferred.** Empty input, max input, null, network failure, concurrent write, permission denied — these are part of the implementation, not a follow-up ticket. | BLOCK |
 | P6 | **Errors are observable.** Every catch block either re-throws, logs with context, or maps to a user-facing error. No silent `catch (e) {}`. | BLOCK |

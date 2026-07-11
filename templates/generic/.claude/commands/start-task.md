@@ -11,8 +11,8 @@ This is the command developers and AI tools should invoke for any non-trivial im
 ```
 /start-task                                           # interactive — ask the user what to build
 /start-task "{{ticket-id-and-summary}}"               # task description provided
-/start-task --ticket HIRE-142                         # link to a Jira/Linear ticket
-/start-task --spec docs/brd/HIRE-142-csv-import.md    # work from a specific spec
+/start-task --ticket PROJ-142                         # link to a Jira/Linear ticket
+/start-task --spec docs/brd/PROJ-142-csv-import.md    # work from a specific spec
 /start-task --resume                                  # continue a paused task
 /start-task --intensity lite|full|ultra              # apply the ponytail ladder at this intensity for this task only
 ```

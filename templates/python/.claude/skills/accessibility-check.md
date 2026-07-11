@@ -6,7 +6,7 @@ WCAG 2.1 AA compliance validation for UI components and screens. Used by `fronte
 
 ## Standard: WCAG 2.1 Level AA
 
-All Techversant products must meet WCAG 2.1 AA as a minimum. AA is the legal baseline in most jurisdictions and covers the majority of users with disabilities.
+All your organization products must meet WCAG 2.1 AA as a minimum. AA is the legal baseline in most jurisdictions and covers the majority of users with disabilities.
 
 ---
 

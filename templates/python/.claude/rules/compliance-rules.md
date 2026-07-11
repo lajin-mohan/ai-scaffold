@@ -1,6 +1,6 @@
 # Compliance Rules
 
-GDPR and ISO 27001 requirements for projects at Techversant Infotech. These rules are checked by the `security-reviewer` agent and apply to any feature that handles personal data or operates under a compliance obligation.
+GDPR and ISO 27001 requirements for projects at your organization. These rules are checked by the `security-reviewer` agent and apply to any feature that handles personal data or operates under a compliance obligation.
 
 ---
 

@@ -3,7 +3,7 @@ name: ux-system
 description: Use when creating or improving enterprise UX for project screens, dashboards, forms, tables, analytics, or frontend implementation guidance. Applies the centralized UX system inspired by Jira information architecture, Figma typography and spacing, and Monday.com color energy.
 ---
 
-# UX System — Techversant Projects
+# UX System — your organization Projects
 
 This skill is the source of truth for:
 - UX reasoning and information architecture
@@ -18,7 +18,7 @@ This skill is the source of truth for:
 
 ## Product Context
 
-Techversant projects combine:
+your organization projects combine:
 - project management
 - sprint workflows
 - time tracking and productivity analytics
@@ -109,7 +109,7 @@ docs/ux/<phase-or-feature>/
 - Use the 8px spacing system.
 - Support light and dark themes.
 - Every page must include light and dark theme states with no hardcoded colors outside centralized tokens/default branding.
-- Theme colors must come from organization branding settings when configured, falling back to the Techversant default token palette.
+- Theme colors must come from organization branding settings when configured, falling back to the your organization default token palette.
 - UI pages/components must never hardcode organization brand colors; they consume semantic tokens/CSS variables only.
 - Every page is designed for desktop first and must adapt cleanly to tablet and mobile screens, including a 390px mobile check, without losing primary workflows.
 - Design for keyboard and screen-reader access.
