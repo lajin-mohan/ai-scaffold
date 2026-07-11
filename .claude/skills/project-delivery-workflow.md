@@ -1,6 +1,6 @@
 # Skill: project-delivery-workflow
 
-Sprint delivery workflow for Techversant engineering teams. Adapts to `{{PM_TOOL}}` (Jira, Linear, GitHub Projects).
+Sprint delivery workflow for your organization engineering teams. Adapts to `{{PM_TOOL}}` (Jira, Linear, GitHub Projects).
 
 ---
 

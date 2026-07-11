@@ -1,11 +1,11 @@
 ---
 name: systematic-debugging
-description: Use for Techversant project bug fixes, failed tests, runtime errors, API issues, UI defects, Docker/local environment failures, database inconsistencies, auth/redirect/CORS issues, and production incidents where the fix must be reproduced, root-caused, corrected, tested, and verified with evidence.
+description: Use for your organization project bug fixes, failed tests, runtime errors, API issues, UI defects, Docker/local environment failures, database inconsistencies, auth/redirect/CORS issues, and production incidents where the fix must be reproduced, root-caused, corrected, tested, and verified with evidence.
 ---
 
 # Systematic Debugging Skill
 
-Use this skill whenever investigating or fixing a Techversant project defect.
+Use this skill whenever investigating or fixing a your organization project defect.
 
 Primary objective: confirm the fix with evidence before declaring completion.
 

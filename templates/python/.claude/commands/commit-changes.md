@@ -28,7 +28,7 @@ Git workflow enforcement. Use before every commit and every merge promotion. Enf
 ## Step 1 — Branch Check
 
 ```
-Current branch: feature/HIRE-142-csv-import
+Current branch: feature/PROJ-142-csv-import
 Base:          dev
 Status:        clean / N files changed
 
@@ -107,7 +107,7 @@ Closes #ticket-id
 ### dev promotion (`--dev`)
 
 ```
-Promote to dev: feature/HIRE-142 → dev
+Promote to dev: feature/PROJ-142 → dev
 Requirements:
   - Branch is up to date with dev (rebase or merge)
   - CI pipeline is green

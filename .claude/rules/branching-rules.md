@@ -1,6 +1,6 @@
 # Branching Rules
 
-Git workflow for all projects at Techversant Infotech.
+Git workflow for all projects at your organization.
 
 ---
 
@@ -31,13 +31,13 @@ hotfix/{{ticket-id}}-fix-session-expiry-crash
 
 Examples:
 ```
-feature/HIRE-142-candidate-bulk-import
-fix/HIRE-198-application-stage-transition-error
+feature/PROJ-142-candidate-bulk-import
+fix/PROJ-198-application-stage-transition-error
 chore/update-dependencies
-chore/HIRE-222-upgrade-pg-to-8-12
+chore/PROJ-222-upgrade-pg-to-8-12
 docs/update-api-standards
 release/v0.3.0
-hotfix/HIRE-201-fix-session-expiry-crash
+hotfix/PROJ-201-fix-session-expiry-crash
 ```
 
 - Ticket ID is required for `feature/*`, `fix/*`, and `hotfix/*`
@@ -74,7 +74,7 @@ Refs TICKET-ID
 - Subject line ≤ 72 characters
 - Present tense: "add" not "added" or "adds"
 - No period at the end of the subject line
-- Use `Refs HIRE-142` for Jira/external tickets
+- Use `Refs PROJ-142` for Jira/external tickets
 - Use `Closes #123` only for GitHub issues
 - **AI identity prohibition:** All commits must use the human git owner's identity only. Never add `Co-Authored-By`, AI attribution, or any third-party identity to commit messages. The git global commit template (`~/.gitmessage`) enforces this — it contains no Co-Authored-By block. If a commit ever includes AI attribution, remove it immediately.
 
@@ -82,7 +82,7 @@ Refs TICKET-ID
 ```
 feat(candidates): add bulk import via CSV with duplicate detection
 
-Refs HIRE-142
+Refs PROJ-142
 
 fix(auth): prevent session fixation on re-authentication
 
@@ -90,7 +90,7 @@ Sessions were not invalidated on password change, allowing an attacker
 with a stolen old session to remain authenticated after the user changed
 their credentials.
 
-Refs HIRE-198
+Refs PROJ-198
 
 chore(deps): upgrade TypeScript to 5.4 and pg to 8.12
 ```

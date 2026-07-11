@@ -172,7 +172,7 @@ If `.claude/settings-overrides.json` has no `techStack` section (first bootstrap
 
 ```
 Tech Stack — select one of:
-  [1] Accept all defaults (Techversant standard stack)
+  [1] Accept all defaults (your organization standard stack)
   [2] Override specific values
 ```
 
@@ -181,10 +181,10 @@ Use AskUserQuestion:
 - options: "Accept defaults" / "Override values"
 - multiSelect: false
 
-- If [1] (Accept defaults): write the Techversant defaults directly into settings-overrides.json. No per-field questions. Proceed to the Write Step.
+- If [1] (Accept defaults): write the your organization defaults directly into settings-overrides.json. No per-field questions. Proceed to the Write Step.
 - If [2] (Override values): show the stack fields and let the user type overrides one by one.
 
-The Techversant defaults are:
+The your organization defaults are:
   Backend:   Node.js 20 + TypeScript + Fastify
   Frontend:  React 18 + Vite + TypeScript
   Database:  PostgreSQL 16

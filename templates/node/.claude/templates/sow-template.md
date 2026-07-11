@@ -1,7 +1,7 @@
 # Statement of Work
 **Project:** {{PROJECT_NAME}}
 **Client:** {{CLIENT_NAME}}
-**Prepared By:** Techversant Infotech
+**Prepared By:** your organization
 **Date:** {{DATE}}
 **Version:** 1.0
 **Valid Until:** {{EXPIRY_DATE}}
@@ -107,7 +107,7 @@ Any change to scope, timeline, or deliverables requires a written Change Request
 
 ## 5. Team & Responsibilities
 
-### 5.1 Techversant Team
+### 5.1 your organization Team
 | Role | Responsibility |
 |---|---|
 | Project Lead | Overall delivery, client communication |
@@ -139,7 +139,7 @@ Any change to scope, timeline, or deliverables requires a written Change Request
 {{Key security measures: auth, encryption, compliance.}}
 
 ### 6.4 Handover
-On project completion, Techversant will provide:
+On project completion, your organization will provide:
 - [ ] Complete source code in client's repository
 - [ ] Architecture documentation
 - [ ] API documentation
@@ -152,7 +152,7 @@ On project completion, Techversant will provide:
 ## 7. Terms & Conditions
 
 ### 7.1 Warranty
-Techversant warrants that deliverables will function as specified for 30 days post go-live. Bugs discovered within this period will be fixed at no additional cost.
+your organization warrants that deliverables will function as specified for 30 days post go-live. Bugs discovered within this period will be fixed at no additional cost.
 
 ### 7.2 Intellectual Property
 Upon full payment, the client owns all custom-developed code. Third-party libraries retain their original licenses.
@@ -161,7 +161,7 @@ Upon full payment, the client owns all custom-developed code. Third-party librar
 Both parties agree to keep project details confidential.
 
 ### 7.4 Limitation of Liability
-Techversant's liability is limited to the total value of this engagement.
+your organization's liability is limited to the total value of this engagement.
 
 ---
 
@@ -169,5 +169,5 @@ Techversant's liability is limited to the total value of this engagement.
 
 | Party | Name | Title | Signature | Date |
 |---|---|---|---|---|
-| Techversant Infotech | | | | |
+| your organization | | | | |
 | {{CLIENT_NAME}} | | | | |

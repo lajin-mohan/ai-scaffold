@@ -8,7 +8,7 @@ QA coverage and quality review. Validates that tests provide genuine coverage, n
 
 ```
 /qa-review                             # interactive
-/qa-review --ticket HIRE-142          # review tests for specific ticket
+/qa-review --ticket PROJ-142          # review tests for specific ticket
 /qa-review --suite api                # review API integration tests only
 /qa-review --suite unit               # review unit tests only
 ```

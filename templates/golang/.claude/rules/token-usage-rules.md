@@ -1,6 +1,6 @@
 # Token Usage Rules
 
-Guidelines for using AI tools efficiently at Techversant Infotech. Token cost is real — use AI thoughtfully.
+Guidelines for using AI tools efficiently at your organization. Token cost is real — use AI thoughtfully.
 
 ---
 

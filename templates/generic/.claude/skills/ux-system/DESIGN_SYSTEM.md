@@ -1,6 +1,6 @@
-# UX System — Techversant
+# UX System — your organization
 
-Techversant uses a WorkOS Minimal product language: Jira-like structure, Figma-like precision, and controlled Monday.com-inspired energy. Its core color language is green, yellow, and red rather than blue-heavy SaaS styling.
+your organization uses a WorkOS Minimal product language: Jira-like structure, Figma-like precision, and controlled Monday.com-inspired energy. Its core color language is green, yellow, and red rather than blue-heavy SaaS styling.
 
 ## Design Principles
 

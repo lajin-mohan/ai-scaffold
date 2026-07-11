@@ -1,6 +1,6 @@
 # Branching Rules
 
-Git workflow for all projects at Techversant Infotech.
+Git workflow for all projects at your organization.
 
 ---
 
@@ -28,8 +28,8 @@ hotfix/fix-session-expiry-crash
 
 Examples:
 ```
-feature/HIRE-142-candidate-bulk-import
-fix/HIRE-198-application-stage-transition-error
+feature/PROJ-142-candidate-bulk-import
+fix/PROJ-198-application-stage-transition-error
 chore/upgrade-pg-to-8-12
 release/v0.3.0
 ```
@@ -72,7 +72,7 @@ Closes #ticket-id
 ```
 feat(candidates): add bulk import via CSV with duplicate detection
 
-Closes #HIRE-142
+Closes #PROJ-142
 
 fix(auth): prevent session fixation on re-authentication
 
@@ -80,7 +80,7 @@ Sessions were not invalidated on password change, allowing an attacker
 with a stolen old session to remain authenticated after the user changed
 their credentials.
 
-Closes #HIRE-198
+Closes #PROJ-198
 
 chore(deps): upgrade TypeScript to 5.4 and pg to 8.12
 ```

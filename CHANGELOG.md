@@ -14,6 +14,12 @@ This file is configured with `merge=union` in `.gitattributes` so parallel addit
 ## [Unreleased]
 
 ### Added
+- **Node profile ships a real starter test.** The node template's `test` script
+  was `echo "Configure..."` — a stub that "passed" while testing nothing. It now
+  ships `test/smoke.test.js` (zero-dependency `node:test`) and `"test": "node --test"`,
+  so a fresh node project passes a real test day-one, matching the python/golang
+  profiles. Verified against a packed tarball. (Repo `vitest` run now excludes
+  `templates/` so the starter file isn't scanned by the scaffold's own suite.)
 - **Automated post-release `main→dev` sync.** After every release, `main`
   diverged from `dev` (release squash) and blocked the next release's
   `release:check` until a manual, error-prone sync. Now
@@ -23,6 +29,15 @@ This file is configured with `merge=union` in `.gitattributes` so parallel addit
   squash re-breaks the ancestry). `.github/workflows/post-release-sync.yml` runs
   it automatically after "Publish to npm" (full auto-merge needs a `SYNC_PAT`
   secret; see the workflow header).
+
+### Changed
+- **Genericized shipped `.claude/` governance content.** Removed the fictional
+  organization name (Techversant Infotech → "your organization", 175 refs) and
+  example ticket IDs (`HIRE-###` → `PROJ-###`, 60 refs) from the shipped rules,
+  agents, commands, skills, and templates across all five profiles — so a
+  generated project is not taught from a specific different company's codebase.
+  The deeper `apps/api/src` layer examples and Jira-tracker assumptions are a
+  larger contextual pass, still tracked.
 
 ## [0.8.7] - 2026-07-10
 
