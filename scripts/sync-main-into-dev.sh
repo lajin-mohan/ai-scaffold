@@ -62,15 +62,25 @@ passes.
 Merge as a MERGE COMMIT, not squash — auto-merge below uses the merge method for
 exactly this reason; squashing re-breaks the ancestry."
 
+PR_READY=0
 if gh pr view "$BRANCH" --json number >/dev/null 2>&1; then
   echo ">> PR already exists for ${BRANCH}."
-else
-  gh pr create --base dev --head "$BRANCH" \
+  PR_READY=1
+elif gh pr create --base dev --head "$BRANCH" \
     --title "chore(release): sync main (${TAG}) into dev" \
-    --body "$PR_BODY"
+    --body "$PR_BODY"; then
+  echo ">> Opened sync PR for ${BRANCH}."
+  PR_READY=1
+else
+  # The ancestry-restoring branch is already pushed; a blocked PR-create must
+  # not fail the whole run — warn and let a human open the PR.
+  echo "WARN: could not open the sync PR. In CI this usually means the repo"
+  echo "      setting 'Allow GitHub Actions to create and approve pull requests'"
+  echo "      is off, or no SYNC_PAT is set. Branch ${BRANCH} is pushed — open the"
+  echo "      PR manually with a MERGE COMMIT (not squash)."
 fi
 
-if [ "$AUTO_MERGE" = "1" ]; then
+if [ "$AUTO_MERGE" = "1" ] && [ "$PR_READY" = "1" ]; then
   if gh pr merge "$BRANCH" --auto --merge; then
     echo "OK: auto-merge (merge commit) enabled — merges once CI passes + approved."
   else
