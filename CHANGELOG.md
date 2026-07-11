@@ -13,6 +13,8 @@ This file is configured with `merge=union` in `.gitattributes` so parallel addit
 
 ## [Unreleased]
 
+## [0.8.8] - 2026-07-11
+
 ### Added
 - **Node profile ships a real starter test.** The node template's `test` script
   was `echo "Configure..."` — a stub that "passed" while testing nothing. It now
