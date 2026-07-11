@@ -94,6 +94,18 @@ only gate that proves the *published* artifact. **Effort: medium.**
 
 ### Tier 4 — Hygiene (quick, non-shipping)
 
+- **47.** **Prove the post-release sync is fully hands-off** *(release-flow
+  reliability; do in the next release cycle).* The `post-release-sync` workflow
+  works but is **not yet proven end-to-end**: on the 0.8.8 run it did the
+  `-s ours` merge and pushed the branch, but could not open the PR —
+  *"GitHub Actions is not permitted to create or approve pull requests"*. To
+  close it: (1) enable repo **Settings → Actions → General → "Allow GitHub
+  Actions to create and approve pull requests"** and **"Allow auto-merge"**;
+  (2) add a **`SYNC_PAT`** fine-grained secret (Contents + PRs write) so the
+  bot PR triggers CI; (3) verify **one** release produces a clean auto-opened +
+  auto-merged (merge-commit) sync PR with zero manual steps. Until then the sync
+  is semi-manual (the script now warns instead of failing when PR-create is
+  blocked, and leaves the branch pushed).
 - **29.** Delete the stray `v1.0` tag — it's a **live landmine** (breaks
   `git fetch --tags`; already broke the sync script once). Needs an explicit
   human "delete v1.0".
