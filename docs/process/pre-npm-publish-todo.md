@@ -25,6 +25,7 @@ verification against npm/git, not kept as history.
 | Claude / AI-tool integration | 7.5 | 9 |
 | Docs & discoverability | 7.5 | 9 |
 | **Update / lifecycle** | **4** | **8** |
+| **Token efficiency** | **5.5** | **7** |
 | **Overall** | **8.0** | **8.5+** |
 
 **Goal: every category ≥ 8.5 before v1.0.0.** The phases below are ordered by
@@ -110,6 +111,49 @@ tail. Overall → ~8.8.**
 - **Strategic / optional:** 23 deep-research command, 31/32/33 QA-browser /
   UI-UX / enterprise-safe-hook packs, 42 agent-handoff chains, 43 change-approval
   audit trail.
+
+## Token-efficiency workstream · cross-cutting
+
+The scaffold spends tokens to buy correctness — a deliberate trade. This
+workstream trims **waste** (redundancy, always-on-that-should-be-on-demand, the
+5-agent fan-out on trivial changes) **without touching the guardrails**. Ordered
+by token-saved-per-effort.
+
+> **Caching note:** the upfront `CLAUDE.md` + rules load is prompt-cached, so it
+> is a per-*session* cost, not per-turn. The **uncached** waste that repeats on
+> every task is (a) the `/review` fan-out and (b) rules redundancy re-loaded
+> fresh into each of the 5 subagent contexts (subagents don't share the parent
+> cache). The top items target those — not the leaner-`CLAUDE.md` work, which
+> caching already absorbs.
+
+- **T0. Token measurement (enabler — do first).** A `/health` token sub-score +
+  report: rules-corpus size, per-command / per-agent definition tokens, estimated
+  per-workflow cost. Baseline before/after every change below — you can't
+  optimize what you don't measure. *(low-medium)*
+- **T1. Tiered / lite review.** *highest per-task saving.* `/review --lite` = one
+  consolidated reviewer for XS/S changes (per `task-size-policy.md`); the full
+  5-agent fan-out is reserved for M+ or critical-path (auth/billing/tenant).
+  Saves ~⅘ of review tokens on the majority of changes. *(medium; keep full mode
+  for high-stakes)*
+- **T2. Rules deduplication.** One canonical statement per concept,
+  cross-referenced not restated (e.g. "parameterized queries" lives in 4 files
+  today). Compounds across every subagent that loads rules. Content-preserving —
+  cut duplication, not guardrails. *(medium, low risk)*
+- **T3. Scoped rule loading.** Load only the stack overlays that apply (a Go
+  project should not carry the React rules). The overlays already exist; make
+  loading conditional on the resolved stack. *(low-medium — high value/effort)*
+- **T4. Lean `CLAUDE.md` + progressive disclosure.** `CLAUDE.md` → thin router
+  (identity, stack, "read `constitution.md` first", pointers); detail loaded on
+  demand. Extends the constitution's on-ramp and reduces what each subagent pulls.
+  *(medium; caching absorbs part of the main-session benefit)*
+- **T5. Prune command/agent surface** — the token-cost half of item **40**. Remove
+  definitions that restate native Claude Code behaviour; fewer definition tokens
+  to load and maintain. *(medium)*
+
+**Target: token-efficiency 5.5 → 7 with zero guardrails dropped.** `T0` first
+(measure), then `T1 + T2 + T3` are the near-term high-value set — they can ride as
+`0.9.x` / `0.10.0` alongside Phase 1. Stop optimizing where the marginal token
+saving starts costing correctness.
 
 ## Hygiene track (parallel — not a phase gate)
 
