@@ -7,12 +7,12 @@ verification against npm/git, not kept as history.
 
 ## Current state (2026-07-12)
 
-- **v0.9.0 is cut** — `release/v0.9.0` → `main` (PR #71), release branch changes
-  only metadata; `release:check` OK, smoke 99/99, 0 high vulns. The `v0.9.0` tag
-  push triggers the trusted npm publish. `@lajin.m/ai-scaffold@0.8.8` is `latest`
-  until the tag lands.
-- `main` is an ancestor of `dev` (release-ready); CI green. Post-release
-  `main→dev` sync is automated (semi-manual until item 47's repo settings land).
+- **v0.9.0 is published** — `release/v0.9.0` → `main` (PR #71), tag `v0.9.0`
+  triggered trusted npm publishing, and `@lajin.m/ai-scaffold@0.9.0` is `latest`.
+  Release gates were clean: `release:check` OK, smoke 99/99, 0 high vulns.
+- Post-release `main→dev` sync is automated but still semi-manual until item
+  47's repo settings land. Keep release metadata aligned during promotions so
+  `dev` never downgrades the published version on the next `dev→main` PR.
 
 ### Honest category rating (SaaS-team adoption), post-0.9.0
 
@@ -26,12 +26,13 @@ verification against npm/git, not kept as history.
 | Docs & discoverability | 7.5 | 9 |
 | **Update / lifecycle** | **4** | **8** |
 | **Token efficiency** | **5.5** | **7** |
+| **Existing-codebase context retrieval** | **5** | **8.5** |
 | **Overall** | **8.0** | **8.5+** |
 
 **Goal: every category ≥ 8.5 before v1.0.0.** The phases below are ordered by
-rating lever, not by ease. `Update/lifecycle` (4) and `Claude/AI integration`
-(7.5) are the two that cap the overall score — Phases 1 and 2 target exactly
-those.
+rating lever, not by ease. `Update/lifecycle` (4), `Existing-codebase context
+retrieval` (5), and `Claude/AI integration` (7.5) are the categories that cap
+the overall score — Phases 1 and 2 target exactly those.
 
 ---
 
@@ -69,14 +70,45 @@ operating model. **If you do only one thing on this whole list, it's item 25.**
 - **27. Repair / uninstall dry-runs.** Complete the lifecycle verbs so `update`
   isn't the only mutating path; both preview before writing. *(medium)*
 
-## Phase 2 — Modern AI surface · current with new model capabilities
+## Phase 2 — Modern AI surface + repository knowledge
 
-Moves **Claude/AI integration 7.5 → 9, Overall → ~8.6.** This is where the newest
-leverage lives — connect the governance to real tools and distribute it the
-Claude-native way. Together with Phase 1 this clears **8.5 overall** and is the
-v1.0 candidate line.
+Moves **Claude/AI integration 7.5 → 9, Existing-codebase context retrieval 5 →
+8.5, Overall → ~8.6.** This is where the newest leverage lives — connect the
+governance to real tools, make large-repo navigation selective instead of
+search-heavy, and distribute the operating system the Claude-native way.
+Together with Phase 1 this clears **8.5 overall** and is the v1.0 candidate line.
 
-- **48. MCP connector pack (opt-in).** *highest "modern AI" value.* Ship a
+- **51. Context-provider architecture + Graphify pilot (opt-in).** *highest
+  large-existing-codebase value.* Add a provider abstraction where `filesystem`
+  remains the default and `graphify` can be configured as an optional navigation
+  provider, never a mandatory Python dependency. Pilot first on one real complex
+  project before productizing: compare AI Scaffold alone vs. AI Scaffold +
+  Graphify on 10 representative tasks (feature impact, bug investigation, review,
+  architecture, onboarding, requirements-to-code trace). Measure input tokens,
+  cache-write tokens, file reads/searches, time to useful plan, relevant files
+  found, missed affected files, incorrect graph assumptions, review quality, and
+  total task cost. Adopt only if the pilot shows a reproducible 25-30% median
+  reduction in total input-token consumption for debug/architecture/review
+  without increasing missed dependencies or false conclusions. *(medium pilot,
+  medium/large productization)*
+- **52. Thin context-provider CLI.** After a successful pilot, add provider-level
+  commands without naming Graphify as the top-level product surface:
+  `ais context status`, `ais context setup graphify`, `ais context build`,
+  `ais context refresh`, `ais context query`, and `ais doctor --context`. Store
+  provider state in `.ai-scaffold.json`; report provider version, graph path,
+  graph source commit, freshness, exclusions, inferred-vs-extracted edge policy,
+  and fallback mode. Filesystem fallback is required. *(medium)*
+- **53. Governed Graphify adapter.** Integrate graph context only into
+  `/start-task`, `/debug-fix`, `/review`, and architecture analysis at first.
+  The graph is navigation evidence, not truth: agents must still read source
+  files and verify with tests. AI Scaffold owns hook composition through its hook
+  dispatcher; do not let provider installers overwrite `CLAUDE.md`, `AGENTS.md`,
+  `.claude/settings.json`, or managed hooks. Generate conservative
+  `.graphifyignore` defaults and ensure `graphify-out/` is excluded from
+  `.claudeignore` so generated graph output does not invalidate prompt cache.
+  Respect data classification: local AST-only mode by default for sensitive
+  client repos; semantic document extraction must be explicit. *(medium/large)*
+- **48. MCP connector pack (opt-in).** *highest external-tooling value.* Ship a
   `.mcp.json` scaffold + at least one connector (GitHub / issue-tracker) so
   `/start-task`, `/review`, and the reviewer agents can reach codebase-adjacent
   tools instead of only reading files. *(medium/large)*
@@ -116,8 +148,9 @@ tail. Overall → ~8.8.**
 
 The scaffold spends tokens to buy correctness — a deliberate trade. This
 workstream trims **waste** (redundancy, always-on-that-should-be-on-demand, the
-5-agent fan-out on trivial changes) **without touching the guardrails**. Ordered
-by token-saved-per-effort.
+5-agent fan-out on trivial changes) **without touching the guardrails**.
+Graph/context providers may reduce repository-discovery tokens, but they do not
+solve baseline prompt bloat. Ordered by token-saved-per-effort.
 
 > **Caching note:** the upfront `CLAUDE.md` + rules load is prompt-cached, so it
 > is a per-*session* cost, not per-turn. The **uncached** waste that repeats on
@@ -128,8 +161,10 @@ by token-saved-per-effort.
 
 - **T0. Token measurement (enabler — do first).** A `/health` token sub-score +
   report: rules-corpus size, per-command / per-agent definition tokens, estimated
-  per-workflow cost. Baseline before/after every change below — you can't
-  optimize what you don't measure. *(low-medium)*
+  per-workflow token cost, file reads/searches, and cache-write tokens. Baseline
+  before/after every change below — including any Graphify pilot — because
+  provider claims are not product claims until reproduced on our own workloads.
+  *(low-medium)*
 - **T1. Tiered / lite review.** *highest per-task saving.* `/review --lite` = one
   consolidated reviewer for XS/S changes (per `task-size-policy.md`); the full
   5-agent fan-out is reserved for M+ or critical-path (auth/billing/tenant).
@@ -149,6 +184,11 @@ by token-saved-per-effort.
 - **T5. Prune command/agent surface** — the token-cost half of item **40**. Remove
   definitions that restate native Claude Code behaviour; fewer definition tokens
   to load and maintain. *(medium)*
+- **T6. Graph cache hygiene.** If a graph provider is enabled, generated graph
+  output must not become prompt context by accident. Add/verify `.claudeignore`
+  coverage for `graphify-out/`, keep graph artifacts out of normal file-search
+  paths, and access them explicitly through CLI/MCP queries. *(small but
+  critical)*
 
 **Target: token-efficiency 5.5 → 7 with zero guardrails dropped.** `T0` first
 (measure), then `T1 + T2 + T3` are the near-term high-value set — they can ride as
@@ -180,7 +220,8 @@ saving starts costing correctness.
 - **Phase 1 alone** fixes the single worst category (Update 4 → 8) and lifts
   overall to ~8.3 — necessary but not sufficient.
 - **Phase 1 + Phase 2** clears **8.5 overall** and makes "modern AI capabilities"
-  real (MCP + plugin + skills). This is the **v1.0 candidate** line.
+  real (context providers + MCP + plugin + skills). This is the **v1.0 candidate**
+  line.
 - **Phase 3** polishes to ~8.8–9 and closes the long tail for a confident **v1.0.0**.
 - **The one lever if you do nothing else: item 25 (`ais update`).** It is the
   difference between an 8 and a real 9.
