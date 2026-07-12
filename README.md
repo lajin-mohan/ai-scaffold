@@ -2,6 +2,8 @@
 
 Reusable AI engineering scaffold with CLI distribution.
 
+![AI Scaffold flow — specification-driven AI implementation with runtime guards, verification, and human review: spec and context inputs feed /start-task, plan, human approval, AI implementation, then verify, multi-reviewer review, and human PR review](docs/assets/ai-scaffold-flow.png)
+
 `@lajin.m/ai-scaffold` packages this repository's AI operating system into a CLI (`ais`) that can create new projects, install scaffold-managed guidance into existing projects, track installed metadata, and run basic health checks.
 
 This repository is the scaffold platform itself, not a generated application. Generated project documentation comes from profile templates during `create` or `init`; scaffold platform documentation lives separately in [README.scaffold.md](./README.scaffold.md).
@@ -437,9 +439,9 @@ ais doctor ./my-project --json
 
 ```bash
 npx @lajin.m/ai-scaffold update --dry-run
-npx @lajin.m/ai-scaffold update --target-version 0.8.5
+npx @lajin.m/ai-scaffold update --target-version <version>
 ais update --dry-run
-ais update --target-version 0.8.5
+ais update --target-version <version>
 ```
 
 Full safe file updates, diffs, and version-pinned migrations are planned for Phase 3. Until then, `update` exits without changing files when an actual version change would be required.

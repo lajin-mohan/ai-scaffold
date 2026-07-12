@@ -62,7 +62,7 @@ npm run lint       # Lint and typecheck
 
 ## AI Workflow
 
-Read [CLAUDE.md](./CLAUDE.md) before starting implementation. It is the source of truth for agent roles, workflow gates, coding standards, review rules, and verification expectations.
+Read [`constitution.md`](./constitution.md) first — it is the one-page source of truth for **governance order** (which rule wins on a conflict). Then read [CLAUDE.md](./CLAUDE.md) for the full operating guide: agent roles, workflow gates, coding standards, review rules, and verification expectations.
 
 Useful entry points:
 

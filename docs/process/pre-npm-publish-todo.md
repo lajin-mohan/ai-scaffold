@@ -5,9 +5,12 @@ in `CHANGELOG.md` (the permanent record); this file tracks what is **left** and
 why. Completed items are removed after verification against npm/git, not kept as
 history.
 
-## Current state (2026-07-10)
+## Current state (2026-07-12)
 
-- **`@lajin.m/ai-scaffold@0.8.7` is live on npm** (`latest`, with provenance).
+- **`@lajin.m/ai-scaffold@0.8.8` is live on npm** (`latest`, with provenance).
+- **v0.9.0 is in review (PR #68), not yet merged:** project constitution (39),
+  generated-output genericization (finishes 37), and Claude-feature
+  modernization (per-agent model/tools, command descriptions, honest skills list).
 - `main` and `dev` are protected; `main` is an ancestor of `dev` (release-ready);
   CI is green on `dev`.
 - Post-release `main→dev` sync is automated (`npm run sync:main-dev` +
@@ -30,6 +33,7 @@ Removed from the active backlog after verification:
 | 0.8.5 | Python + Go profiles, `ais list`, README on-ramp |
 | 0.8.6 | Per-profile command defaults (11), `copy.js` refactor (13), `--dry-run --json` (14), generated doc-link fix, `release:check` gate (20) |
 | 0.8.7 | **`.gitignore` packaging fix** (11b) + packaging-aware smoke gate; **automated post-release `main→dev` sync** — completes 20; small review cleanup (24) |
+| 0.8.8 | **Node profile ships a real test** (35); genericized shipped `.claude/` content — removed fictional org + `HIRE-###` tickets (part of 37); post-release sync made tolerant (part of 47) |
 
 ---
 
@@ -39,6 +43,11 @@ Removed from the active backlog after verification:
 
 The four things the artifact review named as what caps the rating. Ship these and
 the product is honestly an 8.
+
+> **Tier 1 status (2026-07-12):** **35** shipped in 0.8.8. **37** finished across
+> 0.8.8 + PR #68. **39** delivered in PR #68 (pending merge). **36** is largely
+> covered by the tarball-based `pre-publish-smoke.sh` (packs → installs → `create`
+> per profile). This tier is effectively closed once PR #68 merges.
 
 **39. Project constitution + progressive disclosure** — *the #1 adoption risk.*
 A generated project drops 152 files / 35 commands / 17 agents / 17 rules on day

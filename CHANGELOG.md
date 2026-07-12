@@ -33,6 +33,11 @@ This file is configured with `merge=union` in `.gitattributes` so parallel addit
   tests for the tie-breaker framing, resolving rule links, and tenant behaviour.
 
 ### Fixed
+- **Generated README no longer contradicts the constitution-first model.** The
+  header pointed to `constitution.md` but the "AI Workflow" section still called
+  `CLAUDE.md` the source of truth. It now reads: constitution first (governance
+  order — which rule wins on a conflict), then `CLAUDE.md` for the full operating
+  guide. Fixed across all five profiles.
 - **`create`/`init` no longer default to multi-tenant.** Defining
   `--no-multi-tenant` made commander default `multiTenant` to `true`, so a plain
   `ais create` produced a multi-tenant project (and tenant-scoping guidance)
@@ -54,7 +59,9 @@ This file is configured with `merge=union` in `.gitattributes` so parallel addit
   All 17 subagents now declare a `model` (Opus for architecture/security/
   verification/orchestration, Sonnet elsewhere — per `token-usage-rules.md`) and
   the five pure reviewers (`backend`, `frontend`, `security`, `qa`, `critic`) are
-  restricted to read-only `tools` so a reviewer can't modify code. All 35 slash
+  restricted to inspection + verification `tools` (`Read`, `Grep`, `Glob`,
+  `Bash`) — no `Edit`/`Write`/`MultiEdit`, so a reviewer reads code and runs
+  checks but has no file-editing tools. All 35 slash
   commands gained `description` frontmatter so they show up with summaries in the
   `/` menu. The "Custom Skills" list is now honest: it distinguishes the four real
   auto-discovered Agent Skills (`<name>/SKILL.md`) from the reference docs that
