@@ -1,3 +1,7 @@
+---
+description: Code quality dashboard: auto-detect tools (tsc, biome, eslint, ruff, pytest, etc.), run them, compute 0-10 composite score, show tabular…
+---
+
 # /health
 
 Code quality dashboard. Runs available project tools (type checker, linter, test runner, dead code detector, shell linter), computes a weighted composite 0-10 score, and presents a tabular dashboard with trend history and recommendations.

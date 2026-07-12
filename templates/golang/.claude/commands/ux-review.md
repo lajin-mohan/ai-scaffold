@@ -1,3 +1,7 @@
+---
+description: UX review: 32-item check, 4-viewport browser verification (desktop L/D + mobile L/D at 390px). Token-based colours enforced as BLOCK.
+---
+
 # /ux-review
 
 Review a UI implementation or UX artifact against the centralized UX system.

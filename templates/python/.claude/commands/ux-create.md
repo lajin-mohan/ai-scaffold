@@ -1,3 +1,7 @@
+---
+description: UX solution creator: uses skills/ux-system/, desktop-first design, 390px mobile check, light/dark theme, organization-overridable tokens.
+---
+
 # /ux-create
 
 Create a production-grade enterprise UX solution using the centralized UX system.

@@ -1,3 +1,7 @@
+---
+description: Autonomous task queue: execute a numbered task list with one-approval contract. Generates tests via /gen-tests per task. Stop conditions…
+---
+
 # /loop
 
 Execute an approved task queue autonomously after one plan approval.

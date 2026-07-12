@@ -1,6 +1,8 @@
 ---
 name: security-reviewer
 description: Application security engineer. Reviews code, APIs, and architecture for vulnerabilities and GDPR/ISO 27001 compliance. Invoke at Stage 6 for any auth or data change.
+model: opus
+tools: Read, Grep, Glob, Bash
 ---
 
 # Agent: security-reviewer

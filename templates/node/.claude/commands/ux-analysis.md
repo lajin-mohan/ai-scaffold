@@ -1,3 +1,7 @@
+---
+description: Analyze a BRD or feature spec into a complete product/UX analysis package (roles, flows, states, risks).
+---
+
 # /ux-analysis
 
 Analyze a BRD, feature spec, or product request into a complete product/UX analysis package. This command replaces the old split between `/ux-analyze` and `/ux-flow`.

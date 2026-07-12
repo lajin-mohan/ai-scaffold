@@ -1,3 +1,7 @@
+---
+description: Git workflow enforcement: branch safety check, unrelated-changes detection, verification evidence requirement. Optional --dev / --main…
+---
+
 # /commit-changes
 
 Git workflow enforcement. Use before every commit and every merge promotion. Enforces branch safety, detects unrelated changes, requires verification evidence, and handles merge promotion with safeguards.

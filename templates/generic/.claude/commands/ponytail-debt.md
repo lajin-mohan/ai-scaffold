@@ -1,3 +1,7 @@
+---
+description: Harvest every ponytail: shortcut marker into tasks/ponytail-debt.md. Flags no-trigger and malformed markers. Read-only by default; --write…
+---
+
 <!--
 Adapted from DietrichGebert/ponytail (MIT), v4.7.0
 Source command: https://github.com/DietrichGebert/ponytail/blob/main/commands/ponytail-debt.toml

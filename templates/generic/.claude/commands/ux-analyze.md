@@ -1,3 +1,7 @@
+---
+description: Compatibility alias for /ux-analysis.
+---
+
 # /ux-analyze
 
 Compatibility alias for `/ux-analysis`.

@@ -1,3 +1,7 @@
+---
+description: Produce the final developer-ready handoff package from approved UX artifacts.
+---
+
 # /ux-handoff
 
 Produce the final developer-ready handoff package from approved UX artifacts. This command runs after manual Figma/design approval and after `/ux-review` passes.

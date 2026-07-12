@@ -1,3 +1,7 @@
+---
+description: Project Readiness Checklist - go/no-go gate across all 6 dimensions before execution begins
+---
+
 # /kickoff
 
 Run the Project Readiness Checklist before starting any project or major epic. Produces a go/no-go decision with all blockers explicitly listed.

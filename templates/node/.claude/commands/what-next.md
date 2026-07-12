@@ -1,3 +1,7 @@
+---
+description: Reads project state, identifies current stage, outputs exact next action with blockers
+---
+
 # /what-next
 
 Tells the team exactly what to do next in the project workflow. Reads the current project state, identifies which stage you're in, validates what's complete, and outputs a clear next step with any missing pieces that must be resolved first.

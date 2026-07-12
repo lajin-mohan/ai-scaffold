@@ -50,6 +50,15 @@ This file is configured with `merge=union` in `.gitattributes` so parallel addit
   `owner@example.com`).
 
 ### Changed
+- **Modernized Claude Code feature usage across agents, commands, and skills.**
+  All 17 subagents now declare a `model` (Opus for architecture/security/
+  verification/orchestration, Sonnet elsewhere — per `token-usage-rules.md`) and
+  the five pure reviewers (`backend`, `frontend`, `security`, `qa`, `critic`) are
+  restricted to read-only `tools` so a reviewer can't modify code. All 35 slash
+  commands gained `description` frontmatter so they show up with summaries in the
+  `/` menu. The "Custom Skills" list is now honest: it distinguishes the four real
+  auto-discovered Agent Skills (`<name>/SKILL.md`) from the reference docs that
+  agents read by path. Fanned out to all five profiles.
 - **Removed the remaining hardcoded organization name from scaffold files.**
   `.cursorrules`, `.github/copilot-instructions.md`, and the scaffold's own
   `CLAUDE.md` still named a specific company; genericized to "Project Team" /

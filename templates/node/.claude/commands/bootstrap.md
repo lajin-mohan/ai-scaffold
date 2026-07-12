@@ -1,3 +1,7 @@
+---
+description: Interactive scaffold initializer — fills project identity, tech stack, tenancy, compliance placeholders across all files
+---
+
 # /bootstrap
 
 Initialise this scaffold for a real project. Walks through 7 essential identity questions, then sets smart feature defaults based on project type.

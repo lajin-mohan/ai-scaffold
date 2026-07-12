@@ -1,6 +1,7 @@
 ---
 name: solution-analyst
 description: Business Analyst agent. Surfaces assumptions, ambiguities, risks, and open questions before planning begins. Invoke at Stage 1 — before any BRD is written or sprint planned.
+model: sonnet
 ---
 
 # Solution Analyst

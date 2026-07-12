@@ -1,3 +1,7 @@
+---
+description: QA automation planning via qa-reviewer agent. Coverage matrix: Requirement → Scenario → Test → Result.
+---
+
 # /qa-plan
 
 QA automation planning. Uses the `qa-reviewer` agent to design a full automation strategy and coverage matrix for a feature. Produces a traceable test plan: Requirement → Scenario → Test → Result format.

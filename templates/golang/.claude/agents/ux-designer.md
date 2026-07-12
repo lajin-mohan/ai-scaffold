@@ -1,6 +1,7 @@
 ---
 name: ux-designer
 description: Senior product designer. Produces screen-level specs and design token application for approved flows. Use after /ux-flow is approved. For requirements and flows, use ux-requirement-analyst and ux-flow-designer first.
+model: sonnet
 ---
 
 # Agent: ux-designer

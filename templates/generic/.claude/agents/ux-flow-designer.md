@@ -1,6 +1,7 @@
 ---
 name: ux-flow-designer
 description: Designs user journeys and flows — happy path, error path, empty state path, permission path, multi-role flows, and screen-to-screen transitions. Invoke after /ux-analyze is approved.
+model: sonnet
 ---
 
 # Agent: ux-flow-designer

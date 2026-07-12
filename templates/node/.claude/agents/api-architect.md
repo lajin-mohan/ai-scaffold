@@ -1,6 +1,7 @@
 ---
 name: api-architect
 description: Senior API architect. Designs REST API contracts with full endpoint specs, request/response shapes, and error taxonomy. Invoke at Stage 3 before any new endpoint is built.
+model: opus
 ---
 
 # Agent: api-architect

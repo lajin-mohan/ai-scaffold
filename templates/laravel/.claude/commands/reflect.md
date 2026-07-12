@@ -1,3 +1,7 @@
+---
+description: Post-task reflection: captures lessons, patterns, process improvements. Writes to tasks/lessons.md and audit log. Run after significant…
+---
+
 # /reflect
 
 Post-task reflection to capture lessons, patterns, and process improvements. Run after any significant work session — debugging, architecture, planning, or implementation. Writes findings to `tasks/lessons.md` and the audit log.

@@ -1,6 +1,7 @@
 ---
 name: supervisor
 description: Orchestrates the entire project workflow. Reads project state, decides which command/agent to invoke, manages phase transitions, enforces governance gates. The kernel of the AI OS.
+model: opus
 ---
 
 # Supervisor Agent

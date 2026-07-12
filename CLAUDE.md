@@ -249,7 +249,10 @@ Run via `/command-name` in Claude Code.
 
 ## Custom Skills
 
-Referenced internally by agents and commands.
+Two kinds live here. **Agent Skills** (`ux-system`, `ux-review`, `ux-workflow`,
+`systematic-debugging`) ship as `<name>/SKILL.md` and are auto-discovered and
+model-invoked by Claude Code. The rest are **reference docs** read by path from
+agents and commands — they are not auto-invoked skills.
 
 | Skill | Purpose |
 |---|---|
