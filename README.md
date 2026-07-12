@@ -206,24 +206,6 @@ validates the manifest, required files, project memory, settings overrides,
 managed files, meaningful setup values, wired hooks, verification commands, and
 git presence.
 
-## CLI Install Flow
-
-`ais create` and `ais init` collect your setup answers, choose the requested
-profile, resolve placeholders, generate runtime files, and write scaffold
-metadata. Use `ais status`, `ais doctor`, and `ais list` to inspect the installed
-scaffold.
-
-```text
-User
-  → ais create / init
-  → collect flags or prompts
-  → resolve profile and aliases
-  → build file plan
-  → copy files + generate runtime context
-  → project with .claude/, .ai-scaffold.json, AGENTS.md, CLAUDE.md
-  → ais doctor
-```
-
 ## Supported Profiles
 
 | Profile | Status | Notes |
