@@ -1,5 +1,9 @@
 # CLAUDE.md - AI Project Template
 
+> **Read [`constitution.md`](constitution.md) first.** It is the one-page source
+> of truth for governance order — on any conflict between rule files it decides
+> which wins. This guide and the detailed rules in `.claude/rules/` follow from it.
+
 This file governs how Claude, Codex, and other AI tools collaborate on every project in this template. Read it fully before touching any code.
 
 ---

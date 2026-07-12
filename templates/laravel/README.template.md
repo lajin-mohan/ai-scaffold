@@ -2,6 +2,9 @@
 
 {{PROJECT_DESCRIPTION}}
 
+> **Start here:** read [`constitution.md`](constitution.md) — the one-page source
+> of truth for how this project works — then `CLAUDE.md`, then run `/what-next`.
+
 ## Project Info
 
 | Field | Value |

@@ -401,7 +401,6 @@ npx @lajin.m/ai-scaffold init \
   --backend-stack "Node.js" \
   --frontend-stack none \
   --database "PostgreSQL" \
-  --no-multi-tenant \
   --data-sensitivity internal \
   --requirements-source existing-docs \
   --requirements-path docs/requirements/brd.md \

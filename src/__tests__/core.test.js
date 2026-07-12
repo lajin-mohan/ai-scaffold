@@ -8,6 +8,7 @@ import { detectConflicts } from '../cli/core/conflicts.js';
 import { buildDryRunPlan, emptyConflicts } from '../cli/core/dry-run-plan.js';
 import { getVersion } from '../cli/core/version.js';
 import { normalizeProfile, templatePath, toPosixPath, SUPPORTED_PROFILES } from '../cli/core/paths.js';
+import { buildConstitution } from '../cli/core/content-templates.js';
 
 describe('version', () => {
   it('returns a semver-compliant version', () => {
@@ -315,6 +316,32 @@ describe('python and golang profiles', () => {
 
     // Generic has no defaults; install renders as N/A in the generated README.
     expect(resolveWithDefaults({ profile: 'generic' }).resolved.installCommand).toBe('none');
+  });
+});
+
+describe('buildConstitution', () => {
+  it('renders a one-page tie-breaker with resolving rule links', () => {
+    const md = buildConstitution({ displayName: 'Billing API', multiTenant: false });
+    expect(md).toContain('# Constitution — Billing API');
+    // Stays a one-pager — the smoke gate enforces the same 120-line ceiling.
+    expect(md.split('\n').length).toBeLessThanOrEqual(120);
+    // Owns precedence/order; links out to the detailed rule files.
+    expect(md).toContain('owns **precedence and order**');
+    expect(md).toContain('.claude/rules/security-rules.md');
+    // No unresolved placeholders leak into the generated file.
+    expect(md).not.toMatch(/\{\{.*?\}\}/);
+  });
+
+  it('makes tenant isolation conditional for single-tenant projects', () => {
+    const md = buildConstitution({ displayName: 'Billing API', multiTenant: false });
+    expect(md).toContain('applies only if this project is multi-tenant');
+    expect(md).not.toContain('Every query that touches tenant data');
+  });
+
+  it('asserts tenant isolation for multi-tenant projects', () => {
+    const md = buildConstitution({ displayName: 'Billing API', multiTenant: true });
+    expect(md).toContain('Every query that touches tenant data');
+    expect(md).toContain('tenant_id');
   });
 });
 

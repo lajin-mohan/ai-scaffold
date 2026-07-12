@@ -252,3 +252,70 @@ export function formatCompliance(complianceScope) {
   }
   return complianceScope.join(', ');
 }
+
+export function buildConstitution(values) {
+  const tenantLine = values.multiTenant
+    ? '9. **Tenant isolation.** Every query that touches tenant data is scoped by `tenant_id` at the repository layer — a missing scope is a data breach. — [security-rules.md](.claude/rules/security-rules.md)'
+    : '9. **Tenant isolation** applies only if this project is multi-tenant (it is not, per the current setup). If that changes, scope every tenant-data query by `tenant_id` at the repository layer. — [security-rules.md](.claude/rules/security-rules.md)';
+
+  return `# Constitution — ${values.displayName}
+
+**Read this first.** It is the source of truth for *how* work happens here — for
+humans and for every AI assistant (Claude, Codex, Cursor, Copilot, and others).
+It is short on purpose: a one-page index and tie-breaker over the detailed rules
+in \`.claude/rules/\`. It does not replace those rules — it orders them and points
+you to them.
+
+## The non-negotiables
+
+Each line is a summary; the linked file is authoritative for the detail.
+
+1. **Verify before you claim.** No statement about the code without reading it
+   this session; cite \`file:line\`. — [ai-coding-rules.md](.claude/rules/ai-coding-rules.md)
+2. **When unsure, ask.** "I don't know" is a valid and required answer — do not
+   guess. — [ai-coding-rules.md](.claude/rules/ai-coding-rules.md)
+3. **Plan, then execute.** Work over ~3 steps or spanning multiple files gets a
+   written plan and explicit approval before code. — [ai-coding-rules.md](.claude/rules/ai-coding-rules.md)
+4. **Production-grade only.** No stubs, no half-implementations, no \`TODO\`
+   without a ticket. — [coding-standards.md](.claude/rules/coding-standards.md)
+5. **Verify before "done".** Lint, typecheck, and tests run and pass — with
+   evidence, not assumption. — [ai-coding-rules.md](.claude/rules/ai-coding-rules.md)
+6. **Parameterized queries only.** No string-built SQL, ever. — [security-rules.md](.claude/rules/security-rules.md)
+7. **Validate input at every boundary; no secrets in code; no PII in logs.** — [security-rules.md](.claude/rules/security-rules.md)
+8. **Tests are required** — happy path plus at least two edge/failure cases plus
+   an auth-failure case. — [testing-rules.md](.claude/rules/testing-rules.md)
+${tenantLine}
+10. **Branch discipline.** \`feature\`/\`fix\`/\`chore\`/\`docs\` -> \`dev\` (squash);
+    \`release\` -> \`main\` (squash + tag); a \`main\`->\`dev\` sync uses a **merge
+    commit**, never a squash. — [branching-rules.md](.claude/rules/branching-rules.md)
+
+## Governance order (the tie-breaker)
+
+When two rules seem to conflict, resolve in this order — and the **linked rule
+file wins on detail**; this file only sets precedence:
+
+\`\`\`
+this constitution (order only)
+  -> ai-coding-rules.md    (how AI writes code here)
+  -> security-rules.md     (never negotiable)
+  -> coding-standards.md   (structure, correctness)
+  -> testing-rules.md      (what "tested" means)
+  -> dod-rules.md          (what "done" means)
+  -> the remaining files in .claude/rules/
+\`\`\`
+
+## Start here
+
+1. Read this file.
+2. Read [CLAUDE.md](CLAUDE.md) — the full operating guide (workflow, agents,
+   commands, current state).
+3. Run \`/what-next\`, or start work with \`/start-task --spec <requirements-path>\`.
+
+---
+
+This file owns **precedence and order** — when rules conflict, it decides which
+one wins. The linked rule files own the **detailed implementation** of each rule.
+It is a tie-breaker and an index, not a second rulebook: if this summary ever
+misstates a detail, correct it here so it matches the rule it points to.
+`;
+}

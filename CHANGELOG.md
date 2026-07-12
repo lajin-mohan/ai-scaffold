@@ -13,6 +13,33 @@ This file is configured with `merge=union` in `.gitattributes` so parallel addit
 
 ## [Unreleased]
 
+### Added
+- **Generated projects ship a one-page `constitution.md`.** A root-level,
+  profile-aware source of truth that names the 10 non-negotiables and — its real
+  job — **owns precedence and order** so an AI agent knows which rule wins on a
+  conflict. Each point links to the detailed file in `.claude/rules/`; the
+  constitution is a tie-breaker and index, not a second rulebook. Generated like
+  `.claude/MEMORY.md` (single-source `buildConstitution`), kept at the project
+  root, and protected on `init` (never overwritten if it already exists). The
+  tenant-isolation line adapts to tenancy: conditional for single-tenant
+  projects, a hard rule for multi-tenant ones.
+- **Generated `CLAUDE.md` and `README` point to the constitution first.** Both
+  entry points open with a "read `constitution.md` first" pointer across all five
+  profiles, so the governance order is the first thing a human or agent sees.
+- **Smoke + unit coverage for the constitution.** `pre-publish-smoke.sh` Gate 4d
+  verifies the generated file exists, stays a one-pager (≤120 lines), is pointed
+  to from `CLAUDE.md`/`README`, and carries the correct tenant line for both
+  tenancy modes (checked against a packed tarball). `buildConstitution` has unit
+  tests for the tie-breaker framing, resolving rule links, and tenant behaviour.
+
+### Fixed
+- **`create`/`init` no longer default to multi-tenant.** Defining
+  `--no-multi-tenant` made commander default `multiTenant` to `true`, so a plain
+  `ais create` produced a multi-tenant project (and tenant-scoping guidance)
+  against the documented single-tenant default. The `--no-multi-tenant` flag is
+  removed; `--multi-tenant` now opts in, matching `resolveWithDefaults`. The
+  stale `--no-multi-tenant` example is gone from the README.
+
 ## [0.8.8] - 2026-07-11
 
 ### Added
