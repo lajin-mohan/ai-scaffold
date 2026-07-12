@@ -72,6 +72,13 @@ This file is configured with `merge=union` in `.gitattributes` so parallel addit
   "AI development workflow" to match the rest of the (already-genericized)
   `.claude/` content. (These files are not copied into generated projects; this
   is repo-hygiene so browsing the scaffold shows nothing company-specific.)
+- **`vitest` no longer scans git worktrees.** The scaffold's own worktree
+  feature (`spawn_task`) checks out full repo copies under `.claude/worktrees/`;
+  their nested `templates/` starters and duplicate suites were scanned by
+  `npm test`, failing the run (and the pre-publish smoke's `npm test` gate)
+  locally whenever a worktree was present. `vitest.config.js` now excludes
+  `**/templates/**` and `**/.claude/**`. Repo-own tooling only — not shipped, and
+  CI was unaffected.
 
 ## [0.8.8] - 2026-07-11
 
