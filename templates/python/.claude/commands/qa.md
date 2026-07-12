@@ -1,3 +1,7 @@
+---
+description: Live-site QA with headless browser: walk the feature flow, detect rendering/interaction/console issues, fix and re-verify.
+---
+
 # /qa
 
 Browser-based QA: open a real browser, walk the feature flow, find what breaks, fix it, re-verify.

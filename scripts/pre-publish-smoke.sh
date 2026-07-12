@@ -329,6 +329,35 @@ else
   node scripts/check-generated-links.js "$GO_DIR" 2>&1 | head -8
 fi
 
+# ── Gate 4d: constitution (item 39) ────────────────────────────────────
+echo ""
+echo ">> Gate 4d: Constitution"
+CONST="$PY_DIR/constitution.md"
+if [ -f "$CONST" ]; then pass "root constitution.md is generated"; else fail "constitution.md missing at project root"; fi
+if [ -f "$CONST" ] && [ "$(wc -l < "$CONST")" -le 120 ]; then
+  pass "constitution.md stays a one-pager (<=120 lines)"
+else
+  fail "constitution.md is missing or exceeds 120 lines"
+fi
+if grep -q "constitution.md" "$PY_DIR/CLAUDE.md" && grep -q "constitution.md" "$PY_DIR/README.md"; then
+  pass "CLAUDE.md and README point to constitution first"
+else
+  fail "CLAUDE.md or README does not point to constitution.md"
+fi
+if grep -q "applies only if this project is multi-tenant" "$CONST"; then
+  pass "single-tenant project: constitution tenant line is conditional"
+else
+  fail "single-tenant constitution has the wrong tenant line"
+fi
+MT_DIR=$(mktemp -d)/mt-const
+node bin/ai-scaffold.js create "$MT_DIR" --profile node --yes --multi-tenant >/dev/null 2>&1 || true
+if [ -f "$MT_DIR/constitution.md" ] && grep -q "Every query that touches tenant data" "$MT_DIR/constitution.md"; then
+  pass "multi-tenant project: constitution asserts tenant isolation"
+else
+  fail "multi-tenant constitution missing the tenant-isolation line"
+fi
+rm -rf "$(dirname "$MT_DIR")" 2>/dev/null || true
+
 # ── Gate 5: init --yes smoke test ──────────────────────────────────────
 echo ""
 echo ">> Gate 5: Init --yes Smoke Test"

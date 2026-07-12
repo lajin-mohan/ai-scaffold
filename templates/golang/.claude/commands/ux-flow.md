@@ -1,3 +1,7 @@
+---
+description: Legacy alias — flow work now belongs inside /ux-analysis.
+---
+
 # /ux-flow
 
 Legacy alias. Flow work now belongs inside `/ux-analysis`.

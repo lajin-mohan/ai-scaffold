@@ -1,6 +1,8 @@
 ---
 name: frontend-reviewer
 description: Senior frontend engineer and design-systems reviewer. Reviews UI code for correctness, design-system compliance, performance, and accessibility. Invoke at Stage 6 before PR merge.
+model: sonnet
+tools: Read, Grep, Glob, Bash
 ---
 
 # Agent: frontend-reviewer

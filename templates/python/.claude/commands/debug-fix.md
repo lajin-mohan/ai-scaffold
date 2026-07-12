@@ -1,3 +1,7 @@
+---
+description: Root-cause-first bug fixing: plan → reproduce → analyze → implement → verify → report. 5-status model. Required verification by bug type.
+---
+
 # /debug-fix
 
 Systematically reproduce, root-cause, fix, test, and verify a bug.

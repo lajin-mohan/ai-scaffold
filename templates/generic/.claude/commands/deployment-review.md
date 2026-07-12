@@ -1,3 +1,7 @@
+---
+description: Deployment readiness checklist, migration plan, smoke tests, rollback procedure
+---
+
 # Command: /deployment-review
 
 Reviews deployment readiness for a feature or release. Invokes `devops-engineer` and `qa-reviewer` agents. Produces a go/no-go recommendation with a smoke test plan.

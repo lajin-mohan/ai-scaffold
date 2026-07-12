@@ -1,3 +1,7 @@
+---
+description: Full REST API contract (endpoints, request/response, errors, async pattern, migrations)
+---
+
 # Command: /create-api
 
 Designs a complete API contract for a new feature or resource. Invokes `api-architect` agent and produces a spec that can be handed directly to Codex/Cursor for implementation.

@@ -1,3 +1,7 @@
+---
+description: Root cause debugging: gather evidence → form hypothesis → test → fix. Iron law: no fix without investigation. Run when user reports error…
+---
+
 # /investigate
 
 Systematic debugging with root cause investigation. Four phases: investigate, analyze, hypothesize, implement. No fix without root cause — fixing symptoms creates whack-a-mole debugging.

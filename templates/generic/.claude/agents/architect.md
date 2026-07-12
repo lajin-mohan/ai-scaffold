@@ -1,6 +1,7 @@
 ---
 name: architect
 description: Senior software architect. Designs HLD, LLD, API architecture, ADRs, and trade-off analysis. Invoke at Stage 3 for new features or major architectural decisions.
+model: opus
 ---
 
 # Agent: architect

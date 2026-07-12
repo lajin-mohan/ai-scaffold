@@ -1,10 +1,10 @@
 # Cursor Rules — {{PROJECT_NAME}}
-# Techversant Infotech AI Project Template
+# AI Project Template
 # Mirrors CLAUDE.md for Cursor IDE users
 
 ## Project Context
 
-This project uses the Techversant AI development workflow:
+This project uses the AI development workflow:
 Analysis → Plan → Arch Design → UX Design → Execution → AI Review → Manual Review → QA → CI/CD → Deploy
 
 Tech stack: {{BACKEND_STACK}} | {{FRONTEND_STACK}} | {{DATABASE}} | {{CLOUD_PROVIDER}}

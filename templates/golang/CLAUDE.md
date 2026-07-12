@@ -1,5 +1,9 @@
 # CLAUDE.md - AI Project Template
 
+> **Read [`constitution.md`](constitution.md) first.** It is the one-page source
+> of truth for governance order — on any conflict between rule files it decides
+> which wins. This guide and the detailed rules in `.claude/rules/` follow from it.
+
 This file governs how Claude, Codex, and other AI tools collaborate on every project in this template. Read it fully before touching any code.
 
 ---
@@ -248,7 +252,10 @@ Run via `/command-name` in Claude Code.
 
 ## Custom Skills
 
-Referenced internally by agents and commands.
+Two kinds live here. **Agent Skills** (`ux-system`, `ux-review`, `ux-workflow`,
+`systematic-debugging`) ship as `<name>/SKILL.md` and are auto-discovered and
+model-invoked by Claude Code. The rest are **reference docs** read by path from
+agents and commands — they are not auto-invoked skills.
 
 | Skill | Purpose |
 |---|---|

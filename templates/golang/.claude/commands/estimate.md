@@ -1,3 +1,7 @@
+---
+description: Three-point effort estimate with risk weights and phasing recommendation
+---
+
 # Command: /estimate
 
 Produces a risk-weighted effort estimate for a feature, epic, or full project. Invokes the `estimator` agent and formats output ready for sprint planning or SOW inclusion.

@@ -1,6 +1,8 @@
 ---
 name: qa-reviewer
 description: Senior QA engineer and business-rule validator. Reviews features against spec for correctness, edge cases, and regression risk. Invoke at Stage 8 before QA sign-off.
+model: sonnet
+tools: Read, Grep, Glob, Bash
 ---
 
 # Agent: qa-reviewer

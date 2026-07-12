@@ -1,3 +1,7 @@
+---
+description: Whole-repo over-engineering scan. Tags: delete / stdlib / native / yagni / shrink. Severity: BLOCK / WARN / NIT. Report only, never…
+---
+
 <!--
 Adapted from DietrichGebert/ponytail (MIT), v4.7.0
 Source command: https://github.com/DietrichGebert/ponytail/blob/main/commands/ponytail-audit.toml

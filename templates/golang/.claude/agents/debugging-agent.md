@@ -1,6 +1,7 @@
 ---
 name: debugging-agent
 description: Systematically investigates bugs across the full stack; reproduces failures, identifies root cause, applies minimal fixes, and verifies with evidence before marking fixed.
+model: sonnet
 ---
 
 # Debugging Agent

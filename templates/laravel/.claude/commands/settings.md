@@ -1,3 +1,7 @@
+---
+description: View and update project feature flags stored in .claude/settings-overrides.json.
+---
+
 # Command: /settings
 
 View and update project feature flags. Settings are stored in `.claude/settings-overrides.json` (generated, gitignored). Edit `.claude/settings-overrides.template.json` to change defaults for future projects. Local overrides go in `.claude/settings.local.json` (gitignored).

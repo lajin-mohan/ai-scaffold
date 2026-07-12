@@ -13,6 +13,66 @@ This file is configured with `merge=union` in `.gitattributes` so parallel addit
 
 ## [Unreleased]
 
+### Added
+- **Generated projects ship a one-page `constitution.md`.** A root-level,
+  profile-aware source of truth that names the 10 non-negotiables and — its real
+  job — **owns precedence and order** so an AI agent knows which rule wins on a
+  conflict. Each point links to the detailed file in `.claude/rules/`; the
+  constitution is a tie-breaker and index, not a second rulebook. Generated like
+  `.claude/MEMORY.md` (single-source `buildConstitution`), kept at the project
+  root, and protected on `init` (never overwritten if it already exists). The
+  tenant-isolation line adapts to tenancy: conditional for single-tenant
+  projects, a hard rule for multi-tenant ones.
+- **Generated `CLAUDE.md` and `README` point to the constitution first.** Both
+  entry points open with a "read `constitution.md` first" pointer across all five
+  profiles, so the governance order is the first thing a human or agent sees.
+- **Smoke + unit coverage for the constitution.** `pre-publish-smoke.sh` Gate 4d
+  verifies the generated file exists, stays a one-pager (≤120 lines), is pointed
+  to from `CLAUDE.md`/`README`, and carries the correct tenant line for both
+  tenancy modes (checked against a packed tarball). `buildConstitution` has unit
+  tests for the tie-breaker framing, resolving rule links, and tenant behaviour.
+
+### Fixed
+- **Generated README no longer contradicts the constitution-first model.** The
+  header pointed to `constitution.md` but the "AI Workflow" section still called
+  `CLAUDE.md` the source of truth. It now reads: constitution first (governance
+  order — which rule wins on a conflict), then `CLAUDE.md` for the full operating
+  guide. Fixed across all five profiles.
+- **`create`/`init` no longer default to multi-tenant.** Defining
+  `--no-multi-tenant` made commander default `multiTenant` to `true`, so a plain
+  `ais create` produced a multi-tenant project (and tenant-scoping guidance)
+  against the documented single-tenant default. The `--no-multi-tenant` flag is
+  removed; `--multi-tenant` now opts in, matching `resolveWithDefaults`. The
+  stale `--no-multi-tenant` example is gone from the README.
+- **Generated projects no longer inherit the scaffold's identity or license.**
+  The generated `README` footer credited the scaffold author (`AI Scaffold
+  Community License - <year> Lajin M J.`) while shipping no `LICENSE` file, and
+  the generated `package.json` set `"license": "AI Scaffold Community License"`
+  (not a valid SPDX id). The footer now reads `© <year> <project display name>`
+  and the `{{LICENSE}}` default is a neutral `UNLICENSED` the user replaces with
+  their own. Author identity leaking through generic examples is gone too
+  (`UX Lead (Lajin)` → `UX Lead`; bootstrap sample `Owner:` email →
+  `owner@example.com`).
+
+### Changed
+- **Modernized Claude Code feature usage across agents, commands, and skills.**
+  All 17 subagents now declare a `model` (Opus for architecture/security/
+  verification/orchestration, Sonnet elsewhere — per `token-usage-rules.md`) and
+  the five pure reviewers (`backend`, `frontend`, `security`, `qa`, `critic`) are
+  restricted to inspection + verification `tools` (`Read`, `Grep`, `Glob`,
+  `Bash`) — no `Edit`/`Write`/`MultiEdit`, so a reviewer reads code and runs
+  checks but has no file-editing tools. All 35 slash
+  commands gained `description` frontmatter so they show up with summaries in the
+  `/` menu. The "Custom Skills" list is now honest: it distinguishes the four real
+  auto-discovered Agent Skills (`<name>/SKILL.md`) from the reference docs that
+  agents read by path. Fanned out to all five profiles.
+- **Removed the remaining hardcoded organization name from scaffold files.**
+  `.cursorrules`, `.github/copilot-instructions.md`, and the scaffold's own
+  `CLAUDE.md` still named a specific company; genericized to "Project Team" /
+  "AI development workflow" to match the rest of the (already-genericized)
+  `.claude/` content. (These files are not copied into generated projects; this
+  is repo-hygiene so browsing the scaffold shows nothing company-specific.)
+
 ## [0.8.8] - 2026-07-11
 
 ### Added

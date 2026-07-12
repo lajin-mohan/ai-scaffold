@@ -87,7 +87,7 @@ The UX workflow is **task-based** — one UX task = one UX deliverable. See `doc
    → Designer pastes 03-design-prompt.md into Figma Make / Claude Design
    → Adjusts layout, spacing, density, token use, variants, states, responsive
    → Tracks progress in 04-figma-build-notes.md (Variables → leaves → composites → frames → verify)
-   → UX Lead (Lajin) approves
+   → UX Lead approves
    → Only after approval do /ux-review and /ux-handoff run
 
 4. Implementation Review: /ux-review <MODULE>-<NNN>

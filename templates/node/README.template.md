@@ -2,6 +2,9 @@
 
 {{PROJECT_DESCRIPTION}}
 
+> **Start here:** read [`constitution.md`](constitution.md) — the one-page source
+> of truth for how this project works — then `CLAUDE.md`, then run `/what-next`.
+
 ## Project Info
 
 | Field | Value |
@@ -59,7 +62,7 @@ npm run lint       # Lint and typecheck
 
 ## AI Workflow
 
-Read [CLAUDE.md](./CLAUDE.md) before starting implementation. It is the source of truth for agent roles, workflow gates, coding standards, review rules, and verification expectations.
+Read [`constitution.md`](./constitution.md) first — it is the one-page source of truth for **governance order** (which rule wins on a conflict). Then read [CLAUDE.md](./CLAUDE.md) for the full operating guide: agent roles, workflow gates, coding standards, review rules, and verification expectations.
 
 Useful entry points:
 
@@ -68,4 +71,4 @@ Useful entry points:
 
 ## License
 
-{{LICENSE}} - {{YEAR}} Lajin M J.
+© {{YEAR}} {{PROJECT_DISPLAY_NAME}}.

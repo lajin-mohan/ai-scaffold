@@ -6,6 +6,7 @@ import fs from 'fs-extra';
 import path from 'path';
 import chalk from 'chalk';
 import {
+  buildConstitution,
   buildContextFile,
   buildMemoryFile,
   buildScaffoldReadme,
@@ -154,6 +155,8 @@ async function generateFile(file, values, dryRun) {
     await fs.writeJson(target, buildSettingsOverridesData(values), { spaces: 2 });
   } else if (relPath === '.claude/MEMORY.md') {
     await fs.writeFile(target, buildMemoryFile(values));
+  } else if (relPath === 'constitution.md') {
+    await fs.writeFile(target, buildConstitution(values));
   } else if (relPath.endsWith('CHANGELOG.md')) {
     await fs.writeFile(target, buildStarterChangelog(values));
   } else if (relPath.endsWith('tasks/lessons.md')) {

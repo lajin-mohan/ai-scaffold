@@ -1,3 +1,7 @@
+---
+description: Auth-specific test planning: login, logout, session, token, protected routes, tenant isolation. Framework-agnostic.
+---
+
 # /qa-auth
 
 Auth-specific test planning. Designs a complete test matrix for authentication and authorization flows. Generic — works with any auth strategy (session, JWT, OAuth2) and any stack.
