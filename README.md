@@ -2,8 +2,6 @@
 
 Reusable AI engineering scaffold with CLI distribution.
 
-![AI Scaffold flow — specification-driven AI implementation with runtime guards, verification, and human review: spec and context inputs feed /start-task, plan, human approval, AI implementation, then verify, multi-reviewer review, and human PR review](docs/assets/ai-scaffold-flow.png)
-
 `@lajin.m/ai-scaffold` packages this repository's AI operating system into a CLI (`ais`) that can create new projects, install scaffold-managed guidance into existing projects, track installed metadata, and run basic health checks.
 
 This repository is the scaffold platform itself, not a generated application. Generated project documentation comes from profile templates during `create` or `init`; scaffold platform documentation lives separately in [README.scaffold.md](./README.scaffold.md).
@@ -163,30 +161,7 @@ approval, implementation runs inside that approved scope. Hooks guard dangerous
 tool use, verification proves the result, and `/review` gives the work a second
 AI review before human PR review.
 
-```mermaid
-flowchart TD
-  FRD[BRD / FRD / ticket spec] --> ST[/start-task --spec path]
-  CTX[.ai-scaffold/context.md] --> ST
-  MEM[.claude/MEMORY.md + tasks/lessons.md] --> ST
-  RULES[.claude/rules] --> ST
-  ROLES[.claude/roles + agents + skills] --> ST
-  ST --> PLAN[Plan + files + verification]
-  PLAN --> APPROVAL[Human says go]
-  APPROVAL --> EXEC[AI implementation]
-  subgraph Runtime Guards
-    HOOKS[.claude/settings.json wires hooks]
-    SECRET[secret/path guard]
-    BASH[dangerous bash guard]
-    GOV[governance file guard]
-  end
-  EXEC --> HOOKS
-  HOOKS --> SECRET
-  HOOKS --> BASH
-  HOOKS --> GOV
-  EXEC --> VERIFY[lint / typecheck / tests / AC checks]
-  VERIFY --> REVIEW[/review: backend + frontend + security + QA + architecture]
-  REVIEW --> PR[Human PR review / merge decision]
-```
+![AI Scaffold flow — spec and context inputs (BRD / FRD / ticket spec, .ai-scaffold/context.md, .claude/MEMORY.md + tasks/lessons.md, .claude/rules, .claude/roles + agents + skills) feed /start-task; it produces a plan, files, and verification; after one human "go", AI implementation runs under runtime guards (settings.json-wired hooks: secret/path guard, dangerous-bash guard, governance-file guard); then verify (lint / typecheck / tests / AC checks), /review by backend + frontend + security + QA + architecture, and finally human PR review / merge decision](docs/assets/ai-scaffold-flow.png)
 
 ## Requirements First
 
@@ -230,24 +205,6 @@ Run `ais doctor` after manual changes. `doctor` is the scaffold health check: it
 validates the manifest, required files, project memory, settings overrides,
 managed files, meaningful setup values, wired hooks, verification commands, and
 git presence.
-
-## CLI Install Flow
-
-`ais create` and `ais init` collect your setup answers, choose the requested
-profile, resolve placeholders, generate runtime files, and write scaffold
-metadata. Use `ais status`, `ais doctor`, and `ais list` to inspect the installed
-scaffold.
-
-```mermaid
-flowchart TD
-  User[User] --> CLI[ais create / init]
-  CLI --> Prompt[collect flags or prompts]
-  Prompt --> Profile[resolve profile and aliases]
-  Profile --> Plan[file plan]
-  Plan --> Copy[copy files + generate runtime context]
-  Copy --> Project[project with .claude, .ai-scaffold.json, AGENTS.md, CLAUDE.md]
-  Project --> Doctor[ais doctor]
-```
 
 ## Supported Profiles
 
