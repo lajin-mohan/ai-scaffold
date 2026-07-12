@@ -1,3 +1,7 @@
+---
+description: Legacy alias — Figma-ready design instruction now belongs inside /ux-design-prompt.
+---
+
 # /ux-figma-spec
 
 Legacy alias. Figma-ready design instruction now belongs inside `/ux-design-prompt`.

@@ -1,3 +1,7 @@
+---
+description: Session compaction: write key decisions, stage state, open questions, and Next Session Brief to MEMORY.md. Run when approaching token…
+---
+
 # /compact
 
 Compact the conversation context by writing key session decisions and state to `MEMORY.md`, then signal that the conversation window can be reset. Use when session token count crosses the warning threshold (per `settings.json` `tokenBudget.warningThreshold`) or when the session has reached a natural milestone.

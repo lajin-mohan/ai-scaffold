@@ -1,3 +1,7 @@
+---
+description: Create a complete Figma Make / Claude Design prompt from approved UX analysis.
+---
+
 # /ux-design-prompt
 
 Create a complete Figma Make, Claude Design, or similar AI design prompt from approved UX analysis. This command replaces the old split between `/ux-screen-spec` and `/ux-figma-spec`.

@@ -1,3 +1,7 @@
+---
+description: Query past root causes and debugging lessons from tasks/lessons.md. Search by keyword or filter by tag. Read-only — never writes lessons.
+---
+
 # /lessons
 
 Query past root causes and debugging lessons. Makes institutional knowledge from `/investigate` and `/debug-fix` accessible without re-learning the same mistake twice.

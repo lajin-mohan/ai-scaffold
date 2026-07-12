@@ -1,3 +1,7 @@
+---
+description: Architecture critique against project invariants and compliance rules
+---
+
 # Command: /architecture-review
 
 Reviews a proposed architecture or existing system design against project invariants, best practices, and long-term maintainability. Invokes `architect` and `security-reviewer` agents.

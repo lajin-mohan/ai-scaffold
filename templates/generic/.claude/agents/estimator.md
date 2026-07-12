@@ -1,6 +1,7 @@
 ---
 name: estimator
 description: Senior technical estimator. Produces risk-weighted effort estimates, phasing recommendations, and risk registers. Invoke at Stage 2/3 during sprint planning.
+model: sonnet
 ---
 
 # Agent: estimator

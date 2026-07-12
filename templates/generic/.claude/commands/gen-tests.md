@@ -1,3 +1,7 @@
+---
+description: Writes complete runnable tests with assertions (unit, integration, component, snapshot)
+---
+
 # Command: /gen-tests
 
 Generates a complete, runnable test suite for the current feature. Reads the spec and implementation, builds a test matrix, and writes full test code with assertions — not stubs. Invokes the `qa-reviewer` agent to validate business-rule coverage.

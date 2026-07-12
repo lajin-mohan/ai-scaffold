@@ -161,30 +161,7 @@ approval, implementation runs inside that approved scope. Hooks guard dangerous
 tool use, verification proves the result, and `/review` gives the work a second
 AI review before human PR review.
 
-```mermaid
-flowchart TD
-  FRD[BRD / FRD / ticket spec] --> ST[/start-task --spec path]
-  CTX[.ai-scaffold/context.md] --> ST
-  MEM[.claude/MEMORY.md + tasks/lessons.md] --> ST
-  RULES[.claude/rules] --> ST
-  ROLES[.claude/roles + agents + skills] --> ST
-  ST --> PLAN[Plan + files + verification]
-  PLAN --> APPROVAL[Human says go]
-  APPROVAL --> EXEC[AI implementation]
-  subgraph Runtime Guards
-    HOOKS[.claude/settings.json wires hooks]
-    SECRET[secret/path guard]
-    BASH[dangerous bash guard]
-    GOV[governance file guard]
-  end
-  EXEC --> HOOKS
-  HOOKS --> SECRET
-  HOOKS --> BASH
-  HOOKS --> GOV
-  EXEC --> VERIFY[lint / typecheck / tests / AC checks]
-  VERIFY --> REVIEW[/review: backend + frontend + security + QA + architecture]
-  REVIEW --> PR[Human PR review / merge decision]
-```
+![AI Scaffold flow — spec and context inputs (BRD / FRD / ticket spec, .ai-scaffold/context.md, .claude/MEMORY.md + tasks/lessons.md, .claude/rules, .claude/roles + agents + skills) feed /start-task; it produces a plan, files, and verification; after one human "go", AI implementation runs under runtime guards (settings.json-wired hooks: secret/path guard, dangerous-bash guard, governance-file guard); then verify (lint / typecheck / tests / AC checks), /review by backend + frontend + security + QA + architecture, and finally human PR review / merge decision](docs/assets/ai-scaffold-flow.png)
 
 ## Requirements First
 
@@ -228,24 +205,6 @@ Run `ais doctor` after manual changes. `doctor` is the scaffold health check: it
 validates the manifest, required files, project memory, settings overrides,
 managed files, meaningful setup values, wired hooks, verification commands, and
 git presence.
-
-## CLI Install Flow
-
-`ais create` and `ais init` collect your setup answers, choose the requested
-profile, resolve placeholders, generate runtime files, and write scaffold
-metadata. Use `ais status`, `ais doctor`, and `ais list` to inspect the installed
-scaffold.
-
-```mermaid
-flowchart TD
-  User[User] --> CLI[ais create / init]
-  CLI --> Prompt[collect flags or prompts]
-  Prompt --> Profile[resolve profile and aliases]
-  Profile --> Plan[file plan]
-  Plan --> Copy[copy files + generate runtime context]
-  Copy --> Project[project with .claude, .ai-scaffold.json, AGENTS.md, CLAUDE.md]
-  Project --> Doctor[ais doctor]
-```
 
 ## Supported Profiles
 
@@ -401,7 +360,6 @@ npx @lajin.m/ai-scaffold init \
   --backend-stack "Node.js" \
   --frontend-stack none \
   --database "PostgreSQL" \
-  --no-multi-tenant \
   --data-sensitivity internal \
   --requirements-source existing-docs \
   --requirements-path docs/requirements/brd.md \
@@ -438,9 +396,9 @@ ais doctor ./my-project --json
 
 ```bash
 npx @lajin.m/ai-scaffold update --dry-run
-npx @lajin.m/ai-scaffold update --target-version 0.8.5
+npx @lajin.m/ai-scaffold update --target-version <version>
 ais update --dry-run
-ais update --target-version 0.8.5
+ais update --target-version <version>
 ```
 
 Full safe file updates, diffs, and version-pinned migrations are planned for Phase 3. Until then, `update` exits without changing files when an actual version change would be required.

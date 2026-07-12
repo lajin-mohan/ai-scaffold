@@ -68,7 +68,7 @@ UX work is **task-based** — one UX task = one UX deliverable. The Reporting mo
 # Stage 4.3 — Manual Figma build
 #   - Designer pastes 03-design-prompt.md into Figma Make / Claude Design
 #   - Adjusts and tracks progress in 04-figma-build-notes.md
-#   - UX Lead (Lajin) approves
+#   - UX Lead approves
 # (no AI command — human + Figma tool)
 
 # Stage 4.4 — 32-item review + 4-viewport browser verification

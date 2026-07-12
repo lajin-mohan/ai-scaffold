@@ -1,6 +1,7 @@
 ---
 name: documentation-writer
 description: Senior technical writer. Produces API docs, README, architecture docs, and release notes. Invoke post-implementation or when documentation is the primary deliverable.
+model: sonnet
 ---
 
 # Agent: documentation-writer

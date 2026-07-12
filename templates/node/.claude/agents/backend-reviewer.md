@@ -1,6 +1,8 @@
 ---
 name: backend-reviewer
 description: Senior backend code reviewer. Reviews server-side code for correctness, security, performance, and test coverage. Invoke at Stage 6 before opening a PR.
+model: sonnet
+tools: Read, Grep, Glob, Bash
 ---
 
 # Agent: backend-reviewer

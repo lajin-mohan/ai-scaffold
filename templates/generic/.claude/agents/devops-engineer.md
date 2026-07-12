@@ -1,6 +1,7 @@
 ---
 name: devops-engineer
 description: Senior DevOps and platform engineer. Designs CI/CD pipelines, infrastructure, deployment strategy, and observability. Invoke at Stage 9/10 for any infrastructure or environment change.
+model: sonnet
 ---
 
 # Agent: devops-engineer

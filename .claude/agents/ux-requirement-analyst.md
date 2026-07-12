@@ -1,6 +1,7 @@
 ---
 name: ux-requirement-analyst
 description: Converts BRD and feature specs into UX requirements — user roles, goals, screen inventory, flow inventory, risks, and open questions. Invoke at Stage 1 before any UX design work begins.
+model: sonnet
 ---
 
 # Agent: ux-requirement-analyst

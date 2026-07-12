@@ -1,3 +1,7 @@
+---
+description: Plan-and-confirm execution: read spec → propose numbered plan → wait for approval → execute → verify. Use for any task >3 steps or…
+---
+
 # /start-task
 
 The "do real work" command. Bundles the plan-and-confirm protocol from [ai-coding-rules.md](../rules/ai-coding-rules.md) into a single ritual: read the spec, read adjacent code, propose a short numbered plan, **wait for one explicit approval**, then execute autonomously inside that approved scope.

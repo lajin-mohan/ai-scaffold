@@ -1,3 +1,7 @@
+---
+description: Parallel code review: backend + frontend + security + qa + architect reviewers. After UI/Component/UX findings, run /qa for live-site…
+---
+
 # Command: /review
 
 Runs a full code review on the current feature branch or specified files. Invokes **five reviewers in parallel** by default — backend, frontend, security, qa, architect — then consolidates findings.

@@ -1,3 +1,7 @@
+---
+description: Legacy alias — screen-level specification now belongs inside /ux-design-prompt.
+---
+
 # /ux-screen-spec
 
 Legacy alias. Screen-level specification now belongs inside `/ux-design-prompt`.

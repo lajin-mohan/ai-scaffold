@@ -97,6 +97,7 @@ export const PROTECTED_PATHS = [
   '.env',
   '.ai-scaffold.json',
   '.gitignore',
+  'constitution.md',
   // Project root files that existing projects will have customized:
   'AGENTS.md',
   'CLAUDE.md',
@@ -155,7 +156,7 @@ export async function buildFilePlan(sourceDir, targetDir, options = {}) {
 
   // Always-generate files: these have no template source; they are built
   // programmatically by copy.js generateFile().
-  const alwaysGenerate = ['.ai-scaffold.json', '.ai-scaffold/README.md', '.ai-scaffold/context.md'];
+  const alwaysGenerate = ['.ai-scaffold.json', '.ai-scaffold/README.md', '.ai-scaffold/context.md', 'constitution.md'];
 
   // Governance skeleton — generated (not copied) so fresh projects get a clean
   // starter rather than the scaffold's own lessons/changelog, and so the shipped
@@ -328,6 +329,7 @@ function resolveGeneratedTargetRel(generatedRel, existingTarget, forceRoot) {
   if (
     forceRoot ||
     generatedRel === '.ai-scaffold.json' ||
+    generatedRel === 'constitution.md' ||
     generatedRel.startsWith('.ai-scaffold/') ||
     generatedRel.startsWith('.claude/')
   ) {

@@ -1,3 +1,7 @@
+---
+description: Business Requirements Document from feature description
+---
+
 # Command: /create-brd
 
 Produces a Business Requirements Document from a feature description or stakeholder brief. Invokes `solution-analyst` to surface gaps before writing, then structures output using `.claude/templates/brd-template.md`.

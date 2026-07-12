@@ -1,3 +1,7 @@
+---
+description: QA coverage and quality review. Validates traceability, independence, data isolation, CI commands. Severity: BLOCK / HIGH / MEDIUM / LOW.
+---
+
 # /qa-review
 
 QA coverage and quality review. Validates that tests provide genuine coverage, not just checkbox testing. Checks traceability, independence, data isolation, and CI command correctness. Uses the `qa-reviewer` agent.

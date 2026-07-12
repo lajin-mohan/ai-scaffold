@@ -6,7 +6,7 @@ These instructions guide Copilot suggestions for this repository. They complemen
 
 ## Project Context
 
-**Organization:** Techversant Infotech
+**Organization:** Project Team
 **Stack:** {{BACKEND_STACK}} · {{FRONTEND_STACK}} · {{DATABASE}} · {{CLOUD_PROVIDER}}
 **Pattern:** Clean Architecture — Routes → Services → Repositories → Domain
 

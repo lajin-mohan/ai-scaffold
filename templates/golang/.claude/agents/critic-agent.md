@@ -1,6 +1,8 @@
 ---
 name: critic
 description: Self-verification before code output, plan delivery, architectural decisions, reviews, and "done" claims. Validates H1-H8, verifies imports/types, flags uncertainty, and applies Decision Brief format for trade-offs.
+model: opus
+tools: Read, Grep, Glob, Bash
 ---
 
 # Critic Agent
