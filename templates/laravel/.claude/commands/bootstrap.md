@@ -78,7 +78,7 @@ Project Identity:
   Purpose:       Applicant tracking system for SMBs
   Type:          production-saas
   Multi-tenant:  true
-  Owner:         lajinmj@gmail.com
+  Owner:         owner@example.com
   Epic:          Core application workflow
 
 Feature Flags:

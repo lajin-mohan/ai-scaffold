@@ -22,7 +22,7 @@ This file governs how Claude, Codex, and other AI tools collaborate on every pro
 | Field | Value |
 |---|---|
 | **Project** | `ai-scaffold` |
-| **Organization** | Techversant Infotech |
+| **Organization** | Project Team |
 | **Owner** | Lajin M J - lajinmj@gmail.com |
 | **Purpose** | Reusable AI engineering scaffold with CLI distribution |
 | **Type** | Platform |

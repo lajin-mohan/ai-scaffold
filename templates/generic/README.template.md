@@ -70,4 +70,4 @@ Useful entry points:
 
 ## License
 
-{{LICENSE}} - {{YEAR}} Lajin M J.
+© {{YEAR}} {{PROJECT_DISPLAY_NAME}}.

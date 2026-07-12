@@ -39,6 +39,23 @@ This file is configured with `merge=union` in `.gitattributes` so parallel addit
   against the documented single-tenant default. The `--no-multi-tenant` flag is
   removed; `--multi-tenant` now opts in, matching `resolveWithDefaults`. The
   stale `--no-multi-tenant` example is gone from the README.
+- **Generated projects no longer inherit the scaffold's identity or license.**
+  The generated `README` footer credited the scaffold author (`AI Scaffold
+  Community License - <year> Lajin M J.`) while shipping no `LICENSE` file, and
+  the generated `package.json` set `"license": "AI Scaffold Community License"`
+  (not a valid SPDX id). The footer now reads `© <year> <project display name>`
+  and the `{{LICENSE}}` default is a neutral `UNLICENSED` the user replaces with
+  their own. Author identity leaking through generic examples is gone too
+  (`UX Lead (Lajin)` → `UX Lead`; bootstrap sample `Owner:` email →
+  `owner@example.com`).
+
+### Changed
+- **Removed the remaining hardcoded organization name from scaffold files.**
+  `.cursorrules`, `.github/copilot-instructions.md`, and the scaffold's own
+  `CLAUDE.md` still named a specific company; genericized to "Project Team" /
+  "AI development workflow" to match the rest of the (already-genericized)
+  `.claude/` content. (These files are not copied into generated projects; this
+  is repo-hygiene so browsing the scaffold shows nothing company-specific.)
 
 ## [0.8.8] - 2026-07-11
 

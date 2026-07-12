@@ -35,7 +35,7 @@ export function resolvePlaceholders(content, values) {
     '{{IAC_TOOL}}': 'N/A',
     '{{CICD_PLATFORM}}': 'GitHub Actions',
     '{{PM_TOOL}}': 'GitHub Projects',
-    '{{LICENSE}}': 'AI Scaffold Community License',
+    '{{LICENSE}}': 'UNLICENSED',
     '{{YEAR}}': new Date().getFullYear().toString(),
   };
 
