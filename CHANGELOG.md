@@ -13,6 +13,8 @@ This file is configured with `merge=union` in `.gitattributes` so parallel addit
 
 ## [Unreleased]
 
+## [0.9.0] - 2026-07-12
+
 ### Added
 - **Generated projects ship a one-page `constitution.md`.** A root-level,
   profile-aware source of truth that names the 10 non-negotiables and — its real
