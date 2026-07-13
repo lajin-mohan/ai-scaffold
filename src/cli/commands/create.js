@@ -161,6 +161,9 @@ async function runCreate(projectName, options) {
     console.log(chalk.gray(`  Profile: ${resolved.profile ?? profile}`));
     if (gitResult?.initialized) {
       console.log(chalk.gray(`  Git: initialized${gitResult.committed ? ' with initial commit' : ''}`));
+      if (gitResult.warning) {
+        console.log(chalk.yellow(`  Git: ${gitResult.warning}`));
+      }
     } else if (gitResult?.warning) {
       console.log(chalk.yellow(`  Git: ${gitResult.warning}`));
     }
@@ -210,7 +213,33 @@ function initializeGitRepository(targetDir) {
     };
   }
 
-  return { initialized: true, committed: true };
+  // Install the hook AFTER the initial commit, not before: git invokes
+  // .git/hooks/pre-commit on every commit including this one, and the hook's
+  // branch-name check would reject whatever branch `git init` defaulted to
+  // (main/dev are allowed once created via a branch command, but the initial
+  // commit lands directly on git's default branch before any feature/fix/...
+  // branch exists) — wiring it early would break `create` itself.
+  const hookWarning = installPreCommitHook(targetDir);
+
+  return { initialized: true, committed: true, warning: hookWarning };
+}
+
+// Copies the generated project's own .claude/hooks/pre-commit into .git/hooks/
+// so branch-name and lint gates apply to commits made outside Claude Code, not
+// only to commits the agent makes (pre-bash-quality-gate.sh covers only the
+// latter). Best-effort: a missing hook file or a chmod failure (e.g. some
+// Windows filesystems) degrades to a warning, never blocks project creation.
+function installPreCommitHook(targetDir) {
+  const source = path.join(targetDir, '.claude', 'hooks', 'pre-commit');
+  const dest = path.join(targetDir, '.git', 'hooks', 'pre-commit');
+  if (!fs.existsSync(source)) return undefined;
+  try {
+    fs.copySync(source, dest);
+    fs.chmodSync(dest, 0o755);
+    return undefined;
+  } catch (error) {
+    return `git initialized, but wiring the pre-commit hook failed (${error.message})`;
+  }
 }
 
 function runGit(args, cwd) {

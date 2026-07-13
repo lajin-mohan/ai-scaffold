@@ -14,6 +14,77 @@ This file is configured with `merge=union` in `.gitattributes` so parallel addit
 ## [Unreleased]
 
 ### Added
+- **`create` wires the git `pre-commit` hook on every new project (item 54).**
+  Generated projects shipped `.claude/hooks/pre-commit`, but nothing installed
+  it into `.git/hooks/`, so branch-name and lint gates only applied to commits
+  made through Claude Code (`pre-bash-quality-gate.sh`) — a commit from a plain
+  terminal bypassed them entirely. `create` now copies the hook into
+  `.git/hooks/pre-commit` and sets it executable, right after the initial
+  scaffold commit succeeds (installing it earlier would let the newly-wired
+  hook block that very commit). Respects `--no-git`. Verified end-to-end: the
+  hook allows the initial commit and any commit on `main`/`dev`/`master` or a
+  well-formed `feature/*` branch, and genuinely rejects a malformed branch name
+  (no commit object is created).
+
+### Fixed
+- **Three verified defects in the shipped `pre-commit` hook, found while
+  wiring it live for item 54** (previously silent — the hook was never
+  invoked automatically, so these never fired):
+  - The branch-name regex only allowed `feature|fix|chore|hotfix|release`
+    with a required slash suffix — it rejected `main`, `dev`, and `master`
+    outright. Since `git init` on this machine (and many others without
+    `init.defaultBranch` configured) defaults to `master`, wiring the hook
+    as-is would have blocked the *second* commit on every fresh project.
+    Fixed to `^(main|dev|master)$|^(feature|fix|chore|hotfix|release)/...+$`
+    across all five profiles and this repo's own copy (which had a related
+    bug: its regex accidentally also allowed *bare* `feature`/`fix`/`chore`/
+    `hotfix`/`release` with no slug, contradicting its own naming convention).
+  - The Node/generic "Unit Tests" check ran `npm run test:unit -- --run`, but
+    generated projects only define a `test` script (`node --test` for node,
+    a stub for generic) — `test:unit` doesn't exist, so the check would FAIL
+    on every commit. Fixed to `npm test`.
+  - The Python "pytest" check ran `pytest tests/unit/ -v`, but the generated
+    project's real test file is `test_smoke.py` at the project root and
+    `pyproject.toml` already sets `testpaths = ["."]`. Fixed to bare `pytest`.
+- **`dev`'s `CHANGELOG.md` was missing the `[0.9.0]` and `[0.9.1]` dated
+  headings** that exist on `main` — the post-release `main→dev` sync uses
+  `git merge -s ours` (ancestry-only, intentionally discards `main`'s content),
+  so the heading-dating done on each release branch never made it back to
+  `dev`; all that content sat undated under `[Unreleased]` instead. Restored
+  from `main` (content was otherwise byte-identical). Tracked as hygiene item
+  57 to fix the underlying process so this doesn't recur every release.
+
+## [0.9.1] - 2026-07-13
+
+### Added
+- **`/review --lite` tiered review mode (T1).** One consolidated review pass in
+  the main context instead of the five-subagent fan-out, for XS/S low-risk
+  changes — same BLOCK/WARN/NIT report and verdict. Hard, non-negotiable
+  escalation back to the full fan-out when the diff touches auth, sessions,
+  permissions, tenant isolation, payments, data access, migrations, secrets, a
+  new endpoint, or exceeds ~S / one architectural layer. Trims the ~5× fan-out
+  cost on trivial work, never the guardrails on risky work. Shipped in
+  `review.md` across all five profiles.
+- **`npm run token-report` corpus measurement (T0).** Dependency-free, show-only
+  report of the scaffold's context footprint: per-category tokens (always-loaded
+  vs on-demand), largest files, and the `/review` fan-out floor. Baseline
+  captured (~138K est-tokens; `CLAUDE.md` only 5% — the weight is commands 34% +
+  rules 29%), so every token optimization is measured, not guessed.
+  `scripts/token-report.js` ships in the package and a pre-publish smoke gate
+  asserts it (`buildTokenReport` is unit-tested).
+
+### Fixed
+- **token-report counted the wrong fifth reviewer.** It listed `critic-agent`;
+  `/review` actually fans out to backend, frontend, security, qa, **architect**.
+  The unit test now asserts the exact five so the list cannot drift.
+- **`dev` release metadata no longer lags the published CLI.** `package.json`,
+  `package-lock.json`, and `.ai-scaffold.json` were stale at 0.8.8 after the
+  0.9.0 release; aligned to the published version so promotion PRs never
+  downgrade.
+
+## [0.9.0] - 2026-07-12
+
+### Added
 - **Generated projects ship a one-page `constitution.md`.** A root-level,
   profile-aware source of truth that names the 10 non-negotiables and — its real
   job — **owns precedence and order** so an AI agent knows which rule wins on a
