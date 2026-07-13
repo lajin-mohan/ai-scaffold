@@ -171,11 +171,13 @@ solve baseline prompt bloat. Ordered by token-saved-per-effort.
   - Maintainer tool (measures this repo). A user-facing `ais tokens` / `/health`
     view of a *generated* project's corpus is a later optional extension.
     *(done)*
-- **T1. Tiered / lite review.** *highest per-task saving.* `/review --lite` = one
-  consolidated reviewer for XS/S changes (per `task-size-policy.md`); the full
-  5-agent fan-out is reserved for M+ or critical-path (auth/billing/tenant).
-  Saves ~⅘ of review tokens on the majority of changes. *(medium; keep full mode
-  for high-stakes)*
+- **T1. Tiered / lite review — ✅ DONE (0.9.1).** `/review --lite` runs one
+  consolidated pass (no 5-subagent fan-out) for XS/S changes, with a **hard,
+  non-negotiable escalation** back to the full review when the diff touches
+  auth/tenant/payments/data/migrations/secrets/new-endpoint or is > S. Same
+  BLOCK/WARN/NIT report; security always surfaced. Removes the ~⅘ fan-out cost on
+  small work without trimming guardrails on risky work. Shipped in `review.md`
+  across all five profiles. *(done)*
 - **T2. Rules deduplication.** One canonical statement per concept,
   cross-referenced not restated (e.g. "parameterized queries" lives in 4 files
   today). Compounds across every subagent that loads rules. Content-preserving —
