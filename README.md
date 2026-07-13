@@ -424,6 +424,8 @@ It copies those paths to `~/.ai-scaffold-backups/<project>-<timestamp>/` — **o
 
 ### Command Reference
 
+Full per-command reference with every flag: [docs/cli-reference.md](docs/cli-reference.md).
+
 | Command | Use when | Example |
 |---|---|---|
 | `create <dir>` | Start a new project from a profile template; initializes git unless `--no-git` is used | `npx @lajin.m/ai-scaffold create my-app --profile node` |

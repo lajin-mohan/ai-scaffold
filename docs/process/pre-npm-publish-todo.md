@@ -5,12 +5,14 @@ in `CHANGELOG.md` (the permanent record); this file tracks what is **left** and
 why, grouped into phases by rating lever. Completed items are removed after
 verification against npm/git, not kept as history.
 
-## Current state (2026-07-13)
+## Current state (2026-07-14)
 
-- **v0.9.0 is published** (`latest`, provenance). **v0.9.1 is ready to cut**:
-  T0 (token measurement, #78), T1 (`/review --lite`, #79), and the review
-  blockers (#80) are merged to `dev`; `main` is an ancestor of `dev`; all gates
-  green (46 tests, lint/typecheck clean, smoke all-pass, 0 vulns at any level).
+- **v0.9.1 is published** (`latest`, provenance) — T0 token measurement, T1
+  `/review --lite`, and the review blockers. **v0.10.0 is in flight**: item 54
+  (auto-wired git pre-commit hook, #85), item 56 (`ais export-context`
+  reinstall safeguard, #86), item 28 (CLI reference), and the docs audit.
+  `main` is an ancestor of `dev`; all gates green on the integrated branches
+  (49 tests, lint/typecheck clean, smoke all-pass, 0 vulns at any level).
 - **Security posture reviewed 2026-07-13:** 7 mainstream runtime deps, 0 npm-audit
   findings at any level, OIDC trusted publishing (no long-lived token), CI runs
   gitleaks + audit, no secret patterns in tracked code, only shell-out is
@@ -83,17 +85,18 @@ that decision: the items below are what actually protects a pilot in its absence
   Not drift detection (that's item 26, deferred with 25) — a fixed, definite
   file list. 2 e2e tests + 3 smoke gates; ships via the existing `src/cli/`
   package glob (no new dependency — plain `fs-extra` copy). *(done)*
-- **54 (was 51 — renumbered, collided with Phase 2 item 51). Auto-wire the git
-  `pre-commit` hook on `create`.** Now more valuable, not less: with no `update`
-  path forcing periodic re-sync, gate enforcement on day one is the pilot's only
-  safety net for commits made *outside* Claude Code (the Claude-side
-  `pre-bash-quality-gate.sh` only covers commits made through the agent).
-  `create` already runs `git init` — copy the hook and set the exec bit there;
-  respect `--no-git`. *(small, closes a real enforcement gap for mixed human/AI
-  teams)*
-- **28 (elevated). Per-command CLI reference** — moved up from Phase 3 in
-  spirit: the single most-requested artifact when a new team adopts a CLI.
-  Even a generated `docs/cli-reference.md` from `--help` text is a win. *(medium)*
+- **54 (was 51). Auto-wire the git `pre-commit` hook on `create` — ✅ DONE
+  (#85).** `create` copies `.claude/hooks/pre-commit` into `.git/hooks/`
+  (executable) right after the initial scaffold commit, so gates apply to
+  commits made *outside* Claude Code too; respects `--no-git`. Wiring it live
+  surfaced and fixed 3 previously-silent hook defects (branch regex rejected
+  `main`/`dev`/`master`; Node check called a nonexistent `test:unit` script;
+  Python check pointed at a nonexistent `tests/unit/` dir) across all 5
+  profiles + this repo's own copy. E2E test + 3 smoke gates. *(done)*
+- **28 (elevated). Per-command CLI reference — ✅ DONE.** `docs/cli-reference.md`
+  covers all 7 commands with every flag, generated from the CLI's actual
+  `--help` output (not memory), linked from the README Command Reference
+  section. *(done)*
 - **55 (was 52 — renumbered, collided with Phase 2 item 52). Pilot feedback
   loop.** Run the workshop, start the 2 pilots (1 new project, 1 existing),
   assign the five roles (owner / dev / QA / reviewer / scribe), and hold a
@@ -112,7 +115,7 @@ project's own `ponytail:` convention — no vague "later"): come back to item 25
 when **any** of — (a) a 3rd project onboards, (b) a pilot project accumulates
 meaningful hand-edits to `.claude/rules/*` or `settings-overrides.json` that
 delete+reinstall would destroy, or (c) a pilot needs to jump more than one `ais`
-version. Item 52 (pilot retro) is the mechanism that surfaces (a)/(b)/(c).
+version. Item 55 (pilot retro) is the mechanism that surfaces (a)/(b)/(c).
 
 - **25. Real `ais update` (managed-file migration).** *deferred — see above.*
   Diff installed vs target version; classify each file (managed / protected /
@@ -273,9 +276,10 @@ saving starts costing correctness.
   --tags`; already broke the sync script once). *(needs explicit human "delete v1.0")*
 - **44.** Remove stray cruft from source template dirs (`templates/{golang,python}/apps/`,
   `templates/*/.vscode/`).
-- **46.** Fix the repo's own `.claude/skills/design-system.md` → `DESIGN_TOKENS.md`
-  relative link (it has a doubled `.claude/skills/` prefix; the templates were
-  fixed in 0.8.6, the repo copy was missed).
+- **46. — ✅ DONE (0.10.0 docs audit).** Fixed the repo's own
+  `.claude/skills/design-system.md` → `DESIGN_TOKENS.md` links (4 occurrences
+  had a doubled `.claude/skills/` prefix); the file is now byte-identical to
+  the (already-correct) template copies.
 - **21.** Docs-honesty pass (stale version/claims). **22.** Publish-workflow input
   cleanup. **18.** Hooks-roadmap doc. **41.** Decide the fate of the example hooks
   (`jira-sync.py`, `notify-review.py`) — pack or remove.
@@ -325,7 +329,7 @@ A release is ready only when **all** of these pass — the first two are automat
 - `npm run release:check` — `origin/main` is an ancestor of the promotion branch,
   and a `release/v*` branch changes only `package.json` / `package-lock.json` /
   `.ai-scaffold.json` / `CHANGELOG.md`.
-- `bash scripts/pre-publish-smoke.sh` — currently **99 gates** incl. the
+- `bash scripts/pre-publish-smoke.sh` — currently **105 gates** incl. the
   packed-surface, generated-doc-link, and constitution checks.
 - `npm test`, `npm run lint`, `npm run typecheck`, `npm audit --audit-level=high`.
 - `gh pr view <id>` shows `mergeable` + required checks green.

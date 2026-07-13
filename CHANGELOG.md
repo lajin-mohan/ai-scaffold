@@ -14,6 +14,11 @@ This file is configured with `merge=union` in `.gitattributes` so parallel addit
 ## [Unreleased]
 
 ### Added
+- **Per-command CLI reference (item 28).** New `docs/cli-reference.md` covers
+  all 7 commands (`create`, `init`, `status`, `doctor`, `list`,
+  `export-context`, `update`) with every flag, generated from the CLI's actual
+  `--help` output rather than from memory, plus bare-shortcut routing and exit
+  codes. Linked from the README's Command Reference section.
 - **`ais export-context` — back up project memory before a delete-and-reinstall
   upgrade (item 56).** With `ais update` deferred until after the pilot phase,
   "delete the project and re-run `ais create`" is the accepted interim upgrade
@@ -40,6 +45,16 @@ This file is configured with `merge=union` in `.gitattributes` so parallel addit
   (no commit object is created).
 
 ### Fixed
+- **Docs audit for 0.10.0.** The README Command Reference table was missing the
+  `list` command row (7 commands registered, 6 documented). The repo's own
+  `CLAUDE.md` "Current State" section was six releases stale (still described
+  the v0.8.1 milestone). The repo's own `.claude/skills/design-system.md` had 4
+  broken `DESIGN_TOKENS.md` links with a doubled `.claude/skills/` prefix
+  (hygiene item 46 — template copies were already correct; the repo copy now
+  matches them byte-for-byte). The backlog misreferenced the pilot retro as
+  item 52 after the renumbering (it is 55) and undercounted the smoke gates
+  (99 → 105). All relative links across README, cli-reference,
+  README.scaffold, HOW-TO-USE, and CONTRIBUTING verified to resolve.
 - **Three verified defects in the shipped `pre-commit` hook, found while
   wiring it live for item 54** (previously silent — the hook was never
   invoked automatically, so these never fired):
