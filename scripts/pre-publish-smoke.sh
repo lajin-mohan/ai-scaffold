@@ -105,6 +105,15 @@ else
   fail "npm package ships ${GITIGNORE_IN_PACK}/5 gitignore + ${DOT_GITIGNORE_IN_PACK} dotted (generated projects would lack .gitignore)"
 fi
 
+# package.json exposes `npm run token-report` → scripts/token-report.js must ship,
+# or the script reference is broken in the published package (its module in
+# src/cli/core already ships via the src/cli/ glob).
+if grep -q 'scripts/token-report.js' <<< "$PACK_OUTPUT"; then
+  pass "npm package ships scripts/token-report.js (npm run token-report resolves)"
+else
+  fail "npm package omits scripts/token-report.js — the token-report npm script would be broken"
+fi
+
 # Profile build files must ship or that profile's create fails — new root files
 # have to be added to the package.json "files" allowlist (same class as the
 # settings.json packaging bug).
