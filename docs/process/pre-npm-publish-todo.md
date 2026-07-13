@@ -5,11 +5,18 @@ in `CHANGELOG.md` (the permanent record); this file tracks what is **left** and
 why, grouped into phases by rating lever. Completed items are removed after
 verification against npm/git, not kept as history.
 
-## Current state (2026-07-12)
+## Current state (2026-07-13)
 
-- **v0.9.0 is published** — `release/v0.9.0` → `main` (PR #71), tag `v0.9.0`
-  triggered trusted npm publishing, and `@lajin.m/ai-scaffold@0.9.0` is `latest`.
-  Release gates were clean: `release:check` OK, smoke 99/99, 0 high vulns.
+- **v0.9.0 is published** (`latest`, provenance). **v0.9.1 is ready to cut**:
+  T0 (token measurement, #78), T1 (`/review --lite`, #79), and the review
+  blockers (#80) are merged to `dev`; `main` is an ancestor of `dev`; all gates
+  green (46 tests, lint/typecheck clean, smoke all-pass, 0 vulns at any level).
+- **Security posture reviewed 2026-07-13:** 7 mainstream runtime deps, 0 npm-audit
+  findings at any level, OIDC trusted publishing (no long-lived token), CI runs
+  gitleaks + audit, no secret patterns in tracked code, only shell-out is
+  `spawnSync('git', [args])` (array form — no shell interpolation), tarball
+  carries no env/secret/local-settings files, generated projects ship hook
+  wiring + a `.gitignore` that ignores `.env`.
 - Post-release `main→dev` sync is automated but still semi-manual until item
   47's repo settings land. Keep release metadata aligned during promotions so
   `dev` never downgrades the published version on the next `dev→main` PR.
@@ -47,6 +54,26 @@ Removed from the active backlog after verification against npm/git.
 | 0.9.0 | **Project constitution (39)**; generated-output genericization finished — no author/org/license leaks (37); **Claude-feature modernization** (per-agent `model`, read-only reviewer `tools`, command `description` frontmatter, honest Agent-Skills list); tarball-based smoke gate that runs `doctor` per profile (36); README flow diagram + zero mermaid; GH Actions on Node 24 (45); worktree-safe `vitest` |
 
 ---
+
+## Phase 0 — Team handover (now, alongside the 0.9.1 cut)
+
+The CLI is being handed to a small team (2 pilot projects). These items directly
+de-risk that handover and were surfaced by the 0.9.1 readiness/security review.
+
+- **52. Pilot feedback loop.** Run the workshop, start the 2 pilots (1 new
+  project, 1 existing), assign the five roles (owner / dev / QA / reviewer /
+  scribe), and hold a 20-min retro after the first real task. Pilot lessons
+  re-prioritise Phase 1 before major work starts. *(process, small)*
+- **51. Auto-wire the git `pre-commit` hook on `create`.** Generated projects
+  ship `.claude/hooks/pre-commit` but nothing installs it into `.git/hooks/`,
+  so commits made *outside* Claude Code bypass the branch-name/lint gates (the
+  Claude-side `pre-bash-quality-gate.sh` only covers commits made through the
+  agent). `create` already runs `git init` — copy the hook and set the exec bit
+  there; respect `--no-git`. *(small, closes a real enforcement gap for mixed
+  human/AI teams)*
+- **28 (elevated). Per-command CLI reference** — moved up from Phase 3 in
+  spirit: the single most-requested artifact when a new team adopts a CLI.
+  Even a generated `docs/cli-reference.md` from `--help` text is a win. *(medium)*
 
 ## Phase 1 — Living system (lifecycle) · the #1 rating lever
 
