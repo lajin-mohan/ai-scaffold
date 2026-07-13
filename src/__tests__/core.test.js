@@ -373,8 +373,15 @@ describe('buildTokenReport', () => {
     expect([...tokens].sort((a, b) => b - a)).toEqual(tokens);
   });
 
-  it('measures the /review fan-out floor from the reviewer agent defs', () => {
-    expect(report.reviewFanout.agents).toContain('backend-reviewer');
+  it('measures the /review fan-out from the five reviewers in review.md', () => {
+    // Must match the five reviewers /review actually fans out to — NOT critic.
+    expect(report.reviewFanout.agents).toEqual([
+      'backend-reviewer',
+      'frontend-reviewer',
+      'security-reviewer',
+      'qa-reviewer',
+      'architect',
+    ]);
     expect(report.reviewFanout.tokens).toBeGreaterThan(0);
   });
 });
