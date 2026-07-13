@@ -186,6 +186,42 @@ else
   fail "generated settings do not wire starter safety hooks"
 fi
 
+# Item 54: create wires .claude/hooks/pre-commit into .git/hooks/ so commits
+# made outside Claude Code are gated too, not only agent-driven commits.
+if [ -x "$SMOKE_DIR/smoke-project/.git/hooks/pre-commit" ]; then
+  pass "create wires .claude/hooks/pre-commit into .git/hooks (executable)"
+else
+  fail ".git/hooks/pre-commit missing or not executable after create"
+fi
+
+# The wired hook must not block the initial scaffold commit itself — this is
+# the exact regression a naive "install before commit" ordering would cause.
+INIT_COMMIT=$(git -C "$SMOKE_DIR/smoke-project" rev-parse --verify HEAD 2>&1) || true
+if [ -n "$INIT_COMMIT" ]; then
+  pass "initial scaffold commit succeeds with the hook wired"
+else
+  fail "initial scaffold commit missing — installPreCommitHook may be blocking it"
+fi
+
+# The hook must allow git's actual default branch name (commonly 'master'
+# unless init.defaultBranch is configured) — a regex that only allows
+# feature/fix/chore/hotfix/release would reject every early commit.
+DEFAULT_BRANCH=$(git -C "$SMOKE_DIR/smoke-project" branch --show-current)
+if echo "$DEFAULT_BRANCH" | grep -qE '^(main|dev|master)$'; then
+  (
+    cd "$SMOKE_DIR/smoke-project"
+    echo x > hook-branch-check.txt
+    git add hook-branch-check.txt >/dev/null 2>&1
+    if git -c user.name=smoke -c user.email=smoke@example.invalid commit -m "smoke: branch check" >/dev/null 2>&1; then
+      pass "pre-commit hook allows a commit on '$DEFAULT_BRANCH'"
+    else
+      fail "pre-commit hook rejects a commit on git's own default branch '$DEFAULT_BRANCH'"
+    fi
+  )
+else
+  echo "  (default branch '$DEFAULT_BRANCH' not main/dev/master — skipping branch-allow check)"
+fi
+
 if grep -q "Project memory only" "$SMOKE_DIR/smoke-project/.claude/MEMORY.md" \
   && grep -q "production data" "$SMOKE_DIR/smoke-project/.claude/MEMORY.md" \
   && grep -q "client-confidential text" "$SMOKE_DIR/smoke-project/.claude/MEMORY.md"; then

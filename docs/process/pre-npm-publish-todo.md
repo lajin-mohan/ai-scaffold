@@ -279,6 +279,26 @@ saving starts costing correctness.
 - **21.** Docs-honesty pass (stale version/claims). **22.** Publish-workflow input
   cleanup. **18.** Hooks-roadmap doc. **41.** Decide the fate of the example hooks
   (`jira-sync.py`, `notify-review.py`) — pack or remove.
+- **57. `main→dev` sync loses CHANGELOG heading-dating every release.** Found
+  2026-07-14: the release-branch step dates `[Unreleased]` → `[0.9.x] - date`,
+  but `main→dev` sync (`git merge -s ours`) intentionally discards `main`'s
+  content, so `dev` never receives the dated heading — the same content sits
+  undated under `[Unreleased]` and silently accumulates across releases until
+  someone notices (this time: two releases' worth, caught during a docs
+  review). One-time catch-up applied 2026-07-14. Needs a process fix: either
+  the release-branch step also opens a tiny `dev`-targeted PR that applies
+  just the heading rename, or the sync script diffs+applies CHANGELOG heading
+  changes specifically (not full content, to avoid re-breaking ancestry).
+  *(small fix, but recurs every release until fixed)*
+- **58. `pre-commit` hook has no Go/`.NET` detection block.** The hook
+  documents 4 stack-detection blocks (Node, PHP, Python, .NET) but golang is
+  an officially shipped, first-class profile with zero coverage — only the
+  always-on branch-name check applies to a golang project; `go build`/`go
+  vet`/`go test` never run locally pre-commit. Not a regression from item 54
+  (golang was already uncovered before the hook was wired) but a real content
+  gap for a supported profile. Add a `go.mod` detection block mirroring the
+  existing pattern (`go build ./...`, `go vet ./...`, `go test ./...`, guarded
+  by `command -v go`). *(small — same shape as existing blocks)*
 
 ---
 
