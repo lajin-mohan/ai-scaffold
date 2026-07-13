@@ -431,6 +431,7 @@ It copies those paths to `~/.ai-scaffold-backups/<project>-<timestamp>/` — **o
 | `init [dir]` | Add AI Scaffold to an existing repository | `npx @lajin.m/ai-scaffold init --profile node --dry-run` |
 | `.` | Short form for `init` in the current directory | `npx @lajin.m/ai-scaffold . --profile node` |
 | `status [dir]` | Show installed profile, version, and managed-file status | `npx @lajin.m/ai-scaffold status` |
+| `list [dir]` | List installed commands, agents, skills, and rules | `npx @lajin.m/ai-scaffold list` |
 | `export-context [dir]` | Back up memory/lessons/settings before deleting and reinstalling | `npx @lajin.m/ai-scaffold export-context ./my-app` |
 | `doctor [dir]` | Diagnose missing, changed, or invalid scaffold files | `npx @lajin.m/ai-scaffold doctor --json` |
 | `update [dir]` | Update scaffold metadata in this MVP; full migrations are later | `npx @lajin.m/ai-scaffold update --dry-run` |
