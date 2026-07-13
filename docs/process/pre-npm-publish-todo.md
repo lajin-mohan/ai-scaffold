@@ -70,17 +70,19 @@ de-risk that handover and were surfaced by the 0.9.1 readiness/security review.
 in Phase 1 for why and the revisit trigger. Priority reordered 2026-07-14 around
 that decision: the items below are what actually protects a pilot in its absence.
 
-- **56. Safeguard the delete-and-reinstall workaround.** *new, highest priority
-  — direct consequence of deferring 25.* With `ais update` deferred, "delete the
-  project and re-run `ais create`" is the accepted interim upgrade path for the
-  pilot. That silently **destroys `tasks/lessons.md` and `.claude/MEMORY.md`** —
-  the two files that accumulate the pilot's actual value and are not
-  re-derivable. Ship a short "before you reinstall" checklist (which files to
-  copy out: `tasks/lessons.md`, `.claude/MEMORY.md`, `.ai-scaffold/context.md`,
-  any hand-edited `.claude/rules/*` or `settings-overrides.json`) in the README
-  and workshop material; a one-command `ais export-context` (zips those paths)
-  is the cheap follow-up if the manual checklist proves too easy to skip.
-  *(docs: small; helper script: small)*
+- **56. Safeguard the delete-and-reinstall workaround — ✅ DONE.** With `ais
+  update` deferred, "delete the project and re-run `ais create`" is the
+  accepted interim upgrade path — this closes its one real risk. Shipped: a
+  "Before You Reinstall" README section naming the non-regenerable files
+  (`tasks/lessons.md`, `.claude/MEMORY.md`, `.ai-scaffold/context.md`,
+  `.claude/settings-overrides.json`, hand-edited `.claude/rules/*`), and `ais
+  export-context [dir]` — copies those paths to
+  `~/.ai-scaffold-backups/<project>-<timestamp>/` (**outside** the project, on
+  purpose: verified the backup survives the source project being deleted, the
+  exact scenario this exists for). `--out <path>` to override the destination.
+  Not drift detection (that's item 26, deferred with 25) — a fixed, definite
+  file list. 2 e2e tests + 3 smoke gates; ships via the existing `src/cli/`
+  package glob (no new dependency — plain `fs-extra` copy). *(done)*
 - **54 (was 51 — renumbered, collided with Phase 2 item 51). Auto-wire the git
   `pre-commit` hook on `create`.** Now more valuable, not less: with no `update`
   path forcing periodic re-sync, gate enforcement on day one is the pilot's only

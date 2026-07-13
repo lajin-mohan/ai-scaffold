@@ -14,6 +14,19 @@ This file is configured with `merge=union` in `.gitattributes` so parallel addit
 ## [Unreleased]
 
 ### Added
+- **`ais export-context` — back up project memory before a delete-and-reinstall
+  upgrade (item 56).** With `ais update` deferred until after the pilot phase,
+  "delete the project and re-run `ais create`" is the accepted interim upgrade
+  path — but that silently destroys `tasks/lessons.md` and `.claude/MEMORY.md`,
+  the two files where a project's real, non-regenerable value accumulates.
+  `ais export-context [dir]` copies those two files plus
+  `.ai-scaffold/context.md`, `.claude/settings-overrides.json`, and
+  `.claude/rules/` to `~/.ai-scaffold-backups/<project>-<timestamp>/` —
+  **outside** the project directory on purpose, verified to survive the
+  source project being deleted. `--out <path>` to override the destination.
+  Deliberately a fixed, definite file list, not drift detection (that's item
+  26, deferred alongside `ais update`). New "Before You Reinstall" README
+  section. Ships via the existing `src/cli/` package glob — no new dependency.
 - **Generated projects ship a one-page `constitution.md`.** A root-level,
   profile-aware source of truth that names the 10 non-negotiables and — its real
   job — **owns precedence and order** so an AI agent knows which rule wins on a
