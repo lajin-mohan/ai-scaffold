@@ -13,6 +13,36 @@ This file is configured with `merge=union` in `.gitattributes` so parallel addit
 
 ## [Unreleased]
 
+## [0.9.1] - 2026-07-13
+
+### Added
+- **`/review --lite` tiered review mode (T1).** One consolidated review pass in
+  the main context instead of the five-subagent fan-out, for XS/S low-risk
+  changes — same BLOCK/WARN/NIT report and verdict. Hard, non-negotiable
+  escalation back to the full fan-out when the diff touches auth, sessions,
+  permissions, tenant isolation, payments, data access, migrations, secrets, a
+  new endpoint, or exceeds ~S / one architectural layer. Trims the ~5× fan-out
+  cost on trivial work, never the guardrails on risky work. Shipped in
+  `review.md` across all five profiles.
+- **`npm run token-report` corpus measurement (T0).** Dependency-free, show-only
+  report of the scaffold's context footprint: per-category tokens (always-loaded
+  vs on-demand), largest files, and the `/review` fan-out floor. Baseline
+  captured (~138K est-tokens; `CLAUDE.md` only 5% — the weight is commands 34% +
+  rules 29%), so every token optimization is measured, not guessed.
+  `scripts/token-report.js` ships in the package and a pre-publish smoke gate
+  asserts it (`buildTokenReport` is unit-tested).
+
+### Fixed
+- **token-report counted the wrong fifth reviewer.** It listed `critic-agent`;
+  `/review` actually fans out to backend, frontend, security, qa, **architect**.
+  The unit test now asserts the exact five so the list cannot drift.
+- **`dev` release metadata no longer lags the published CLI.** `package.json`,
+  `package-lock.json`, and `.ai-scaffold.json` were stale at 0.8.8 after the
+  0.9.0 release; aligned to the published version so promotion PRs never
+  downgrade.
+
+## [0.9.0] - 2026-07-12
+
 ### Added
 - **Generated projects ship a one-page `constitution.md`.** A root-level,
   profile-aware source of truth that names the 10 non-negotiables and — its real
