@@ -159,12 +159,18 @@ solve baseline prompt bloat. Ordered by token-saved-per-effort.
 > cache). The top items target those — not the leaner-`CLAUDE.md` work, which
 > caching already absorbs.
 
-- **T0. Token measurement (enabler — do first).** A `/health` token sub-score +
-  report: rules-corpus size, per-command / per-agent definition tokens, estimated
-  per-workflow token cost, file reads/searches, and cache-write tokens. Baseline
-  before/after every change below — including any Graphify pilot — because
-  provider claims are not product claims until reproduced on our own workloads.
-  *(low-medium)*
+- **T0. Token measurement (enabler) — ✅ DONE (0.9.1).** `npm run token-report`
+  (`scripts/token-report.js` + unit-tested `src/cli/core/token-report.js`) measures
+  the scaffold's own corpus by category, always-loaded vs on-demand, top files, and
+  the `/review` fan-out floor. Run before/after every change below.
+  - **Baseline 2026-07-13: ~138K est-tokens** (chars/4). Always-loaded (`CLAUDE.md`)
+    only **7K / 5%** — confirms leaner-`CLAUDE.md` (T4) is low-value. The fat is
+    **commands 47K / 34%** and **rules 39K / 29%** → T5 (prune) + T2 (dedup) are the
+    real levers. Largest single files: `ai-coding-rules.md` (~6.1K),
+    `design-system.md` (~5.6K), `what-next.md` (~4.5K).
+  - Maintainer tool (measures this repo). A user-facing `ais tokens` / `/health`
+    view of a *generated* project's corpus is a later optional extension.
+    *(done)*
 - **T1. Tiered / lite review.** *highest per-task saving.* `/review --lite` = one
   consolidated reviewer for XS/S changes (per `task-size-policy.md`); the full
   5-agent fan-out is reserved for M+ or critical-path (auth/billing/tenant).
