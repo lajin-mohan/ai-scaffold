@@ -20,6 +20,13 @@ verification against npm/git, not kept as history.
 - Post-release `main→dev` sync is automated but still semi-manual until item
   47's repo settings land. Keep release metadata aligned during promotions so
   `dev` never downgrades the published version on the next `dev→main` PR.
+- **2026-07-14 — item 25 (`ais update`) deferred past the pilot handover**, with
+  a concrete revisit trigger (see Phase 1). Phase 0 reprioritised around that
+  decision: item 56 (safeguard the delete-and-reinstall workaround) is now the
+  top handover item, since that workaround is what item 25's absence makes the
+  team rely on. Also fixed a numbering collision: two unrelated items each used
+  **51** and **52** (Phase 0's hook/pilot items vs. Phase 2's Graphify-pilot
+  items, merged from separate branches) — Phase 0's were renumbered 54/55.
 
 ### Honest category rating (SaaS-team adoption), post-0.9.0
 
@@ -59,35 +66,58 @@ Removed from the active backlog after verification against npm/git.
 
 The CLI is being handed to a small team (2 pilot projects). These items directly
 de-risk that handover and were surfaced by the 0.9.1 readiness/security review.
+**Item 25 (`ais update`) is explicitly deferred past handover** — see the note
+in Phase 1 for why and the revisit trigger. Priority reordered 2026-07-14 around
+that decision: the items below are what actually protects a pilot in its absence.
 
-- **52. Pilot feedback loop.** Run the workshop, start the 2 pilots (1 new
-  project, 1 existing), assign the five roles (owner / dev / QA / reviewer /
-  scribe), and hold a 20-min retro after the first real task. Pilot lessons
-  re-prioritise Phase 1 before major work starts. *(process, small)*
-- **51. Auto-wire the git `pre-commit` hook on `create`.** Generated projects
-  ship `.claude/hooks/pre-commit` but nothing installs it into `.git/hooks/`,
-  so commits made *outside* Claude Code bypass the branch-name/lint gates (the
-  Claude-side `pre-bash-quality-gate.sh` only covers commits made through the
-  agent). `create` already runs `git init` — copy the hook and set the exec bit
-  there; respect `--no-git`. *(small, closes a real enforcement gap for mixed
-  human/AI teams)*
+- **56. Safeguard the delete-and-reinstall workaround.** *new, highest priority
+  — direct consequence of deferring 25.* With `ais update` deferred, "delete the
+  project and re-run `ais create`" is the accepted interim upgrade path for the
+  pilot. That silently **destroys `tasks/lessons.md` and `.claude/MEMORY.md`** —
+  the two files that accumulate the pilot's actual value and are not
+  re-derivable. Ship a short "before you reinstall" checklist (which files to
+  copy out: `tasks/lessons.md`, `.claude/MEMORY.md`, `.ai-scaffold/context.md`,
+  any hand-edited `.claude/rules/*` or `settings-overrides.json`) in the README
+  and workshop material; a one-command `ais export-context` (zips those paths)
+  is the cheap follow-up if the manual checklist proves too easy to skip.
+  *(docs: small; helper script: small)*
+- **54 (was 51 — renumbered, collided with Phase 2 item 51). Auto-wire the git
+  `pre-commit` hook on `create`.** Now more valuable, not less: with no `update`
+  path forcing periodic re-sync, gate enforcement on day one is the pilot's only
+  safety net for commits made *outside* Claude Code (the Claude-side
+  `pre-bash-quality-gate.sh` only covers commits made through the agent).
+  `create` already runs `git init` — copy the hook and set the exec bit there;
+  respect `--no-git`. *(small, closes a real enforcement gap for mixed human/AI
+  teams)*
 - **28 (elevated). Per-command CLI reference** — moved up from Phase 3 in
   spirit: the single most-requested artifact when a new team adopts a CLI.
   Even a generated `docs/cli-reference.md` from `--help` text is a win. *(medium)*
+- **55 (was 52 — renumbered, collided with Phase 2 item 52). Pilot feedback
+  loop.** Run the workshop, start the 2 pilots (1 new project, 1 existing),
+  assign the five roles (owner / dev / QA / reviewer / scribe), and hold a
+  20-min retro after the first real task. Pilot lessons re-prioritise Phase 1
+  before major work starts. *(process, small)*
 
-## Phase 1 — Living system (lifecycle) · the #1 rating lever
+## Phase 1 — Living system (lifecycle) · the #1 rating lever *(deferred past handover)*
 
-Moves **Update 4 → 8, Onboarding 8 → 8.5, Overall → ~8.3.** Until these ship,
-each `ais` version is a fresh baseline and an existing project cannot upgrade
-safely — the biggest gap for a scaffold whose whole value is a *shared, evolving*
-operating model. **If you do only one thing on this whole list, it's item 25.**
+Moves **Update 4 → 8, Onboarding 8 → 8.5, Overall → ~8.3** — but explicitly
+**held back until after the pilot**, decided 2026-07-14. Rationale: the pilot is
+2 fresh projects with little accumulated customization yet, so "delete + `ais
+create` again" (paired with item 56's safeguard) is a genuinely acceptable
+interim upgrade path — building a full migration engine now would be solving a
+problem the pilot doesn't have. **Real, non-vague revisit trigger** (per this
+project's own `ponytail:` convention — no vague "later"): come back to item 25
+when **any** of — (a) a 3rd project onboards, (b) a pilot project accumulates
+meaningful hand-edits to `.claude/rules/*` or `settings-overrides.json` that
+delete+reinstall would destroy, or (c) a pilot needs to jump more than one `ais`
+version. Item 52 (pilot retro) is the mechanism that surfaces (a)/(b)/(c).
 
-- **25. Real `ais update` (managed-file migration).** *the headline of the
-  0.9.x → 1.0 line.* Diff installed vs target version; classify each file
-  (managed / protected / app-owned via `.ai-scaffold.json` hashes); preview the
-  change set; apply with backup + rollback; version-pinned migrations. Converts
-  the product from "a great starter kit" into "a governance platform a team stays
-  current on." *(large)*
+- **25. Real `ais update` (managed-file migration).** *deferred — see above.*
+  Diff installed vs target version; classify each file (managed / protected /
+  app-owned via `.ai-scaffold.json` hashes); preview the change set; apply with
+  backup + rollback; version-pinned migrations. Converts the product from "a
+  great starter kit" into "a governance platform a team stays current on."
+  *(large)*
 - **26. Drift-aware `status` / `doctor`.** Detect managed-file drift and surface
   exactly what `update` would change vs. what the user has customised. *(medium —
   pairs with 25)*
@@ -252,14 +282,17 @@ saving starts costing correctness.
 
 ## The 8.5+ path (honest)
 
+- **Phase 0 first** (now) — de-risks the handover itself; not a rating mover on
+  its own, but item 56 specifically prevents the pilot from losing real data
+  while item 25 sits deferred.
 - **Phase 1 alone** fixes the single worst category (Update 4 → 8) and lifts
-  overall to ~8.3 — necessary but not sufficient.
+  overall to ~8.3 — necessary but not sufficient. **Currently deferred past the
+  pilot** (see Phase 1 header for the revisit trigger); it is still the biggest
+  single lever, just not the *next* one.
 - **Phase 1 + Phase 2** clears **8.5 overall** and makes "modern AI capabilities"
   real (context providers + MCP + plugin + skills). This is the **v1.0 candidate**
   line.
 - **Phase 3** polishes to ~8.8–9 and closes the long tail for a confident **v1.0.0**.
-- **The one lever if you do nothing else: item 25 (`ais update`).** It is the
-  difference between an 8 and a real 9.
 
 ---
 
