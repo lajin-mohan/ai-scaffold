@@ -4,7 +4,7 @@ description: Parallel code review: backend + frontend + security + qa + architec
 
 # Command: /review
 
-Runs a full code review on the current feature branch or specified files. Invokes **five reviewers in parallel** by default — backend, frontend, security, qa, architect — then consolidates findings.
+Runs a full code review on the current feature branch or specified files. Invokes **five reviewers in parallel** by default — backend, frontend, security, qa, architect — then consolidates findings. For **XS/S, low-risk changes**, `--lite` runs one consolidated pass instead of the five-subagent fan-out (see [Lite Review](#lite-review---lite)) — the token-efficient default for small work.
 
 ## Usage
 
@@ -17,6 +17,7 @@ Runs a full code review on the current feature branch or specified files. Invoke
 /review --qa-only               # AC compliance + test coverage review only
 /review --architect-only        # Architectural drift + invariant review only
 /review --skip-architect        # Run all except architect (e.g. for a typo-fix PR)
+/review --lite                  # One consolidated reviewer, no fan-out — XS/S low-risk changes only
 ```
 
 ## Process
@@ -33,7 +34,7 @@ Runs a full code review on the current feature branch or specified files. Invoke
    - Mobile verification must include an approximately 390px-wide viewport and confirm the primary workflow remains usable.
    - Require Playwright failure artifacts (screenshots/traces/videos) to be preserved when tests fail.
    - If browser verification is unavailable, report it as a BLOCK for frontend/full-stack tasks unless an explicit exception is approved.
-5. **Run relevant reviewers in parallel** (reads `.claude/settings-overrides.json` for feature flags):
+5. **Run the reviewers.** Default: the relevant subagents in parallel (below). Under `--lite`: skip the fan-out and run **one consolidated pass in this context** applying the essential lenses inline — correctness vs. spec, security (SAST + the security checklist), and test adequacy — but only after the escalation check in [Lite Review](#lite-review---lite) passes. The relevant subagents (reads `.claude/settings-overrides.json` for feature flags):
    - **`backend-reviewer`** — if any change to `apps/api/`, `packages/services/`, `packages/repositories/`, `packages/domain/`, migrations
    - **`frontend-reviewer`** — if any change to `apps/web/`, `packages/ui/`, components, styles
    - **`security-reviewer`** — if any change to auth, sessions, permissions, data access, input handling, secrets, headers, or any new endpoint
@@ -59,6 +60,21 @@ Runs a full code review on the current feature branch or specified files. Invoke
 | Secrets / credentials committed | **BLOCK** | | | ✓ | | |
 
 > **qa-reviewer compliance checks** only run when the corresponding feature flag is `true` in `.claude/settings-overrides.json`. For example, GDPR AC compliance checks only run if `gdpr: true`.
+
+## Lite Review (`--lite`)
+
+For **XS/S changes** (small diff, no critical path — per `task-size-policy.md`), `--lite` runs **one consolidated review pass in the main context** instead of the five-subagent fan-out. It applies the essential lenses inline — correctness vs. spec, security (SAST + the security checklist), and test adequacy — and produces the **same** BLOCK/WARN/NIT report and verdict. This is the token-efficient default for small, low-risk work: it removes the ~5× subagent fan-out on changes that don't warrant it.
+
+**Hard escalation — non-negotiable.** `--lite` **must escalate to the full fan-out** (and say so at the top of the report: `Escalated from --lite: <reason>`) when the change touches **any** of:
+
+- auth, sessions, permissions, or tenant isolation
+- payments / billing or any money path
+- data access, a database migration, or a new endpoint
+- secrets or credentials
+- more than ~S size (roughly > 2 files or > ~50 changed lines of logic), or more than one architectural layer
+- anything the `Reviewer Selection Matrix` marks **BLOCK**
+
+Lite trims the **fan-out** on trivial work; it never trims the **guardrails** on risky work. Security findings are still always surfaced. When in doubt, run the full review.
 
 ## Output Format
 
@@ -138,7 +154,7 @@ Reviewers run: backend, frontend, security, qa, architect
 - Missing light/dark theme support is a BLOCK for new pages and at least WARN for legacy pages touched by the change.
 - Hardcoded brand colors outside centralized token/default-branding definitions are a BLOCK when they prevent organization branding overrides.
 - If the diff is >500 lines, split the review by file group and run iteratively. Architect reviewer reads the full diff to spot cross-cutting drift.
-- For trivial PRs (single-file typo, copy change), use `--skip-architect` and `--qa-only` flags as appropriate to avoid review overhead disproportionate to the change.
+- For trivial PRs (single-file typo, copy change), use `--lite` — one consolidated pass, no subagent fan-out — to keep review cost proportionate to the change. It auto-escalates to the full review if the diff turns out to touch a critical path (see [Lite Review](#lite-review---lite)).
 - View current feature flags: `/settings --list`
 
 ## Next Steps After /review

@@ -1,6 +1,6 @@
 {
   "name": "@lajin.m/ai-scaffold",
-  "version": "0.9.0",
+  "version": "0.9.1",
   "description": "Reusable AI engineering scaffold with CLI distribution",
   "type": "module",
   "bin": {
@@ -60,7 +60,8 @@
     "CONTRIBUTING.md",
     "docs/compliance/third-party-attributions.md",
     "LICENSE",
-    "CHANGELOG.md"
+    "CHANGELOG.md",
+    "scripts/token-report.js"
   ],
   "scripts": {
     "test": "node --experimental-vm-modules node_modules/vitest/vitest.mjs --run",
@@ -71,6 +72,7 @@
     "build": "echo 'Build validation: checking npm pack'",
     "release:check": "bash scripts/check-release-readiness.sh",
     "sync:main-dev": "bash scripts/sync-main-into-dev.sh",
+    "token-report": "node scripts/token-report.js",
     "prepublishOnly": "npm test && npm run typecheck && npm run lint"
   },
   "keywords": [

@@ -1,6 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { buildTokenReport } from '../cli/core/token-report.js';
 import { applyInteractiveDefaults, resolveWithDefaults, validateBootstrapValues } from '../cli/core/prompts.js';
 import { buildFilePlan } from '../cli/core/file-plan.js';
 import { MANAGED_PATHS, PROTECTED_PATHS, APP_SOURCE_PATHS } from '../cli/core/file-plan.js';
@@ -342,6 +344,45 @@ describe('buildConstitution', () => {
     const md = buildConstitution({ displayName: 'Billing API', multiTenant: true });
     expect(md).toContain('Every query that touches tenant data');
     expect(md).toContain('tenant_id');
+  });
+});
+
+describe('buildTokenReport', () => {
+  const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
+  const report = buildTokenReport(repoRoot);
+
+  it('measures every corpus category with a positive total', () => {
+    const keys = report.categories.map((c) => c.key);
+    expect(keys).toEqual(['always', 'rules', 'commands', 'agents', 'skills']);
+    expect(report.total.tokens).toBeGreaterThan(0);
+    const sum = report.categories.reduce((n, c) => n + c.tokens, 0);
+    expect(report.total.tokens).toBe(sum);
+  });
+
+  it('splits always-loaded (CLAUDE.md) from on-demand', () => {
+    expect(report.alwaysLoadedTokens).toBeGreaterThan(0);
+    expect(report.onDemandTokens).toBe(report.total.tokens - report.alwaysLoadedTokens);
+    // The upfront/always-loaded slice is small vs on-demand — the premise of the workstream.
+    expect(report.alwaysLoadedTokens).toBeLessThan(report.onDemandTokens);
+  });
+
+  it('ranks the largest files descending and caps the list', () => {
+    expect(report.topFiles.length).toBeGreaterThan(0);
+    expect(report.topFiles.length).toBeLessThanOrEqual(10);
+    const tokens = report.topFiles.map((f) => f.tokens);
+    expect([...tokens].sort((a, b) => b - a)).toEqual(tokens);
+  });
+
+  it('measures the /review fan-out from the five reviewers in review.md', () => {
+    // Must match the five reviewers /review actually fans out to — NOT critic.
+    expect(report.reviewFanout.agents).toEqual([
+      'backend-reviewer',
+      'frontend-reviewer',
+      'security-reviewer',
+      'qa-reviewer',
+      'architect',
+    ]);
+    expect(report.reviewFanout.tokens).toBeGreaterThan(0);
   });
 });
 
