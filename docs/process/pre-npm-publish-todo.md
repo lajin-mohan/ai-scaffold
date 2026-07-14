@@ -272,8 +272,12 @@ saving starts costing correctness.
   requests"** + **"Allow auto-merge"**, add a **`SYNC_PAT`** fine-grained secret
   (Contents + PRs write), then verify one release auto-opens + auto-merges the
   `main→dev` sync PR with zero manual steps. *(needs repo settings — human)*
-- **29.** Delete the stray `v1.0` tag — a live landmine (breaks `git fetch
-  --tags`; already broke the sync script once). *(needs explicit human "delete v1.0")*
+- **29. — ✅ DONE (2026-07-14).** Deleted the stray `v1.0` tag (local + remote,
+  explicit human confirmation obtained). `v1.0.0` was never published to npm —
+  nothing real was at risk. `git fetch --tags` is clean again. Confirmed
+  alongside a versioning decision: the next release stays on the `0.x` line
+  (e.g. `0.11.0`); `1.0.0` is not cut until the v1.0 completeness criteria in
+  "The 8.5+ path" are actually met, not implied by a leftover tag name.
 - **44.** Remove stray cruft from source template dirs (`templates/{golang,python}/apps/`,
   `templates/*/.vscode/`).
 - **46. — ✅ DONE (0.10.0 docs audit).** Fixed the repo's own
