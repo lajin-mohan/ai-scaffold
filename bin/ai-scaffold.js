@@ -17,6 +17,7 @@ import { statusCommand } from '../src/cli/commands/status.js';
 import { doctorCommand } from '../src/cli/commands/doctor.js';
 import { updateCommand } from '../src/cli/commands/update.js';
 import { listCommand } from '../src/cli/commands/list.js';
+import { exportContextCommand } from '../src/cli/commands/export-context.js';
 import { version } from '../src/cli/core/version.js';
 
 const cli = new CAC('ais');
@@ -34,6 +35,7 @@ cli.help((sections) => {
   ais doctor                              Diagnose scaffold installation health
   ais list                                List installed commands, agents, skills, rules
   ais update                              Update scaffold metadata
+  ais export-context                      Back up memory/lessons/settings before reinstalling
 
 Examples:
   npx @lajin.m/ai-scaffold my-project
@@ -43,7 +45,8 @@ Examples:
   ais status
   ais doctor
   ais update
-  ais update --target-version 1.2.0`,
+  ais update --target-version 1.2.0
+  ais export-context`,
   });
 });
 
@@ -54,6 +57,7 @@ statusCommand(cli);
 doctorCommand(cli);
 updateCommand(cli);
 listCommand(cli);
+exportContextCommand(cli);
 
 // ── Bare command routing ──────────────────────────────────────────────────
 // CAC v6 does not accept positional args without a matching subcommand, so
@@ -63,7 +67,7 @@ listCommand(cli);
 //   ais . / ./here      → init             (existing directory)
 //
 // Known subcommands and flags are left untouched.
-const knownSubcommands = ['create', 'init', 'status', 'doctor', 'update', 'list', '--help', '-h', '--version', '-V'];
+const knownSubcommands = ['create', 'init', 'status', 'doctor', 'update', 'list', 'export-context', '--help', '-h', '--version', '-V'];
 const rawArgs = process.argv.slice(2);
 
 if (rawArgs.length > 0 && !knownSubcommands.includes(rawArgs[0]) && !rawArgs[0].startsWith('-')) {
