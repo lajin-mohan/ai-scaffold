@@ -120,6 +120,41 @@ describe('CLI e2e smoke', () => {
     expect(await fs.pathExists(path.join(targetDir, '.gitattributes'))).toBe(true);
   });
 
+  it('create wires .claude/hooks/pre-commit into .git/hooks so out-of-band commits are gated (item 54)', async () => {
+    const targetDir = path.join(tmpDir, 'hook-wired-create');
+    const result = runCli([
+      'create',
+      targetDir,
+      '--profile',
+      'node',
+      '--yes',
+      '--purpose',
+      'Hook wiring smoke',
+      '--owner-email',
+      'test@example.com',
+    ]);
+
+    expect(result.status, result.stderr || result.stdout).toBe(0);
+
+    const source = path.join(targetDir, '.claude', 'hooks', 'pre-commit');
+    const installed = path.join(targetDir, '.git', 'hooks', 'pre-commit');
+    expect(await fs.pathExists(installed)).toBe(true);
+    expect(await fs.readFile(installed, 'utf-8')).toBe(await fs.readFile(source, 'utf-8'));
+
+    // Not Windows-portable (exec bits are POSIX-only) — skip the mode assertion there;
+    // installPreCommitHook() is still exercised end-to-end by the assertions above.
+    if (process.platform !== 'win32') {
+      const mode = (await fs.stat(installed)).mode & 0o777;
+      expect(mode & 0o100).toBe(0o100); // owner-executable
+    }
+
+    // The initial scaffold commit must still succeed — installPreCommitHook runs
+    // AFTER the initial commit precisely so the newly-installed hook can never
+    // block project creation itself (see create.js comment).
+    const gitHead = spawnSync('git', ['-C', targetDir, 'rev-parse', '--verify', 'HEAD'], { encoding: 'utf-8' });
+    expect(gitHead.status, gitHead.stderr || gitHead.stdout).toBe(0);
+  });
+
   it('create --dry-run --json prints a plan and writes nothing', async () => {
     const targetDir = path.join(tmpDir, 'json-create');
     const result = runCli([
