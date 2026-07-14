@@ -5,12 +5,14 @@ in `CHANGELOG.md` (the permanent record); this file tracks what is **left** and
 why, grouped into phases by rating lever. Completed items are removed after
 verification against npm/git, not kept as history.
 
-## Current state (2026-07-13)
+## Current state (2026-07-14)
 
-- **v0.9.0 is published** (`latest`, provenance). **v0.9.1 is ready to cut**:
-  T0 (token measurement, #78), T1 (`/review --lite`, #79), and the review
-  blockers (#80) are merged to `dev`; `main` is an ancestor of `dev`; all gates
-  green (46 tests, lint/typecheck clean, smoke all-pass, 0 vulns at any level).
+- **v0.9.1 is published** (`latest`, provenance) — T0 token measurement, T1
+  `/review --lite`, and the review blockers. **v0.10.0 is in flight**: item 54
+  (auto-wired git pre-commit hook, #85), item 56 (`ais export-context`
+  reinstall safeguard, #86), item 28 (CLI reference), and the docs audit.
+  `main` is an ancestor of `dev`; all gates green on the integrated branches
+  (49 tests, lint/typecheck clean, smoke all-pass, 0 vulns at any level).
 - **Security posture reviewed 2026-07-13:** 7 mainstream runtime deps, 0 npm-audit
   findings at any level, OIDC trusted publishing (no long-lived token), CI runs
   gitleaks + audit, no secret patterns in tracked code, only shell-out is
@@ -20,6 +22,13 @@ verification against npm/git, not kept as history.
 - Post-release `main→dev` sync is automated but still semi-manual until item
   47's repo settings land. Keep release metadata aligned during promotions so
   `dev` never downgrades the published version on the next `dev→main` PR.
+- **2026-07-14 — item 25 (`ais update`) deferred past the pilot handover**, with
+  a concrete revisit trigger (see Phase 1). Phase 0 reprioritised around that
+  decision: item 56 (safeguard the delete-and-reinstall workaround) is now the
+  top handover item, since that workaround is what item 25's absence makes the
+  team rely on. Also fixed a numbering collision: two unrelated items each used
+  **51** and **52** (Phase 0's hook/pilot items vs. Phase 2's Graphify-pilot
+  items, merged from separate branches) — Phase 0's were renumbered 54/55.
 
 ### Honest category rating (SaaS-team adoption), post-0.9.0
 
@@ -59,35 +68,61 @@ Removed from the active backlog after verification against npm/git.
 
 The CLI is being handed to a small team (2 pilot projects). These items directly
 de-risk that handover and were surfaced by the 0.9.1 readiness/security review.
+**Item 25 (`ais update`) is explicitly deferred past handover** — see the note
+in Phase 1 for why and the revisit trigger. Priority reordered 2026-07-14 around
+that decision: the items below are what actually protects a pilot in its absence.
 
-- **52. Pilot feedback loop.** Run the workshop, start the 2 pilots (1 new
-  project, 1 existing), assign the five roles (owner / dev / QA / reviewer /
-  scribe), and hold a 20-min retro after the first real task. Pilot lessons
-  re-prioritise Phase 1 before major work starts. *(process, small)*
-- **51. Auto-wire the git `pre-commit` hook on `create`.** Generated projects
-  ship `.claude/hooks/pre-commit` but nothing installs it into `.git/hooks/`,
-  so commits made *outside* Claude Code bypass the branch-name/lint gates (the
-  Claude-side `pre-bash-quality-gate.sh` only covers commits made through the
-  agent). `create` already runs `git init` — copy the hook and set the exec bit
-  there; respect `--no-git`. *(small, closes a real enforcement gap for mixed
-  human/AI teams)*
-- **28 (elevated). Per-command CLI reference** — moved up from Phase 3 in
-  spirit: the single most-requested artifact when a new team adopts a CLI.
-  Even a generated `docs/cli-reference.md` from `--help` text is a win. *(medium)*
+- **56. Safeguard the delete-and-reinstall workaround — ✅ DONE.** With `ais
+  update` deferred, "delete the project and re-run `ais create`" is the
+  accepted interim upgrade path — this closes its one real risk. Shipped: a
+  "Before You Reinstall" README section naming the non-regenerable files
+  (`tasks/lessons.md`, `.claude/MEMORY.md`, `.ai-scaffold/context.md`,
+  `.claude/settings-overrides.json`, hand-edited `.claude/rules/*`), and `ais
+  export-context [dir]` — copies those paths to
+  `~/.ai-scaffold-backups/<project>-<timestamp>/` (**outside** the project, on
+  purpose: verified the backup survives the source project being deleted, the
+  exact scenario this exists for). `--out <path>` to override the destination.
+  Not drift detection (that's item 26, deferred with 25) — a fixed, definite
+  file list. 2 e2e tests + 3 smoke gates; ships via the existing `src/cli/`
+  package glob (no new dependency — plain `fs-extra` copy). *(done)*
+- **54 (was 51). Auto-wire the git `pre-commit` hook on `create` — ✅ DONE
+  (#85).** `create` copies `.claude/hooks/pre-commit` into `.git/hooks/`
+  (executable) right after the initial scaffold commit, so gates apply to
+  commits made *outside* Claude Code too; respects `--no-git`. Wiring it live
+  surfaced and fixed 3 previously-silent hook defects (branch regex rejected
+  `main`/`dev`/`master`; Node check called a nonexistent `test:unit` script;
+  Python check pointed at a nonexistent `tests/unit/` dir) across all 5
+  profiles + this repo's own copy. E2E test + 3 smoke gates. *(done)*
+- **28 (elevated). Per-command CLI reference — ✅ DONE.** `docs/cli-reference.md`
+  covers all 7 commands with every flag, generated from the CLI's actual
+  `--help` output (not memory), linked from the README Command Reference
+  section. *(done)*
+- **55 (was 52 — renumbered, collided with Phase 2 item 52). Pilot feedback
+  loop.** Run the workshop, start the 2 pilots (1 new project, 1 existing),
+  assign the five roles (owner / dev / QA / reviewer / scribe), and hold a
+  20-min retro after the first real task. Pilot lessons re-prioritise Phase 1
+  before major work starts. *(process, small)*
 
-## Phase 1 — Living system (lifecycle) · the #1 rating lever
+## Phase 1 — Living system (lifecycle) · the #1 rating lever *(deferred past handover)*
 
-Moves **Update 4 → 8, Onboarding 8 → 8.5, Overall → ~8.3.** Until these ship,
-each `ais` version is a fresh baseline and an existing project cannot upgrade
-safely — the biggest gap for a scaffold whose whole value is a *shared, evolving*
-operating model. **If you do only one thing on this whole list, it's item 25.**
+Moves **Update 4 → 8, Onboarding 8 → 8.5, Overall → ~8.3** — but explicitly
+**held back until after the pilot**, decided 2026-07-14. Rationale: the pilot is
+2 fresh projects with little accumulated customization yet, so "delete + `ais
+create` again" (paired with item 56's safeguard) is a genuinely acceptable
+interim upgrade path — building a full migration engine now would be solving a
+problem the pilot doesn't have. **Real, non-vague revisit trigger** (per this
+project's own `ponytail:` convention — no vague "later"): come back to item 25
+when **any** of — (a) a 3rd project onboards, (b) a pilot project accumulates
+meaningful hand-edits to `.claude/rules/*` or `settings-overrides.json` that
+delete+reinstall would destroy, or (c) a pilot needs to jump more than one `ais`
+version. Item 55 (pilot retro) is the mechanism that surfaces (a)/(b)/(c).
 
-- **25. Real `ais update` (managed-file migration).** *the headline of the
-  0.9.x → 1.0 line.* Diff installed vs target version; classify each file
-  (managed / protected / app-owned via `.ai-scaffold.json` hashes); preview the
-  change set; apply with backup + rollback; version-pinned migrations. Converts
-  the product from "a great starter kit" into "a governance platform a team stays
-  current on." *(large)*
+- **25. Real `ais update` (managed-file migration).** *deferred — see above.*
+  Diff installed vs target version; classify each file (managed / protected /
+  app-owned via `.ai-scaffold.json` hashes); preview the change set; apply with
+  backup + rollback; version-pinned migrations. Converts the product from "a
+  great starter kit" into "a governance platform a team stays current on."
+  *(large)*
 - **26. Drift-aware `status` / `doctor`.** Detect managed-file drift and surface
   exactly what `update` would change vs. what the user has customised. *(medium —
   pairs with 25)*
@@ -241,25 +276,49 @@ saving starts costing correctness.
   --tags`; already broke the sync script once). *(needs explicit human "delete v1.0")*
 - **44.** Remove stray cruft from source template dirs (`templates/{golang,python}/apps/`,
   `templates/*/.vscode/`).
-- **46.** Fix the repo's own `.claude/skills/design-system.md` → `DESIGN_TOKENS.md`
-  relative link (it has a doubled `.claude/skills/` prefix; the templates were
-  fixed in 0.8.6, the repo copy was missed).
+- **46. — ✅ DONE (0.10.0 docs audit).** Fixed the repo's own
+  `.claude/skills/design-system.md` → `DESIGN_TOKENS.md` links (4 occurrences
+  had a doubled `.claude/skills/` prefix); the file is now byte-identical to
+  the (already-correct) template copies.
 - **21.** Docs-honesty pass (stale version/claims). **22.** Publish-workflow input
   cleanup. **18.** Hooks-roadmap doc. **41.** Decide the fate of the example hooks
   (`jira-sync.py`, `notify-review.py`) — pack or remove.
+- **57. `main→dev` sync loses CHANGELOG heading-dating every release.** Found
+  2026-07-14: the release-branch step dates `[Unreleased]` → `[0.9.x] - date`,
+  but `main→dev` sync (`git merge -s ours`) intentionally discards `main`'s
+  content, so `dev` never receives the dated heading — the same content sits
+  undated under `[Unreleased]` and silently accumulates across releases until
+  someone notices (this time: two releases' worth, caught during a docs
+  review). One-time catch-up applied 2026-07-14. Needs a process fix: either
+  the release-branch step also opens a tiny `dev`-targeted PR that applies
+  just the heading rename, or the sync script diffs+applies CHANGELOG heading
+  changes specifically (not full content, to avoid re-breaking ancestry).
+  *(small fix, but recurs every release until fixed)*
+- **58. `pre-commit` hook has no Go/`.NET` detection block.** The hook
+  documents 4 stack-detection blocks (Node, PHP, Python, .NET) but golang is
+  an officially shipped, first-class profile with zero coverage — only the
+  always-on branch-name check applies to a golang project; `go build`/`go
+  vet`/`go test` never run locally pre-commit. Not a regression from item 54
+  (golang was already uncovered before the hook was wired) but a real content
+  gap for a supported profile. Add a `go.mod` detection block mirroring the
+  existing pattern (`go build ./...`, `go vet ./...`, `go test ./...`, guarded
+  by `command -v go`). *(small — same shape as existing blocks)*
 
 ---
 
 ## The 8.5+ path (honest)
 
+- **Phase 0 first** (now) — de-risks the handover itself; not a rating mover on
+  its own, but item 56 specifically prevents the pilot from losing real data
+  while item 25 sits deferred.
 - **Phase 1 alone** fixes the single worst category (Update 4 → 8) and lifts
-  overall to ~8.3 — necessary but not sufficient.
+  overall to ~8.3 — necessary but not sufficient. **Currently deferred past the
+  pilot** (see Phase 1 header for the revisit trigger); it is still the biggest
+  single lever, just not the *next* one.
 - **Phase 1 + Phase 2** clears **8.5 overall** and makes "modern AI capabilities"
   real (context providers + MCP + plugin + skills). This is the **v1.0 candidate**
   line.
 - **Phase 3** polishes to ~8.8–9 and closes the long tail for a confident **v1.0.0**.
-- **The one lever if you do nothing else: item 25 (`ais update`).** It is the
-  difference between an 8 and a real 9.
 
 ---
 
@@ -270,7 +329,7 @@ A release is ready only when **all** of these pass — the first two are automat
 - `npm run release:check` — `origin/main` is an ancestor of the promotion branch,
   and a `release/v*` branch changes only `package.json` / `package-lock.json` /
   `.ai-scaffold.json` / `CHANGELOG.md`.
-- `bash scripts/pre-publish-smoke.sh` — currently **99 gates** incl. the
+- `bash scripts/pre-publish-smoke.sh` — currently **105 gates** incl. the
   packed-surface, generated-doc-link, and constitution checks.
 - `npm test`, `npm run lint`, `npm run typecheck`, `npm audit --audit-level=high`.
 - `gh pr view <id>` shows `mergeable` + required checks green.

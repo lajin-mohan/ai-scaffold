@@ -7,7 +7,7 @@
 #   - Secrets scan (if gitleaks installed)
 #
 # Stack detection by file presence:
-#   package.json    → Node/TypeScript (npm run lint, npm run typecheck, npm run test:unit)
+#   package.json    → Node/TypeScript (npm run lint, npm run typecheck, npm test)
 #   composer.json   → PHP (PHP CS Fixer, PHPStan, PHPUnit)
 #   pyproject.toml  → Python (ruff, pyright/mypy, pytest)
 #   *.csproj        → .NET (dotnet build, dotnet test)
@@ -55,9 +55,9 @@ fi
 # Branch name validation — always runs
 BRANCH_NAME=$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo "")
 if [ -n "$BRANCH_NAME" ] && [ "$BRANCH_NAME" != "HEAD" ]; then
-  if ! echo "$BRANCH_NAME" | grep -qE '^(feature|fix|chore|hotfix|release)/[a-zA-Z0-9._-]+$'; then
+  if ! echo "$BRANCH_NAME" | grep -qE '^(main|dev|master)$|^(feature|fix|chore|hotfix|release)/[a-zA-Z0-9._-]+$'; then
     echo "   FAIL: Branch name '$BRANCH_NAME' does not match required pattern:"
-    echo "         feature/*, fix/*, chore/*, hotfix/*, release/*"
+    echo "         main, dev, master, or feature/*, fix/*, chore/*, hotfix/*, release/*"
     echo "         See .claude/rules/branching-rules.md"
     FAIL=$((FAIL + 1))
   else
@@ -70,7 +70,7 @@ if [ -f package.json ]; then
   if command -v npm &>/dev/null; then
     run_check "ESLint" "npm run lint -- --max-warnings 0"
     run_check "TypeScript" "npm run typecheck"
-    run_check "Unit Tests" "npm run test:unit -- --run"
+    run_check "Unit Tests" "npm test"
   else
     echo "(npm not found — skipping Node checks)"
   fi
@@ -102,7 +102,7 @@ if [ -f pyproject.toml ] || [ -f requirements.txt ]; then
     echo "(pyright/mypy not found — skipping type check)"
   fi
   if command -v pytest &>/dev/null; then
-    run_check "pytest" "pytest tests/unit/ -v"
+    run_check "pytest" "pytest"
   else
     echo "(pytest not found — skipping tests)"
   fi
