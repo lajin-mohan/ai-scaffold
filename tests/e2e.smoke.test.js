@@ -363,4 +363,53 @@ describe('CLI e2e smoke', () => {
     expect(contextCheck.message).toContain('project.kind');
     expect(contextCheck.message).toContain('BOGUSSCOPE');
   });
+
+  it('export-context backs up memory/lessons/settings outside the project so they survive delete-and-reinstall (item 56)', async () => {
+    const targetDir = path.join(tmpDir, 'export-context-project');
+    const createResult = runCli([
+      'create',
+      targetDir,
+      '--yes',
+      '--purpose',
+      'Export context smoke',
+      '--owner-email',
+      'test@example.com',
+    ]);
+    expect(createResult.status, createResult.stderr || createResult.stdout).toBe(0);
+
+    const lessonsPath = path.join(targetDir, 'tasks', 'lessons.md');
+    await fs.appendFile(lessonsPath, '\n- Accumulated pilot lesson, not re-derivable.\n');
+
+    const backupDir = path.join(tmpDir, 'export-context-backup');
+    const result = runCli(['export-context', targetDir, '--out', backupDir, '--json']);
+    expect(result.status, result.stderr || result.stdout).toBe(0);
+
+    const manifest = JSON.parse(result.stdout);
+    expect(manifest.copied).toEqual(
+      expect.arrayContaining(['tasks/lessons.md', '.claude/MEMORY.md', '.claude/rules', '.ai-scaffold/context.md']),
+    );
+
+    const backedUpLessons = await fs.readFile(path.join(backupDir, 'tasks', 'lessons.md'), 'utf-8');
+    expect(backedUpLessons).toContain('Accumulated pilot lesson, not re-derivable.');
+
+    // The whole point: the backup must survive the project it was copied from
+    // being deleted (the delete-and-reinstall workaround this safeguards).
+    await fs.remove(targetDir);
+    expect(await fs.pathExists(targetDir)).toBe(false);
+    expect(await fs.pathExists(backupDir)).toBe(true);
+    expect(await fs.readFile(path.join(backupDir, 'tasks', 'lessons.md'), 'utf-8')).toContain(
+      'Accumulated pilot lesson, not re-derivable.',
+    );
+  });
+
+  it('export-context reports nothing to back up outside a scaffold-managed directory', async () => {
+    const emptyDir = path.join(tmpDir, 'export-context-empty');
+    await fs.ensureDir(emptyDir);
+    const backupDir = path.join(tmpDir, 'export-context-empty-backup');
+
+    const result = runCli(['export-context', emptyDir, '--out', backupDir, '--json']);
+    expect(result.status).toBe(1);
+    const manifest = JSON.parse(result.stdout);
+    expect(manifest.copied).toEqual([]);
+  });
 });

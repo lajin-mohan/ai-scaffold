@@ -403,7 +403,28 @@ ais update --target-version <version>
 
 Full safe file updates, diffs, and version-pinned migrations are planned for Phase 3. Until then, `update` exits without changing files when an actual version change would be required.
 
+### Before You Reinstall
+
+Until managed-file migrations ship (see above), the safe way to move an existing project onto a newer scaffold version is: **back up context, delete, `create` again.** Reinstalling **does not** preserve any project state — it generates a fresh project from the template.
+
+**Back up first, always.** Two files accumulate real, non-regenerable project value and are lost on a plain delete-and-recreate:
+
+- `tasks/lessons.md` — recurring mistakes and decisions learned on this project
+- `.claude/MEMORY.md` — long-lived project memory
+
+Also worth preserving: `.ai-scaffold/context.md` (setup context), `.claude/settings-overrides.json` and any hand-edited files under `.claude/rules/` (project-specific customizations).
+
+Run this first:
+
+```bash
+npx @lajin.m/ai-scaffold export-context ./my-project
+```
+
+It copies those paths to `~/.ai-scaffold-backups/<project>-<timestamp>/` — **outside** the project directory, so the backup survives even if you delete the whole project folder next. Use `--out <path>` to choose a different destination. After reinstalling, manually copy the files you need back from the backup into the new project.
+
 ### Command Reference
+
+Full per-command reference with every flag: [docs/cli-reference.md](docs/cli-reference.md).
 
 | Command | Use when | Example |
 |---|---|---|
@@ -412,6 +433,8 @@ Full safe file updates, diffs, and version-pinned migrations are planned for Pha
 | `init [dir]` | Add AI Scaffold to an existing repository | `npx @lajin.m/ai-scaffold init --profile node --dry-run` |
 | `.` | Short form for `init` in the current directory | `npx @lajin.m/ai-scaffold . --profile node` |
 | `status [dir]` | Show installed profile, version, and managed-file status | `npx @lajin.m/ai-scaffold status` |
+| `list [dir]` | List installed commands, agents, skills, and rules | `npx @lajin.m/ai-scaffold list` |
+| `export-context [dir]` | Back up memory/lessons/settings before deleting and reinstalling | `npx @lajin.m/ai-scaffold export-context ./my-app` |
 | `doctor [dir]` | Diagnose missing, changed, or invalid scaffold files | `npx @lajin.m/ai-scaffold doctor --json` |
 | `update [dir]` | Update scaffold metadata in this MVP; full migrations are later | `npx @lajin.m/ai-scaffold update --dry-run` |
 

@@ -119,3 +119,24 @@ This file records patterns from mistakes and corrections. Claude reads this at t
 - **Why:** `/review` checks the code-as-written for correctness against the rules; `/ponytail-audit` checks for over-engineering. Neither runs the artifact against a real environment. Both assume the code does what it says.
 - **Rule:** **For Claude Code hooks (or any code that depends on external system state), the verification step is "run it against reality," not "review it for correctness."** A `/review` pass without an execution test is incomplete. When building hooks, the work isn't done until the hook has been invoked with a real session ID, a real `CLAUDE_PROJECT_DIR`, and a real transcript, and the output matches the documented behavi
   our for at least one positive case and one negative case.
+
+## 2026-07-14 — Stacked PRs conflict under a squash-merge policy
+
+- **Mistake:** To guarantee a correct CHANGELOG merge order, PR #86 was stacked
+  on #85 (feature branch merged into feature branch) and #87 stacked on #86.
+  The moment #85 **squash-merged** into `dev`, GitHub created a brand-new
+  commit with #85's content — but #86 still carried #85's *original* commits.
+  Same content, different history: the 3-way merge saw both sides editing the
+  same files and flagged #86 and #87 as CONFLICTING, on a repo with a single
+  developer and no parallel work.
+- **Why:** Stacked PRs only work with merge-commit workflows. This repo's
+  branching rules mandate **squash merges** into `dev` — squashing breaks the
+  ancestry the stack depends on, every time, deterministically. The rules also
+  already said "rebase from dev before opening or merging PRs"; stacking was a
+  deviation from that.
+- **Rule:** **Never stack feature branches in this repo.** One PR at a time:
+  merge it, then rebase (or freshly cut) the next branch from updated `dev`.
+  If work must land together to be correct (like the CHANGELOG union-merge
+  ordering), put it in **one PR** instead of stacking. When a stack has already
+  conflicted: don't resolve in-place — cut a fresh branch from `dev`, take the
+  verified final tree, single commit, one PR.

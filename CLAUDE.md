@@ -471,7 +471,7 @@ The legacy `tasks/todo.md` is gitignored and untracked — do not commit it. It 
 
 > Update this section at the start of each epic.
 
-- **Current Epic**: Post-v0.8.0 release hardening
-- **Next Milestone**: v0.8.1 — trusted publishing, branch protection, update safety, and validation hardening
-- **Blockers**: Trusted npm publishing and branch protection must be proven before the next tag
-- **In-Flight Branches**: `fix/p0-release-hardening`
+- **Current Epic**: Phase 0 — team handover (2-project pilot) on the road to v1.0
+- **Next Milestone**: v0.10.0 — auto-wired git pre-commit hook (54), `ais export-context` reinstall safeguard (56), CLI reference (28), docs audit
+- **Blockers**: None — `ais update` (item 25) is explicitly deferred past the pilot with a documented revisit trigger (see `docs/process/pre-npm-publish-todo.md`)
+- **In-Flight Branches**: `feature/auto-wire-precommit-hook` (#85), `feature/export-context-safeguard` (#86)

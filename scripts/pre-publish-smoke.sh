@@ -403,6 +403,34 @@ else
 fi
 rm -rf "$(dirname "$MT_DIR")" 2>/dev/null || true
 
+# ── Gate 4e: export-context (item 56) ──────────────────────────────────
+echo ""
+echo ">> Gate 4e: Export Context"
+EC_PROJECT_DIR=$(mktemp -d)/export-context-project
+EC_BACKUP_DIR=$(mktemp -d)/export-context-backup
+node bin/ai-scaffold.js create "$EC_PROJECT_DIR" --profile node --yes >/dev/null 2>&1
+echo "- pilot lesson" >> "$EC_PROJECT_DIR/tasks/lessons.md"
+EC_OUTPUT=$(node bin/ai-scaffold.js export-context "$EC_PROJECT_DIR" --out "$EC_BACKUP_DIR" --json 2>&1) || true
+if echo "$EC_OUTPUT" | grep -q '"tasks/lessons.md"'; then
+  pass "export-context backs up tracked context files"
+else
+  fail "export-context did not back up tracked context files"
+fi
+if [ -f "$EC_BACKUP_DIR/tasks/lessons.md" ] && grep -q "pilot lesson" "$EC_BACKUP_DIR/tasks/lessons.md"; then
+  pass "export-context backup content is correct"
+else
+  fail "export-context backup missing or wrong content"
+fi
+# The whole point of item 56: backup must survive deleting the source project
+# (the delete-and-reinstall workaround this safeguards).
+rm -rf "$EC_PROJECT_DIR" 2>/dev/null || true
+if [ ! -d "$EC_PROJECT_DIR" ] && [ -f "$EC_BACKUP_DIR/tasks/lessons.md" ]; then
+  pass "export-context backup survives deletion of the source project"
+else
+  fail "export-context backup did not survive source-project deletion"
+fi
+rm -rf "$(dirname "$EC_PROJECT_DIR")" "$(dirname "$EC_BACKUP_DIR")" 2>/dev/null || true
+
 # ── Gate 5: init --yes smoke test ──────────────────────────────────────
 echo ""
 echo ">> Gate 5: Init --yes Smoke Test"
