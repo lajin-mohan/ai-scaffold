@@ -13,6 +13,8 @@ This file is configured with `merge=union` in `.gitattributes` so parallel addit
 
 ## [Unreleased]
 
+## [0.10.0] - 2026-07-14
+
 ### Added
 - **Per-command CLI reference (item 28).** New `docs/cli-reference.md` covers
   all 7 commands (`create`, `init`, `status`, `doctor`, `list`,
