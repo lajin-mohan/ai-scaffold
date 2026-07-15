@@ -13,6 +13,19 @@ This file is configured with `merge=union` in `.gitattributes` so parallel addit
 
 ## [Unreleased]
 
+### Fixed
+- **Windows PowerShell install note.** Running `npx @lajin.m/ai-scaffold ...`
+  in PowerShell failed to parse — PowerShell treats a leading `@` as the
+  splatting operator, so the scoped package name blew up before `npx` ran
+  (`SplattingNotPermitted`). The CLI can't fix this (the failure is in
+  PowerShell's own command parsing, before `npx` launches), so the install
+  sections of `README.md`, `HOW-TO-USE.md`, and `docs/cli-reference.md` now
+  tell PowerShell users to quote the package name — `npx "@lajin.m/ai-scaffold"
+  ...` — and note that a global install avoids the quoting entirely. Found by a
+  team member installing on Windows.
+
+## [0.10.0] - 2026-07-14
+
 ### Added
 - **Per-command CLI reference (item 28).** New `docs/cli-reference.md` covers
   all 7 commands (`create`, `init`, `status`, `doctor`, `list`,
