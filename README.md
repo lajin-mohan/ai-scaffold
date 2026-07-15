@@ -246,6 +246,8 @@ opt-in as the work calls for it. Run `ais list` in a scaffolded project to see t
 
 You can run AI Scaffold directly with `npx`, or install it globally and use the shorter `ais` command.
 
+> **Windows PowerShell:** quote the package name — `npx "@lajin.m/ai-scaffold" ...` — because PowerShell treats a leading `@` as the splatting operator and fails to parse the command otherwise. cmd.exe, Git Bash, macOS, and Linux run the unquoted examples below as-is. A global install (`npm install -g @lajin.m/ai-scaffold`, then the `ais` command) sidesteps the quoting entirely.
+
 Use `npx` when you do not want a global install:
 
 ```bash
