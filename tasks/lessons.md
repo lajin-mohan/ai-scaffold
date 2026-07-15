@@ -140,3 +140,29 @@ This file records patterns from mistakes and corrections. Claude reads this at t
   ordering), put it in **one PR** instead of stacking. When a stack has already
   conflicted: don't resolve in-place — cut a fresh branch from `dev`, take the
   verified final tree, single commit, one PR.
+
+## 2026-07-15 — Windows path separators broke generated-file lookups (all profiles)
+
+- **Mistake:** `buildFilePlan` (file-plan.js) computed `relPath` via
+  `path.relative()` and used it as an exact key in forward-slash object maps
+  (`GENERATED_FILE_MAP`, `RENAME_ON_COPY`) and `.includes()` lists. On Windows
+  `path.relative()` returns backslash paths, so every lookup missed —
+  `.claude/MEMORY.md` and `.claude/settings-overrides.json` were never
+  generated. Shipped in every release since the CLI existed; caught only when a
+  team member ran the golang profile on Windows and `ais doctor` showed two
+  HIGH failures.
+- **Why it hid so long:** all tests and all dev machines are macOS/Linux, where
+  `path.relative()` already returns forward slashes — the buggy code path is
+  never exercised. A `toPosixPath()` helper already existed *for this exact
+  reason* and was applied in the manifest and dry-run planners, but whoever
+  wrote the core planning loop didn't apply it. Same-class bug, one file away
+  from the existing fix, invisible to the whole test suite.
+- **Rule:** **Any relative path derived from `path.relative`/`path.join` that is
+  later compared against a string literal, used as an object key, or matched by
+  a glob MUST be normalized to posix (`toPosixPath`) at the point of
+  computation — not per-use.** For a cross-platform CLI, a regression test must
+  simulate the other platform's separators (mock `path.relative` to emit `\`),
+  because the native test runner will pass a Windows-only bug every time. If a
+  posix-normalization helper already exists in the codebase, grep for every
+  `path.relative(` / `path.join(` that feeds a comparison and confirm it's
+  wrapped.

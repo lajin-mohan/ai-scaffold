@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi, afterEach } from 'vitest';
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -204,6 +204,43 @@ describe('buildFilePlan', () => {
     const plan = await buildFilePlan(templatePath('node'), '/tmp/out', { existingTarget: false });
     const rels = [...plan.copy.map(f => f.rel), ...plan.generate.map(f => f.rel)];
     expect(rels).toContain('package.json');
+  });
+
+  // These were the two HIGH doctor failures reported on Windows: the .template
+  // sources must resolve to generated .claude/MEMORY.md and
+  // .claude/settings-overrides.json for every profile, on both create and init.
+  for (const profile of SUPPORTED_PROFILES) {
+    it(`generates .claude/MEMORY.md and settings-overrides.json for ${profile} (create + init)`, async () => {
+      for (const existingTarget of [false, true]) {
+        const plan = await buildFilePlan(templatePath(profile), '/tmp/out-gen', { existingTarget });
+        const generated = plan.generate.map((f) => f.rel);
+        expect(generated).toContain('.claude/MEMORY.md');
+        expect(generated).toContain('.claude/settings-overrides.json');
+      }
+    });
+  }
+});
+
+describe('buildFilePlan with Windows-style path separators', () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  // Reproduces the Windows bug: path.relative() emits backslashes there, which
+  // must not break the forward-slash GENERATED_FILE_MAP lookups. Simulate it by
+  // making path.relative return backslash paths and assert generation survives.
+  it('still generates .claude/MEMORY.md and settings-overrides.json', async () => {
+    const realRelative = path.relative.bind(path);
+    vi.spyOn(path, 'relative').mockImplementation((from, to) =>
+      realRelative(from, to).replace(/\//g, '\\'),
+    );
+
+    const plan = await buildFilePlan(templatePath('golang'), '/tmp/out-win', { existingTarget: false });
+    const generated = plan.generate.map((f) => f.rel);
+
+    expect(generated).toContain('.claude/MEMORY.md');
+    expect(generated).toContain('.claude/settings-overrides.json');
+    expect(generated).toContain('README.md');
   });
 });
 
