@@ -297,7 +297,11 @@ saving starts costing correctness.
   the release-branch step also opens a tiny `dev`-targeted PR that applies
   just the heading rename, or the sync script diffs+applies CHANGELOG heading
   changes specifically (not full content, to avoid re-breaking ancestry).
-  *(small fix, but recurs every release until fixed)*
+  **Recurred again after v0.10.0** (caught 2026-07-15 during PR #92): the
+  `[0.10.0] - 2026-07-14` heading was missing on `dev` and had to be re-dated
+  by hand a third release running. This is now a proven every-release tax, not
+  a one-off — **promote out of the "someday" tier and actually fix the process
+  next.** *(small fix, but recurs every release until fixed)*
 - **58. `pre-commit` hook has no Go/`.NET` detection block.** The hook
   documents 4 stack-detection blocks (Node, PHP, Python, .NET) but golang is
   an officially shipped, first-class profile with zero coverage — only the
@@ -307,6 +311,18 @@ saving starts costing correctness.
   gap for a supported profile. Add a `go.mod` detection block mirroring the
   existing pattern (`go build ./...`, `go vet ./...`, `go test ./...`, guarded
   by `command -v go`). *(small — same shape as existing blocks)*
+- **59. `pre-commit` hook branch-name regex rejects `docs/*`, but
+  `branching-rules.md` lists `docs/*` as a valid branch type.** Found
+  2026-07-15 (PR #92): a `docs/windows-powershell-npx-note` branch was blocked
+  by the hook (`^(main|dev|master)$|^(feature|fix|chore|hotfix|release)/...`)
+  and had to be renamed to `chore/` to commit. The scaffold repo's own
+  `.claude/rules/branching-rules.md` allows `docs/*` (and the generated-project
+  template's branching rules do too), so the hook is stricter than the
+  documented policy — quiet drift that pushes doc work into `chore/`. Fix: add
+  `docs` to the hook's allowed-prefix alternation in all five profile hooks +
+  this repo's own copy (same one-line change as the item-54 regex fix). Decide
+  the canonical set first — `feature|fix|chore|docs|hotfix|release` — and make
+  the hook and the rules agree. *(small — one regex, six files)*
 
 ---
 
