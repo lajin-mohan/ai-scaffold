@@ -436,6 +436,27 @@ describe('python and golang profiles', () => {
   });
 });
 
+describe('generated package.json scripts', () => {
+  // The pre-commit hook's Node block runs `npm run lint`, `npm run typecheck`,
+  // and `npm test` whenever a package.json is present. A profile that ships a
+  // package.json missing any of those — or with a `test` that can't run in a
+  // fresh scaffold (e.g. `php artisan test`) — fails a team member's first
+  // commit. This locks in that every package.json-bearing profile passes.
+  const here = path.dirname(fileURLToPath(import.meta.url));
+  const profilesWithPackageJson = ['node', 'laravel'];
+  for (const profile of profilesWithPackageJson) {
+    it(`${profile} package.json defines lint, typecheck, and a fresh-scaffold-safe test`, () => {
+      const pkg = JSON.parse(readFileSync(path.resolve(here, '../../templates', profile, 'package.json'), 'utf-8'));
+      expect(pkg.scripts).toHaveProperty('lint');
+      expect(pkg.scripts).toHaveProperty('typecheck');
+      expect(pkg.scripts).toHaveProperty('test');
+      // The Node block runs `npm test`; a fresh scaffold has no vendor/artisan,
+      // so the test script must not require a full backend install to pass.
+      expect(pkg.scripts.test).not.toMatch(/artisan|phpunit|pytest|go test/i);
+    });
+  }
+});
+
 describe('buildConstitution', () => {
   it('renders a one-page tie-breaker with resolving rule links', () => {
     const md = buildConstitution({ displayName: 'Billing API', multiTenant: false });
