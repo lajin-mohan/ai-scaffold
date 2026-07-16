@@ -13,6 +13,8 @@ This file is configured with `merge=union` in `.gitattributes` so parallel addit
 
 ## [Unreleased]
 
+## [0.10.2] - 2026-07-16
+
 ### Fixed
 - **Secrets scan in the shipped hooks now uses a valid gitleaks command.** Both
   `pre-commit` and `pre-commit-secrets` ran `gitleaks detect --staged`, which
@@ -34,6 +36,10 @@ This file is configured with `merge=union` in `.gitattributes` so parallel addit
   asserts these files stay byte-identical across all five profiles and the
   pre-publish smoke verifies a generated Go project's pre-commit hook actually
   runs Go checks.
+
+## [0.10.1] - 2026-07-16
+
+### Fixed
 - **Windows: generated `.claude/MEMORY.md` and `.claude/settings-overrides.json`
   were never created.** `buildFilePlan` computed each template's relative path
   with `path.relative()`, which emits backslashes on Windows, then used that
