@@ -13,6 +13,19 @@ This file is configured with `merge=union` in `.gitattributes` so parallel addit
 
 ## [Unreleased]
 
+### Fixed
+- **laravel profile: a fresh project's first commit no longer fails
+  pre-commit.** The generated `package.json` shipped no `typecheck` script and
+  a `test` script of `php artisan test` — so the pre-commit hook's Node block
+  (which runs on any `package.json`) hit "Missing script: typecheck" and tried
+  to run PHP tests with no `artisan`/`vendor/` present, failing 2 checks on the
+  very first commit. Made laravel's frontend `package.json` scripts consistent
+  with the node profile's placeholder pattern (added `typecheck`, changed
+  `test` to a placeholder — PHP tests run via the composer/PHPUnit path, not
+  the Node block). A regression test now asserts every package.json-bearing
+  profile defines `lint`/`typecheck`/`test` with a fresh-scaffold-safe test.
+  Found during the pre-release all-profiles readiness sweep.
+
 ### Changed
 - **One-button release flow — no more post-release sync or version/CHANGELOG
   drift.** Releases now run from a single `workflow_dispatch` (`Release`): it

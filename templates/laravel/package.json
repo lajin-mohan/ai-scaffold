@@ -6,8 +6,9 @@
   "scripts": {
     "dev": "echo \"Configure your Laravel frontend/dev command\"",
     "build": "echo \"Configure your Laravel asset build command\"",
-    "test": "php artisan test",
-    "lint": "echo \"Configure your Laravel lint command\""
+    "test": "echo \"Configure your Laravel frontend test command\"",
+    "lint": "echo \"Configure your Laravel lint command\"",
+    "typecheck": "echo \"Configure your Laravel typecheck command\""
   },
   "license": "{{LICENSE}}"
 }
