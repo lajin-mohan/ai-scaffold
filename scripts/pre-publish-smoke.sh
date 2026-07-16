@@ -355,15 +355,18 @@ if command -v go >/dev/null 2>&1; then
     fail "fresh golang project fails go vet ($GO_VET_STATUS) or go test ($GO_TEST_STATUS)"
   fi
 
+  # Assert the Go checks specifically RAN and PASSED (the "OK: Go ..." lines),
+  # not that the whole hook exits 0. The hook also runs branch-name and gitleaks
+  # checks whose pass/fail depends on the environment (e.g. gitleaks version on
+  # the CI runner) and is not what this gate verifies. Scoping to the Go OK
+  # lines keeps this gate about Go detection, independent of unrelated checks.
   GO_PRECOMMIT_OUTPUT=$(cd "$GO_DIR" && bash .claude/hooks/pre-commit 2>&1)
-  GO_PRECOMMIT_STATUS=$?
-  if [ "$GO_PRECOMMIT_STATUS" -eq 0 ] \
-    && grep -q "Go build" <<< "$GO_PRECOMMIT_OUTPUT" \
-    && grep -q "Go vet" <<< "$GO_PRECOMMIT_OUTPUT" \
-    && grep -q "Go tests" <<< "$GO_PRECOMMIT_OUTPUT"; then
-    pass "fresh golang pre-commit detects go.mod and runs Go checks"
+  if grep -q "OK: Go build" <<< "$GO_PRECOMMIT_OUTPUT" \
+    && grep -q "OK: Go vet" <<< "$GO_PRECOMMIT_OUTPUT" \
+    && grep -q "OK: Go tests" <<< "$GO_PRECOMMIT_OUTPUT"; then
+    pass "fresh golang pre-commit detects go.mod and runs Go checks (build/vet/test all OK)"
   else
-    fail "fresh golang pre-commit did not run Go checks"
+    fail "fresh golang pre-commit did not run+pass Go checks"
     echo "$GO_PRECOMMIT_OUTPUT" | tail -12
   fi
 else

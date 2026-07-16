@@ -347,6 +347,23 @@ saving starts costing correctness.
   starter `tasks/lessons.md` + `CHANGELOG.md` (harmless, resolves the dangling
   reference), or (b) doctor detects install mode from the manifest and softens
   the message for `init` installs. *(small — one of two clear options)*
+- **62. `pre-commit` hook's gitleaks command is incompatible with current
+  gitleaks versions.** Found 2026-07-16 (PR #98): the shipped hook runs
+  `gitleaks detect --staged --exit-code` — on the gitleaks version installed on
+  the GitHub Actions runner this prints usage text and fails (the `detect`
+  subcommand's flag surface changed in gitleaks v8.x; `--staged` / bare
+  `--exit-code` are no longer valid there). Pre-existing on **all five
+  profiles** + the repo's own hook; latent until PR #98's new smoke gate ran a
+  generated project's full pre-commit in CI for the first time. Real user
+  impact: anyone with a modern gitleaks installed gets a failing pre-commit
+  with a usage error on **every commit** in a generated project. Fix: pin the
+  intended gitleaks major version and use its correct invocation (likely
+  `gitleaks git --staged --exit-code 1` or `gitleaks protect --staged` per the
+  pinned version — **verify against the actual version before changing**), and
+  add a dedicated smoke gate asserting the gitleaks command is valid (not just
+  that Go checks run). Same environment-parity blind spot as item 60: CI has
+  gitleaks, dev machines often don't, so the broken command reads green
+  locally. *(small fix, but must be verified against a pinned gitleaks version)*
 
 ---
 
