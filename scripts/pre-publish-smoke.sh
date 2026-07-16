@@ -354,6 +354,18 @@ if command -v go >/dev/null 2>&1; then
   else
     fail "fresh golang project fails go vet ($GO_VET_STATUS) or go test ($GO_TEST_STATUS)"
   fi
+
+  GO_PRECOMMIT_OUTPUT=$(cd "$GO_DIR" && bash .claude/hooks/pre-commit 2>&1)
+  GO_PRECOMMIT_STATUS=$?
+  if [ "$GO_PRECOMMIT_STATUS" -eq 0 ] \
+    && grep -q "Go build" <<< "$GO_PRECOMMIT_OUTPUT" \
+    && grep -q "Go vet" <<< "$GO_PRECOMMIT_OUTPUT" \
+    && grep -q "Go tests" <<< "$GO_PRECOMMIT_OUTPUT"; then
+    pass "fresh golang pre-commit detects go.mod and runs Go checks"
+  else
+    fail "fresh golang pre-commit did not run Go checks"
+    echo "$GO_PRECOMMIT_OUTPUT" | tail -12
+  fi
 else
   echo "  – skipped fresh golang verification (go not installed)"
 fi

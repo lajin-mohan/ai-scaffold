@@ -302,15 +302,14 @@ saving starts costing correctness.
   by hand a third release running. This is now a proven every-release tax, not
   a one-off — **promote out of the "someday" tier and actually fix the process
   next.** *(small fix, but recurs every release until fixed)*
-- **58. `pre-commit` hook has no Go/`.NET` detection block.** The hook
-  documents 4 stack-detection blocks (Node, PHP, Python, .NET) but golang is
-  an officially shipped, first-class profile with zero coverage — only the
-  always-on branch-name check applies to a golang project; `go build`/`go
-  vet`/`go test` never run locally pre-commit. Not a regression from item 54
-  (golang was already uncovered before the hook was wired) but a real content
-  gap for a supported profile. Add a `go.mod` detection block mirroring the
-  existing pattern (`go build ./...`, `go vet ./...`, `go test ./...`, guarded
-  by `command -v go`). *(small — same shape as existing blocks)*
+- **58. — ✅ DONE (Go-aware shared profile wiring).** Added `go.mod` detection
+  to the shared profile pre-commit hook and wired `go build ./...`,
+  `go vet ./...`, and `go test ./...` behind `command -v go`. The shared
+  Claude permissions, pre-review hook, `/start-task`, `/review`, and source CI
+  template are now stack-aware and byte-identical across all five profiles, so
+  generated Go projects no longer inherit Node-only verification prompts.
+  Covered by unit tests in `src/__tests__/core.test.js` and a pre-publish smoke
+  gate that runs the generated Go pre-commit hook.
 - **59. `pre-commit` hook branch-name regex rejects `docs/*`, but
   `branching-rules.md` lists `docs/*` as a valid branch type.** Found
   2026-07-15 (PR #92): a `docs/windows-powershell-npx-note` branch was blocked

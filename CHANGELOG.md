@@ -14,6 +14,16 @@ This file is configured with `merge=union` in `.gitattributes` so parallel addit
 ## [Unreleased]
 
 ### Fixed
+- **Go profile quality gates are now real and shared across all profiles.**
+  The hook, review, permission, command, and CI template files had drifted into
+  Node-flavored defaults that ignored `go.mod`, so a generated Go project could
+  pass pre-commit/pre-review without running Go verification. The shared
+  profile files now detect `go.mod`, allow Go verification commands, run
+  `go build ./...`, `go vet ./...`, and `go test ./...` from hooks/CI, and use
+  stack-neutral `/start-task` and `/review` examples. Regression coverage
+  asserts these files stay byte-identical across all five profiles and the
+  pre-publish smoke verifies a generated Go project's pre-commit hook actually
+  runs Go checks.
 - **Windows: generated `.claude/MEMORY.md` and `.claude/settings-overrides.json`
   were never created.** `buildFilePlan` computed each template's relative path
   with `path.relative()`, which emits backslashes on Windows, then used that

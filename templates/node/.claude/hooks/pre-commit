@@ -10,6 +10,7 @@
 #   package.json    → Node/TypeScript (npm run lint, npm run typecheck, npm test)
 #   composer.json   → PHP (PHP CS Fixer, PHPStan, PHPUnit)
 #   pyproject.toml  → Python (ruff, pyright/mypy, pytest)
+#   go.mod          → Go (go build, go vet, go test)
 #   *.csproj        → .NET (dotnet build, dotnet test)
 #
 # IMPORTANT: This is a developer convenience tool, not a hard quality gate.
@@ -46,7 +47,7 @@ echo " Pre-commit checks"
 echo "========================================"
 
 # Template / pre-bootstrap state — no stack files found
-if [ ! -f package.json ] && [ ! -f composer.json ] && [ ! -f pyproject.toml ] && ! ls *.csproj 1>/dev/null 2>&1; then
+if [ ! -f package.json ] && [ ! -f composer.json ] && [ ! -f pyproject.toml ] && [ ! -f go.mod ] && ! ls *.csproj 1>/dev/null 2>&1; then
   echo "(no project stack detected — template state, skipping checks)"
   echo "Template validation passed. Run /bootstrap to configure checks."
   exit 0
@@ -105,6 +106,17 @@ if [ -f pyproject.toml ] || [ -f requirements.txt ]; then
     run_check "pytest" "pytest"
   else
     echo "(pytest not found — skipping tests)"
+  fi
+fi
+
+# ── Go ────────────────────────────────────────────────────────
+if [ -f go.mod ]; then
+  if command -v go &>/dev/null; then
+    run_check "Go build" "go build ./..."
+    run_check "Go vet" "go vet ./..."
+    run_check "Go tests" "go test ./..."
+  else
+    echo "(go not found — skipping Go checks)"
   fi
 fi
 

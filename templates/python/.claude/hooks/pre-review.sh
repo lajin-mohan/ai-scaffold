@@ -15,6 +15,9 @@
 #
 # HOW TO CONFIGURE: Uncomment and adapt the commands below to your project's
 # stack, then remove PRE_REVIEW_ALLOW_UNCONFIGURED from .claude/settings.json.
+# Go is detection-active because the golang profile ships go.mod plus day-one
+# build/test files; other stack examples stay commented until /bootstrap or the
+# team configures exact project commands, so the hook does not bless placeholders.
 
 set -e
 
@@ -45,6 +48,16 @@ echo "========================================"
 # run_check "ESLint"        "npm run lint"
 # run_check "PHP CS Fixer"  "vendor/bin/php-cs-fixer fix --dry-run"
 # run_check "Ruff"          "ruff check ."
+if [ -f go.mod ]; then
+  if command -v go >/dev/null 2>&1; then
+    run_check "Go build" "go build ./..."
+    run_check "Go vet" "go vet ./..."
+    run_check "Go tests" "go test ./..."
+  else
+    echo "   FAIL: Go toolchain not found"
+    FAIL=$((FAIL + 1))
+  fi
+fi
 
 # Type checking
 # run_check "TypeScript"    "npm run typecheck"
