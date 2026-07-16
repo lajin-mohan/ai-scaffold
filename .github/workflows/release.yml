@@ -29,6 +29,11 @@ on:
         description: "Release version (X.Y.Z, no leading v)"
         required: true
         type: string
+      dry_run:
+        description: "Verify only — run gates + prove push access to dev/main, but do NOT commit, push, or tag"
+        required: false
+        default: false
+        type: boolean
 
 concurrency:
   group: release
@@ -91,24 +96,51 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
+      # Dry run: prove the stamping works and that the token is actually allowed
+      # to push to dev and fast-forward main (git push --dry-run performs the
+      # full auth + branch-protection check WITHOUT writing anything). This is
+      # the safe first-run check — it verifies the RELEASE_PAT + branch
+      # protection setup before any real release.
+      - name: Dry run — verify stamping and push access
+        if: ${{ inputs.dry_run }}
+        run: |
+          bash scripts/prepare-release.sh "${{ inputs.version }}"
+          git checkout -- package.json package-lock.json .ai-scaffold.json CHANGELOG.md
+          echo "✓ prepare-release.sh succeeded for v${{ inputs.version }}"
+          git push --dry-run origin HEAD:dev
+          echo "✓ push to dev would be accepted"
+          git push --dry-run origin HEAD:main
+          echo "✓ fast-forward push to main would be accepted"
+          {
+            echo "### Dry run OK — v${{ inputs.version }} :white_check_mark:"
+            echo "- gates passed; stamping works"
+            echo "- RELEASE_PAT can push to \`dev\` and fast-forward \`main\`"
+            echo "- **nothing was committed, pushed, or tagged** — re-run with dry_run unchecked to release"
+          } >> "$GITHUB_STEP_SUMMARY"
+
       - name: Stamp the release on dev
+        if: ${{ !inputs.dry_run }}
         run: bash scripts/prepare-release.sh "${{ inputs.version }}"
 
       - name: Commit and push to dev
+        if: ${{ !inputs.dry_run }}
         run: |
           git add package.json package-lock.json .ai-scaffold.json CHANGELOG.md
           git commit -m "release: v${{ inputs.version }}"
           git push origin HEAD:dev
 
       - name: Fast-forward main to dev
+        if: ${{ !inputs.dry_run }}
         run: git push origin HEAD:main
 
       - name: Tag and push (triggers publish)
+        if: ${{ !inputs.dry_run }}
         run: |
           git tag -a "v${{ inputs.version }}" -m "Release v${{ inputs.version }}"
           git push origin "v${{ inputs.version }}"
 
       - name: Summary
+        if: ${{ !inputs.dry_run }}
         run: |
           echo "### Released v${{ inputs.version }} :rocket:" >> "$GITHUB_STEP_SUMMARY"
           echo "- dev and main fast-forwarded to the same commit (no sync needed)" >> "$GITHUB_STEP_SUMMARY"

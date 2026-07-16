@@ -73,6 +73,16 @@ fast-forward push is not a force push, so those stay intact.
 That's it. No release branch, no promotion PR, no sync PR, no merge-method
 switching.
 
+### First time: dry-run first
+
+Before the first real release (or after any branch-protection change), run it
+with **Dry run** checked. That runs the gates, proves `prepare-release.sh`
+works, and verifies the `RELEASE_PAT` can push to `dev` and fast-forward `main`
+(`git push --dry-run` performs the full auth + branch-protection check) — but
+**commits, pushes, and tags nothing**. If it's green, un-check Dry run and run
+it again to release. If the dry-run fails at the `main` push, the
+branch-protection bypass (setup step 2 above) isn't in place yet.
+
 ## Guards
 
 `scripts/prepare-release.sh` (run inside the workflow) refuses to proceed if:
