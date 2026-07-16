@@ -418,6 +418,22 @@ describe('python and golang profiles', () => {
     expect(ci).toContain('go test ./...');
     expect(ci).toContain('go build ./...');
   });
+
+  it('uses the gitleaks command supported by current gitleaks (git --staged), not the removed detect --staged', () => {
+    const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
+    const hooks = ['.claude/hooks/pre-commit', '.claude/hooks/pre-commit-secrets'];
+    for (const rel of hooks) {
+      const repoHook = readFileSync(path.resolve(repoRoot, rel), 'utf-8');
+      // The `git` subcommand is the pre-commit scan form since gitleaks v8.19;
+      // `gitleaks detect --staged` errors ("unknown flag") on current versions.
+      expect(repoHook).toContain('gitleaks git --staged');
+      expect(repoHook).not.toContain('gitleaks detect --staged');
+      // Shipped copies must match the repo copy exactly.
+      for (const profile of SUPPORTED_PROFILES) {
+        expect(readFileSync(templatePath(profile, rel), 'utf-8')).toBe(repoHook);
+      }
+    }
+  });
 });
 
 describe('buildConstitution', () => {

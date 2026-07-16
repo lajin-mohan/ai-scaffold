@@ -14,6 +14,16 @@ This file is configured with `merge=union` in `.gitattributes` so parallel addit
 ## [Unreleased]
 
 ### Fixed
+- **Secrets scan in the shipped hooks now uses a valid gitleaks command.** Both
+  `pre-commit` and `pre-commit-secrets` ran `gitleaks detect --staged`, which
+  errors (`unknown flag: --staged`) on gitleaks v8.19+ — the `detect` scan form
+  was replaced by the `git` subcommand. Any user with a current gitleaks
+  installed got a failing pre-commit with a usage error on every commit. Fixed
+  to `gitleaks git --staged --exit-code 1` (verified against gitleaks 8.30.1:
+  passes on a clean staged tree, blocks a real secret) across all five profiles
+  and the repo copies. A smoke gate now asserts the gitleaks command runs
+  cleanly when gitleaks is installed, so a stale command can't slip through
+  again.
 - **Go profile quality gates are now real and shared across all profiles.**
   The hook, review, permission, command, and CI template files had drifted into
   Node-flavored defaults that ignored `go.mod`, so a generated Go project could
