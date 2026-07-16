@@ -13,6 +13,8 @@ This file is configured with `merge=union` in `.gitattributes` so parallel addit
 
 ## [Unreleased]
 
+## [0.11.0] - 2026-07-16
+
 ### Fixed
 - **laravel profile: a fresh project's first commit no longer fails
   pre-commit.** The generated `package.json` shipped no `typecheck` script and
