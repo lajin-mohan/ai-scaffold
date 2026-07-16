@@ -66,8 +66,9 @@ Release readiness failed.
 
 $MAIN_REF is not an ancestor of $CANDIDATE_REF.
 
-Do not resolve this in the release PR. Sync main into dev first, verify, then
-create a fresh promotion branch/PR.
+Under the fast-forward release flow (docs/setup/release-flow.md) this should
+never happen — main is always a past state of dev. If it does, someone pushed
+to main out-of-band; reconcile main and dev before releasing.
 EOF
   exit 1
 fi

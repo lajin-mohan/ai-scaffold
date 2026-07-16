@@ -267,11 +267,14 @@ saving starts costing correctness.
 
 ## Hygiene track (parallel — not a phase gate)
 
-- **47.** Prove the post-release sync is fully hands-off: enable repo
-  **Settings → Actions → "Allow GitHub Actions to create and approve pull
-  requests"** + **"Allow auto-merge"**, add a **`SYNC_PAT`** fine-grained secret
-  (Contents + PRs write), then verify one release auto-opens + auto-merges the
-  `main→dev` sync PR with zero manual steps. *(needs repo settings — human)*
+- **47. — ✅ DONE / superseded (one-button release flow).** The post-release
+  `main→dev` sync no longer exists to automate: the new fast-forward release
+  flow (`docs/setup/release-flow.md`, `.github/workflows/release.yml`) promotes
+  `dev → main` by fast-forward, so `main` is always an ancestor of `dev` and
+  there is nothing to sync. Removed `post-release-sync.yml` and
+  `scripts/sync-main-into-dev.sh`. Remaining human step is the one-time repo
+  setup in `release-flow.md` (a `RELEASE_PAT` secret + a branch-protection
+  bypass for that identity). *(superseded — the sync problem is designed out)*
 - **29. — ✅ DONE (2026-07-14).** Deleted the stray `v1.0` tag (local + remote,
   explicit human confirmation obtained). `v1.0.0` was never published to npm —
   nothing real was at risk. `git fetch --tags` is clean again. Confirmed
@@ -287,21 +290,16 @@ saving starts costing correctness.
 - **21.** Docs-honesty pass (stale version/claims). **22.** Publish-workflow input
   cleanup. **18.** Hooks-roadmap doc. **41.** Decide the fate of the example hooks
   (`jira-sync.py`, `notify-review.py`) — pack or remove.
-- **57. `main→dev` sync loses CHANGELOG heading-dating every release.** Found
-  2026-07-14: the release-branch step dates `[Unreleased]` → `[0.9.x] - date`,
-  but `main→dev` sync (`git merge -s ours`) intentionally discards `main`'s
-  content, so `dev` never receives the dated heading — the same content sits
-  undated under `[Unreleased]` and silently accumulates across releases until
-  someone notices (this time: two releases' worth, caught during a docs
-  review). One-time catch-up applied 2026-07-14. Needs a process fix: either
-  the release-branch step also opens a tiny `dev`-targeted PR that applies
-  just the heading rename, or the sync script diffs+applies CHANGELOG heading
-  changes specifically (not full content, to avoid re-breaking ancestry).
-  **Recurred again after v0.10.0** (caught 2026-07-15 during PR #92): the
-  `[0.10.0] - 2026-07-14` heading was missing on `dev` and had to be re-dated
-  by hand a third release running. This is now a proven every-release tax, not
-  a one-off — **promote out of the "someday" tier and actually fix the process
-  next.** *(small fix, but recurs every release until fixed)*
+- **57. — ✅ DONE (bump + date on dev, via the one-button release flow).** The
+  `main→dev` `-s ours` sync discarded main's content, so the release-branch
+  version bump + CHANGELOG dating never reached `dev` — dev's `package.json`
+  and CHANGELOG drifted every release (hand-fixed three times: 0.10.0, 0.10.1,
+  0.10.2, plus the 0.9.0→0.10.2 catch-up in PR #102). Designed out: the new
+  release flow (`docs/setup/release-flow.md`) stamps the version and dates the
+  CHANGELOG **on `dev`** and then fast-forwards `main` to that commit, so both
+  branches always agree and there is no content to lose. `prepare-release.sh`
+  does the stamping; `release.yml` drives it. *(done — root cause removed, not
+  patched)*
 - **58. — ✅ DONE (Go-aware shared profile wiring).** Added `go.mod` detection
   to the shared profile pre-commit hook and wired `go build ./...`,
   `go vet ./...`, and `go test ./...` behind `command -v go`. The shared
