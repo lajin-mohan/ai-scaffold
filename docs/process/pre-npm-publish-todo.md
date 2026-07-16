@@ -302,15 +302,14 @@ saving starts costing correctness.
   by hand a third release running. This is now a proven every-release tax, not
   a one-off — **promote out of the "someday" tier and actually fix the process
   next.** *(small fix, but recurs every release until fixed)*
-- **58. `pre-commit` hook has no Go/`.NET` detection block.** The hook
-  documents 4 stack-detection blocks (Node, PHP, Python, .NET) but golang is
-  an officially shipped, first-class profile with zero coverage — only the
-  always-on branch-name check applies to a golang project; `go build`/`go
-  vet`/`go test` never run locally pre-commit. Not a regression from item 54
-  (golang was already uncovered before the hook was wired) but a real content
-  gap for a supported profile. Add a `go.mod` detection block mirroring the
-  existing pattern (`go build ./...`, `go vet ./...`, `go test ./...`, guarded
-  by `command -v go`). *(small — same shape as existing blocks)*
+- **58. — ✅ DONE (Go-aware shared profile wiring).** Added `go.mod` detection
+  to the shared profile pre-commit hook and wired `go build ./...`,
+  `go vet ./...`, and `go test ./...` behind `command -v go`. The shared
+  Claude permissions, pre-review hook, `/start-task`, `/review`, and source CI
+  template are now stack-aware and byte-identical across all five profiles, so
+  generated Go projects no longer inherit Node-only verification prompts.
+  Covered by unit tests in `src/__tests__/core.test.js` and a pre-publish smoke
+  gate that runs the generated Go pre-commit hook.
 - **59. `pre-commit` hook branch-name regex rejects `docs/*`, but
   `branching-rules.md` lists `docs/*` as a valid branch type.** Found
   2026-07-15 (PR #92): a `docs/windows-powershell-npx-note` branch was blocked
@@ -348,6 +347,23 @@ saving starts costing correctness.
   starter `tasks/lessons.md` + `CHANGELOG.md` (harmless, resolves the dangling
   reference), or (b) doctor detects install mode from the manifest and softens
   the message for `init` installs. *(small — one of two clear options)*
+- **62. `pre-commit` hook's gitleaks command is incompatible with current
+  gitleaks versions.** Found 2026-07-16 (PR #98): the shipped hook runs
+  `gitleaks detect --staged --exit-code` — on the gitleaks version installed on
+  the GitHub Actions runner this prints usage text and fails (the `detect`
+  subcommand's flag surface changed in gitleaks v8.x; `--staged` / bare
+  `--exit-code` are no longer valid there). Pre-existing on **all five
+  profiles** + the repo's own hook; latent until PR #98's new smoke gate ran a
+  generated project's full pre-commit in CI for the first time. Real user
+  impact: anyone with a modern gitleaks installed gets a failing pre-commit
+  with a usage error on **every commit** in a generated project. Fix: pin the
+  intended gitleaks major version and use its correct invocation (likely
+  `gitleaks git --staged --exit-code 1` or `gitleaks protect --staged` per the
+  pinned version — **verify against the actual version before changing**), and
+  add a dedicated smoke gate asserting the gitleaks command is valid (not just
+  that Go checks run). Same environment-parity blind spot as item 60: CI has
+  gitleaks, dev machines often don't, so the broken command reads green
+  locally. *(small fix, but must be verified against a pinned gitleaks version)*
 
 ---
 

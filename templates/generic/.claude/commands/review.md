@@ -24,24 +24,28 @@ Runs a full code review on the current feature branch or specified files. Invoke
 
 1. **Gather context** — read diff, identify touched files, classify changes (backend / frontend / infra / config / spec).
 2. **Read the spec** — find the linked BRD section, API contract, and LLD for the feature (qa-reviewer and architect both need this).
-3. **Run SAST scan** — Semgrep or ESLint security plugin runs against the diff:
+3. **Run SAST scan** — Semgrep, gosec, ESLint security plugin, or the project's configured scanner runs against the diff:
    - Identifies hardcoded secrets, SQL injection patterns, insecure crypto
    - Tag findings as `[security]` BLOCK/WARN
 4. **Run browser and UX verification for UI/full-stack work**:
-   - For changes touching `apps/web/`, routes that drive UI flows, or frontend-visible API behavior, run `npm run test:e2e`.
+   - For changes touching `apps/web/`, routes that drive UI flows, or frontend-visible API behavior, run the project's configured browser/e2e command.
    - Run `/ux-review` against changed UI screens/components or their `docs/ux/` artifacts. `/ux-handoff` (`docs/ux/<module>/tasks/<task-id>/06-dev-handoff.md`) must exist before claiming frontend/full-stack work is done — it is the hard gate for Stage 5.
    - Verify changed UI in desktop light, desktop dark, mobile light, and mobile dark states.
    - Mobile verification must include an approximately 390px-wide viewport and confirm the primary workflow remains usable.
    - Require Playwright failure artifacts (screenshots/traces/videos) to be preserved when tests fail.
    - If browser verification is unavailable, report it as a BLOCK for frontend/full-stack tasks unless an explicit exception is approved.
-5. **Run the reviewers.** Default: the relevant subagents in parallel (below). Under `--lite`: skip the fan-out and run **one consolidated pass in this context** applying the essential lenses inline — correctness vs. spec, security (SAST + the security checklist), and test adequacy — but only after the escalation check in [Lite Review](#lite-review---lite) passes. The relevant subagents (reads `.claude/settings-overrides.json` for feature flags):
-   - **`backend-reviewer`** — if any change to `apps/api/`, `packages/services/`, `packages/repositories/`, `packages/domain/`, migrations
+5. **Run stack verification for changed backend/runtime files**:
+   - For Go changes touching `cmd/`, `internal/`, `pkg/`, `go.mod`, or Go config, require `go vet ./...`, `go build ./...`, and `go test ./...`.
+   - For Go integration-test changes, also run the configured integration command, commonly `go test -tags=integration ./...`.
+   - For other stacks, run the lint/typecheck/test/build commands configured in `CLAUDE.md` or `.claude/settings-overrides.json`.
+6. **Run the reviewers.** Default: the relevant subagents in parallel (below). Under `--lite`: skip the fan-out and run **one consolidated pass in this context** applying the essential lenses inline — correctness vs. spec, security (SAST + the security checklist), and test adequacy — but only after the escalation check in [Lite Review](#lite-review---lite) passes. The relevant subagents (reads `.claude/settings-overrides.json` for feature flags):
+   - **`backend-reviewer`** — if any change to `apps/api/`, `cmd/`, `internal/`, `pkg/`, `packages/services/`, `packages/repositories/`, `packages/domain/`, migrations, or backend build config
    - **`frontend-reviewer`** — if any change to `apps/web/`, `packages/ui/`, components, styles
    - **`security-reviewer`** — if any change to auth, sessions, permissions, data access, input handling, secrets, headers, or any new endpoint
    - **`qa-reviewer`** — if a spec/BRD/AC is linked, OR for any feature work. Compliance checks (GDPR, ISO27001, accessibility) only run if the corresponding feature flag is `true` in `settings-overrides.json`
    - **`architect`** — if change touches `>1` architectural layer, introduces a new module, modifies a shared package, or changes any rule in `.claude/rules/`
-6. **Consolidate findings** — merge into a single report, deduplicate, sort by severity, attribute findings to source reviewer.
-7. **Produce summary** — overall verdict with required actions.
+7. **Consolidate findings** — merge into a single report, deduplicate, sort by severity, attribute findings to source reviewer.
+8. **Produce summary** — overall verdict with required actions.
 
 ## Reviewer Selection Matrix
 
@@ -115,7 +119,7 @@ Reviewers run: backend, frontend, security, qa, architect
 ### Browser Verification
 | Check | Status | Notes |
 |---|---|---|
-| `npm run test:e2e` | ✅ / ⚠ / ❌ | Required for frontend/full-stack tasks |
+| Configured browser/e2e command | ✅ / ⚠ / ❌ | Required for frontend/full-stack tasks |
 | Desktop light theme | ✅ / ⚠ / ❌ | Required for changed UI screens |
 | Desktop dark theme | ✅ / ⚠ / ❌ | Required for changed UI screens |
 | Mobile light theme (390px) | ✅ / ⚠ / ❌ | Required for changed UI screens |
@@ -148,7 +152,7 @@ Reviewers run: backend, frontend, security, qa, architect
 - QA findings appear whenever a spec is linked, even with `--backend-only` — AC compliance is independent of which layer changed.
 - SAST findings (Semgrep) are tagged `[SAST]` and always included — they are security-adjacent and may overlap with `security-reviewer`.
 - UX review is required before frontend/full-stack tasks can be marked `DONE`; missing `/ux-review` evidence is a BLOCK unless explicitly waived.
-- Browser verification is required before frontend/full-stack tasks can be marked `DONE`; missing `npm run test:e2e` evidence is a BLOCK unless explicitly waived.
+- Browser verification is required before frontend/full-stack tasks can be marked `DONE`; missing configured browser/e2e evidence is a BLOCK unless explicitly waived.
 - Frontend/full-stack tasks cannot be marked `DONE` unless desktop light, desktop dark, mobile light, and mobile dark checks are passed or explicitly waived.
 - Missing mobile workflow support at 390px is a BLOCK.
 - Missing light/dark theme support is a BLOCK for new pages and at least WARN for legacy pages touched by the change.

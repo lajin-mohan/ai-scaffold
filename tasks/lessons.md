@@ -166,3 +166,26 @@ This file records patterns from mistakes and corrections. Claude reads this at t
   posix-normalization helper already exists in the codebase, grep for every
   `path.relative(` / `path.join(` that feeds a comparison and confirm it's
   wrapped.
+
+## 2026-07-16 — Smoke gate over-asserted; CI-only gitleaks exposed a latent bug (PR #98)
+
+- **Mistake:** A new pre-publish smoke gate meant to verify "a generated Go
+  project's pre-commit runs Go checks" asserted the *entire* hook exits 0. The
+  hook also runs a gitleaks check whose `gitleaks detect --staged --exit-code`
+  command is incompatible with the gitleaks version on the GitHub Actions
+  runner — so in CI the hook exited 1 (gitleaks FAIL) and the gate failed,
+  even though all three Go checks passed. Locally it was green because gitleaks
+  isn't installed on the dev machine, so the check skipped.
+- **Why:** Two compounding issues. (1) The gate coupled its assertion to
+  unrelated checks (gitleaks, branch name) instead of asserting only the thing
+  it tests. (2) Same environment-parity blind spot as the Windows bug (item
+  60): a tool present in CI but absent locally makes a broken command read
+  green on the dev machine. The gate's over-assertion is what *surfaced* the
+  latent gitleaks bug — a happy accident, but the gate is still wrong.
+- **Rule:** **A gate must assert exactly what it verifies, and nothing else.**
+  Scope the assertion to the specific success signal (here: the `OK: Go build`
+  / `OK: Go vet` / `OK: Go tests` lines), not a broad `exit 0` that depends on
+  co-resident checks. Separately: **when a check shells out to a tool, that
+  tool's presence and version differ between CI and dev machines** — a
+  command that skips-when-absent locally can fail-when-present in CI. Verify
+  tool-dependent commands against the version CI actually installs, and pin it.

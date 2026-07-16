@@ -9,7 +9,23 @@
       "Write(apps/**)",
       "Write(packages/**)",
       "Bash(npm run *)",
-      "Bash(npx *)"
+      "Bash(npx *)",
+      "Bash(go test*)",
+      "Bash(go vet*)",
+      "Bash(go build*)",
+      "Bash(go fmt*)",
+      "Bash(go mod*)",
+      "Bash(ruff*)",
+      "Bash(pyright*)",
+      "Bash(mypy*)",
+      "Bash(pytest*)",
+      "Bash(composer*)",
+      "Bash(vendor/bin/php-cs-fixer*)",
+      "Bash(vendor/bin/phpstan*)",
+      "Bash(vendor/bin/phpunit*)",
+      "Bash(php artisan test*)",
+      "Bash(dotnet build*)",
+      "Bash(dotnet test*)"
     ]
   }
 }

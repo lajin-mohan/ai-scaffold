@@ -1,20 +1,21 @@
 # CI Workflow - runs lint, typecheck, tests, audit, build
-# Stack: Node.js + TypeScript + ReactJS + PHP + PostgreSQL (declared in CLAUDE.md)
+# Stack-aware defaults for Node, PHP, and Go stacks.
 #
 # Jobs are gated: a failing earlier job blocks later ones. The full chain
 # must pass before a PR can merge to dev or main per branching-rules.md.
 #
 # Template-aware: a `detect-stack` job runs first, checks out the repo, and
-# publishes `has-node` and `has-php` outputs based on the presence of
-# package.json / composer.json. Every other job depends on those outputs.
+# publishes stack outputs based on package.json / composer.json / go.mod.
+# Every other job depends on those outputs.
 # On a fresh template (no stack files), all stack jobs SKIP and `ci-passed`
 # still succeeds. Once /bootstrap creates a real stack, the gates flip and
 # the real pipeline runs.
 #
-# Layout assumed:
-#   apps/api      - backend (Node/TS or PHP)
-#   apps/web      - React frontend
-#   packages/*    - shared packages (domain, shared, services, repositories)
+# Layout hints:
+#   apps/api      - optional backend app
+#   apps/web      - optional frontend app
+#   cmd/          - optional Go entry points
+#   internal/     - optional Go application packages
 
 name: CI
 
@@ -33,12 +34,13 @@ concurrency:
 env:
   NODE_VERSION: "20"
   PHP_VERSION: "8.3"
+  GO_VERSION: "1.22"
   POSTGRES_VERSION: "16-alpine"
 
 jobs:
 
   # ============================================================
-  # Detect stack - publishes has-node / has-php for downstream gates
+  # Detect stack - publishes has-node / has-php / has-go for downstream gates
   # Always runs. Required by every other job.
   # ============================================================
   detect-stack:
@@ -48,6 +50,7 @@ jobs:
     outputs:
       has-node: ${{ steps.detect.outputs.has-node }}
       has-php: ${{ steps.detect.outputs.has-php }}
+      has-go: ${{ steps.detect.outputs.has-go }}
       template-mode: ${{ steps.detect.outputs.template-mode }}
     steps:
       - uses: actions/checkout@v4
@@ -63,12 +66,18 @@ jobs:
           else
             echo "has-php=false" >> "$GITHUB_OUTPUT"
           fi
-          if [ ! -f package.json ] && [ ! -f composer.json ]; then
+          if [ -f go.mod ]; then
+            echo "has-go=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "has-go=false" >> "$GITHUB_OUTPUT"
+          fi
+          if [ ! -f package.json ] && [ ! -f composer.json ] && [ ! -f go.mod ]; then
             echo "template-mode=true" >> "$GITHUB_OUTPUT"
           else
             echo "template-mode=false" >> "$GITHUB_OUTPUT"
           fi
-          echo "Detected: has-node=$(cat $GITHUB_OUTPUT | grep has-node) has-php=$(cat $GITHUB_OUTPUT | grep has-php) template-mode=$(cat $GITHUB_OUTPUT | grep template-mode)"
+          echo "Detected stack outputs:"
+          cat "$GITHUB_OUTPUT"
 
   # ============================================================
   # Lint + typecheck - fast feedback, runs first
@@ -76,7 +85,7 @@ jobs:
   lint:
     name: Lint & typecheck
     needs: detect-stack
-    if: needs.detect-stack.outputs.has-node == 'true' || needs.detect-stack.outputs.has-php == 'true'
+    if: needs.detect-stack.outputs.has-node == 'true' || needs.detect-stack.outputs.has-php == 'true' || needs.detect-stack.outputs.has-go == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -101,6 +110,26 @@ jobs:
         if: needs.detect-stack.outputs.has-node == 'true'
         run: npm run typecheck
 
+      - name: Setup Go
+        if: needs.detect-stack.outputs.has-go == 'true'
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          cache: true
+
+      - name: Run gofmt check
+        if: needs.detect-stack.outputs.has-go == 'true'
+        run: |
+          unformatted="$(gofmt -l .)"
+          if [ -n "$unformatted" ]; then
+            echo "$unformatted"
+            exit 1
+          fi
+
+      - name: Run go vet
+        if: needs.detect-stack.outputs.has-go == 'true'
+        run: go vet ./...
+
       # Uncomment when PHP backend is in use.
       # - name: Setup PHP
       #   if: needs.detect-stack.outputs.has-php == 'true'
@@ -122,7 +151,7 @@ jobs:
   test-unit:
     name: Unit tests
     needs: [detect-stack, lint]
-    if: needs.detect-stack.outputs.has-node == 'true' || needs.detect-stack.outputs.has-php == 'true'
+    if: needs.detect-stack.outputs.has-node == 'true' || needs.detect-stack.outputs.has-php == 'true' || needs.detect-stack.outputs.has-go == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -136,6 +165,14 @@ jobs:
         run: npm ci
       - if: needs.detect-stack.outputs.has-node == 'true'
         run: npm run test:unit
+
+      - if: needs.detect-stack.outputs.has-go == 'true'
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          cache: true
+      - if: needs.detect-stack.outputs.has-go == 'true'
+        run: go test ./...
 
       # Uncomment for PHP backend
       # - if: needs.detect-stack.outputs.has-php == 'true'
@@ -154,7 +191,7 @@ jobs:
   test-integration:
     name: Integration tests
     needs: [detect-stack, lint]
-    if: needs.detect-stack.outputs.has-node == 'true' || needs.detect-stack.outputs.has-php == 'true'
+    if: needs.detect-stack.outputs.has-node == 'true' || needs.detect-stack.outputs.has-php == 'true' || needs.detect-stack.outputs.has-go == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 20
 
@@ -194,6 +231,15 @@ jobs:
         if: needs.detect-stack.outputs.has-node == 'true'
         run: npm run test:integration
 
+      - if: needs.detect-stack.outputs.has-go == 'true'
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          cache: true
+      - name: Run integration tests (Go)
+        if: needs.detect-stack.outputs.has-go == 'true'
+        run: go test -tags=integration ./...
+
       # Uncomment for PHP backend
       # - if: needs.detect-stack.outputs.has-php == 'true'
       #   uses: shivammathur/setup-php@v2
@@ -219,7 +265,7 @@ jobs:
   build:
     name: Build
     needs: [detect-stack, test-unit, test-integration]
-    if: needs.detect-stack.outputs.has-node == 'true' || needs.detect-stack.outputs.has-php == 'true'
+    if: needs.detect-stack.outputs.has-node == 'true' || needs.detect-stack.outputs.has-php == 'true' || needs.detect-stack.outputs.has-go == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -233,6 +279,14 @@ jobs:
         run: npm ci
       - if: needs.detect-stack.outputs.has-node == 'true'
         run: npm run build
+
+      - if: needs.detect-stack.outputs.has-go == 'true'
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          cache: true
+      - if: needs.detect-stack.outputs.has-go == 'true'
+        run: go build ./...
 
       - name: Upload build artifacts
         if: needs.detect-stack.outputs.has-node == 'true'
@@ -250,7 +304,7 @@ jobs:
   audit:
     name: Dependency audit
     needs: [detect-stack, lint]
-    if: needs.detect-stack.outputs.has-node == 'true' || needs.detect-stack.outputs.has-php == 'true'
+    if: needs.detect-stack.outputs.has-node == 'true' || needs.detect-stack.outputs.has-php == 'true' || needs.detect-stack.outputs.has-go == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
