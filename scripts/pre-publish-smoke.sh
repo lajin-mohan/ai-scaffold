@@ -369,6 +369,23 @@ if command -v go >/dev/null 2>&1; then
     fail "fresh golang pre-commit did not run+pass Go checks"
     echo "$GO_PRECOMMIT_OUTPUT" | tail -12
   fi
+
+  # Gitleaks command validity (item 62 regression guard). Only meaningful when
+  # gitleaks is installed (CI installs it via gitleaks-action; dev machines
+  # often don't). Asserts the hook's gitleaks invocation runs cleanly on a
+  # clean staged tree — not a usage error ("unknown flag") from a stale command.
+  if command -v gitleaks >/dev/null 2>&1; then
+    ( cd "$GO_DIR" && git add -A >/dev/null 2>&1 )
+    GL_OUTPUT=$(cd "$GO_DIR" && bash .claude/hooks/pre-commit 2>&1)
+    if grep -q "OK: Gitleaks" <<< "$GL_OUTPUT" && ! grep -qiE "unknown flag|unknown command" <<< "$GL_OUTPUT"; then
+      pass "fresh project pre-commit runs a valid gitleaks command (git --staged)"
+    else
+      fail "fresh project pre-commit gitleaks command is invalid or failed on a clean tree"
+      echo "$GL_OUTPUT" | grep -iE "gitleaks|unknown|usage" | head -6
+    fi
+  else
+    echo "  – skipped gitleaks command check (gitleaks not installed)"
+  fi
 else
   echo "  – skipped fresh golang verification (go not installed)"
 fi
