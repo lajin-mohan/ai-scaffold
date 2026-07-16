@@ -7,6 +7,8 @@ Complete reference for every `ais` command. Generated from the CLI's actual
 Install: `npm install -g @lajin.m/ai-scaffold` (gives you the `ais` binary), or
 run any command via `npx @lajin.m/ai-scaffold <command>` without installing.
 
+> **Windows PowerShell:** quote the package name — `npx "@lajin.m/ai-scaffold" <command>` — because PowerShell treats a leading `@` as the splatting operator and cannot parse the unquoted form. cmd.exe, Git Bash, macOS, and Linux need no quotes. A global install avoids it entirely (the `ais` binary has no `@`).
+
 | Command | One-liner |
 |---|---|
 | [`create`](#ais-create-project-name) | Create a new project from a scaffold profile |

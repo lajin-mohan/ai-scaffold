@@ -272,8 +272,12 @@ saving starts costing correctness.
   requests"** + **"Allow auto-merge"**, add a **`SYNC_PAT`** fine-grained secret
   (Contents + PRs write), then verify one release auto-opens + auto-merges the
   `main→dev` sync PR with zero manual steps. *(needs repo settings — human)*
-- **29.** Delete the stray `v1.0` tag — a live landmine (breaks `git fetch
-  --tags`; already broke the sync script once). *(needs explicit human "delete v1.0")*
+- **29. — ✅ DONE (2026-07-14).** Deleted the stray `v1.0` tag (local + remote,
+  explicit human confirmation obtained). `v1.0.0` was never published to npm —
+  nothing real was at risk. `git fetch --tags` is clean again. Confirmed
+  alongside a versioning decision: the next release stays on the `0.x` line
+  (e.g. `0.11.0`); `1.0.0` is not cut until the v1.0 completeness criteria in
+  "The 8.5+ path" are actually met, not implied by a leftover tag name.
 - **44.** Remove stray cruft from source template dirs (`templates/{golang,python}/apps/`,
   `templates/*/.vscode/`).
 - **46. — ✅ DONE (0.10.0 docs audit).** Fixed the repo's own
@@ -293,7 +297,11 @@ saving starts costing correctness.
   the release-branch step also opens a tiny `dev`-targeted PR that applies
   just the heading rename, or the sync script diffs+applies CHANGELOG heading
   changes specifically (not full content, to avoid re-breaking ancestry).
-  *(small fix, but recurs every release until fixed)*
+  **Recurred again after v0.10.0** (caught 2026-07-15 during PR #92): the
+  `[0.10.0] - 2026-07-14` heading was missing on `dev` and had to be re-dated
+  by hand a third release running. This is now a proven every-release tax, not
+  a one-off — **promote out of the "someday" tier and actually fix the process
+  next.** *(small fix, but recurs every release until fixed)*
 - **58. `pre-commit` hook has no Go/`.NET` detection block.** The hook
   documents 4 stack-detection blocks (Node, PHP, Python, .NET) but golang is
   an officially shipped, first-class profile with zero coverage — only the
@@ -303,6 +311,18 @@ saving starts costing correctness.
   gap for a supported profile. Add a `go.mod` detection block mirroring the
   existing pattern (`go build ./...`, `go vet ./...`, `go test ./...`, guarded
   by `command -v go`). *(small — same shape as existing blocks)*
+- **59. `pre-commit` hook branch-name regex rejects `docs/*`, but
+  `branching-rules.md` lists `docs/*` as a valid branch type.** Found
+  2026-07-15 (PR #92): a `docs/windows-powershell-npx-note` branch was blocked
+  by the hook (`^(main|dev|master)$|^(feature|fix|chore|hotfix|release)/...`)
+  and had to be renamed to `chore/` to commit. The scaffold repo's own
+  `.claude/rules/branching-rules.md` allows `docs/*` (and the generated-project
+  template's branching rules do too), so the hook is stricter than the
+  documented policy — quiet drift that pushes doc work into `chore/`. Fix: add
+  `docs` to the hook's allowed-prefix alternation in all five profile hooks +
+  this repo's own copy (same one-line change as the item-54 regex fix). Decide
+  the canonical set first — `feature|fix|chore|docs|hotfix|release` — and make
+  the hook and the rules agree. *(small — one regex, six files)*
 
 ---
 

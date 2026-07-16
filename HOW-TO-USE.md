@@ -19,6 +19,8 @@ npx @lajin.m/ai-scaffold init --profile node --dry-run
 npx @lajin.m/ai-scaffold init --profile node
 ```
 
+> **Windows PowerShell:** quote the package name — `npx "@lajin.m/ai-scaffold" ...` — because PowerShell treats a leading `@` as the splatting operator and cannot parse the command otherwise. cmd.exe, Git Bash, macOS, and Linux run the unquoted form as-is. A global install (below) avoids the quoting.
+
 Install globally when you want the short `ais` command:
 
 ```bash

@@ -7,6 +7,7 @@
 import path from 'path';
 import fs from 'fs-extra';
 import picomatch from 'picomatch';
+import { toPosixPath } from './paths.js';
 
 /**
  * Files managed by the scaffold (relative to project root).
@@ -170,7 +171,12 @@ export async function buildFilePlan(sourceDir, targetDir, options = {}) {
   const sourceFiles = await collectSourceFiles(sourceDir);
 
   for (const srcFile of sourceFiles) {
-    const relPath = path.relative(sourceDir, srcFile);
+    // path.relative() emits backslashes on Windows; every lookup below keys on
+    // forward-slash literals (GENERATED_FILE_MAP, RENAME_ON_COPY, the exclusion
+    // lists, and the picomatch globs). Without this, Windows misses them all —
+    // e.g. `.claude/MEMORY.md` and `.claude/settings-overrides.json` are never
+    // generated because the .template source falls through to the skip branch.
+    const relPath = toPosixPath(path.relative(sourceDir, srcFile));
     // Some template files ship under a rename (e.g. `gitignore` → `.gitignore`)
     // to survive npm packaging; use the logical (target) name for all planning.
     const logicalRel = RENAME_ON_COPY[relPath] ?? relPath;

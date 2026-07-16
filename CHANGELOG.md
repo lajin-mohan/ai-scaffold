@@ -13,6 +13,33 @@ This file is configured with `merge=union` in `.gitattributes` so parallel addit
 
 ## [Unreleased]
 
+## [0.10.1] - 2026-07-16
+
+### Fixed
+- **Windows: generated `.claude/MEMORY.md` and `.claude/settings-overrides.json`
+  were never created.** `buildFilePlan` computed each template's relative path
+  with `path.relative()`, which emits backslashes on Windows, then used that
+  path as an exact key in the forward-slash `GENERATED_FILE_MAP` (and the
+  rename/exclusion lookups). On Windows every key missed, so the `.template`
+  sources fell through to the "skip raw template marker" branch and their
+  generated outputs were silently omitted — surfacing as two HIGH `ais doctor`
+  failures on a freshly installed project. Normalized the relative path to
+  posix (via the existing `toPosixPath` helper, which was already used in the
+  manifest and dry-run planners but not here). Affects **all five profiles** on
+  Windows, on both `create` and `init`. Regression test mocks `path.relative`
+  to emit backslashes and asserts the generated files survive; a cross-profile
+  test asserts both files appear in every profile's plan. Reported by a team
+  member installing the golang profile on Windows.
+- **Windows PowerShell install note.** Running `npx @lajin.m/ai-scaffold ...`
+  in PowerShell failed to parse — PowerShell treats a leading `@` as the
+  splatting operator, so the scoped package name blew up before `npx` ran
+  (`SplattingNotPermitted`). The CLI can't fix this (the failure is in
+  PowerShell's own command parsing, before `npx` launches), so the install
+  sections of `README.md`, `HOW-TO-USE.md`, and `docs/cli-reference.md` now
+  tell PowerShell users to quote the package name — `npx "@lajin.m/ai-scaffold"
+  ...` — and note that a global install avoids the quoting entirely. Found by a
+  team member installing on Windows.
+
 ## [0.10.0] - 2026-07-14
 
 ### Added
