@@ -13,6 +13,8 @@ This file is configured with `merge=union` in `.gitattributes` so parallel addit
 
 ## [Unreleased]
 
+## [0.10.1] - 2026-07-16
+
 ### Fixed
 - **Windows: generated `.claude/MEMORY.md` and `.claude/settings-overrides.json`
   were never created.** `buildFilePlan` computed each template's relative path
