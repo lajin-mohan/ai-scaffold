@@ -356,6 +356,84 @@ describe('python and golang profiles', () => {
     // Generic has no defaults; install renders as N/A in the generated README.
     expect(resolveWithDefaults({ profile: 'generic' }).resolved.installCommand).toBe('none');
   });
+
+  it('wires shared profile quality gates to Go-aware stack commands', () => {
+    const canonicalFiles = [
+      '.claude/hooks/pre-commit',
+      '.claude/hooks/pre-review.sh',
+      '.claude/settings.json',
+      '.claude/settings.local.example.json',
+      '.claude/commands/start-task.md',
+      '.claude/commands/review.md',
+      '.github/workflows/ci.yml',
+    ];
+
+    for (const rel of canonicalFiles) {
+      const generic = readFileSync(templatePath('generic', rel), 'utf-8');
+      for (const profile of SUPPORTED_PROFILES) {
+        expect(readFileSync(templatePath(profile, rel), 'utf-8')).toBe(generic);
+      }
+    }
+
+    const preCommit = readFileSync(templatePath('generic', '.claude/hooks/pre-commit'), 'utf-8');
+    expect(preCommit).toContain('[ ! -f go.mod ]');
+    expect(preCommit).toContain('run_check "Go build" "go build ./..."');
+    expect(preCommit).toContain('run_check "Go vet" "go vet ./..."');
+    expect(preCommit).toContain('run_check "Go tests" "go test ./..."');
+
+    const preReview = readFileSync(templatePath('generic', '.claude/hooks/pre-review.sh'), 'utf-8');
+    expect(preReview).toContain('if [ -f go.mod ]; then');
+    expect(preReview).toContain('run_check "Go build" "go build ./..."');
+    expect(preReview).toContain('run_check "Go vet" "go vet ./..."');
+    expect(preReview).toContain('run_check "Go tests" "go test ./..."');
+
+    const settings = JSON.parse(readFileSync(templatePath('generic', '.claude/settings.json'), 'utf-8'));
+    expect(settings.permissions.allow).toContain('Bash(npm run lint*)');
+    expect(settings.permissions.allow).toContain('Bash(go test*)');
+    expect(settings.permissions.allow).toContain('Bash(go vet*)');
+    expect(settings.permissions.allow).toContain('Bash(go build*)');
+    expect(settings.permissions.allow).toContain('Bash(ruff*)');
+    expect(settings.permissions.allow).toContain('Bash(pytest*)');
+    expect(settings.permissions.allow).toContain('Bash(composer*)');
+
+    const localSettings = JSON.parse(readFileSync(templatePath('generic', '.claude/settings.local.example.json'), 'utf-8'));
+    expect(localSettings.permissions.allow).toContain('Bash(go test*)');
+    expect(localSettings.permissions.allow).toContain('Bash(go vet*)');
+    expect(localSettings.permissions.allow).toContain('Bash(go build*)');
+
+    const startTask = readFileSync(templatePath('generic', '.claude/commands/start-task.md'), 'utf-8');
+    expect(startTask).toContain('Project lint command from `CLAUDE.md`');
+    expect(startTask).toContain('`package.json`, `composer.json`, `pyproject.toml`, `requirements.txt`, `go.mod`, etc.');
+    expect(startTask).not.toContain('npm run test:e2e');
+
+    const review = readFileSync(templatePath('generic', '.claude/commands/review.md'), 'utf-8');
+    expect(review).toContain('Semgrep, gosec');
+    expect(review).toContain('For Go changes touching `cmd/`, `internal/`, `pkg/`, `go.mod`, or Go config');
+    expect(review).not.toContain('`npm run test:e2e`');
+
+    const ci = readFileSync(templatePath('generic', '.github/workflows/ci.yml'), 'utf-8');
+    expect(ci).toContain('has-go');
+    expect(ci).toContain('actions/setup-go@v5');
+    expect(ci).toContain('go vet ./...');
+    expect(ci).toContain('go test ./...');
+    expect(ci).toContain('go build ./...');
+  });
+
+  it('uses the gitleaks command supported by current gitleaks (git --staged), not the removed detect --staged', () => {
+    const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
+    const hooks = ['.claude/hooks/pre-commit', '.claude/hooks/pre-commit-secrets'];
+    for (const rel of hooks) {
+      const repoHook = readFileSync(path.resolve(repoRoot, rel), 'utf-8');
+      // The `git` subcommand is the pre-commit scan form since gitleaks v8.19;
+      // `gitleaks detect --staged` errors ("unknown flag") on current versions.
+      expect(repoHook).toContain('gitleaks git --staged');
+      expect(repoHook).not.toContain('gitleaks detect --staged');
+      // Shipped copies must match the repo copy exactly.
+      for (const profile of SUPPORTED_PROFILES) {
+        expect(readFileSync(templatePath(profile, rel), 'utf-8')).toBe(repoHook);
+      }
+    }
+  });
 });
 
 describe('buildConstitution', () => {

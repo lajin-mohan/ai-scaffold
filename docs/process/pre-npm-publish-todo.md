@@ -302,15 +302,14 @@ saving starts costing correctness.
   by hand a third release running. This is now a proven every-release tax, not
   a one-off — **promote out of the "someday" tier and actually fix the process
   next.** *(small fix, but recurs every release until fixed)*
-- **58. `pre-commit` hook has no Go/`.NET` detection block.** The hook
-  documents 4 stack-detection blocks (Node, PHP, Python, .NET) but golang is
-  an officially shipped, first-class profile with zero coverage — only the
-  always-on branch-name check applies to a golang project; `go build`/`go
-  vet`/`go test` never run locally pre-commit. Not a regression from item 54
-  (golang was already uncovered before the hook was wired) but a real content
-  gap for a supported profile. Add a `go.mod` detection block mirroring the
-  existing pattern (`go build ./...`, `go vet ./...`, `go test ./...`, guarded
-  by `command -v go`). *(small — same shape as existing blocks)*
+- **58. — ✅ DONE (Go-aware shared profile wiring).** Added `go.mod` detection
+  to the shared profile pre-commit hook and wired `go build ./...`,
+  `go vet ./...`, and `go test ./...` behind `command -v go`. The shared
+  Claude permissions, pre-review hook, `/start-task`, `/review`, and source CI
+  template are now stack-aware and byte-identical across all five profiles, so
+  generated Go projects no longer inherit Node-only verification prompts.
+  Covered by unit tests in `src/__tests__/core.test.js` and a pre-publish smoke
+  gate that runs the generated Go pre-commit hook.
 - **59. `pre-commit` hook branch-name regex rejects `docs/*`, but
   `branching-rules.md` lists `docs/*` as a valid branch type.** Found
   2026-07-15 (PR #92): a `docs/windows-powershell-npx-note` branch was blocked
@@ -323,6 +322,44 @@ saving starts costing correctness.
   this repo's own copy (same one-line change as the item-54 regex fix). Decide
   the canonical set first — `feature|fix|chore|docs|hotfix|release` — and make
   the hook and the rules agree. *(small — one regex, six files)*
+- **60. No Windows CI runner — Windows-only bugs ship in every release.**
+  Found 2026-07-15 (PR #94): the `path.relative()` backslash bug meant
+  `.claude/MEMORY.md` and `.claude/settings-overrides.json` were never
+  generated on Windows for **any** profile, surfacing as two HIGH `ais doctor`
+  failures. It shipped in every release the CLI has ever cut, invisible to the
+  whole test suite, because every dev machine and CI runner is macOS/Linux —
+  the buggy path is never exercised on a forward-slash OS. This is the
+  highest-leverage prevention item on the list: the CLI's whole job is writing
+  files to a user's filesystem, and half the target audience is on Windows.
+  Fix: add a `windows-latest` job to the GitHub Actions matrix running at least
+  the `buildFilePlan`/create/init/doctor tests (ideally the full suite). Also
+  audit remaining `path.relative(`/`path.join(` sites that feed string
+  comparisons for the same class of bug (see 2026-07-15 lessons entry).
+  *(medium — CI matrix + a path-normalization audit pass)*
+- **61. `ais doctor` flags the governance skeleton as missing on `init`, even
+  though `init` skips it by design.** Found 2026-07-15 (PR #94): `init` into an
+  existing repo deliberately does not create `tasks/lessons.md` / `CHANGELOG.md`
+  (file-plan.js:163-166 — existing repos manage their own), but doctor reports
+  them as a MED failure ("Missing files the CLAUDE.md workflow references"),
+  which reads as a defect to a user who just ran a clean install. The shipped
+  `CLAUDE.md` does reference `tasks/lessons.md` at session start, so the
+  reference genuinely dangles on init. Decide one: (a) `init` writes empty
+  starter `tasks/lessons.md` + `CHANGELOG.md` (harmless, resolves the dangling
+  reference), or (b) doctor detects install mode from the manifest and softens
+  the message for `init` installs. *(small — one of two clear options)*
+- **62. — ✅ DONE (gitleaks `git --staged`).** The shipped `pre-commit` and
+  `pre-commit-secrets` hooks ran `gitleaks detect --staged --exit-code`, which
+  errors (`unknown flag: --staged`) on gitleaks v8.19+ — the `detect` scan form
+  was replaced by the `git` subcommand. Verified against a real install
+  (gitleaks 8.30.1): `gitleaks git --staged --exit-code 1` passes on a clean
+  staged tree and blocks a real (non-allowlisted) secret. Fixed both hooks
+  across all five profiles + the repo copies (byte-identical). Regression
+  coverage: a unit test asserts the hooks use `git --staged` and never
+  `detect --staged`, and a smoke gate (active when gitleaks is installed)
+  asserts the hook's gitleaks command runs cleanly rather than erroring on a
+  usage flag. Was pre-existing on every release and latent because dev machines
+  usually lack gitleaks while CI installs it (same environment-parity blind
+  spot as item 60). *(done)*
 
 ---
 

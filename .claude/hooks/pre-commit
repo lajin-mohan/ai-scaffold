@@ -7,9 +7,10 @@
 #   - Secrets scan (if gitleaks installed)
 #
 # Stack detection by file presence:
-#   package.json    → Node/TypeScript (npm run lint, npm run typecheck, npm run test:unit)
+#   package.json    → Node/TypeScript (npm run lint, npm run typecheck, npm test)
 #   composer.json   → PHP (PHP CS Fixer, PHPStan, PHPUnit)
 #   pyproject.toml  → Python (ruff, pyright/mypy, pytest)
+#   go.mod          → Go (go build, go vet, go test)
 #   *.csproj        → .NET (dotnet build, dotnet test)
 #
 # IMPORTANT: This is a developer convenience tool, not a hard quality gate.
@@ -46,7 +47,7 @@ echo " Pre-commit checks"
 echo "========================================"
 
 # Template / pre-bootstrap state — no stack files found
-if [ ! -f package.json ] && [ ! -f composer.json ] && [ ! -f pyproject.toml ] && ! ls *.csproj 1>/dev/null 2>&1; then
+if [ ! -f package.json ] && [ ! -f composer.json ] && [ ! -f pyproject.toml ] && [ ! -f go.mod ] && ! ls *.csproj 1>/dev/null 2>&1; then
   echo "(no project stack detected — template state, skipping checks)"
   echo "Template validation passed. Run /bootstrap to configure checks."
   exit 0
@@ -70,7 +71,7 @@ if [ -f package.json ]; then
   if command -v npm &>/dev/null; then
     run_check "ESLint" "npm run lint -- --max-warnings 0"
     run_check "TypeScript" "npm run typecheck"
-    run_check "Unit Tests" "npm run test:unit"
+    run_check "Unit Tests" "npm test"
   else
     echo "(npm not found — skipping Node checks)"
   fi
@@ -102,9 +103,20 @@ if [ -f pyproject.toml ] || [ -f requirements.txt ]; then
     echo "(pyright/mypy not found — skipping type check)"
   fi
   if command -v pytest &>/dev/null; then
-    run_check "pytest" "pytest tests/unit/ -v"
+    run_check "pytest" "pytest"
   else
     echo "(pytest not found — skipping tests)"
+  fi
+fi
+
+# ── Go ────────────────────────────────────────────────────────
+if [ -f go.mod ]; then
+  if command -v go &>/dev/null; then
+    run_check "Go build" "go build ./..."
+    run_check "Go vet" "go vet ./..."
+    run_check "Go tests" "go test ./..."
+  else
+    echo "(go not found — skipping Go checks)"
   fi
 fi
 
@@ -120,7 +132,7 @@ fi
 
 # ── Secrets scanning — always runs if installed ─────────────────
 if command -v gitleaks &>/dev/null; then
-  run_check "Gitleaks" "gitleaks detect --staged --exit-code"
+  run_check "Gitleaks" "gitleaks git --staged --exit-code 1"
 else
   echo "(gitleaks not installed — skipping secrets scan)"
   echo "  Install: brew install gitleaks (macOS) or go install github.com/gitleaks/gitleaks@latest"

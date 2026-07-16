@@ -81,20 +81,21 @@ Produce a plan in the exact format below. **Do not write any code yet.**
 ### Files I will touch
 | File | Nature of change | Reason |
 |---|---|---|
-| `apps/api/src/services/X.service.ts` | new | implements business logic per LLD §3 |
-| `apps/api/src/routes/X.route.ts` | edit | wires new endpoint |
-| `apps/api/src/services/X.service.test.ts` | new | unit tests covering ACs 1, 2, 3 + tenant isolation |
+| `src/<feature>/<service-or-use-case>` | new | implements business logic per LLD §3 |
+| `src/<feature>/<handler-or-controller>` | edit | wires the entry point |
+| `src/<feature>/<test-file>` | new | unit tests covering ACs 1, 2, 3 + tenant isolation |
 
 ### Files I will NOT touch (out of scope)
-- `apps/web/...` — frontend changes are a separate ticket
-- `packages/shared/...` — no shared utility changes needed
+- `path/to/frontend/...` — frontend changes are a separate ticket
+- `path/to/shared-code/...` — no shared utility changes needed
 
 ### Verification I will run
-- `npm run lint` — must pass
-- `npm run typecheck` — must pass
-- `npm run test apps/api/src/services/X.service.test.ts` — must pass
+- Project lint command from `CLAUDE.md` / `.claude/settings-overrides.json` — must pass
+- Project typecheck/static-analysis command from `CLAUDE.md` / `.claude/settings-overrides.json` — must pass
+- Project test command covering the changed feature — must pass
+- Project build command, when configured — must pass
 - `/ux-review` — required for frontend/full-stack tasks; include result or approved exception
-- `npm run test:e2e` — required for frontend/full-stack tasks; include screenshots/traces on failure
+- Configured browser/e2e command — required for frontend/full-stack tasks; include screenshots/traces on failure
 - Desktop light/dark verification — required for frontend/full-stack tasks
 - Mobile light/dark verification at approximately 390px — required for frontend/full-stack tasks
 - Walk through each AC and report status
@@ -137,7 +138,7 @@ Reply `go` once to proceed. After approval, I will execute the plan autonomously
 Follow the plan as written. Before writing **any** code, configuration, or test — run the self-critique check:
 
 **Self-Critique Check (mandatory before every code output)**
-1. **Imports resolve?** — Every import/extern is in package.json/composer.json/requirements.txt, no phantom deps.
+1. **Imports resolve?** — Every import/extern is in the relevant project manifest (`package.json`, `composer.json`, `pyproject.toml`, `requirements.txt`, `go.mod`, etc.), no phantom deps.
 2. **Types match?** — Function signatures, return types, generic parameters — all consistent with adjacent code.
 3. **Error paths handled?** — Every throw/catch/reject has a counterpart; no naked `throw new Error()` without typed error.
 4. **"I don't know" respected?** — If this step involves something I'm uncertain about, I state it before acting — not after.
@@ -161,12 +162,13 @@ When the implementation is done, run the verification suite and produce the repo
 ```
 ## Verification — {{TASK_NAME}}
 
-✅ Lint: `npm run lint` — passing (0 errors, 0 warnings)
-✅ Typecheck: `npm run typecheck` — passing
-✅ Tests: `npm run test [target]` — N/N passing (added M new tests)
+✅ Lint: `<configured lint command>` — passing (0 errors, 0 warnings)
+✅ Typecheck/static analysis: `<configured typecheck/static-analysis command>` — passing
+✅ Tests: `<configured test command> [target]` — N/N passing (added M new tests)
+✅ Build: `<configured build command>` — passing (if configured)
 ✅ UX: `/ux-review` — passing (required for frontend/full-stack tasks)
 ✅ UX Handoff: `/ux-handoff` file exists `docs/ux/<module>/tasks/<task-id>/06-dev-handoff.md` — hard gate before Stage 5
-✅ Browser: `npm run test:e2e` — passing (required for frontend/full-stack tasks)
+✅ Browser: `<configured browser/e2e command>` — passing (required for frontend/full-stack tasks)
 ✅ Desktop themes: light + dark verified (required for frontend/full-stack tasks)
 ✅ Mobile themes: light + dark verified at ~390px (required for frontend/full-stack tasks)
 {{#if Intensity set}}
@@ -221,7 +223,7 @@ If the user interrupts mid-task, save state to `tasks/start-task-state.json` (gi
 - The plan must list **every file** that will be touched. Discovering an unlisted file mid-execution = stop and ask.
 - Verification is **mandatory** for the report. If a verification step can't run (e.g., test framework not configured), say so explicitly.
 - UX review is **mandatory** before marking frontend or full-stack tasks `DONE`. Run `/ux-review` and include the result in the verification report. If UX review cannot run, the task remains not done unless the exception is explicitly approved and documented.
-- Browser verification is **mandatory** before marking frontend or full-stack tasks `DONE`. Run `npm run test:e2e` and include the result in the verification report. If browser verification cannot run, the task remains not done unless the exception is explicitly approved and documented.
+- Browser verification is **mandatory** before marking frontend or full-stack tasks `DONE`. Run the configured browser/e2e command and include the result in the verification report. If browser verification cannot run, the task remains not done unless the exception is explicitly approved and documented.
 - A "go" approves the plan **as written**. New scope = new plan.
 - The command leaves the working tree clean OR clearly explains why it doesn't (e.g., "left WIP on branch X for human review").
 - `--intensity` is per-call. Never persist the level, never write a flag file, never modify `.claude/settings.local.json` from this command. The user passes the flag on each invocation they want it for.
