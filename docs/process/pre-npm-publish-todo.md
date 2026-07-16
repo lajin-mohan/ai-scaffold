@@ -323,6 +323,31 @@ saving starts costing correctness.
   this repo's own copy (same one-line change as the item-54 regex fix). Decide
   the canonical set first — `feature|fix|chore|docs|hotfix|release` — and make
   the hook and the rules agree. *(small — one regex, six files)*
+- **60. No Windows CI runner — Windows-only bugs ship in every release.**
+  Found 2026-07-15 (PR #94): the `path.relative()` backslash bug meant
+  `.claude/MEMORY.md` and `.claude/settings-overrides.json` were never
+  generated on Windows for **any** profile, surfacing as two HIGH `ais doctor`
+  failures. It shipped in every release the CLI has ever cut, invisible to the
+  whole test suite, because every dev machine and CI runner is macOS/Linux —
+  the buggy path is never exercised on a forward-slash OS. This is the
+  highest-leverage prevention item on the list: the CLI's whole job is writing
+  files to a user's filesystem, and half the target audience is on Windows.
+  Fix: add a `windows-latest` job to the GitHub Actions matrix running at least
+  the `buildFilePlan`/create/init/doctor tests (ideally the full suite). Also
+  audit remaining `path.relative(`/`path.join(` sites that feed string
+  comparisons for the same class of bug (see 2026-07-15 lessons entry).
+  *(medium — CI matrix + a path-normalization audit pass)*
+- **61. `ais doctor` flags the governance skeleton as missing on `init`, even
+  though `init` skips it by design.** Found 2026-07-15 (PR #94): `init` into an
+  existing repo deliberately does not create `tasks/lessons.md` / `CHANGELOG.md`
+  (file-plan.js:163-166 — existing repos manage their own), but doctor reports
+  them as a MED failure ("Missing files the CLAUDE.md workflow references"),
+  which reads as a defect to a user who just ran a clean install. The shipped
+  `CLAUDE.md` does reference `tasks/lessons.md` at session start, so the
+  reference genuinely dangles on init. Decide one: (a) `init` writes empty
+  starter `tasks/lessons.md` + `CHANGELOG.md` (harmless, resolves the dangling
+  reference), or (b) doctor detects install mode from the manifest and softens
+  the message for `init` installs. *(small — one of two clear options)*
 
 ---
 
