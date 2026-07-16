@@ -1,0 +1,115 @@
+# One-button release: dev -> main (fast-forward) -> tag -> publish.
+#
+# This is the whole release flow. Feature work lands on `dev` through normal
+# PRs; this workflow promotes `dev` to `main` without a post-release sync and
+# without any version/CHANGELOG drift, because the bump + CHANGELOG dating land
+# on `dev` first and `main` fast-forwards to that exact commit.
+#
+#   1. run the release gates (audit, lint, typecheck, tests, smoke)
+#   2. stamp the version + date the CHANGELOG on dev (scripts/prepare-release.sh)
+#   3. commit to dev and push
+#   4. fast-forward main to dev  (main is always a past state of dev -> no sync)
+#   5. tag vX.Y.Z -> triggers "Publish to npm"
+#
+# ── Required one-time setup (see docs/setup/release-flow.md) ─────────────────
+# A PAT is mandatory: pushes/tags made with the default GITHUB_TOKEN do NOT
+# trigger other workflows, so the tag would never fire publish.yml.
+#   1. Fine-grained PAT (or GitHub App token) scoped to THIS repo:
+#      Contents: read/write.  Add as repo secret `RELEASE_PAT`.
+#   2. Branch protection on `dev` and `main` must allow that token's identity to
+#      push (bypass PR) — restrict the allowance to the release bot only.
+# Without RELEASE_PAT the workflow fails fast at the preflight step below.
+
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Release version (X.Y.Z, no leading v)"
+        required: true
+        type: string
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Release ${{ inputs.version }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Preflight — require RELEASE_PAT
+        env:
+          RELEASE_PAT: ${{ secrets.RELEASE_PAT }}
+        run: |
+          if [ -z "$RELEASE_PAT" ]; then
+            echo "::error::RELEASE_PAT is not set. A PAT is required so the tag push triggers publish.yml (GITHUB_TOKEN pushes don't). See docs/setup/release-flow.md."
+            exit 1
+          fi
+          if ! [[ "${{ inputs.version }}" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "::error::version must be X.Y.Z (got '${{ inputs.version }}')"
+            exit 1
+          fi
+
+      - name: Checkout dev (full history + tags)
+        uses: actions/checkout@v4
+        with:
+          ref: dev
+          fetch-depth: 0
+          token: ${{ secrets.RELEASE_PAT }}
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Release gates
+        run: |
+          npm audit --audit-level=high
+          npm run lint
+          npm run typecheck
+          npm test
+          bash scripts/pre-publish-smoke.sh
+
+      - name: Preflight — main must be an ancestor of dev
+        run: |
+          git fetch origin main
+          if ! git merge-base --is-ancestor origin/main HEAD; then
+            echo "::error::main is not an ancestor of dev — someone pushed to main out-of-band. Reconcile before releasing."
+            exit 1
+          fi
+
+      - name: Configure git identity
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Stamp the release on dev
+        run: bash scripts/prepare-release.sh "${{ inputs.version }}"
+
+      - name: Commit and push to dev
+        run: |
+          git add package.json package-lock.json .ai-scaffold.json CHANGELOG.md
+          git commit -m "release: v${{ inputs.version }}"
+          git push origin HEAD:dev
+
+      - name: Fast-forward main to dev
+        run: git push origin HEAD:main
+
+      - name: Tag and push (triggers publish)
+        run: |
+          git tag -a "v${{ inputs.version }}" -m "Release v${{ inputs.version }}"
+          git push origin "v${{ inputs.version }}"
+
+      - name: Summary
+        run: |
+          echo "### Released v${{ inputs.version }} :rocket:" >> "$GITHUB_STEP_SUMMARY"
+          echo "- dev and main fast-forwarded to the same commit (no sync needed)" >> "$GITHUB_STEP_SUMMARY"
+          echo "- tag \`v${{ inputs.version }}\` pushed → \`Publish to npm\` will publish" >> "$GITHUB_STEP_SUMMARY"

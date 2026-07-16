@@ -13,6 +13,18 @@ This file is configured with `merge=union` in `.gitattributes` so parallel addit
 
 ## [Unreleased]
 
+### Changed
+- **One-button release flow — no more post-release sync or version/CHANGELOG
+  drift.** Releases now run from a single `workflow_dispatch` (`Release`): it
+  runs the gates, stamps the version + dates the CHANGELOG **on `dev`**
+  (`scripts/prepare-release.sh`), fast-forwards `main` to that commit, and tags
+  it (which fires publish). Because the bump lands on `dev` and `main` only ever
+  fast-forwards, `main` is always an ancestor of `dev` — the `main→dev` sync is
+  designed out (removed `post-release-sync.yml` and `scripts/sync-main-into-dev.sh`)
+  and the recurring metadata drift (backlog item 57) can no longer happen. One-
+  time repo setup (a `RELEASE_PAT` secret + a branch-protection bypass for that
+  identity) is documented in `docs/setup/release-flow.md`. Closes items 47 and 57.
+
 ### Fixed
 - **Secrets scan in the shipped hooks now uses a valid gitleaks command.** Both
   `pre-commit` and `pre-commit-secrets` ran `gitleaks detect --staged`, which
