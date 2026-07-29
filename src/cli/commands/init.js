@@ -11,7 +11,7 @@ import { buildFilePlan } from '../core/file-plan.js';
 import { detectConflicts, printConflictReport } from '../core/conflicts.js';
 import { copyFiles } from '../core/copy.js';
 import { buildDryRunPlan } from '../core/dry-run-plan.js';
-import { templatePath } from '../core/paths.js';
+import { templatePath, isSupportedProfile, profileHelpLine } from '../core/paths.js';
 
 export function initCommand(cli) {
   cli.command('init [target-dir]', 'Install scaffold into an existing directory')
@@ -51,6 +51,14 @@ async function runInit(targetDir, options) {
 
   if (json && !dryRun) {
     console.error(chalk.red('✗ --json is only supported with --dry-run'));
+    process.exit(1);
+  }
+
+  // Validate the profile before any prompts — an unknown profile must fail
+  // fast with guidance, not crash at buildFilePlan after the whole interview.
+  if (!isSupportedProfile(profile)) {
+    console.error(chalk.red(`✗ Unknown profile: '${profile}'`));
+    console.error(chalk.gray(`  ${profileHelpLine()}`));
     process.exit(1);
   }
 

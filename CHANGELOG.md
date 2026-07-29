@@ -13,6 +13,16 @@ This file is configured with `merge=union` in `.gitattributes` so parallel addit
 
 ## [Unreleased]
 
+### Fixed
+- **`--profile php` now works, and an unknown profile fails fast instead of
+  crashing after the whole interview.** `php` was not aliased to `laravel` (the
+  PHP profile), so `ais init --profile php` ran the full ~18-prompt flow and
+  then threw a raw `Template profile not found` stack trace at `buildFilePlan`.
+  Added `php` (and `laravel8`) → `laravel` aliases, and both `create` and `init`
+  now validate the profile **before any prompt** — an unknown profile exits
+  cleanly with the valid list and aliases (`profileHelpLine()`), no stack trace.
+  Reported by a team member running `ais init --profile php`.
+
 ## [0.11.0] - 2026-07-16
 
 ### Fixed

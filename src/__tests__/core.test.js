@@ -9,7 +9,7 @@ import { MANAGED_PATHS, PROTECTED_PATHS, APP_SOURCE_PATHS } from '../cli/core/fi
 import { detectConflicts } from '../cli/core/conflicts.js';
 import { buildDryRunPlan, emptyConflicts } from '../cli/core/dry-run-plan.js';
 import { getVersion } from '../cli/core/version.js';
-import { normalizeProfile, templatePath, toPosixPath, SUPPORTED_PROFILES } from '../cli/core/paths.js';
+import { normalizeProfile, templatePath, toPosixPath, SUPPORTED_PROFILES, isSupportedProfile, profileHelpLine } from '../cli/core/paths.js';
 import { buildConstitution } from '../cli/core/content-templates.js';
 
 describe('version', () => {
@@ -75,6 +75,23 @@ describe('resolveWithDefaults', () => {
     expect(normalizeProfile('js')).toBe('node');
     expect(normalizeProfile('javascript')).toBe('node');
     expect(normalizeProfile('nodejs')).toBe('node');
+  });
+
+  it('normalizes php to the laravel profile (laravel is the PHP profile)', () => {
+    expect(normalizeProfile('php')).toBe('laravel');
+    expect(normalizeProfile('PHP')).toBe('laravel');
+    expect(normalizeProfile('laravel8')).toBe('laravel');
+  });
+
+  it('recognizes supported profiles and aliases, rejects unknown ones', () => {
+    expect(isSupportedProfile('php')).toBe(true);
+    expect(isSupportedProfile('go')).toBe(true);
+    expect(isSupportedProfile('laravel')).toBe(true);
+    expect(isSupportedProfile('rust')).toBe(false);
+    expect(isSupportedProfile('')).toBe(false);
+    // The unknown-profile error must name the valid set + aliases, not crash.
+    expect(profileHelpLine()).toContain('generic, laravel, node, python, golang');
+    expect(profileHelpLine()).toContain('php');
   });
 
   it('applies Node.js defaults for the node profile', () => {
