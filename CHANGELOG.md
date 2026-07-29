@@ -13,6 +13,14 @@ This file is configured with `merge=union` in `.gitattributes` so parallel addit
 
 ## [Unreleased]
 
+### Changed
+- **CI dependency audit now scopes to the published surface** (`npm audit
+  --omit=dev --audit-level=high`). The shipped CLI has 0 vulnerabilities;
+  auditing the full tree failed releases on dev-only tooling advisories
+  (test/lint/build transitive deps) that never install for a consumer. The gate
+  now audits exactly what reaches users; dev-tooling advisories are tracked via
+  monthly review + Dependabot instead of a hard gate. See security-rules.md.
+
 ### Fixed
 - **`--profile php` now works, and an unknown profile fails fast instead of
   crashing after the whole interview.** `php` was not aliased to `laravel` (the
