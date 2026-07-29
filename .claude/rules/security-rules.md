@@ -139,8 +139,14 @@ Each OWASP Top 10 category maps to specific rules and implementations:
 
 ## Dependencies
 
-- No dependencies with known HIGH or CRITICAL CVEs.
-- Dependency audit runs in CI: `npm audit --audit-level=high` or equivalent.
+- No **shipped** dependencies with known HIGH or CRITICAL CVEs.
+- Dependency audit runs in CI on the **published surface**:
+  `npm audit --omit=dev --audit-level=high`. This audits exactly what reaches
+  users (runtime `dependencies`); dev-only tooling advisories (test/lint/build
+  transitive deps that never install for a consumer) don't block a release.
+- Dev-tooling advisories are still tracked — reviewed with outdated packages
+  monthly and via Dependabot — just not a hard CI gate, since they carry no
+  user-facing exposure.
 - Outdated packages reviewed monthly.
 
 ---

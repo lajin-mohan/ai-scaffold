@@ -35,6 +35,8 @@ export const PROFILE_ALIASES = {
   py: 'python',
   python3: 'python',
   go: 'golang',
+  php: 'laravel',
+  laravel8: 'laravel',
 };
 
 export const SUPPORTED_PROFILES = ['generic', 'laravel', 'node', 'python', 'golang'];
@@ -44,6 +46,25 @@ export const PROFILE_CHOICES = [...SUPPORTED_PROFILES, 'javascript', 'js'];
 export function normalizeProfile(profile = 'generic') {
   const normalized = String(profile).toLowerCase();
   return PROFILE_ALIASES[normalized] ?? normalized;
+}
+
+export function isSupportedProfile(profile) {
+  return SUPPORTED_PROFILES.includes(normalizeProfile(profile));
+}
+
+/**
+ * One-line, human-readable summary of valid profiles and their aliases —
+ * used in the "unknown profile" error so a typo fails fast with guidance.
+ */
+export function profileHelpLine() {
+  const aliasesByTarget = {};
+  for (const [alias, target] of Object.entries(PROFILE_ALIASES)) {
+    (aliasesByTarget[target] ??= []).push(alias);
+  }
+  const aliasNote = Object.entries(aliasesByTarget)
+    .map(([target, aliases]) => `${aliases.join('/')}→${target}`)
+    .join(', ');
+  return `Valid profiles: ${SUPPORTED_PROFILES.join(', ')}. Aliases: ${aliasNote}`;
 }
 
 /**
