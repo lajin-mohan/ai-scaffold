@@ -13,6 +13,8 @@ This file is configured with `merge=union` in `.gitattributes` so parallel addit
 
 ## [Unreleased]
 
+## [0.11.1] - 2026-07-30
+
 ### Changed
 - **CI dependency audit now scopes to the published surface** (`npm audit
   --omit=dev --audit-level=high`). The shipped CLI has 0 vulnerabilities;
