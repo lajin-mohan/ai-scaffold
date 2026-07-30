@@ -291,8 +291,17 @@ saving starts costing correctness.
   alongside a versioning decision: the next release stays on the `0.x` line
   (e.g. `0.11.0`); `1.0.0` is not cut until the v1.0 completeness criteria in
   "The 8.5+ path" are actually met, not implied by a leftover tag name.
-- **44.** Remove stray cruft from source template dirs (`templates/{golang,python}/apps/`,
-  `templates/*/.vscode/`).
+- **44. — ✅ DONE.** Removed stray cruft from all 5 profile template dirs.
+  Broader than originally scoped: `templates/*/apps/` turned out to be a
+  byte-identical duplicate of the repo's real, documented reference example
+  (root-level `apps/api/src/`, referenced from CLAUDE.md) — present in **all
+  five** profiles, not just golang/python, and confirmed excluded from every
+  copy plan (`apps/**` in `EXCLUDED_DEFAULT_PATTERNS`), so it never shipped.
+  `templates/*/.vscode/` (3 of 5 profiles) had zero documentation anywhere as
+  an intentional feature and was likewise excluded/unshipped. Root-level
+  `apps/` and `.vscode/` (this repo's own reference example and editor
+  config) are untouched. Verified: all 5 profiles still create cleanly with
+  0 CRIT/HIGH doctor failures after removal.
 - **46. — ✅ DONE (0.10.0 docs audit).** Fixed the repo's own
   `.claude/skills/design-system.md` → `DESIGN_TOKENS.md` links (4 occurrences
   had a doubled `.claude/skills/` prefix); the file is now byte-identical to
@@ -318,18 +327,11 @@ saving starts costing correctness.
   generated Go projects no longer inherit Node-only verification prompts.
   Covered by unit tests in `src/__tests__/core.test.js` and a pre-publish smoke
   gate that runs the generated Go pre-commit hook.
-- **59. `pre-commit` hook branch-name regex rejects `docs/*`, but
-  `branching-rules.md` lists `docs/*` as a valid branch type.** Found
-  2026-07-15 (PR #92): a `docs/windows-powershell-npx-note` branch was blocked
-  by the hook (`^(main|dev|master)$|^(feature|fix|chore|hotfix|release)/...`)
-  and had to be renamed to `chore/` to commit. The scaffold repo's own
-  `.claude/rules/branching-rules.md` allows `docs/*` (and the generated-project
-  template's branching rules do too), so the hook is stricter than the
-  documented policy — quiet drift that pushes doc work into `chore/`. Fix: add
-  `docs` to the hook's allowed-prefix alternation in all five profile hooks +
-  this repo's own copy (same one-line change as the item-54 regex fix). Decide
-  the canonical set first — `feature|fix|chore|docs|hotfix|release` — and make
-  the hook and the rules agree. *(small — one regex, six files)*
+- **59. — ✅ DONE.** `pre-commit` hook branch-name regex now allows `docs/*`,
+  matching `branching-rules.md`'s documented set
+  (`feature|fix|chore|docs|hotfix|release`). Fixed the regex and the header's
+  human-readable pattern list in all five profile hooks + this repo's own
+  copy (byte-identical). No more forced rename to `chore/` for doc-only work.
 - **60. No Windows CI runner — Windows-only bugs ship in every release.**
   Found 2026-07-15 (PR #94): the `path.relative()` backslash bug meant
   `.claude/MEMORY.md` and `.claude/settings-overrides.json` were never
@@ -344,17 +346,19 @@ saving starts costing correctness.
   audit remaining `path.relative(`/`path.join(` sites that feed string
   comparisons for the same class of bug (see 2026-07-15 lessons entry).
   *(medium — CI matrix + a path-normalization audit pass)*
-- **61. `ais doctor` flags the governance skeleton as missing on `init`, even
-  though `init` skips it by design.** Found 2026-07-15 (PR #94): `init` into an
-  existing repo deliberately does not create `tasks/lessons.md` / `CHANGELOG.md`
-  (file-plan.js:163-166 — existing repos manage their own), but doctor reports
-  them as a MED failure ("Missing files the CLAUDE.md workflow references"),
-  which reads as a defect to a user who just ran a clean install. The shipped
-  `CLAUDE.md` does reference `tasks/lessons.md` at session start, so the
-  reference genuinely dangles on init. Decide one: (a) `init` writes empty
-  starter `tasks/lessons.md` + `CHANGELOG.md` (harmless, resolves the dangling
-  reference), or (b) doctor detects install mode from the manifest and softens
-  the message for `init` installs. *(small — one of two clear options)*
+- **61. — ✅ DONE (option a: init fills the skeleton in when absent).**
+  `init` now generates `tasks/lessons.md` and `CHANGELOG.md` at project root
+  exactly when they're genuinely absent — closing the dangling `CLAUDE.md`
+  reference — and leaves them completely untouched when a repo already has
+  its own (both added to `PROTECTED_PATHS` first, verified in both
+  directions: an existing `CHANGELOG.md` survives byte-for-byte; an absent
+  one gets created). One subtlety found during implementation:
+  `resolveGeneratedTargetRel` was routing generated files into the
+  `.ai-scaffold/` namespace on `init` by default — the naive fix would have
+  silently generated these at `.ai-scaffold/CHANGELOG.md` instead of project
+  root, where neither `doctor` nor a human would ever find them. Fixed by
+  treating the governance-skeleton paths as root-forced, like
+  `constitution.md`.
 - **62. — ✅ DONE (gitleaks `git --staged`).** The shipped `pre-commit` and
   `pre-commit-secrets` hooks ran `gitleaks detect --staged --exit-code`, which
   errors (`unknown flag: --staged`) on gitleaks v8.19+ — the `detect` scan form
@@ -378,32 +382,38 @@ saving starts costing correctness.
   the CI dependency-audit gate to `--omit=dev` (shipped CLI has 0
   vulnerabilities; the full-tree audit was failing releases on dev-only tooling
   advisories with no user-facing exposure — see `security-rules.md`). *(done)*
-- **64. Token/loop/cost breakers are advisory only, not enforced by code.**
-  Found 2026-07-30 during an external design-pattern review (Hyperautomation
-  Labs' "Agent System Design Blueprint" — a compressed, accurate restatement of
-  Anthropic's own published agent-engineering posts; used here only to
-  cross-check this project's guardrails, not as a new source of instruction).
-  `governance.md` states outright: *"There is no hard enforcement — token
-  management is advisory"* (300K warning, 500K "flag to Tech Lead," both
-  human-read-and-decide, not code-enforced). That's the one open gap against
-  this project's own guardrail rings (`security-rules.md`) and cost regulators
-  (`token-usage-rules.md`'s model-tier routing, which otherwise already matches
-  the blueprint's "match model to step" regulator). Fix: a hook (same pattern
-  as `pre-write-fact-check.sh`) that reads session token count at a checkpoint
-  and actually blocks or forces `/compact` past a threshold, instead of only
-  suggesting it. *(small — one hook, mirrors an existing pattern)*
-- **65. No standing "golden scenario" suite tracked across releases — only
-  ad hoc verification.** Found 2026-07-30, same review. The pre-publish smoke
-  gate (107 checks) and this session's manual all-profiles sweep (generate
-  each profile, run `doctor`, run the generated hooks live) are exactly the
-  right verification — but the sweep itself is re-derived by hand each time
-  rather than being a named, permanent, pass-rate-tracked suite. Concretely:
-  fold the "create + init + doctor + live pre-commit, all 5 profiles" sweep
-  into `scripts/pre-publish-smoke.sh` as an explicitly labeled section (largely
-  already covered by items 58/60/62's regression gates — this item is about
-  naming and tracking the *aggregate* pass rate release-over-release as a
-  signal, not adding new checks). *(small — mostly bookkeeping over existing
-  gates; low urgency)*
+- **64. — ✅ DONE.** New `.claude/hooks/token-budget-guard.sh`
+  (`PreToolUse`, same matcher as `governance-file-guard.sh`: `Read|Grep|Glob|
+  Edit|Write|MultiEdit`) estimates session tokens from the live transcript
+  file size (chars/4, matching `scripts/token-report.js`'s own
+  `CHARS_PER_TOKEN`) and makes the two thresholds `governance.md` already
+  documents actually real: 300K stays a WARN (suggests `/compact`, never
+  blocks), 500K now exits 2 and blocks the tool call — configurable via
+  `ECC_TOKEN_BUDGET_WARN_TOKENS`/`ECC_TOKEN_BUDGET_BLOCK_TOKENS`, escapable
+  via `ECC_TOKEN_BUDGET_WARN_ONLY=1` (same spirit as `git commit --no-verify`
+  — an override, not a bypass), and fully fail-open on any missing transcript
+  or parse error. Shipped identically in all 5 profile templates and wired
+  into all 6 `settings.json` copies. Verified live and unplanned: this exact
+  hook blocked a real `Read` call mid-session once this project's own
+  transcript passed 500K est-tokens — confirming both the detection and the
+  block path work against a real, not synthetic, transcript, in addition to
+  9 scripted bash-level test cases and 4 Vitest cases covering byte-identity,
+  wiring, warn/block/override behaviour, and fail-open on a missing
+  transcript.
+- **65. — ✅ DONE.** `scripts/pre-publish-smoke.sh` gained an explicitly
+  labeled "Gate 4b-2: Profile Smoke (laravel + generic)" section, following
+  the same pattern already used for python/golang: `create`, a README
+  real-commands check (laravel: `composer install`/`composer test`; generic:
+  README.md + constitution.md existence, since generic is stack-agnostic), a
+  `.gitignore`-renamed-correctly check, and a `doctor` CRIT/HIGH-clean check
+  — closing the gap where only 3 of 5 profiles had named smoke coverage.
+  Along the way, found and fixed 2 gates left stale by item 61's behaviour
+  change (both asserted `tasks/` and `CHANGELOG.md` must never exist after
+  `init`, which item 61 correctly makes false) — replaced with positive
+  assertions that both are generated when absent. Baseline was 107 gates;
+  the full suite is now 113/113 passing (all 5 profiles have named smoke
+  coverage; the aggregate pass rate is the trackable signal this item asked
+  for).
 
 ---
 
