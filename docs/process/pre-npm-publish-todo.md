@@ -265,6 +265,16 @@ solve baseline prompt bloat. Ordered by token-saved-per-effort.
 `0.9.x` / `0.10.0` alongside Phase 1. Stop optimizing where the marginal token
 saving starts costing correctness.
 
+> **External cross-check (2026-07-30):** an outside design-pattern review
+> (Hyperautomation Labs' "Agent System Design Blueprint," a compressed
+> restatement of Anthropic's published agent-engineering posts) independently
+> named "always-loaded context instead of just-in-time" as the classic failure
+> mode this workstream targets. It corroborates T2/T3/T5's priority
+> (deduplicate → scope-load → prune) — the order above is unchanged, this is
+> confirmation from an independent source, not new instruction. See items 64
+> and 65 in the hygiene track for the two gaps that review surfaced *outside*
+> this workstream (breaker enforcement, standing eval tracking).
+
 ## Hygiene track (parallel — not a phase gate)
 
 - **47. — ✅ DONE / superseded (one-button release flow).** The post-release
@@ -358,6 +368,42 @@ saving starts costing correctness.
   usage flag. Was pre-existing on every release and latent because dev machines
   usually lack gitleaks while CI installs it (same environment-parity blind
   spot as item 60). *(done)*
+- **63. — ✅ DONE (php→laravel alias + fail-fast profile validation).** Found
+  2026-07-19 (PR #107): `ais init --profile php` ran the entire ~18-question
+  interview, then crashed with a raw `Template profile not found` stack trace
+  — `php` wasn't aliased to `laravel` (the PHP profile) and nothing validated
+  the profile before prompting. Added `php`/`laravel8` → `laravel` aliases; both
+  `create` and `init` now validate the profile before any prompt, exiting
+  cleanly with the valid set + aliases on an unknown value. Same PR also scoped
+  the CI dependency-audit gate to `--omit=dev` (shipped CLI has 0
+  vulnerabilities; the full-tree audit was failing releases on dev-only tooling
+  advisories with no user-facing exposure — see `security-rules.md`). *(done)*
+- **64. Token/loop/cost breakers are advisory only, not enforced by code.**
+  Found 2026-07-30 during an external design-pattern review (Hyperautomation
+  Labs' "Agent System Design Blueprint" — a compressed, accurate restatement of
+  Anthropic's own published agent-engineering posts; used here only to
+  cross-check this project's guardrails, not as a new source of instruction).
+  `governance.md` states outright: *"There is no hard enforcement — token
+  management is advisory"* (300K warning, 500K "flag to Tech Lead," both
+  human-read-and-decide, not code-enforced). That's the one open gap against
+  this project's own guardrail rings (`security-rules.md`) and cost regulators
+  (`token-usage-rules.md`'s model-tier routing, which otherwise already matches
+  the blueprint's "match model to step" regulator). Fix: a hook (same pattern
+  as `pre-write-fact-check.sh`) that reads session token count at a checkpoint
+  and actually blocks or forces `/compact` past a threshold, instead of only
+  suggesting it. *(small — one hook, mirrors an existing pattern)*
+- **65. No standing "golden scenario" suite tracked across releases — only
+  ad hoc verification.** Found 2026-07-30, same review. The pre-publish smoke
+  gate (107 checks) and this session's manual all-profiles sweep (generate
+  each profile, run `doctor`, run the generated hooks live) are exactly the
+  right verification — but the sweep itself is re-derived by hand each time
+  rather than being a named, permanent, pass-rate-tracked suite. Concretely:
+  fold the "create + init + doctor + live pre-commit, all 5 profiles" sweep
+  into `scripts/pre-publish-smoke.sh` as an explicitly labeled section (largely
+  already covered by items 58/60/62's regression gates — this item is about
+  naming and tracking the *aggregate* pass rate release-over-release as a
+  signal, not adding new checks). *(small — mostly bookkeeping over existing
+  gates; low urgency)*
 
 ---
 
