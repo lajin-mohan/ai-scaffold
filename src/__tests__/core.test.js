@@ -1,7 +1,9 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
-import { readFileSync } from 'node:fs';
+import { readFileSync, writeFileSync, rmSync } from 'node:fs';
 import path from 'node:path';
+import os from 'node:os';
 import { fileURLToPath } from 'node:url';
+import { spawnSync } from 'node:child_process';
 import { buildTokenReport } from '../cli/core/token-report.js';
 import { applyInteractiveDefaults, resolveWithDefaults, validateBootstrapValues } from '../cli/core/prompts.js';
 import { buildFilePlan } from '../cli/core/file-plan.js';
@@ -472,6 +474,83 @@ describe('generated package.json scripts', () => {
       expect(pkg.scripts.test).not.toMatch(/artisan|phpunit|pytest|go test/i);
     });
   }
+});
+
+describe('token-budget-guard.sh (item 64)', () => {
+  const here = path.dirname(fileURLToPath(import.meta.url));
+  const repoRoot = path.resolve(here, '../..');
+
+  it('is byte-identical across the repo copy and all five profiles', () => {
+    const repoHook = readFileSync(path.resolve(repoRoot, '.claude/hooks/token-budget-guard.sh'), 'utf-8');
+    expect(repoHook).toContain('WARN_TOKENS="${ECC_TOKEN_BUDGET_WARN_TOKENS:-300000}"');
+    expect(repoHook).toContain('BLOCK_TOKENS="${ECC_TOKEN_BUDGET_BLOCK_TOKENS:-500000}"');
+    for (const profile of SUPPORTED_PROFILES) {
+      const templateHook = readFileSync(
+        path.resolve(repoRoot, 'templates', profile, '.claude/hooks/token-budget-guard.sh'),
+        'utf-8',
+      );
+      expect(templateHook).toBe(repoHook);
+    }
+  });
+
+  it('is wired into the PreToolUse matcher in every settings.json', () => {
+    const settingsFiles = [
+      '.claude/settings.json',
+      ...SUPPORTED_PROFILES.map((p) => `templates/${p}/.claude/settings.json`),
+    ];
+    for (const rel of settingsFiles) {
+      const settings = JSON.parse(readFileSync(path.resolve(repoRoot, rel), 'utf-8'));
+      const block = settings.hooks.PreToolUse.find(
+        (b) => b.matcher === 'Read|Grep|Glob|Edit|Write|MultiEdit',
+      );
+      expect(block).toBeDefined();
+      expect(block.hooks.some((h) => h.command.includes('token-budget-guard.sh'))).toBe(true);
+    }
+  });
+
+  it('warns under the block threshold and blocks over it, verified by actually running the hook', () => {
+    const hookPath = path.resolve(repoRoot, '.claude/hooks/token-budget-guard.sh');
+    const tmpTranscript = path.join(os.tmpdir(), `token-budget-test-${Date.now()}.jsonl`);
+
+    try {
+      // ~350K est-tokens (chars/4) — warn zone, must not block.
+      writeFileSync(tmpTranscript, 'x'.repeat(1_400_000));
+      const warnResult = spawnSync('bash', [hookPath], {
+        input: JSON.stringify({ tool_name: 'Read', transcript_path: tmpTranscript }),
+        encoding: 'utf-8',
+      });
+      expect(warnResult.status).toBe(0);
+      expect(warnResult.stderr).toMatch(/WARN/);
+
+      // ~550K est-tokens — block zone.
+      writeFileSync(tmpTranscript, 'x'.repeat(2_200_000));
+      const blockResult = spawnSync('bash', [hookPath], {
+        input: JSON.stringify({ tool_name: 'Read', transcript_path: tmpTranscript }),
+        encoding: 'utf-8',
+      });
+      expect(blockResult.status).toBe(2);
+      expect(blockResult.stderr).toMatch(/BLOCK/);
+
+      // Same block-zone transcript, but WARN_ONLY set — must not block.
+      const overrideResult = spawnSync('bash', [hookPath], {
+        input: JSON.stringify({ tool_name: 'Read', transcript_path: tmpTranscript }),
+        encoding: 'utf-8',
+        env: { ...process.env, ECC_TOKEN_BUDGET_WARN_ONLY: '1' },
+      });
+      expect(overrideResult.status).toBe(0);
+    } finally {
+      rmSync(tmpTranscript, { force: true });
+    }
+  });
+
+  it('fails open on a missing transcript', () => {
+    const hookPath = path.resolve(repoRoot, '.claude/hooks/token-budget-guard.sh');
+    const result = spawnSync('bash', [hookPath], {
+      input: JSON.stringify({ tool_name: 'Read', transcript_path: '/tmp/does-not-exist-token-budget-test.jsonl' }),
+      encoding: 'utf-8',
+    });
+    expect(result.status).toBe(0);
+  });
 });
 
 describe('buildConstitution', () => {

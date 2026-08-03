@@ -66,6 +66,11 @@
             "type": "command",
             "command": "bash .claude/hooks/pre-secret-guard.sh",
             "timeout": 5
+          },
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/token-budget-guard.sh",
+            "timeout": 5
           }
         ]
       },

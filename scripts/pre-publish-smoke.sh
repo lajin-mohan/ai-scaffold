@@ -15,6 +15,8 @@ INIT_DIR=""
 DOT_DIR=""
 PY_DIR=""
 GO_DIR=""
+LARAVEL_DIR=""
+GENERIC_DIR=""
 JSON_CREATE_DIR=""
 JSON_INIT_DIR=""
 PROJECT_VERSION=$(node -p "require('./package.json').version")
@@ -32,7 +34,7 @@ fail() {
 }
 
 cleanup() {
-  rm -rf "$SMOKE_DIR" "$INIT_DIR" "$DOT_DIR" "$PY_DIR" "$GO_DIR" "$JSON_CREATE_DIR" "$JSON_INIT_DIR" 2>/dev/null || true
+  rm -rf "$SMOKE_DIR" "$INIT_DIR" "$DOT_DIR" "$PY_DIR" "$GO_DIR" "$LARAVEL_DIR" "$GENERIC_DIR" "$JSON_CREATE_DIR" "$JSON_INIT_DIR" 2>/dev/null || true
 }
 
 trap cleanup EXIT
@@ -390,6 +392,60 @@ else
   echo "  – skipped fresh golang verification (go not installed)"
 fi
 
+# ── Gate 4b-2: all-profiles readiness sweep (laravel + generic) ────────
+# Item 65: the two profiles not yet covered above (laravel, generic) — closes
+# the "verified live, but only ad hoc" gap. Mirrors the python/golang gate's
+# shape: create, real-commands-in-README where the profile has a real stack,
+# no-broken-links, .gitignore present, and a doctor CRIT/HIGH-clean check on
+# every profile so parity across all 5 is asserted in one place, not re-derived
+# by hand each release.
+echo ""
+echo ">> Gate 4b-2: Profile Smoke (laravel + generic)"
+
+LARAVEL_DIR=$(mktemp -d)/laravel-smoke
+node bin/ai-scaffold.js create "$LARAVEL_DIR" --profile laravel --yes >/dev/null 2>&1 || true
+if [ -f "$LARAVEL_DIR/README.md" ] \
+  && grep -q "composer install" "$LARAVEL_DIR/README.md" \
+  && grep -q "composer test" "$LARAVEL_DIR/README.md"; then
+  pass "laravel README shows real commands (composer install, composer test)"
+else
+  fail "laravel README missing real commands (shows N/A or not generated)"
+fi
+
+if [ -f "$LARAVEL_DIR/.gitignore" ] && [ ! -e "$LARAVEL_DIR/gitignore" ]; then
+  pass "laravel generated project has .gitignore (renamed on copy)"
+else
+  fail "laravel generated project missing .gitignore or leaked a non-dot gitignore"
+fi
+
+LARAVEL_DOCTOR_FAILS=$(node bin/ai-scaffold.js doctor "$LARAVEL_DIR" 2>&1 | grep -cE "✗ \[(CRIT|HIGH)\]") || true
+if [ "$LARAVEL_DOCTOR_FAILS" = "0" ]; then
+  pass "fresh laravel project has 0 CRIT/HIGH doctor failures"
+else
+  fail "fresh laravel project has $LARAVEL_DOCTOR_FAILS CRIT/HIGH doctor failures"
+fi
+
+GENERIC_DIR=$(mktemp -d)/generic-smoke
+node bin/ai-scaffold.js create "$GENERIC_DIR" --profile generic --yes >/dev/null 2>&1 || true
+if [ -f "$GENERIC_DIR/README.md" ] && [ -f "$GENERIC_DIR/constitution.md" ]; then
+  pass "generic project generates README.md and constitution.md"
+else
+  fail "generic project missing README.md or constitution.md"
+fi
+
+if [ -f "$GENERIC_DIR/.gitignore" ] && [ ! -e "$GENERIC_DIR/gitignore" ]; then
+  pass "generic generated project has .gitignore (renamed on copy)"
+else
+  fail "generic generated project missing .gitignore or leaked a non-dot gitignore"
+fi
+
+GENERIC_DOCTOR_FAILS=$(node bin/ai-scaffold.js doctor "$GENERIC_DIR" 2>&1 | grep -cE "✗ \[(CRIT|HIGH)\]") || true
+if [ "$GENERIC_DOCTOR_FAILS" = "0" ]; then
+  pass "fresh generic project has 0 CRIT/HIGH doctor failures"
+else
+  fail "fresh generic project has $GENERIC_DOCTOR_FAILS CRIT/HIGH doctor failures"
+fi
+
 # ── Gate 4c: generated doc links ───────────────────────────────────────
 echo ""
 echo ">> Gate 4c: Generated Doc Links"
@@ -514,13 +570,21 @@ else
 fi
 
 # No root docs/apps/packages dirs created
-for d in docs apps packages infra scripts tasks; do
+for d in docs apps packages infra scripts; do
   if [ -d "$INIT_DIR/$d" ]; then
     fail "init created root $d/"
   else
     pass "init did not create root $d/"
   fi
 done
+
+# Governance skeleton (item 61): init fills tasks/lessons.md in at root when
+# absent — this fixture has none, so it must be genuinely generated.
+if [ -f "$INIT_DIR/tasks/lessons.md" ]; then
+  pass "init generated tasks/lessons.md at root (was absent)"
+else
+  fail "init did not generate tasks/lessons.md at root"
+fi
 
 for f in .ai-scaffold/README.md .ai-scaffold/context.md; do
   if [ -f "$INIT_DIR/$f" ]; then
@@ -554,13 +618,21 @@ else
   fail "init memory missing safety policy"
 fi
 
-for f in HOW-TO-USE.md CONTRIBUTING.md CHANGELOG.md SECURITY.md LICENSE .env.example .editorconfig .gitattributes .gitleaks.toml .cursorrules; do
+for f in HOW-TO-USE.md CONTRIBUTING.md SECURITY.md LICENSE .env.example .editorconfig .gitattributes .gitleaks.toml .cursorrules; do
   if [ -e "$INIT_DIR/$f" ]; then
     fail "init left root $f"
   else
     pass "init did not leave root $f"
   fi
 done
+
+# Governance skeleton (item 61): init fills CHANGELOG.md in at root when
+# absent — this fixture has none, so it must be genuinely generated.
+if [ -f "$INIT_DIR/CHANGELOG.md" ]; then
+  pass "init generated CHANGELOG.md at root (was absent)"
+else
+  fail "init did not generate CHANGELOG.md at root"
+fi
 
 # status command should recognize the install
 STATUS_OUT=$(node bin/ai-scaffold.js status "$INIT_DIR" 2>&1) || true

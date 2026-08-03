@@ -13,6 +13,38 @@ This file is configured with `merge=union` in `.gitattributes` so parallel addit
 
 ## [Unreleased]
 
+### Added
+- **New `token-budget-guard.sh` hook makes the documented 300K/500K token
+  thresholds real instead of advisory-only.** `governance.md` previously
+  stated outright that token management has "no hard enforcement." The hook
+  reads the live session transcript size at each `Read`/`Grep`/`Glob`/`Edit`/
+  `Write`/`MultiEdit` call, warns past 300K est-tokens (unchanged, suggests
+  `/compact`), and now blocks past 500K est-tokens — escapable via
+  `ECC_TOKEN_BUDGET_WARN_ONLY=1` for a legitimate long session. Fails open on
+  any missing/unreadable transcript. Shipped in all 5 profile templates.
+- **`ais init` now generates `tasks/lessons.md` and `CHANGELOG.md` at project
+  root when a repo doesn't already have them**, closing a dangling reference:
+  `CLAUDE.md`'s documented workflow (and `ais doctor`'s governance-skeleton
+  check) expected these files even though `init` previously skipped them by
+  design. Both are also now in `PROTECTED_PATHS`, so a repo's existing files
+  are never touched — only filled in when genuinely absent.
+- **`scripts/pre-publish-smoke.sh` gained named smoke coverage for the
+  laravel and generic profiles** (previously only python/golang/node had a
+  labeled section), closing the gap where 2 of 5 profiles had no dedicated
+  gate. Smoke suite: 107 → 113 gates.
+
+### Fixed
+- **Branch names starting with `docs/` no longer fail the pre-commit branch
+  check**, even though `branching-rules.md` has always documented `docs/*` as
+  a valid branch prefix. Fixed in `.claude/hooks/pre-commit` and all 5
+  profile template copies.
+- **Templates no longer ship stray `apps/` and `.vscode/` directories** in
+  all 5 profiles. Both were byte-identical duplicates of content that either
+  belongs only at the repo's canonical root location (`apps/api/src/`,
+  documented in `CLAUDE.md` as the reference example) or is already excluded
+  from what ships to a generated project — dead weight in the package with
+  no functional effect, now removed.
+
 ## [0.11.1] - 2026-07-30
 
 ### Changed

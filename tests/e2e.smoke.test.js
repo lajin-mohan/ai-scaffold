@@ -302,8 +302,25 @@ describe('CLI e2e smoke', () => {
     expect(await fs.pathExists(path.join(targetDir, '.ai-scaffold', 'tasks'))).toBe(false);
     expect(await fs.pathExists(path.join(targetDir, '.ai-scaffold', '_ai'))).toBe(false);
     expect(await fs.pathExists(path.join(targetDir, 'docs'))).toBe(false);
-    expect(await fs.pathExists(path.join(targetDir, 'tasks'))).toBe(false);
+    // Governance skeleton (item 61): init fills these in at root when the
+    // existing project doesn't already have them — this fixture has neither,
+    // so tasks/lessons.md + CHANGELOG.md are genuinely created, not skipped.
+    expect(await fs.pathExists(path.join(targetDir, 'tasks', 'lessons.md'))).toBe(true);
+    expect(await fs.pathExists(path.join(targetDir, 'CHANGELOG.md'))).toBe(true);
     expect(await fs.pathExists(path.join(targetDir, '_ai'))).toBe(false);
+  });
+
+  it('init --yes leaves an existing CHANGELOG.md and tasks/lessons.md untouched', async () => {
+    const targetDir = path.join(tmpDir, 'existing-governance-files');
+    await fs.ensureDir(path.join(targetDir, 'tasks'));
+    await fs.writeFile(path.join(targetDir, 'CHANGELOG.md'), '# Real project changelog\n');
+    await fs.writeFile(path.join(targetDir, 'tasks', 'lessons.md'), '# Real project lessons\n');
+
+    const result = runCli(['init', targetDir, '--yes', '--profile', 'node']);
+
+    expect(result.status, result.stderr || result.stdout).toBe(0);
+    expect(await fs.readFile(path.join(targetDir, 'CHANGELOG.md'), 'utf-8')).toBe('# Real project changelog\n');
+    expect(await fs.readFile(path.join(targetDir, 'tasks', 'lessons.md'), 'utf-8')).toBe('# Real project lessons\n');
   });
 
   it('update placeholder does not mutate installed metadata', async () => {

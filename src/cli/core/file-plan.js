@@ -112,6 +112,10 @@ export const PROTECTED_PATHS = [
   '*.csproj',
   // CI workflows — existing projects have their own:
   '.github/workflows/**',
+  // Governance skeleton — init only fills these in when absent (item 61);
+  // an existing repo's real changelog/lessons file must never be overwritten.
+  'CHANGELOG.md',
+  'tasks/lessons.md',
 ];
 
 /**
@@ -160,12 +164,11 @@ export async function buildFilePlan(sourceDir, targetDir, options = {}) {
   const alwaysGenerate = ['.ai-scaffold.json', '.ai-scaffold/README.md', '.ai-scaffold/context.md', 'constitution.md'];
 
   // Governance skeleton — generated (not copied) so fresh projects get a clean
-  // starter rather than the scaffold's own lessons/changelog, and so the shipped
-  // CLAUDE.md workflow references resolve. Only for `create`: existing repos
-  // (`init`) manage their own tasks/CHANGELOG and must not have them imposed.
-  if (!existingTarget) {
-    alwaysGenerate.push('tasks/lessons.md', 'tasks/todo/.gitkeep', 'tasks/done/.gitkeep', 'CHANGELOG.md');
-  }
+  // starter, and so the shipped CLAUDE.md workflow references resolve. Shipped
+  // on both create and init, but CHANGELOG.md and tasks/lessons.md are in
+  // PROTECTED_PATHS above — an existing repo's real files are never
+  // overwritten, only filled in when genuinely absent (item 61).
+  alwaysGenerate.push('tasks/lessons.md', 'tasks/todo/.gitkeep', 'tasks/done/.gitkeep', 'CHANGELOG.md');
 
   // Collect all source files from the template directory
   const sourceFiles = await collectSourceFiles(sourceDir);
@@ -337,7 +340,15 @@ function resolveGeneratedTargetRel(generatedRel, existingTarget, forceRoot) {
     generatedRel === '.ai-scaffold.json' ||
     generatedRel === 'constitution.md' ||
     generatedRel.startsWith('.ai-scaffold/') ||
-    generatedRel.startsWith('.claude/')
+    generatedRel.startsWith('.claude/') ||
+    // Governance skeleton files are real project files, not scaffold-namespace
+    // reference copies — they must land at project root on init too, or
+    // `doctor` and the CLAUDE.md workflow references that expect them at
+    // root (item 61) silently point at nothing.
+    generatedRel === 'CHANGELOG.md' ||
+    generatedRel === 'tasks/lessons.md' ||
+    generatedRel.startsWith('tasks/todo/') ||
+    generatedRel.startsWith('tasks/done/')
   ) {
     return generatedRel;
   }
