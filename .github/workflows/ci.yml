@@ -65,6 +65,26 @@ jobs:
           git fetch origin main dev "${{ github.head_ref }}"
           npm run release:check -- --main origin/main --candidate "origin/${{ github.head_ref }}" --head-branch "${{ github.head_ref }}"
 
+      # Deterministic version-drift guard (post-mortem 2026-08-12: a manual
+      # release/* -> main PR left main at a newer package.json version than
+      # dev for 9 days, unnoticed, with the release never tagged/published).
+      # The fast-forward Release Action makes this structurally impossible in
+      # the normal flow, but this catches it immediately if anything ever
+      # pushes to main out-of-band again, instead of relying on someone
+      # noticing by chance. See branching-rules.md "Merge Flow".
+      - name: Branch version drift check
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: |
+          git fetch origin dev
+          MAIN_VERSION="$(node -p "require('./package.json').version")"
+          DEV_VERSION="$(git show origin/dev:package.json | node -p "JSON.parse(require('fs').readFileSync(0, 'utf8')).version")"
+          if [ "$MAIN_VERSION" != "$DEV_VERSION" ]; then
+            echo "::error::main is at v$MAIN_VERSION but dev is at v$DEV_VERSION — they must always match."
+            echo "::error::See .claude/rules/branching-rules.md 'Merge Flow' — release/* -> dev sync-back is required, or use the main -> dev recovery path."
+            exit 1
+          fi
+          echo "OK: main and dev both at v$MAIN_VERSION."
+
       - name: Pre-publish smoke
         run: bash scripts/pre-publish-smoke.sh
 
