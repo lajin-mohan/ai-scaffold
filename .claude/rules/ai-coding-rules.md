@@ -291,6 +291,12 @@ When AI iterates on a file, naming, error patterns, and style tend to drift. The
 
 ---
 
+### Scope discipline (all AI tools, no exceptions)
+
+Implement the smallest change that fully satisfies the approved acceptance criteria and existing hard gates. Do not add speculative features, abstractions, configuration, or unrelated cleanup. Every changed line must trace to the request, a required test, or a necessary consequence of the implementation. Remove only imports, variables, and code made unused by your own change; report pre-existing dead code separately.
+
+This rule does not permit skipping required validation, relevant error handling, edge cases, tests, or documentation. Violations are **BLOCK** findings.
+
 ## 7. Severity for AI Rule Violations
 
 | Severity | Examples | Action |
@@ -421,6 +427,7 @@ When invoking AI for code work in this project, paste this as a header:
 You are writing production code in this project. Follow .claude/rules/ai-coding-rules.md.
 
 Hard rules:
+- Make the minimum sufficient change: no speculative features, abstractions, configuration, or unrelated cleanup.
 - Verify before claiming. Cite file:line. Don't guess — ask.
 - For tasks > 3 steps: write a plan, wait for explicit "go" before coding.
 - No half-implementations, no stubs, no TODOs without tickets.
