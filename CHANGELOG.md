@@ -13,6 +13,8 @@ This file is configured with `merge=union` in `.gitattributes` so parallel addit
 
 ## [Unreleased]
 
+## [0.12.0] - 2026-08-06
+
 ### Added
 - **New `token-budget-guard.sh` hook makes the documented 300K/500K token
   thresholds real instead of advisory-only.** `governance.md` previously
@@ -44,6 +46,12 @@ This file is configured with `merge=union` in `.gitattributes` so parallel addit
   documented in `CLAUDE.md` as the reference example) or is already excluded
   from what ships to a generated project — dead weight in the package with
   no functional effect, now removed.
+
+### Changed
+- **AI coding rules now require every AI tool to make the minimum sufficient
+  change.** The mandatory scope-discipline rule prohibits speculative features,
+  abstractions, configuration, and unrelated cleanup, while preserving required
+  validation, error handling, edge cases, tests, and documentation.
 
 ## [0.11.1] - 2026-07-30
 
