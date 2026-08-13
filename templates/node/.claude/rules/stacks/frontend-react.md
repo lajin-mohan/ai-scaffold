@@ -1,3 +1,9 @@
+---
+paths:
+  - "**/*.tsx"
+  - "**/*.jsx"
+---
+
 # Stack Rules: React (Frontend)
 
 Append to `.claude/rules/coding-standards.md` for frontend stacks containing React.

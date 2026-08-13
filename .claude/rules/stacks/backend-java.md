@@ -1,3 +1,11 @@
+---
+paths:
+  - "**/*.java"
+  - "**/pom.xml"
+  - "**/build.gradle"
+  - "**/build.gradle.kts"
+---
+
 # Stack Rules: Java + Spring (Backend)
 
 Append to `.claude/rules/coding-standards.md` for backend stacks containing Java or Spring.

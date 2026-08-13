@@ -1,3 +1,10 @@
+---
+paths:
+  - "**/*.go"
+  - "**/go.mod"
+  - "**/go.sum"
+---
+
 # Stack Rules: Go (Backend)
 
 Append to `.claude/rules/coding-standards.md` for backend stacks containing Go.

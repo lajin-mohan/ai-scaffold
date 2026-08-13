@@ -244,9 +244,21 @@ solve baseline prompt bloat. Ordered by token-saved-per-effort.
   cross-referenced not restated (e.g. "parameterized queries" lives in 4 files
   today). Compounds across every subagent that loads rules. Content-preserving —
   cut duplication, not guardrails. *(medium, low risk)*
-- **T3. Scoped rule loading.** Load only the stack overlays that apply (a Go
-  project should not carry the React rules). The overlays already exist; make
-  loading conditional on the resolved stack. *(low-medium — high value/effort)*
+- **T3. — ✅ DONE.** All 8 `.claude/rules/stacks/*.md` overlays now carry
+  `paths:` frontmatter (extension + manifest-file globs per stack — e.g.
+  `backend-python.md` scopes to `**/*.py`, `**/pyproject.toml`,
+  `**/requirements*.txt`), so an overlay only enters context when Claude
+  actually reads a matching file, instead of loading unconditionally every
+  session regardless of profile. Every profile ships all 8 overlays
+  unconditionally (confirmed 2026-08-13 — even a `python`-profile project
+  carries `backend-java.md`, `backend-dotnet.md`, `backend-coldfusion.md`,
+  etc.), so this was broader than "a Go project carries React rules" — every
+  non-matching profile was carrying every other profile's rules, unscoped.
+  Verified: byte-identical across the 6 copies (main + 5 templates), same
+  pattern as every other cross-profile file in this repo. **Not yet verified
+  live**: adding a project-side `InstructionsLoaded` hook to confirm
+  empirically that a Go session never actually loads `backend-python.md` —
+  worth doing before calling T3 fully proven, not just correctly configured.
 - **T4. Lean `CLAUDE.md` + progressive disclosure.** `CLAUDE.md` → thin router
   (identity, stack, "read `constitution.md` first", pointers); detail loaded on
   demand. Extends the constitution's on-ramp and reduces what each subagent pulls.
@@ -414,6 +426,46 @@ saving starts costing correctness.
   the full suite is now 113/113 passing (all 5 profiles have named smoke
   coverage; the aggregate pass rate is the trackable signal this item asked
   for).
+- **66. Plan-and-confirm has no deterministic backing — prompted rule only.**
+  Found 2026-08-13 cross-checking current Claude Code docs
+  (`code.claude.com/docs/en/best-practices`, `.../memory`) against this
+  project's own governance. Both docs state the same thing in different
+  words: *"Settings rules are enforced by the client regardless of what
+  Claude decides to do. CLAUDE.md instructions shape Claude's behavior but
+  are not a hard enforcement layer."* Verified: `.claude/settings.json` has
+  no `Stop` hook (only `UserPromptSubmit`/`PreToolUse`/`PostToolUse`), and
+  `governance.md`'s own enforcement table listed `Plan-and-confirm skipped`
+  with no hook named, unlike the H1-H8 row directly above it — now corrected
+  to say so explicitly (see `governance.md`). Anthropic's docs confirm the
+  real mechanism exists: a Stop hook *"runs your check as a script and
+  blocks the turn from ending until it passes... Claude Code overrides the
+  hook and ends the turn after 8 consecutive blocks."* Fix: a Stop hook that
+  checks for a lightweight approval marker (e.g. a file written only after
+  genuine "go" text is observed) before letting a turn end on a non-trivial
+  diff. **Claude-Code-only** — Codex/Cursor have no equivalent mechanism to
+  gate this; the tool-agnostic backstop stays `pre-commit` + CI, which catch
+  bad output after the fact regardless of which agent produced it, but can't
+  verify "was a plan actually approved" as a concept. *(medium — needs a
+  real design for what "approval" means as a checkable artifact, not just a
+  hook wiring exercise)*
+- **67. `AGENTS.md` points non-Claude agents at a document written for
+  Claude.** Found 2026-08-13, same cross-check, prompted by an explicit
+  design constraint: this scaffold must work for Codex/Cursor/other agents,
+  not just Claude Code. `AGENTS.md` (56 lines) is a well-designed thin
+  pointer — *"CLAUDE.md is the authority for every decision, convention, and
+  constraint in this project. Read it before doing anything else."* But
+  `CLAUDE.md` itself (477 lines) is written throughout in Claude-Code-specific
+  vocabulary — `/slash-commands`, `.claude/hooks/` paths, "Claude Code" named
+  directly in workflow tables — none of which a Codex or Cursor session can
+  act on. A non-Claude agent following `AGENTS.md`'s own instruction lands on
+  a document half-written for a tool it isn't. Fix: audit `CLAUDE.md` for a
+  lightweight marker on sections that are Claude Code-specific (Custom
+  Commands, Custom Skills auto-discovery, Custom Hooks) versus sections that
+  are genuinely tool-agnostic (coding standards, security rules, git
+  workflow), so `AGENTS.md`'s pointer doesn't silently hand other agents
+  instructions they structurally cannot follow. *(small-medium — audit +
+  annotate, not a rewrite; the only item here that's actually about
+  cross-agent parity rather than Claude-Code-specific enforcement)*
 
 ---
 

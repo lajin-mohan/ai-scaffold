@@ -1,3 +1,14 @@
+---
+paths:
+  - "**/*.ts"
+  - "**/*.tsx"
+  - "**/*.js"
+  - "**/*.jsx"
+  - "**/*.mjs"
+  - "**/*.cjs"
+  - "**/package.json"
+---
+
 # Stack Rules: Node.js + TypeScript (Backend)
 
 Append to `.claude/rules/coding-standards.md` for backend stacks containing Node.js or TypeScript.

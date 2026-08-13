@@ -1,3 +1,9 @@
+---
+paths:
+  - "**/*.php"
+  - "**/composer.json"
+---
+
 # Stack Rules: PHP + Laravel (Backend)
 
 Append to `.claude/rules/coding-standards.md` for backend stacks containing PHP and Laravel.
