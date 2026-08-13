@@ -249,6 +249,44 @@ solve baseline prompt bloat. Ordered by token-saved-per-effort.
   cross-referenced not restated (e.g. "parameterized queries" lives in 4 files
   today). Compounds across every subagent that loads rules. Content-preserving —
   cut duplication, not guardrails. *(medium, low risk)*
+
+  **INVESTIGATED 2026-08-13 — the premise needs qualifying before this runs.**
+  Measured duplication is worse than the estimate above: "parameterized
+  queries" appears in **7** rules files (not 4), `tenant_id` in **10**, "PII in
+  logs" in 5. Corpus is 24 files / 4,235 lines, ×6 profile copies.
+
+  But most of that is **not redundancy**. The same concept serves four
+  different jobs:
+
+  | File | Form | Purpose |
+  |---|---|---|
+  | `coding-standards.md` | one-line hard gate | scannable summary |
+  | `security-rules.md` | detailed rule + rationale | the canonical statement |
+  | `dod-rules.md` | `- [ ]` checkbox | tickable Definition of Done |
+  | `review-rules.md` | `- [ ]` checkbox | tickable review checklist |
+
+  **The two checkbox forms must keep restating it.** A checklist item reading
+  "[ ] see security-rules.md" is a worse checklist — a reviewer cannot tick a
+  cross-reference, and pointer-chasing mid-review is exactly when a gate gets
+  skipped. Applying "cross-reference, don't restate" uniformly would degrade
+  the DoD and review checklists while saving a trivial number of tokens.
+
+  **Corrected scope for T2 — where the real waste actually is:**
+  1. **Stack overlays** — 8 files repeat near-identical layer-separation,
+     validation, and testing prose in language-specific wording. Highest
+     real duplication; genuine consolidation candidate. (Note: T3 already
+     made these load conditionally, so the per-session cost is largely gone —
+     the remaining win is maintenance, not tokens.)
+  2. **Long explanatory prose** restated across `governance.md`,
+     `ai-coding-rules.md`, and `coding-standards.md` — safe to make one
+     canonical + cross-reference, since none of it is a checklist.
+  3. **Explicitly out of scope:** any `- [ ]` checklist item, in any file.
+
+  **Revised value:** lower than originally ranked. T3 already removed the
+  per-session cost of the overlays, and the checklist restatement — the
+  largest visible duplication — turns out to be load-bearing. Remaining
+  benefit is maintainability, not token efficiency. Recommend re-ranking
+  below items 66/67 rather than executing as originally written.
 - **T3. — ✅ DONE.** All 8 `.claude/rules/stacks/*.md` overlays now carry
   `paths:` frontmatter (extension + manifest-file globs per stack — e.g.
   `backend-python.md` scopes to `**/*.py`, `**/pyproject.toml`,
