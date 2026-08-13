@@ -99,14 +99,37 @@ chore(deps): upgrade TypeScript to 5.4 and pg to 8.12
 
 ## Merge Flow
 
+**Releasing `dev → main` is done by the one-button `Release` GitHub Action
+(`.github/workflows/release.yml`, `workflow_dispatch`) — see
+`docs/setup/release-flow.md`.** It fast-forwards `main` to `dev`'s exact
+commit after stamping the version + CHANGELOG on `dev` first, so `main` is
+always an ancestor of `dev` and there is never anything to sync back. This is
+the *only* sanctioned way to cut a release. Found 2026-08-12: this section
+previously documented a manual `release/*` branch flow as the default path
+with no mention of the Action at all, so a release got cut manually instead
+— `main` ended up ahead of `dev` with no sync-back, and the release was never
+tagged or published because tagging is also part of the Action. Do not repeat
+that: reach for the Action first, every time.
+
+The manual `release/*` branch flow below is **emergency-only** (e.g.
+`RELEASE_PAT` broken, CI down) — `scripts/check-release-readiness.sh` still
+validates it (a `release/v*` branch may only touch release metadata after
+`dev`), but if you use it, the `release/* → dev` sync-back below is not
+optional busywork, it is the step that makes the release real. Do it —
+merge commit, never squash — **before** deleting the release branch, not
+after. If it's already too late and the branch is gone, use the `main → dev`
+recovery path instead, then tag `main` and push the tag by hand (the Action
+does this atomically; a manual release must do both halves itself or the
+release stays unpublished, as it did here for 9 days).
+
 ```
 feature/* → dev       ← PR required, AI review + 1 human approval
 fix/* → dev           ← PR required, AI review + 1 human approval
 chore/* → dev         ← PR required, 1 human approval + required checks
 docs/* → dev          ← PR required, 1 human approval + required checks
-release/* created     ← from latest stable dev after feature freeze
+release/* created     ← EMERGENCY ONLY — normal releases use the Release Action
 release/* → main      ← QA sign-off + team lead approval + smoke test pass
-release/* → dev       ← required if release fixes were committed after branching
+release/* → dev       ← REQUIRED, same PR cycle, before the release branch is deleted
 hotfix/* → main       ← team lead approval + smoke test pass
 hotfix/* → dev        ← required after production fix is merged to main
 main → dev            ← PR via GitHub UI, admin bypass required (recovery only)
