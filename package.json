@@ -47,6 +47,7 @@
     "templates/*/README.template.md",
     "templates/*/SECURITY.md",
     "templates/*/package.json",
+    "templates/*/composer.json",
     "templates/*/test/**",
     "templates/*/pyproject.toml",
     "templates/*/test_smoke.py",

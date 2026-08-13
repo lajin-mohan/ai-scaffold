@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
-import { readFileSync, writeFileSync, rmSync } from 'node:fs';
+import { readFileSync, writeFileSync, rmSync, readdirSync } from 'node:fs';
 import path from 'node:path';
 import os from 'node:os';
 import { fileURLToPath } from 'node:url';
@@ -331,6 +331,63 @@ describe('template gitignore ships hook wiring', () => {
       expect(lines).not.toContain('settings.json');
     });
   }
+});
+
+describe('Claude Code skill packaging', () => {
+  const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
+  const skillRoots = [
+    path.join(repoRoot, '.claude/skills'),
+    ...SUPPORTED_PROFILES.map((profile) => path.join(repoRoot, 'templates', profile, '.claude/skills')),
+  ];
+  const convertedSkills = [
+    'accessibility-check',
+    'backend-api-design',
+    'cloud-deployment',
+    'database-optimization',
+    'design-system',
+    'frontend-patterns',
+    'iac-best-practices',
+    'project-delivery-workflow',
+    'ux-audit',
+  ];
+
+  it.each(skillRoots)('%s contains only valid skill directories with metadata', (skillsDir) => {
+    const entries = readdirSync(skillsDir, { withFileTypes: true })
+      .filter((entry) => !entry.name.startsWith('.'));
+
+    expect(entries).toHaveLength(13);
+    for (const entry of entries) {
+      expect(entry.isDirectory(), `${entry.name} must be a skill directory`).toBe(true);
+      expect(entry.name).toMatch(/^[a-z0-9]+(?:-[a-z0-9]+)*$/);
+
+      const skillFile = path.join(skillsDir, entry.name, 'SKILL.md');
+      const contents = readFileSync(skillFile, 'utf-8');
+      const frontmatter = contents.match(/^---\n([\s\S]*?)\n---\n/);
+
+      expect(frontmatter, `${skillFile} must start with YAML frontmatter`).not.toBeNull();
+      expect(frontmatter[1]).toMatch(new RegExp(`^name: ${entry.name}$`, 'm'));
+      expect(frontmatter[1]).toMatch(/^description: \S.+$/m);
+    }
+  });
+
+  it('keeps converted skills identical across the root and every shipped profile', () => {
+    for (const skill of convertedSkills) {
+      const canonical = readFileSync(path.join(repoRoot, '.claude/skills', skill, 'SKILL.md'), 'utf-8');
+      for (const profile of SUPPORTED_PROFILES) {
+        const shipped = readFileSync(
+          path.join(repoRoot, 'templates', profile, '.claude/skills', skill, 'SKILL.md'),
+          'utf-8',
+        );
+        expect(shipped).toBe(canonical);
+      }
+    }
+  });
+
+  it('keeps the legacy ux-audit skill manual-only and redirects new work', () => {
+    const legacySkill = readFileSync(path.join(repoRoot, '.claude/skills/ux-audit/SKILL.md'), 'utf-8');
+    expect(legacySkill).toContain('disable-model-invocation: true');
+    expect(legacySkill).toContain('Use `ux-review` instead.');
+  });
 });
 
 describe('python and golang profiles', () => {

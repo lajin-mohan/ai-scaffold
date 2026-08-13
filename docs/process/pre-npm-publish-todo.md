@@ -320,7 +320,7 @@ saving starts costing correctness.
   config) are untouched. Verified: all 5 profiles still create cleanly with
   0 CRIT/HIGH doctor failures after removal.
 - **46. — ✅ DONE (0.10.0 docs audit).** Fixed the repo's own
-  `.claude/skills/design-system.md` → `DESIGN_TOKENS.md` links (4 occurrences
+  `.claude/skills/design-system/SKILL.md` → `DESIGN_TOKENS.md` links (4 occurrences
   had a doubled `.claude/skills/` prefix); the file is now byte-identical to
   the (already-correct) template copies.
 - **21.** Docs-honesty pass (stale version/claims). **22.** Publish-workflow input

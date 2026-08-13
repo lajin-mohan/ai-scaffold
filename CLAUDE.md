@@ -256,7 +256,7 @@ agents and commands — they are not auto-invoked skills.
 
 | Skill | Purpose |
 |---|---|
-| `design-system` | Default baseline for all frontend projects — color tokens, typography, spacing, components, motion, z-index, layout tokens. See `.claude/skills/design-system.md`. Override at `apps/web/src/design-system/` when project brand diverges. |
+| `design-system` | Default baseline for all frontend projects — color tokens, typography, spacing, components, motion, z-index, layout tokens. See `.claude/skills/design-system/SKILL.md`. Override at `apps/web/src/design-system/` when project brand diverges. |
 | `backend-api-design` | REST API patterns, error handling, versioning |
 | `frontend-patterns` | Component structure, state management, accessibility |
 | `database-optimization` | Schema design, indexing, query tuning |
