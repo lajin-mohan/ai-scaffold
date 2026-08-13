@@ -5,14 +5,19 @@ in `CHANGELOG.md` (the permanent record); this file tracks what is **left** and
 why, grouped into phases by rating lever. Completed items are removed after
 verification against npm/git, not kept as history.
 
-## Current state (2026-07-14)
+## Current state (2026-08-13)
 
-- **v0.9.1 is published** (`latest`, provenance) — T0 token measurement, T1
-  `/review --lite`, and the review blockers. **v0.10.0 is in flight**: item 54
-  (auto-wired git pre-commit hook, #85), item 56 (`ais export-context`
-  reinstall safeguard, #86), item 28 (CLI reference), and the docs audit.
-  `main` is an ancestor of `dev`; all gates green on the integrated branches
-  (49 tests, lint/typecheck clean, smoke all-pass, 0 vulns at any level).
+- **v0.12.0 is published** (`latest`, provenance). `main` is an ancestor of
+  `dev`; `dev` currently carries unreleased work (T3 scoped rules, the
+  release-process drift fix). All gates green: 66 tests, lint/typecheck clean,
+  113/113 smoke, 0 vulns on the published surface.
+- **Release-process incident (2026-08-12, closed):** v0.12.0 was cut manually
+  via a `release/*` branch instead of the one-button `Release` Action, so
+  `main` sat ahead of `dev` for 9 days, untagged and unpublished, while npm
+  served 0.11.1. Root-caused to `branching-rules.md` documenting only the old
+  manual path. Fixed in #113 (sync recovery), #114 (docs + a CI version-drift
+  guard). **Lesson: the docs pointed at the superseded process — when a flow
+  is designed out, the docs describing it must go in the same change.**
 - **Security posture reviewed 2026-07-13:** 7 mainstream runtime deps, 0 npm-audit
   findings at any level, OIDC trusted publishing (no long-lived token), CI runs
   gitleaks + audit, no secret patterns in tracked code, only shell-out is
@@ -468,6 +473,75 @@ saving starts costing correctness.
   cross-agent parity rather than Claude-Code-specific enforcement)*
 
 ---
+
+- **68. Skills should bundle their own scripts instead of re-deriving them.**
+  Raised 2026-08-13; **fact-checked and confirmed** against
+  `code.claude.com/docs/en/skills`. A skill is a *directory*, and the docs'
+  own canonical layout includes `scripts/` alongside `SKILL.md`:
+  *"scripts/validate.sh — Script Claude can execute."* Two mechanics make this
+  work properly and neither is currently used anywhere in this scaffold:
+  `${CLAUDE_SKILL_DIR}` (resolves to the skill's own directory regardless of
+  cwd) and `allowed-tools: Bash(${CLAUDE_SKILL_DIR}/scripts/x.sh *)` — the
+  docs state that pairing the two *"lets a skill run a bundled script without
+  a permission prompt."* Today every scaffold skill is prose-only, so any
+  repeatable mechanical step (parse, validate, extract, render) gets
+  re-written as throwaway code per invocation: non-deterministic, unreviewed,
+  untested, and re-tokenised each time. Bundling makes it deterministic,
+  diffable, and unit-testable — the same instruction-vs-guardrail split this
+  scaffold already applies to hooks, applied to skills. Start with the skills
+  that already describe mechanical procedures rather than judgement.
+  **Portability caveat:** `${CLAUDE_SKILL_DIR}` and `allowed-tools` are Claude
+  Code extensions to the Agent Skills standard — for Codex/Cursor the scripts
+  still exist and are runnable, just without the no-prompt wiring. *(medium —
+  per-skill; do not convert judgement-based skills into scripts)*
+- **69. Command/agent surface is unaudited and partly redundant** — the
+  concrete, evidence-backed half of **T5**. Measured 2026-08-13: **35
+  commands (252K) + 17 agents (96K)**. Three distinct problems, in confidence
+  order:
+  1. **4 self-declared dead aliases** — `ux-analyze`, `ux-flow`,
+     `ux-figma-spec`, `ux-screen-spec` each say *"Legacy alias"* /
+     *"Compatibility alias"* in their own description. ~104 lines of pure
+     redirect. Safe deletion; only question is the deprecation window.
+  2. **Overlap with now-bundled Claude Code skills.** Claude Code ships
+     `/debug`, `/code-review`, `/loop`, `/doctor` as bundled skills. This
+     scaffold ships `debug-fix` (127), `investigate` (208), `loop` (126),
+     `health` (274), `review` (170). Some of that is genuine
+     governance-specific value (`review`'s 5-agent fan-out, `health`'s
+     weighted composite) — but it has never been checked line-by-line against
+     what's now native, and the docs are explicit that *"custom commands have
+     been merged into skills."*
+  3. **Commands should be skills.** Same doc: *"Skills are recommended since
+     they support additional features like supporting files."* `.claude/commands/`
+     still works and is not deprecated, but new capability (item 68's bundled
+     scripts) only lands in the skills format.
+  Deliberately **not** a blanket cull: this scaffold's value *is* its
+  governance surface, and cutting a real gate to save tokens is the failure
+  mode `T5` already warns about. Audit output should be per-item
+  keep/merge/delete with a reason, not a percentage target. A "minimal
+  profile" variant is a plausible outcome but should follow the audit, not
+  precede it. *(medium — audit first, then act)*
+
+## Reprioritised by value delivered (2026-08-13)
+
+Ordered by *value returned per unit of effort*, using evidence from this
+session rather than category scores. This does **not** replace the phase
+structure below — it says what to pick up next within it.
+
+| # | Item | Why now | Effort |
+|---|---|---|---|
+| 1 | **Land the parked bug fixes** (python `pip install` crash, laravel missing `composer.json`) | Both **verified reproducible against the published 0.12.0 package** — real users of 2 of 5 profiles hit these on day one. Fixes exist and are tested but are sitting in a stash, unlanded. Highest value/effort ratio on the board. | small |
+| 2 | **69. Command/agent surface audit** | 348K across 52 definitions, never audited. 4 items self-declare as dead aliases. Directly unblocks T5, and every removal compounds across all 5 subagent contexts on every `/review`. | medium |
+| 3 | **68. Bundled scripts in skills** | Turns repeatable mechanical steps from re-derived throwaway code into deterministic, testable artifacts — same reasoning that made hooks worth having. Confirmed supported. | medium |
+| 4 | **66. Stop-hook for plan-and-confirm** | The scaffold's highest-stakes rule has zero deterministic backing. Ranked below 68/69 only because the *design* question (what is a checkable "approval"?) is genuinely unsolved, not because it matters less. | medium |
+| 5 | **`shellcheck` in CI** | 69 `.sh` files carry this scaffold's entire enforcement layer with **zero static analysis**. `/health` can't even score the category. Cheap, and it guards the guardrails. | small |
+| 6 | **60. Windows CI runner** | Unchanged from prior ranking — still the largest untested-platform risk. | medium |
+| 7 | **67. Cross-agent `CLAUDE.md` audit** | `AGENTS.md` points Codex/Cursor at a Claude-specific document. Real, but affects fewer users than 1–5. | small-medium |
+
+**Deliberately not raised:** `T4` (lean `CLAUDE.md`) — the project's own `T0`
+measurement shows always-loaded content is only 7K/5% of the corpus, so the
+generic "keep CLAUDE.md under 200 lines" advice does not apply here as
+strongly as it looks. Measurement beats convention.
+
 
 ## The 8.5+ path (honest)
 
