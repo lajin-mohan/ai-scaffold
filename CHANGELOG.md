@@ -13,6 +13,63 @@ This file is configured with `merge=union` in `.gitattributes` so parallel addit
 
 ## [Unreleased]
 
+### Added
+- **Skills can now bundle their own scripts.** `design-system` ships
+  `scripts/check-tokens.sh`, wired with `allowed-tools` +
+  `${CLAUDE_SKILL_DIR}` so it runs without a permission prompt. This makes
+  ux-rules GH-10 (all colors use defined tokens) and GH-11 (no undefined
+  tokens) deterministic instead of leaving two BLOCK-severity gates to an
+  agent's judgement. A pilot — only mechanical steps belong in scripts.
+- **Shellcheck gate in CI.** The scaffold's entire enforcement layer is shell
+  (75 files) and had no static analysis. Now checked at `-S warning`,
+  templates included.
+- **laravel profile ships `phpunit.xml` + a smoke test**, matching the
+  node/python/golang profiles, so `composer test` passes on day one.
+- **`ais init` generates `tasks/lessons.md` and `CHANGELOG.md`** when a repo
+  doesn't already have them, closing a dangling `CLAUDE.md` reference. Both
+  are protected — an existing repo's files are never overwritten.
+- **`token-budget-guard.sh` hook** makes the documented 300K/500K thresholds
+  real: warns at 300K, blocks at 500K, escapable via
+  `ECC_TOKEN_BUDGET_WARN_ONLY=1`.
+
+### Fixed
+- **laravel profile did not work at all.** Four defects, all pre-existing:
+  the generated `composer.json` never shipped (missing from the npm `files`
+  allowlist); its package name was a bare project name where composer
+  requires `vendor/package`; it depended on `nunomadado/termwind`, which does
+  not exist (typo for `nunomaduro`); and `laravel/framework ^11.0` was
+  blocked by 7 security advisories. Now resolves clean on `^12.0`, and the
+  app-lifecycle composer scripts that assumed an `artisan` skeleton this
+  profile doesn't ship were removed. Verified end-to-end from a packed
+  tarball: `composer install` exit 0, `composer test` passing.
+- **python profile crashed on its own first documented command.**
+  `pip install -e ".[dev]"` failed because hatchling's default wheel
+  file-selection requires an importable package directory and the starter is
+  a flat `test_smoke.py`. Added `bypass-selection = true`.
+- **Branch names starting with `docs/` failed the pre-commit branch check**,
+  despite `branching-rules.md` documenting `docs/*` as valid.
+- **Two shellcheck findings**: a dead `case` pattern in
+  `pre-bash-quality-gate.sh` (behaviour was never wrong — unreachable
+  duplicate) and an unguarded `cd` in `pre-publish-smoke.sh`.
+- **Templates no longer ship stray `apps/` and `.vscode/` directories.**
+
+### Changed
+- **Stack rule overlays are now path-scoped.** All 8 `.claude/rules/stacks/*.md`
+  carry `paths:` frontmatter, so an overlay only enters context when a
+  matching file is read. Previously every profile loaded all 8 unconditionally
+  — a python project carried the Java, .NET, ColdFusion, PHP, Go and React
+  rules every session. (Token-efficiency workstream T3.)
+- **All 13 skills migrated to `<name>/SKILL.md`** so they are auto-discovered
+  Agent Skills; previously only 4 of 13 were. Fixed the ~30 stale references
+  this surfaced.
+- **Release process documented correctly.** `branching-rules.md` described
+  only the superseded manual `release/*` flow and never mentioned the
+  fast-forward `Release` Action, which is what caused v0.12.0 to sit
+  unpublished for 9 days. Manual flow is now marked emergency-only, and CI
+  gained a `main`/`dev` version-drift check.
+- **AI coding rules require the minimum sufficient change** — no speculative
+  features, abstractions, or unrelated cleanup.
+
 ## [0.12.0] - 2026-08-06
 
 ### Added
