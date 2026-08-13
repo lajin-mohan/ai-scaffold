@@ -1,3 +1,10 @@
+---
+paths:
+  - "**/*.cs"
+  - "**/*.csproj"
+  - "**/*.sln"
+---
+
 # Stack Rules: .NET / C# (Backend)
 
 Append to `.claude/rules/coding-standards.md` for backend stacks containing .NET or C#.

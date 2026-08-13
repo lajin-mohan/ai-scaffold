@@ -1,3 +1,12 @@
+---
+paths:
+  - "**/*.py"
+  - "**/pyproject.toml"
+  - "**/requirements*.txt"
+  - "**/setup.py"
+  - "**/setup.cfg"
+---
+
 # Stack Rules: Python (Backend)
 
 Append to `.claude/rules/coding-standards.md` for backend stacks containing Python.

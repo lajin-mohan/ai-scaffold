@@ -1,3 +1,9 @@
+---
+paths:
+  - "**/*.cfc"
+  - "**/*.cfm"
+---
+
 # Stack Rules: Adobe ColdFusion / Lucee (Backend)
 
 Append to `.claude/rules/coding-standards.md` for backend stacks containing ColdFusion (CFML).
