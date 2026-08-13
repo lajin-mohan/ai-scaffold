@@ -2,9 +2,25 @@
  * Generated content and placeholder helpers for scaffold installs.
  */
 
+/**
+ * Composer requires `vendor/package`, both lowercase and matching
+ * ^[a-z0-9]([_.-]?[a-z0-9]+)*$ per segment. A bare project name fails
+ * validation, so `composer install` errors out on a freshly generated
+ * project. Vendor defaults to `app` because the scaffold does not collect an
+ * organization slug; the generated file is a starter the team renames.
+ */
+export function toComposerPackageName(projectName, vendor = 'app') {
+  const slug = String(projectName ?? '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+  return `${vendor}/${slug || 'project'}`;
+}
+
 export function resolvePlaceholders(content, values) {
   const tokenMap = {
     '{{PROJECT_NAME}}': values.projectName ?? '',
+    '{{COMPOSER_PACKAGE_NAME}}': toComposerPackageName(values.projectName),
     '{{PROJECT_DISPLAY_NAME}}': values.displayName ?? '',
     '{{PROJECT_DESCRIPTION}}': values.purpose ?? '',
     '{{ONE_LINE_PURPOSE}}': values.purpose ?? '',
