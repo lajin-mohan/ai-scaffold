@@ -211,7 +211,7 @@ fi
 DEFAULT_BRANCH=$(git -C "$SMOKE_DIR/smoke-project" branch --show-current)
 if echo "$DEFAULT_BRANCH" | grep -qE '^(main|dev|master)$'; then
   (
-    cd "$SMOKE_DIR/smoke-project"
+    cd "$SMOKE_DIR/smoke-project" || exit 1
     echo x > hook-branch-check.txt
     git add hook-branch-check.txt >/dev/null 2>&1
     if git -c user.name=smoke -c user.email=smoke@example.invalid commit -m "smoke: branch check" >/dev/null 2>&1; then

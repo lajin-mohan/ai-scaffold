@@ -85,6 +85,16 @@ jobs:
           fi
           echo "OK: main and dev both at v$MAIN_VERSION."
 
+      # This scaffold's entire enforcement layer is shell (hooks + smoke +
+      # install scripts) and had zero static analysis until 2026-08-13.
+      # -S warning matches the level the tree was cleaned to; errors and
+      # warnings both fail. Templates are included: they ship to users.
+      - name: Shellcheck
+        run: |
+          shellcheck --version
+          find . -name "*.sh" -not -path "./node_modules/*" -print0 \
+            | xargs -0 shellcheck -S warning
+
       - name: Pre-publish smoke
         run: bash scripts/pre-publish-smoke.sh
 
