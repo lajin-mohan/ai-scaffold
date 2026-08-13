@@ -81,7 +81,7 @@ Full file: `.claude/rules/ai-coding-rules.md`. Hard rules for any AI tool writin
 
 ## Design System
 
-From `.claude/skills/design-system.md`:
+From `.claude/skills/design-system/SKILL.md`:
 
 ### Colors
 - Primary: `#0A0A0A` (Ink Black)

@@ -288,6 +288,6 @@ Invoke these for deep analysis:
 - Role config: [ux.yaml](../ux.yaml)
 - UX workflow skill (canonical): [.claude/skills/ux-workflow/SKILL.md](../../skills/ux-workflow/SKILL.md)
 - UX system skill (design tokens, components): [.claude/skills/ux-system/SKILL.md](../../skills/ux-system/SKILL.md)
-- Design system: [.claude/skills/design-system.md](../../skills/design-system.md)
+- Design system: [.claude/skills/design-system/SKILL.md](../../skills/design-system/SKILL.md)
 - UX rules: [.claude/rules/ux-rules.md](../../rules/ux-rules.md)
 - Live reference implementation: see `docs/ux/` for the UX module structure and task artifact conventions.

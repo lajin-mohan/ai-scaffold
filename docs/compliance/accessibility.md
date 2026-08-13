@@ -123,7 +123,7 @@ Automated tests are insufficient alone. Manual testing required for every major 
 ## Design System Enforcement
 
 All components must use design tokens from the design system. Hardcoded colours are a
-WCAG violation and a coding standards violation. See `.claude/skills/design-system.md`.
+WCAG violation and a coding standards violation. See `.claude/skills/design-system/SKILL.md`.
 
 ## Files to Update When Requirements Apply
 

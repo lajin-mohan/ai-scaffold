@@ -12,6 +12,12 @@ dependencies = []
 [project.optional-dependencies]
 dev = ["pytest", "ruff", "mypy", "build"]
 
+[tool.hatch.build.targets.wheel]
+# This scaffold starter has no importable package directory (just a flat
+# test_smoke.py at the root) — hatchling's default wheel file-selection
+# requires one and hard-fails `pip install -e ".[dev]"` without it.
+bypass-selection = true
+
 [tool.ruff]
 line-length = 100
 

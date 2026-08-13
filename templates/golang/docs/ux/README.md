@@ -57,7 +57,7 @@ PM and stakeholder approval required at each gate before proceeding.
 
 ## Design System
 
-Design tokens, component rules, and typography are in `.claude/skills/ux-system/`. All colors come from CSS tokens — no hardcoded brand hex values. Token names match `.claude/skills/design-system.md`.
+Design tokens, component rules, and typography are in `.claude/skills/ux-system/`. All colors come from CSS tokens — no hardcoded brand hex values. Token names match `.claude/skills/design-system/SKILL.md`.
 
 ## Responsive
 
