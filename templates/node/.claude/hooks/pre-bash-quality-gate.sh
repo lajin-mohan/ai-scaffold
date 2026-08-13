@@ -46,7 +46,6 @@ fi
 TRIGGER=0
 case "$COMMAND" in
   *git\ commit*|*git\ push*) TRIGGER=1 ;;
-  "git commit"*|"git push"*) TRIGGER=1 ;;
 esac
 
 # Allow --no-verify bypass to also bypass this hook (don't double-penalize
