@@ -49,6 +49,8 @@
     "templates/*/package.json",
     "templates/*/composer.json",
     "templates/*/test/**",
+    "templates/*/phpunit.xml",
+    "templates/*/tests/**",
     "templates/*/pyproject.toml",
     "templates/*/test_smoke.py",
     "templates/*/go.mod",

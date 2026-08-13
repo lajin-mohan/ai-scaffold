@@ -83,7 +83,7 @@ const ROOT_FILES = [
 const CREATE_ROOT_FILES_BY_PROFILE = {
   generic: ['.gitignore'],
   node: ['package.json', 'test/smoke.test.js'],
-  laravel: ['composer.json', 'package.json'],
+  laravel: ['composer.json', 'package.json', 'phpunit.xml', 'tests/Unit/SmokeTest.php'],
   python: ['pyproject.toml', 'test_smoke.py'],
   golang: ['go.mod', 'main.go', 'main_test.go'],
 };
