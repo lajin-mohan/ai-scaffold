@@ -521,6 +521,41 @@ saving starts costing correctness.
   profile" variant is a plausible outcome but should follow the audit, not
   precede it. *(medium — audit first, then act)*
 
+  **AUDIT RESULT (2026-08-13) — the aliases are load-bearing; do NOT delete
+  them first.** The "4 safe deletions" framing was wrong. Verified: three
+  agents actively route users to superseded commands — `ux-designer` and
+  `ux-requirement-analyst` → `/ux-flow`; `ux-flow-designer` → `/ux-analyze`
+  and `/ux-screen-spec`. `.claude/roles/`, the role tutorial, and
+  `.claude/memory/` reference them too. The alias files are currently the
+  *only* reason those references resolve. Deleting them would silently break
+  the UX workflow for anyone following an agent's own instructions.
+
+  **The real finding is not token waste — it is that agents instruct users
+  toward a superseded workflow.** Correct order: (1) repoint the 3 agents +
+  roles/tutorial/memory docs at the canonical commands (`/ux-analysis`,
+  `/ux-design-prompt`); (2) confirm zero live references remain; (3) *then*
+  alias deletion is trivially safe. Doing (3) first inverts the risk.
+
+  **Second finding — name collisions with bundled Claude Code skills.**
+  Claude Code now ships `/debug`, `/code-review`, `/loop`, `/doctor`,
+  `/batch` as bundled skills. This scaffold ships its own `/loop` (126
+  lines), `/debug-fix` (127), `/investigate` (208) — colliding or
+  near-colliding with native behaviour that did not exist when they were
+  written. Not automatically redundant: the scaffold's `/loop` carries a
+  one-approval contract and explicit stop conditions native `/loop` lacks.
+  But the overlap has never been diffed and users cannot tell which they are
+  invoking. Needs a per-command decision: keep (and document the difference),
+  rename to avoid collision, or drop in favour of native.
+
+  **Third finding — `review` and `health` are genuinely differentiated; keep.**
+  `/review`'s 5-agent parallel fan-out and `/health`'s weighted composite +
+  trend history have no native equivalent (`/code-review` is a single-pass
+  diff review; `/doctor` is a setup checkup — different jobs). Recorded so a
+  future token-driven cull does not remove them by headcount.
+
+  **Nothing was deleted in this pass.** Deleting less than approved is the
+  safe direction; the sequencing above must land first.
+
 ## Reprioritised by value delivered (2026-08-13)
 
 Ordered by *value returned per unit of effort*, using evidence from this
