@@ -1,6 +1,7 @@
 ---
 name: design-system
 description: Apply the scaffold's WorkOS Minimal visual language, semantic tokens, typography, spacing, component states, and interface density. Use when designing or implementing product UI and reusable components.
+allowed-tools: Bash(${CLAUDE_SKILL_DIR}/scripts/check-tokens.sh *)
 ---
 
 # Design System — WorkOS Minimal
@@ -19,6 +20,19 @@ Scaffold projects use a **3-layer token model**:
 - **Component tokens** — optional stable internal aliases for components
 
 **Always use semantic tokens in components.** Never use brand names or hex literals directly.
+
+**Verify, don't eyeball.** `ux-rules.md` GH-10 (all colors use defined
+tokens) and GH-11 (no undefined tokens referenced) are BLOCK-severity and
+purely mechanical, so check them rather than judging by reading:
+
+```
+${CLAUDE_SKILL_DIR}/scripts/check-tokens.sh <file-or-dir>
+```
+
+Exit 0 = clean, 1 = violations (each printed with file:line and which gate),
+2 = usage error. The script reads the token list from
+`ux-system/DESIGN_TOKENS.md` at run time, so it cannot drift from the
+catalogue. Run it on changed files before claiming a UI change is done.
 
 ### Semantic Tokens (use these)
 | Token | Hex | Usage |

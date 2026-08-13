@@ -78,7 +78,13 @@ else
   echo "  $PACK_OUTPUT" | head -3
 fi
 
-FORBIDDEN_PACK_PATHS='templates/.*/_ai/|templates/.*/apps/|templates/.*/docs/|templates/.*/infra/|templates/.*/packages/|templates/.*/scripts/|templates/.*/tasks/|templates/.*/\.vscode/|templates/.*/\.claude/settings.local.json|src/__tests__|tests/'
+# `[^/]*` (not `.*`) so these anchor to a template ROOT directory. With `.*`
+# the pattern also matched nested paths like
+# templates/<p>/.claude/skills/<skill>/scripts/, which is a skill's bundled
+# script directory and MUST ship (see item 68). Anchoring keeps the original
+# intent — no template-local project dirs in the tarball — without blocking
+# legitimate nested directories.
+FORBIDDEN_PACK_PATHS='templates/[^/]*/_ai/|templates/[^/]*/apps/|templates/[^/]*/docs/|templates/[^/]*/infra/|templates/[^/]*/packages/|templates/[^/]*/scripts/|templates/[^/]*/tasks/|templates/[^/]*/\.vscode/|templates/[^/]*/\.claude/settings.local.json|src/__tests__|tests/'
 if grep -Eq "$FORBIDDEN_PACK_PATHS" <<< "$PACK_OUTPUT"; then
   fail "npm package excludes heavy/template-local paths"
 else
