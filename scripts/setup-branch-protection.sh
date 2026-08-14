@@ -69,6 +69,65 @@ echo "Applying branch protection to: $REPO"
 echo "This script will update branch protection for main and dev."
 echo
 
+# ------------------------------------------------------------
+# Enforcement configuration
+# ------------------------------------------------------------
+# ENFORCE_ADMINS_MAIN / ENFORCE_ADMINS_DEV control whether admins are subject
+# to branch protection. This is the setting that makes "no self-merge"
+# (review-rules.md) real: required_approving_review_count is already 1 and
+# GitHub natively refuses to let a PR author approve their own PR, so the only
+# way a self-merge happens is an admin bypassing protection. With enforcement
+# on, `gh pr merge --admin` stops working.
+#
+# Default is `true` for BOTH branches — a generated project should be
+# protected on day one. Individual projects opt out deliberately, not by
+# forgetting to opt in. (ai-scaffold itself runs main-only: see
+# docs/setup/branch-protection.md.)
+ENFORCE_ADMINS_MAIN="${ENFORCE_ADMINS_MAIN:-true}"
+ENFORCE_ADMINS_DEV="${ENFORCE_ADMINS_DEV:-true}"
+
+# Identities allowed to merge without the required approval. This exists for
+# one reason: a fast-forward release workflow pushes directly to dev and main,
+# and enforcing admins without a bypass locks the release process out of its
+# own repository. Set to the RELEASE_PAT owner's login. Comma-separated.
+RELEASE_BYPASS_USERS="${RELEASE_BYPASS_USERS:-}"
+
+while [ "$#" -gt 0 ]; do
+  case "$1" in
+    --enforce-main=*) ENFORCE_ADMINS_MAIN="${1#*=}" ;;
+    --enforce-dev=*)  ENFORCE_ADMINS_DEV="${1#*=}" ;;
+    --release-bypass=*) RELEASE_BYPASS_USERS="${1#*=}" ;;
+    --*) echo "ERROR: unknown flag: $1" >&2; exit 2 ;;
+    *) ;;
+  esac
+  shift
+done
+
+for v in "$ENFORCE_ADMINS_MAIN" "$ENFORCE_ADMINS_DEV"; do
+  case "$v" in
+    true|false) ;;
+    *) echo "ERROR: enforce flags must be true or false (got '$v')" >&2; exit 2 ;;
+  esac
+done
+
+# Build the bypass block once; empty string when no users are configured.
+BYPASS_JSON=""
+if [ -n "$RELEASE_BYPASS_USERS" ]; then
+  users=$(printf '%s' "$RELEASE_BYPASS_USERS" | tr ',' '\n' | sed 's/^ *//;s/ *$//' \
+    | awk 'NF{printf "%s\"%s\"", (NR>1 ? "," : ""), $0}')
+  BYPASS_JSON=",
+    \"bypass_pull_request_allowances\": { \"users\": [$users], \"teams\": [], \"apps\": [] }"
+fi
+
+echo "Enforcement: main=$ENFORCE_ADMINS_MAIN dev=$ENFORCE_ADMINS_DEV"
+if [ -n "$RELEASE_BYPASS_USERS" ]; then
+  echo "Release bypass: $RELEASE_BYPASS_USERS"
+else
+  echo "Release bypass: none — a fast-forward release workflow will be blocked"
+  echo "                if it pushes directly to an enforced branch."
+fi
+echo
+
 STATUS_CONTEXTS='["CI passed"]'
 STATUS_LABEL="CI passed"
 if [ "${REQUIRE_AI_REVIEW_CHECK:-0}" = "1" ]; then
@@ -133,12 +192,12 @@ gh api -X PUT "repos/$REPO/branches/main/protection" \
     "strict": true,
     "contexts": $STATUS_CONTEXTS
   },
-  "enforce_admins": true,
+  "enforce_admins": $ENFORCE_ADMINS_MAIN,
   "required_pull_request_reviews": {
     "dismiss_stale_reviews": true,
     "require_code_owner_reviews": false,
     "required_approving_review_count": 1,
-    "require_last_push_approval": true
+    "require_last_push_approval": true$BYPASS_JSON
   },
   "restrictions": null,
   "required_linear_history": true,
@@ -169,12 +228,12 @@ gh api -X PUT "repos/$REPO/branches/dev/protection" \
     "strict": true,
     "contexts": $STATUS_CONTEXTS
   },
-  "enforce_admins": false,
+  "enforce_admins": $ENFORCE_ADMINS_DEV,
   "required_pull_request_reviews": {
     "dismiss_stale_reviews": true,
     "require_code_owner_reviews": false,
     "required_approving_review_count": 1,
-    "require_last_push_approval": false
+    "require_last_push_approval": false$BYPASS_JSON
   },
   "restrictions": null,
   "required_linear_history": false,
