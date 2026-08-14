@@ -13,6 +13,8 @@ This file is configured with `merge=union` in `.gitattributes` so parallel addit
 
 ## [Unreleased]
 
+## [0.13.0] - 2026-08-14
+
 ### Added
 - **Skills can now bundle their own scripts.** `design-system` ships
   `scripts/check-tokens.sh`, wired with `allowed-tools` +
