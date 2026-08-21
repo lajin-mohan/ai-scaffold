@@ -615,6 +615,68 @@ measurement shows always-loaded content is only 7K/5% of the corpus, so the
 generic "keep CLAUDE.md under 200 lines" advice does not apply here as
 strongly as it looks. Measurement beats convention.
 
+- **70. "No self-merge" is unenforceable on this repo as configured.** Found
+  2026-08-14 after 13 consecutive self-merges via `gh pr merge --admin` in one
+  session, which `review-rules.md` explicitly forbids.
+
+  **Not a missing rule.** Both branches already require 1 approval, and GitHub
+  natively refuses to let a PR author approve their own PR. The hole is
+  `enforce_admins: false` on both branches. A pre-commit hook cannot close it:
+  hooks run locally before a commit exists; merges happen server-side after.
+
+  **Plan is NOT the blocker.** The repo is public, so protection, rulesets and
+  required approvals are all free. The blocker is ownership type: user-level
+  bypass allowances are rejected on personal repos (HTTP 422, "Only
+  organization repositories can have users and team restrictions"). Because
+  `release.yml` pushes directly to both `dev` and `main`, any setting strict
+  enough to stop admin self-merge also locks the release workflow out.
+
+  **Done 2026-08-14 (interim):** repaired the `protected-main` ruleset, which
+  was **inert** — `enforcement: active` but `ref_name.include: []`, so it
+  matched no branches while looking protected in the UI. It now targets
+  `refs/heads/main`, making `deletion`, `non_fast_forward` and `pull_request`
+  real for non-admins. Admins keep `bypass_mode: always`, which is what keeps
+  releases working — that is the remaining gap, not an oversight.
+
+  **Real fixes, in preference order:** (1) release identity becomes a GitHub
+  App — rulesets accept `Integration` bypass actors on personal repos, so the
+  App is the sole bypass while admins are enforced; (2) move the repo to an
+  org; (3) process-only, labelled as detection not prevention
+  (`gh pr list --state merged --json author,mergedBy` makes self-merges
+  visible after the fact). *(small once the identity question is decided)*
+
+- **71. Enforce the linear `feature → dev → main` workflow end-to-end.**
+  Requested 2026-08-14. Every change starts from `dev` on a
+  `feature/*` / `fix/*` / `chore/*` branch; commits and pushes happen only on
+  work branches; work merges to `dev` by PR; production promotion is a
+  separate PR from `dev` to `main`; direct commits and pushes to `dev` and
+  `main` are blocked. Deliverables: local hooks, CI validation, and updated
+  repository documentation, with existing `release/*` / `hotfix/*` rules
+  removed or reconciled.
+
+  **Blocking conflict to resolve first — this contradicts the current release
+  design.** `release.yml` promotes `dev → main` by **fast-forward push**, not
+  by PR. That was deliberate (item 47): every PR merge method creates a commit
+  on `main` that is not on `dev`, and that divergence is exactly what forced
+  the old `main→dev` sync-back and caused the v0.12.0 incident. Requiring a
+  `dev → main` PR reintroduces it unless the PR is merged with a fast-forward,
+  which GitHub's UI does not offer. Decide one of:
+  a. Keep fast-forward promotion and treat `main` as bot-only (no human PR) —
+     enforcement then belongs on `dev`, where 19 of the last 20 PRs actually
+     land;
+  b. Switch to PR-based promotion and accept a scheduled sync-back, restoring
+     the machinery item 47 deleted;
+  c. PR-based promotion with a merge queue or an automated fast-forward merge,
+     which keeps ancestry linear but needs setup.
+
+  Also note the local half is already partly built: `pre-commit` validates
+  branch names (it rejected `feat/` during this very session) and
+  `pre-bash-quality-gate.sh` runs it before `git commit` / `git push`. What is
+  missing is a hook that refuses commits made *while on* `dev` or `main`, plus
+  the CI check. The server-side half depends on item **70** — without the
+  identity fix, blocking direct pushes also blocks releases.
+  *(medium — mostly a decision, then a small implementation)*
+
 
 ## The 8.5+ path (honest)
 
