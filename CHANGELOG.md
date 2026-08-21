@@ -13,6 +13,8 @@ This file is configured with `merge=union` in `.gitattributes` so parallel addit
 
 ## [Unreleased]
 
+## [0.14.0] - 2026-08-21
+
 ### Added
 - **Generated projects now enforce a linear `feature → dev → main` workflow.**
   Work happens on `feature/*`, `fix/*`, `chore/*` or `docs/*` branched from
