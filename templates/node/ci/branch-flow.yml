@@ -1,0 +1,71 @@
+# Branch-flow validation — enforces .claude/rules/branching-rules.md server-side.
+#
+# OPT-IN. This file ships to `.ai-scaffold/ci/branch-flow.yml` and is NOT active
+# until you copy it into place:
+#
+#     mkdir -p .github/workflows
+#     cp .ai-scaffold/ci/branch-flow.yml .github/workflows/branch-flow.yml
+#
+# It is shipped inert on purpose: the scaffold does not add workflows to a repo
+# without being asked, so it cannot collide with an existing CI setup or
+# surprise an `ais init` into an established project.
+#
+# What it enforces (the only legal merge paths):
+#   feature|fix|chore|docs/*  ->  dev
+#   hotfix/*                  ->  dev     (mandatory back-merge)
+#   dev                       ->  main    (production promotion)
+#   hotfix/*                  ->  main    (urgent production fix)
+#
+# Local hooks catch these earlier, but a hook can be bypassed with --no-verify
+# and never runs on the server. Make this a required status check on `dev` and
+# `main` so the rule is enforced where it cannot be skipped.
+
+name: Branch flow
+
+on:
+  pull_request:
+    branches: [dev, main]
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    name: Validate branch flow
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check base/head pairing
+        env:
+          BASE: ${{ github.base_ref }}
+          HEAD: ${{ github.head_ref }}
+        run: |
+          echo "PR: $HEAD -> $BASE"
+
+          work='^(feature|fix|chore|docs)/[A-Za-z0-9._-]+$'
+          hotfix='^hotfix/[A-Za-z0-9._-]+$'
+
+          case "$BASE" in
+            dev)
+              if echo "$HEAD" | grep -qE "$work"; then
+                echo "OK: work branch into dev."; exit 0
+              fi
+              if echo "$HEAD" | grep -qE "$hotfix"; then
+                echo "OK: hotfix back-merge into dev."; exit 0
+              fi
+              echo "::error::'$HEAD' may not target dev. Allowed: feature/*, fix/*, chore/*, docs/* (normal work) or hotfix/* (back-merge). See .claude/rules/branching-rules.md"
+              exit 1
+              ;;
+            main)
+              if [ "$HEAD" = "dev" ]; then
+                echo "OK: production promotion."; exit 0
+              fi
+              if echo "$HEAD" | grep -qE "$hotfix"; then
+                echo "OK: urgent production fix."; exit 0
+              fi
+              echo "::error::'$HEAD' may not target main. Only 'dev' (promotion) or 'hotfix/*' (urgent fix) may. Work branches must go through dev. See .claude/rules/branching-rules.md"
+              exit 1
+              ;;
+            *)
+              echo "OK: '$BASE' is not a protected branch."
+              ;;
+          esac
