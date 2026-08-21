@@ -504,9 +504,32 @@ describe('python and golang profiles', () => {
       // `gitleaks detect --staged` errors ("unknown flag") on current versions.
       expect(repoHook).toContain('gitleaks git --staged');
       expect(repoHook).not.toContain('gitleaks detect --staged');
-      // Shipped copies must match the repo copy exactly.
-      for (const profile of SUPPORTED_PROFILES) {
-        expect(readFileSync(templatePath(profile, rel), 'utf-8')).toBe(repoHook);
+
+      // Every shipped copy must carry the same gitleaks invocation — that is
+      // what this test exists to protect.
+      const shipped = SUPPORTED_PROFILES.map((profile) =>
+        readFileSync(templatePath(profile, rel), 'utf-8'),
+      );
+      for (const copy of shipped) {
+        expect(copy).toContain('gitleaks git --staged');
+        expect(copy).not.toContain('gitleaks detect --staged');
+      }
+
+      // The five shipped copies must be identical to each other.
+      for (const copy of shipped) {
+        expect(copy).toBe(shipped[0]);
+      }
+
+      // `pre-commit` is deliberately allowed to differ from the repo copy:
+      // the shipped hook enforces the linear feature -> dev -> main flow for
+      // generated projects (no commits on dev/main, no release/* branches),
+      // while ai-scaffold itself still runs a fast-forward release that keeps
+      // release/* as a documented emergency path. Every other hook must match
+      // the repo copy exactly.
+      if (rel !== '.claude/hooks/pre-commit') {
+        for (const copy of shipped) {
+          expect(copy).toBe(repoHook);
+        }
       }
     }
   });

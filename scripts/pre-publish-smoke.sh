@@ -211,9 +211,11 @@ else
   fail "initial scaffold commit missing — installPreCommitHook may be blocking it"
 fi
 
-# The hook must allow git's actual default branch name (commonly 'master'
-# unless init.defaultBranch is configured) — a regex that only allows
-# feature/fix/chore/hotfix/release would reject every early commit.
+# The shipped hook enforces the linear flow: dev and main change only through
+# a merged PR, so a commit made while either is checked out must be refused.
+# The scaffold's own initial commit is asserted above and is unaffected — it
+# runs before the hook is wired. After `create`, the first thing a user does
+# is branch (`git switch -c chore/initial-setup`).
 DEFAULT_BRANCH=$(git -C "$SMOKE_DIR/smoke-project" branch --show-current)
 if echo "$DEFAULT_BRANCH" | grep -qE '^(main|dev|master)$'; then
   (
@@ -221,14 +223,27 @@ if echo "$DEFAULT_BRANCH" | grep -qE '^(main|dev|master)$'; then
     echo x > hook-branch-check.txt
     git add hook-branch-check.txt >/dev/null 2>&1
     if git -c user.name=smoke -c user.email=smoke@example.invalid commit -m "smoke: branch check" >/dev/null 2>&1; then
-      pass "pre-commit hook allows a commit on '$DEFAULT_BRANCH'"
+      fail "pre-commit hook ALLOWED a direct commit on '$DEFAULT_BRANCH' — it must be refused"
     else
-      fail "pre-commit hook rejects a commit on git's own default branch '$DEFAULT_BRANCH'"
+      pass "pre-commit hook rejects a direct commit on '$DEFAULT_BRANCH'"
     fi
   )
 else
-  echo "  (default branch '$DEFAULT_BRANCH' not main/dev/master — skipping branch-allow check)"
+  echo "  (default branch '$DEFAULT_BRANCH' not main/dev/master — skipping branch-block check)"
 fi
+
+# ...and the same hook must still allow a commit on a valid work branch.
+(
+  cd "$SMOKE_DIR/smoke-project" || exit 1
+  git checkout -q -b chore/smoke-work-branch 2>/dev/null
+  echo y > hook-work-branch-check.txt
+  git add hook-work-branch-check.txt >/dev/null 2>&1
+  if git -c user.name=smoke -c user.email=smoke@example.invalid commit -m "smoke: work branch" >/dev/null 2>&1; then
+    pass "pre-commit hook allows a commit on a chore/* work branch"
+  else
+    fail "pre-commit hook rejected a commit on a valid chore/* work branch"
+  fi
+)
 
 if grep -q "Project memory only" "$SMOKE_DIR/smoke-project/.claude/MEMORY.md" \
   && grep -q "production data" "$SMOKE_DIR/smoke-project/.claude/MEMORY.md" \

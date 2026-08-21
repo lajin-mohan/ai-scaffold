@@ -46,25 +46,45 @@ echo "========================================"
 echo " Pre-commit checks"
 echo "========================================"
 
-# Template / pre-bootstrap state — no stack files found
-if [ ! -f package.json ] && [ ! -f composer.json ] && [ ! -f pyproject.toml ] && [ ! -f go.mod ] && ! ls *.csproj 1>/dev/null 2>&1; then
-  echo "(no project stack detected — template state, skipping checks)"
-  echo "Template validation passed. Run /bootstrap to configure checks."
-  exit 0
-fi
-
-# Branch name validation — always runs
+# Branch policy — always runs.
+# Two separate checks: you must not be ON an integration branch, and if you
+# are on a work branch its name must be well formed. See
+# .claude/rules/branching-rules.md for the flow these enforce.
 BRANCH_NAME=$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo "")
 if [ -n "$BRANCH_NAME" ] && [ "$BRANCH_NAME" != "HEAD" ]; then
-  if ! echo "$BRANCH_NAME" | grep -qE '^(main|dev|master)$|^(feature|fix|chore|docs|hotfix|release)/[a-zA-Z0-9._-]+$'; then
+  if echo "$BRANCH_NAME" | grep -qE '^(main|dev|master)$'; then
+    echo "   FAIL: direct commit to '$BRANCH_NAME' is not allowed."
+    echo "         '$BRANCH_NAME' only ever changes through a merged pull request."
+    echo "         Move this work to a branch and open a PR:"
+    echo "           git switch -c feature/short-description"
+    echo "         Branch from dev for all normal work; hotfix/* from main is the"
+    echo "         only documented exception. See .claude/rules/branching-rules.md"
+    FAIL=$((FAIL + 1))
+  elif ! echo "$BRANCH_NAME" | grep -qE '^(feature|fix|chore|docs|hotfix)/[a-zA-Z0-9._-]+$'; then
     echo "   FAIL: Branch name '$BRANCH_NAME' does not match required pattern:"
-    echo "         main, dev, master, or feature/*, fix/*, chore/*, docs/*, hotfix/*, release/*"
+    echo "         feature/*, fix/*, chore/*, docs/*, hotfix/*"
     echo "         See .claude/rules/branching-rules.md"
     FAIL=$((FAIL + 1))
   else
     echo "   OK: Branch name '$BRANCH_NAME'"
   fi
 fi
+
+# Template / pre-bootstrap state — no stack files found
+if [ ! -f package.json ] && [ ! -f composer.json ] && [ ! -f pyproject.toml ] && [ ! -f go.mod ] && ! ls *.csproj 1>/dev/null 2>&1; then
+  echo "(no project stack detected — template state, skipping stack checks)"
+  # Branch policy still applies with no stack configured; exiting 0 here
+  # unconditionally would report a violation and then allow the commit anyway.
+  if [ $FAIL -gt 0 ]; then
+    echo ""
+    echo "Pre-commit checks failed. Fix the failures above before committing."
+    echo "For emergency commits, use: git commit --no-verify"
+    exit 1
+  fi
+  echo "Template validation passed. Run /bootstrap to configure checks."
+  exit 0
+fi
+
 
 # ── Node / TypeScript ──────────────────────────────────────────
 if [ -f package.json ]; then

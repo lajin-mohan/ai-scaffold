@@ -48,6 +48,7 @@
     "templates/*/SECURITY.md",
     "templates/*/package.json",
     "templates/*/composer.json",
+    "templates/*/ci/**",
     "templates/*/test/**",
     "templates/*/phpunit.xml",
     "templates/*/tests/**",
