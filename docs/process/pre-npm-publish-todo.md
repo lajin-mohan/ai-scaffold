@@ -5,12 +5,12 @@ in `CHANGELOG.md` (the permanent record); this file tracks what is **left** and
 why, grouped into phases by rating lever. Completed items are removed after
 verification against npm/git, not kept as history.
 
-## Current state (2026-08-13)
+## Current state (2026-08-21)
 
-- **v0.12.0 is published** (`latest`, provenance). `main` is an ancestor of
-  `dev`; `dev` currently carries unreleased work (T3 scoped rules, the
-  release-process drift fix). All gates green: 66 tests, lint/typecheck clean,
-  113/113 smoke, 0 vulns on the published surface.
+- **v0.14.0 is published** (`latest`, provenance), and `origin/dev` and
+  `origin/main` are aligned at the release commit. The pilot handover review
+  reset the roadmap around lifecycle, verifiable enforcement, executable
+  golden paths, and maintainability rather than adding governance surface.
 - **Release-process incident (2026-08-12, closed):** v0.12.0 was cut manually
   via a `release/*` branch instead of the one-button `Release` Action, so
   `main` sat ahead of `dev` for 9 days, untagged and unpublished, while npm
@@ -27,11 +27,11 @@ verification against npm/git, not kept as history.
 - Post-release `main→dev` sync is automated but still semi-manual until item
   47's repo settings land. Keep release metadata aligned during promotions so
   `dev` never downgrades the published version on the next `dev→main` PR.
-- **2026-07-14 — item 25 (`ais update`) deferred past the pilot handover**, with
-  a concrete revisit trigger (see Phase 1). Phase 0 reprioritised around that
-  decision: item 56 (safeguard the delete-and-reinstall workaround) is now the
-  top handover item, since that workaround is what item 25's absence makes the
-  team rely on. Also fixed a numbering collision: two unrelated items each used
+- **2026-08-21 — item 25 (`ais update`) promoted to P0.** The earlier pilot
+  deferral is closed because adopted projects now need to receive fixes without
+  delete-and-reinstall. Item 56 remains a verified recovery safeguard while the
+  real update path is built. Also fixed a numbering collision: two unrelated
+  items each used
   **51** and **52** (Phase 0's hook/pilot items vs. Phase 2's Graphify-pilot
   items, merged from separate branches) — Phase 0's were renumbered 54/55.
 
@@ -50,10 +50,60 @@ verification against npm/git, not kept as history.
 | **Existing-codebase context retrieval** | **5** | **8.5** |
 | **Overall** | **8.0** | **8.5+** |
 
-**Goal: every category ≥ 8.5 before v1.0.0.** The phases below are ordered by
-rating lever, not by ease. `Update/lifecycle` (4), `Existing-codebase context
-retrieval` (5), and `Claude/AI integration` (7.5) are the categories that cap
-the overall score — Phases 1 and 2 target exactly those.
+**Goal: every category ≥ 8.5 before v1.0.0.** Execution is dependency-aware:
+baseline first, immediate verification second, lifecycle and deduplication
+third, deterministic state fourth, then consolidation and proof.
+
+## Priority reset — verified operating system (2026-08-21)
+
+This supersedes the 2026-08-13 value-order table. Impact rank and execution
+order intentionally differ where one item needs another to be safe. The design
+system remains at rank 11 / P2; it does not outrank lifecycle and verification
+unless a UI-heavy pilot provides evidence to raise it.
+
+| Rank | Priority | Improvement | Existing item | Effort | Value |
+|---:|---|---|---|---|---|
+| 1 | P0 | Safe `ais update`: ownership classes, migrations, dry-run, backup/rollback, compatibility policy | 25 | L | Improvements reach adopted projects without destroying project-owned work |
+| 2 | P1 | Deterministic state engine for lifecycle stage, blockers, coverage, and next action | 72 (new) | M–L | Agents and lifecycle commands report one computed state |
+| 3 | P0 | `ais doctor` verifies effective branch rules, required checks, and installed hooks | 26 expanded | S | Detects configured-but-inert governance cheaply |
+| 4 | P0 | Golden-path CI runs each profile's documented first commands | 65 follow-up | S–M | A profile cannot ship when its day-one workflow fails |
+| 5 | P0 | Replace profile copies with a shared base plus overlays | 34 | M–L | Removes the largest drift and maintenance multiplier |
+| 6 | P1 | Prune commands, agents, and skills using measured usage | 69 / T5 | M | Makes the scaffold learnable and lowers recurring token cost |
+| 7 | P1 | Structured front matter and schemas for BRDs, ADRs, tasks, and handoffs | 73 (new) | M | Enables deterministic state, traceability, and contradiction checks |
+| 8 | P1 | Effectiveness metrics and baseline | 74 (new) | M | Proves whether governance reduces rework, defects, bypasses, and false-done claims |
+| 9 | P1 | Windows CI and a published compatibility matrix | 60 | M | Converts platform-support claims into evidence |
+| 10 | P1 | Enforce recurring objective misses: changelog, branch/PR path, checkable approval evidence | 66 expanded | S–M | Stops repeated failures without pretending prose is enforcement |
+| 11 | P2 | Agent-facing design manifest, token validation, and token-aware review | `tasks/todo/P2-agent-facing-design-manifest.md` | M–L | Makes existing design governance concise and mechanically reviewable |
+
+### Execution waves
+
+1. **Wave 0 — baseline:** capture profile success, maintenance effort,
+   duplication, bypasses, false-done incidents, and surface usage before fixes.
+2. **Wave 1 — stop immediate failures:** items 26, 65 follow-up, and 66's
+   objectively checkable controls.
+3. **Wave 2 — safe lifecycle:** item 25's ownership/update slices and item 34's
+   shared-base/overlay model use one ownership contract.
+4. **Wave 3 — deterministic state:** item 73 schemas precede item 72's state
+   engine; do not build another prose parser.
+5. **Wave 4 — reduce and prove:** item 69/T5, item 60, item 74 reporting, then
+   the P2 design manifest if pilot evidence supports it.
+
+### New work definitions
+
+- **72. Deterministic project-state engine.** Compute lifecycle stage, accepted
+  and proposed decisions, approvals, dependencies, requirement/test coverage,
+  estimate validity, blockers, and next permitted action from validated
+  structured artifacts. Item 73 is a prerequisite. Repeated runs over the same
+  commit must return identical state. *(P1, medium–large)*
+- **73. Structured artifact schemas.** Define minimal machine-readable metadata
+  for BRDs, ADRs, tasks, and handoffs: identity, status, phase, owner, approval,
+  dependency, supersession, evidence, and requirement/test references. Preserve
+  readable Markdown bodies and operational checklist restatement. *(P1, medium)*
+- **74. Scaffold-effectiveness baseline and metrics.** Record install and
+  golden-path success, upgrade conflicts, maintenance effort, bypass frequency,
+  rework, escaped defects, and false completion claims. Capture the baseline
+  before Wave 1 and publish metric definitions before interpreting improvement.
+  *(P1, medium)*
 
 ---
 
@@ -73,13 +123,12 @@ Removed from the active backlog after verification against npm/git.
 
 The CLI is being handed to a small team (2 pilot projects). These items directly
 de-risk that handover and were surfaced by the 0.9.1 readiness/security review.
-**Item 25 (`ais update`) is explicitly deferred past handover** — see the note
-in Phase 1 for why and the revisit trigger. Priority reordered 2026-07-14 around
-that decision: the items below are what actually protects a pilot in its absence.
+Item 25 is now P0. The completed safeguards below remain useful during its
+incremental delivery and as recovery controls after it ships.
 
-- **56. Safeguard the delete-and-reinstall workaround — ✅ DONE.** With `ais
-  update` deferred, "delete the project and re-run `ais create`" is the
-  accepted interim upgrade path — this closes its one real risk. Shipped: a
+- **56. Safeguard the delete-and-reinstall workaround — ✅ DONE.** Before `ais
+  update` became P0, "delete the project and re-run `ais create`" was the
+  accepted interim path; it remains a recovery fallback. Shipped: a
   "Before You Reinstall" README section naming the non-regenerable files
   (`tasks/lessons.md`, `.claude/MEMORY.md`, `.ai-scaffold/context.md`,
   `.claude/settings-overrides.json`, hand-edited `.claude/rules/*`), and `ais
@@ -108,29 +157,27 @@ that decision: the items below are what actually protects a pilot in its absence
   20-min retro after the first real task. Pilot lessons re-prioritise Phase 1
   before major work starts. *(process, small)*
 
-## Phase 1 — Living system (lifecycle) · the #1 rating lever *(deferred past handover)*
+## Phase 1 — Living system (lifecycle) · the #1 rating lever
 
-Moves **Update 4 → 8, Onboarding 8 → 8.5, Overall → ~8.3** — but explicitly
-**held back until after the pilot**, decided 2026-07-14. Rationale: the pilot is
-2 fresh projects with little accumulated customization yet, so "delete + `ais
-create` again" (paired with item 56's safeguard) is a genuinely acceptable
-interim upgrade path — building a full migration engine now would be solving a
-problem the pilot doesn't have. **Real, non-vague revisit trigger** (per this
-project's own `ponytail:` convention — no vague "later"): come back to item 25
-when **any** of — (a) a 3rd project onboards, (b) a pilot project accumulates
-meaningful hand-edits to `.claude/rules/*` or `settings-overrides.json` that
-delete+reinstall would destroy, or (c) a pilot needs to jump more than one `ais`
-version. Item 55 (pilot retro) is the mechanism that surfaces (a)/(b)/(c).
+Moves **Update 4 → 8, Onboarding 8 → 8.5, Overall → ~8.3**. The 2026-07-14
+deferral is closed: two pilot projects now make lifecycle support a handover
+requirement. Implement in safe slices—ownership manifest, dry-run/conflict
+report, backup/rollback, one real version migration, then broader automation.
+The delete-and-reinstall safeguard remains a fallback, not the update strategy.
 
-- **25. Real `ais update` (managed-file migration).** *deferred — see above.*
+- **25. Real `ais update` (managed-file migration).** **P0 — next lifecycle
+  programme.**
   Diff installed vs target version; classify each file (managed / protected /
   app-owned via `.ai-scaffold.json` hashes); preview the change set; apply with
   backup + rollback; version-pinned migrations. Converts the product from "a
   great starter kit" into "a governance platform a team stays current on."
   *(large)*
-- **26. Drift-aware `status` / `doctor`.** Detect managed-file drift and surface
-  exactly what `update` would change vs. what the user has customised. *(medium —
-  pairs with 25)*
+- **26. Drift-aware `status` / `doctor`.** **P0 first slice:** query and report
+  effective branch/ruleset coverage, required checks, administrator bypass,
+  and repository-hook installation—configured intent is not a pass. Then add
+  managed-file drift and the exact `update` change/customisation boundary.
+  GitHub checks degrade honestly when no authenticated remote is available.
+  *(small enforcement slice, then medium lifecycle slice; pairs with 25)*
 - **15. Install/action audit trail.** Append-only record of CLI actions
   (create/init/update): version, files touched, timestamp. Feeds `update` safety
   and aligns with the governance/GDPR framing. *(medium)*
@@ -469,6 +516,9 @@ saving starts costing correctness.
   the full suite is now 113/113 passing (all 5 profiles have named smoke
   coverage; the aggregate pass rate is the trackable signal this item asked
   for).
+  **P0 follow-up:** replace README string/presence assertions with execution of
+  every profile's documented install and first test/health commands in CI. A
+  passing source suite cannot substitute for running the generated project.
 - **66. Plan-and-confirm has no deterministic backing — prompted rule only.**
   Found 2026-08-13 cross-checking current Claude Code docs
   (`code.claude.com/docs/en/best-practices`, `.../memory`) against this
@@ -491,6 +541,10 @@ saving starts costing correctness.
   verify "was a plan actually approved" as a concept. *(medium — needs a
   real design for what "approval" means as a checkable artifact, not just a
   hook wiring exercise)*
+  **P1 scope rule:** mechanically enforce objective signals first—CHANGELOG
+  policy, branch/PR path, required checks, and approval artifacts where their
+  semantics are explicit. Do not claim that a superficial marker proves human
+  plan approval across Claude Code, Codex, and Cursor.
 - **67. `AGENTS.md` points non-Claude agents at a document written for
   Claude.** Found 2026-08-13, same cross-check, prompted by an explicit
   design constraint: this scaffold must work for Codex/Cursor/other agents,
@@ -594,11 +648,10 @@ saving starts costing correctness.
   **Nothing was deleted in this pass.** Deleting less than approved is the
   safe direction; the sequencing above must land first.
 
-## Reprioritised by value delivered (2026-08-13)
+## Reprioritised by value delivered (2026-08-13 — superseded)
 
-Ordered by *value returned per unit of effort*, using evidence from this
-session rather than category scores. This does **not** replace the phase
-structure below — it says what to pick up next within it.
+Historical ordering retained for decision context. It is superseded by the
+2026-08-21 priority reset near the top of this file.
 
 | # | Item | Why now | Effort |
 |---|---|---|---|
@@ -688,13 +741,11 @@ strongly as it looks. Measurement beats convention.
 
 ## The 8.5+ path (honest)
 
-- **Phase 0 first** (now) — de-risks the handover itself; not a rating mover on
-  its own, but item 56 specifically prevents the pilot from losing real data
-  while item 25 sits deferred.
-- **Phase 1 alone** fixes the single worst category (Update 4 → 8) and lifts
-  overall to ~8.3 — necessary but not sufficient. **Currently deferred past the
-  pilot** (see Phase 1 header for the revisit trigger); it is still the biggest
-  single lever, just not the *next* one.
+- **Wave 0/1 first** — establish metrics, verify live enforcement, and execute
+  each generated profile's documented golden path.
+- **Phase 1 is active P0 work.** It fixes the single worst category (Update 4 →
+  8) and lifts overall to ~8.3, but must ship through ownership-aware slices
+  rather than one generic migration framework.
 - **Phase 1 + Phase 2** clears **8.5 overall** and makes "modern AI capabilities"
   real (context providers + MCP + plugin + skills). This is the **v1.0 candidate**
   line.
