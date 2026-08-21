@@ -645,7 +645,15 @@ strongly as it looks. Measurement beats convention.
   (`gh pr list --state merged --json author,mergedBy` makes self-merges
   visible after the fact). *(small once the identity question is decided)*
 
-- **71. Enforce the linear `feature → dev → main` workflow end-to-end.**
+- **71. — ✅ DONE (generated projects).** Shipped the linear flow: hook refuses
+  commits on `dev`/`main`, opt-in branch-flow CI, `release/*` removed, `hotfix/*`
+  kept as the documented exception with a required back-merge, and
+  `setup-branch-protection.sh` now ships (configurable) at
+  `.ai-scaffold/setup/`. `ais create` initialises `main` + `dev` so the flow is
+  true on day one. ai-scaffold itself deliberately unchanged — see item 70.
+  Original scope below.
+
+- **71 (original).** Enforce the linear `feature → dev → main` workflow end-to-end.**
   Requested 2026-08-14. Every change starts from `dev` on a
   `feature/*` / `fix/*` / `chore/*` branch; commits and pushes happen only on
   work branches; work merges to `dev` by PR; production promotion is a

@@ -13,6 +13,45 @@ This file is configured with `merge=union` in `.gitattributes` so parallel addit
 
 ## [Unreleased]
 
+### Added
+- **Generated projects now enforce a linear `feature → dev → main` workflow.**
+  Work happens on `feature/*`, `fix/*`, `chore/*` or `docs/*` branched from
+  `dev`; those merge to `dev` by PR; `dev` is promoted to `main` by a separate
+  PR. `hotfix/*` from `main` is the single documented exception and requires a
+  back-merge to `dev`. Three layers ship: the `pre-commit` hook refuses commits
+  made while `dev`/`main` is checked out, a branch-flow CI workflow rejects
+  illegal PR base/head pairings, and branch protection is documented as the
+  only layer that actually prevents rather than warns.
+- **`setup-branch-protection.sh` now ships to generated projects** at
+  `.ai-scaffold/setup/setup-branch-protection.sh`, and is configurable:
+  `--enforce-main=`, `--enforce-dev=` (both default `true`), `--status-checks=`
+  and `--release-bypass=`. Required status-check names are no longer hardcoded
+  — a required check that never runs blocks every pull request, so it must
+  match what your CI actually reports.
+- **Branch-flow CI workflow** ships inert at `.ai-scaffold/ci/branch-flow.yml`
+  with copy instructions. It is deliberately not written into `.github/`, so it
+  cannot collide with existing CI or surprise an `ais init` into an established
+  repository.
+
+### Changed
+- **`ais create` now initialises `main` and `dev`, leaving you on `dev`.**
+  Previously a new project had only git's default branch, so the shipped rules
+  referenced a `dev` that did not exist and the hook's own error message told
+  users to branch from it. The documented flow is now true on day one.
+- **`release/*` branches removed from the generated-project model.** Promotion
+  is a `dev → main` PR; there is no release-candidate branch to cut or merge
+  back. The previous rule declaring `dev → main` blocked — a direct
+  contradiction of this flow — is gone.
+
+### Fixed
+- **The pre-commit branch check never ran for the stackless `generic`
+  profile.** It sat after the "no stack detected" early exit despite its own
+  comment claiming it always runs. Once moved, a second bug surfaced: the
+  template-state path exited 0 unconditionally, reporting a violation and then
+  allowing the commit anyway. Both fixed.
+- **Shipped rules pointed at `scripts/setup-branch-protection.sh`, which was
+  never included in a generated project.** The reference now resolves.
+
 ## [0.13.0] - 2026-08-14
 
 ### Added
