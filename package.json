@@ -49,6 +49,7 @@
     "templates/*/package.json",
     "templates/*/composer.json",
     "templates/*/ci/**",
+    "templates/*/setup/**",
     "templates/*/test/**",
     "templates/*/phpunit.xml",
     "templates/*/tests/**",

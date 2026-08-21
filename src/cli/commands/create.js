@@ -221,15 +221,28 @@ function initializeGitRepository(targetDir) {
     };
   }
 
+  // The shipped branching-rules.md describes a feature -> dev -> main flow and
+  // the hook refuses commits on dev/main. Without these two lines a fresh
+  // project has only git's default branch, so the rules reference a `dev` that
+  // does not exist and the hook's own error message tells the user to branch
+  // from it. Normalising to main + dev makes the documented flow true on day
+  // one. Best-effort: an old git without `branch -M` leaves the default branch
+  // in place rather than failing project creation.
+  runGit(['branch', '-M', 'main'], targetDir);
+  const devBranch = runGit(['checkout', '-b', 'dev'], targetDir);
+
   // Install the hook AFTER the initial commit, not before: git invokes
-  // .git/hooks/pre-commit on every commit including this one, and the hook's
-  // branch-name check would reject whatever branch `git init` defaulted to
-  // (main/dev are allowed once created via a branch command, but the initial
-  // commit lands directly on git's default branch before any feature/fix/...
-  // branch exists) — wiring it early would break `create` itself.
+  // .git/hooks/pre-commit on every commit including this one, and the hook now
+  // refuses any commit made while dev or main is checked out — wiring it early
+  // would block `create`'s own initial commit.
   const hookWarning = installPreCommitHook(targetDir);
 
-  return { initialized: true, committed: true, warning: hookWarning };
+  const branchWarning =
+    devBranch.status === 0
+      ? undefined
+      : `git initialized, but creating the dev branch failed (${summarizeGitError(devBranch)})`;
+
+  return { initialized: true, committed: true, warning: hookWarning ?? branchWarning };
 }
 
 // Copies the generated project's own .claude/hooks/pre-commit into .git/hooks/

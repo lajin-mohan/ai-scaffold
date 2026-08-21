@@ -168,9 +168,32 @@ proceeding.
   Approval + CI pass.
 - Tags on `main` are immutable once pushed.
 
-Apply these server-side with `scripts/setup-branch-protection.sh`. Local hooks
-catch mistakes early; only branch protection actually prevents them, because a
-hook can be bypassed with `--no-verify` and does not run on the server.
+Apply these server-side with the script shipped at
+`.ai-scaffold/setup/setup-branch-protection.sh`:
+
+```bash
+# defaults: both branches enforced, 1 approval, "CI passed" required
+bash .ai-scaffold/setup/setup-branch-protection.sh owner/repo
+
+# match your own CI check names — a required check that never runs
+# blocks EVERY pull request
+bash .ai-scaffold/setup/setup-branch-protection.sh owner/repo \
+  --status-checks="Validate branch flow"
+
+# require none while you are still setting CI up
+bash .ai-scaffold/setup/setup-branch-protection.sh owner/repo --status-checks=""
+```
+
+| Flag | Default | Purpose |
+|---|---|---|
+| `--enforce-main=` | `true` | Apply protection to admins too on `main` |
+| `--enforce-dev=` | `true` | Apply protection to admins too on `dev` |
+| `--status-checks=` | `CI passed` | Comma-separated required check names |
+| `--release-bypass=` | none | Logins allowed to merge without approval (organization repos only) |
+
+Local hooks catch mistakes early; only branch protection actually prevents
+them, because a hook can be bypassed with `--no-verify` and does not run on
+the server.
 
 ### CI validation (opt-in)
 
@@ -204,7 +227,7 @@ These rules are **enforceable** via GitHub-side branch protection. The list
 below is the single source of truth — if it changes, propagate to:
 
 - `docs/setup/branch-protection.md` (UI walkthrough)
-- `scripts/setup-branch-protection.sh` (gh-CLI alternative)
+- `.ai-scaffold/setup/setup-branch-protection.sh` (gh-CLI alternative)
 
 #### `main`
 
