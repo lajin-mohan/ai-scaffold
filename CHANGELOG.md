@@ -110,6 +110,12 @@ This file is configured with `merge=union` in `.gitattributes` so parallel addit
   run). M-04 (bypass frequency) is deferred to snapshot #2: FR-27 requires
   reusing item 26's GitHub query surface, and item 26 is Wave 1, so building it
   now would make Wave 0 depend on Wave 1's output.
+- **Stage 2 closed for item 74.** Estimate signed off by Tech Lead, and a scope
+  statement at `docs/process/74-scaffold-effectiveness-baseline-scope.md`
+  records the in/out/deferred boundary and flags three decisions to the Tech
+  Lead rather than resolving them: the architecture gate for an M-sized item
+  with no architecture to design, Q-04's proposed false-done definition, and
+  whether Wave 1 starts on the Phase A snapshot commit.
 
 ## [0.14.0] - 2026-08-21
 

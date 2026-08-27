@@ -2,9 +2,9 @@
 
 ## Status
 
-**Stage 2 — Plan. Estimate signed off by Tech Lead 2026-08-27.**
-Stage 1 complete (BRD Approved v2.0). Stage 2 still needs the `@pm` scope
-statement, or a recorded waiver, before it closes.
+**Stage 2 — Plan COMPLETE (2026-08-27).** Estimate signed off, phasing defined,
+scope statement produced. Stage 1 complete (BRD Approved v2.0).
+Next: the architecture-gate decision, then Phase A.
 
 ## Artifacts
 
@@ -13,8 +13,8 @@ statement, or a recorded waiver, before it closes.
 | 1 — Analysis | `docs/brd/74-scaffold-effectiveness-baseline-analysis.md` | Closed |
 | 1 — Analysis | `docs/brd/74-scaffold-effectiveness-baseline-brd.md` | **Approved v2.0** |
 | 2 — Plan | `docs/estimates/74-scaffold-effectiveness-baseline-estimate.md` | **Reviewed — Tech Lead signed off** |
-| 2 — Plan | `@pm` scope statement | **Missing — or waive with a recorded reason** |
-| 3 — Architecture | not required at this size? see note | TBD |
+| 2 — Plan | `docs/process/74-scaffold-effectiveness-baseline-scope.md` | **Approved** |
+| 3 — Architecture | ADR recording why it was skipped, or run the gate | **Decision needed** |
 
 > **Size note.** `task-size-policy.md` marks M as requiring architecture (HLD + ADR). This
 > deliverable is one definitions document plus a script that copies the existing `token-report`
