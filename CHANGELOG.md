@@ -79,6 +79,22 @@ This file is configured with `merge=union` in `.gitattributes` so parallel addit
   Authoring placeholders inside output templates (`{{FEATURE_NAME}}` in
   `brd-template.md`) are legitimate and explicitly excluded.
 
+### Added
+- **Wave 0 baseline groundwork for backlog item 74.** Solution analysis and a
+  draft BRD for the scaffold-effectiveness baseline now live at
+  `docs/brd/74-scaffold-effectiveness-baseline-analysis.md` and
+  `docs/brd/74-scaffold-effectiveness-baseline-brd.md`, with the ticket tracked
+  at `tasks/todo/74-scaffold-effectiveness-baseline.md`. Documents only — no
+  metric has been measured yet. The BRD is explicitly **not approved**: three
+  maintainer decisions (observation window, telemetry stance, bypass
+  definition) block Stage 2 estimation. The objective is stated as regression
+  detection and trend rather than proof that governance reduces rework, because
+  with no control group and two pilot projects causation is not recoverable.
+  A verification pass corrected a load-bearing error in the first draft:
+  `pre-publish-smoke.sh` greps each generated README for the documented day-one
+  commands rather than executing them, so its 113/113 pass count cannot serve as
+  a golden-path *success* baseline — that metric is recorded null until item
+  65's Wave 1 execution follow-up ships.
 
 ## [0.14.0] - 2026-08-21
 
