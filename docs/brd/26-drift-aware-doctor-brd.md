@@ -4,6 +4,7 @@
 **Version:** 1.0
 **Date:** 2026-08-27
 **Status:** Draft — approval blocked on Q-01, Q-02, Q-03
+**Size:** escalated **S → M**. The backlog sizes item 26 `S` ("small enforcement slice"); the estimate is 12.25 realistic days. `task-size-policy.md` permits escalation ("Escalation is not failure"). **The backlog rank table has not been updated — flagged to the Tech Lead**
 **Author:** Claude (Cowork session), executing `/create-brd` and `solution-analyst` manually
 **Approved By:** TBD
 
@@ -99,7 +100,7 @@ hook installation. Configured intent stops counting as a pass.
 | FR-30 | Remote queries SHALL use the `gh` CLI, invoked via `spawnSync` in array form, following `scripts/setup-branch-protection.sh` | Must Have |
 | FR-31 | The CLI SHALL NOT accept, store, read from disk, or log a GitHub token. Authentication is `gh`'s responsibility | Must Have |
 | FR-32 | No new runtime dependency SHALL be added | Must Have |
-| FR-33 | `SECURITY.md` and any backlog text stating the only shell-out is `spawnSync('git', …)` SHALL be updated **in the same change** | Must Have |
+| FR-33 | The security-posture bullet in `docs/process/pre-npm-publish-todo.md` stating the only shell-out is `spawnSync('git', …)` SHALL be updated **in the same change** as the code that falsifies it. `SECURITY.md` contains no such claim and is **not** in scope for this edit | Must Have |
 
 ---
 
@@ -111,7 +112,7 @@ hook installation. Configured intent stops counting as a pass.
 | BR-02 | `doctor` is read-only. It never mutates repository or local settings |
 | BR-03 | `unavailable` is a distinct third state. It is never collapsed into pass or fail |
 | BR-04 | A false "unprotected" is worse than no check. Where the API can be read two ways, both are queried before a negative is reported |
-| BR-05 | A documented security claim and the code it describes change in the same commit |
+| BR-05 | A documented security claim and the code it describes change in the same commit. Before relying on this rule, locate where the claim actually lives — for this item it is the backlog, not `SECURITY.md` |
 
 ---
 
@@ -143,7 +144,7 @@ hook installation. Configured intent stops counting as a pass.
 | AC-06 | Given no network, when `doctor` runs, then it completes and no check hangs | Asserts FR-12, NFR-03 |
 | AC-07 | Given the previous release's `--json` output, when compared to this release's, then every pre-existing field is present with the same name and meaning | Schema diff — asserts FR-20, NFR-04 |
 | AC-08 | Given the packed tarball, when the smoke suite runs, then all existing gates still pass and no dependency was added | `npm pack` + dependency diff + smoke — asserts FR-32, per the 2026-07-10 lesson |
-| AC-09 | Given the shipped docs, when `SECURITY.md` is read, then its shell-out claim matches the code in this same commit | Asserts FR-33, BR-05 |
+| AC-09 | Given the commit that adds the `gh` shell-out, when its diff is inspected, then it also edits the security-posture bullet in `docs/process/pre-npm-publish-todo.md`, and no stale `spawnSync('git', …)`-only claim remains anywhere in the repo | `grep` the repo for the claim after the change — asserts FR-33, BR-05 |
 
 ---
 
@@ -170,7 +171,7 @@ hook installation. Configured intent stops counting as a pass.
 | GitHub API — branch protection + rulesets | External | Shape unverified | Spike, first task |
 | `scripts/setup-branch-protection.sh` | Internal | Exists | Transport precedent and the write-side counterpart |
 | `src/cli/commands/doctor.js` | Internal | Exists, 346 lines | Extended, not rewritten |
-| Item 74 M-04 | Internal | Blocked on this | Consumes this item's query contract (`FR-23`) |
+| Item 74 M-04 | Internal | Blocked on this | Consumes this item's query contract (`FR-23`). **Cross-branch:** the item 74 BRD is on `feature/74-…`, unmerged to `dev` |
 | Item 25 (`ais update`) | Internal | Open, P0 | The Wave 2 drift slice pairs with it; explicitly out of scope here |
 
 ---

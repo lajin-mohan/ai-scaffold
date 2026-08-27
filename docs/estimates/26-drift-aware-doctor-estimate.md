@@ -17,7 +17,8 @@
 ## Scope Summary
 
 **Included:** the P0 enforcement slice — checks C-01…C-04, honest degradation, `--json` extension,
-the documented query contract M-04 consumes, unit tests, and the `SECURITY.md` correction.
+the documented query contract M-04 consumes, unit tests, and the correction to the backlog's
+security-posture bullet (**not** `SECURITY.md`, which contains no shell-out claim).
 
 **Excluded:**
 - Managed-file drift and the `update` change/customisation boundary — Wave 2, with item 25
@@ -60,16 +61,16 @@ Business days, 1 day = 7.5 productive hours.
 | Unit tests with mocked API fixtures (25% of implementation) | 0.7 | 1.4 | 2.8 | |
 | `--json` backward-compatibility test (AC-07) | 0.25 | 0.5 | 0.75 | |
 | **Docs** | | | | |
-| `SECURITY.md` shell-out claim + backlog text, same commit (FR-33) | 0.25 | 0.25 | 0.5 | |
+| Backlog security-posture bullet, same commit (FR-33) | 0.25 | 0.25 | 0.5 | `SECURITY.md` has no shell-out claim to correct |
 | **Review & QA** | | | | |
 | AI review + fixes | 0.25 | 0.5 | 1.0 | |
 | Human code review | 0.25 | 0.5 | 0.5 | Self-review in practice — no independent reviewer exists |
 | QA sign-off | 0.25 | 0.5 | 1.0 | |
 | **Release** | | | | |
 | Release inclusion + packed-tarball check | 0.25 | 0.25 | 0.5 | Per the 2026-07-10 lesson: verify the tarball, not the working tree |
-| **Subtotal** | **4.95** | **10.15** | **19.8** | |
-| **Buffer (15%)** | 0.74 | 1.52 | 2.97 | |
-| **TOTAL** | **5.7** | **11.7** | **22.8** | |
+| **Subtotal** | **5.45** | **10.65** | **19.8** | |
+| **Buffer (15%)** | 0.82 | 1.60 | 2.97 | |
+| **TOTAL** | **6.3** | **12.25** | **22.8** | |
 
 ---
 
@@ -108,17 +109,25 @@ C-01 without C-03 would report protection while saying nothing about who can ove
 
 | Scenario | Total | Calendar days (÷0.7 capacity) |
 |---|---|---|
-| Optimistic | 5.7 | 8.1 |
-| Realistic | **11.7** | **16.7** |
-| Pessimistic | 22.8 | 32.6 |
+| Optimistic | 6.3 | 9.0 |
+| Realistic | **12.25** | **17.5** |
+| Pessimistic | 22.8 | 32.5 |
 
-**Recommended commitment:** the **0.5-day spike only**, then re-confirm. Committing 11.7 days
+**Recommended commitment:** the **0.5-day spike only**, then re-confirm. Committing 12.25 days
 against an unverified external API shape is how estimates become fiction.
 
-**Against the indicative figure:** Wave 1's summary put item 26 at ~4 realistic days. That was
-indicative and **too low by roughly 3×** — it priced the checks and omitted the query module, the
-five degradation paths, the test fixtures, and the `--json` compatibility guarantee. This is the
-signed-off-quality number; the earlier one was not.
+**Against the earlier indicative figure.** An indicative ~4 realistic days was given for item 26 in
+conversation on 2026-08-27. **That figure is not recorded anywhere in this repository** — the
+backlog sizes item 26 `S` ("small enforcement slice") and `task-size-policy.md` contains no
+size-to-days mapping, so `S` cannot be converted to a day figure either. Against that conversational
+~4, this estimate is **3.06× higher**: it prices the query module, the five degradation paths, the
+mocked test fixtures and the `--json` compatibility guarantee, none of which the indicative number
+included.
+
+**Size escalation, recorded.** The backlog sizes this `S`; 12.25 realistic days is `M`.
+`task-size-policy.md` permits escalation and says it "is not failure — it means the initial sizing
+was imprecise." **The backlog rank table still says `S` and has not been updated** — flagged to the
+Tech Lead, because size selects the gate set.
 
 ---
 

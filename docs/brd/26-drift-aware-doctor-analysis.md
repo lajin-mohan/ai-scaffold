@@ -10,7 +10,7 @@
 
 ## Problem Statement
 
-`ais doctor` (`src/cli/commands/doctor.js`, 346 lines, ~20 checks) reports installation health. Every
+`ais doctor` (`src/cli/commands/doctor.js`, 346 lines, **15 checks** — `checks.push` call sites) reports installation health. Every
 check reads the local filesystem; there is no network call anywhere in `src/cli/`. It can tell you a
 file is missing. It cannot tell you whether a single governance gate is actually enforced.
 
@@ -42,9 +42,9 @@ currently true inside `doctor` itself.
 | A-01 | **`gh` CLI is the transport**, not `fetch` plus a token. Precedent: `scripts/setup-branch-protection.sh` already uses `gh api` and already checks `command -v gh`, `gh auth status` and token scope | Raw `fetch` means the CLI handles a long-lived token — new secret-handling surface, gitleaks exposure, and a direct contradiction of the documented OIDC / no-long-lived-token posture |
 | A-02 | Every check is **read-only**. `doctor` never mutates repository settings — writing stays in `setup-branch-protection.sh` | A diagnostic that changes state is no longer safe to run, and the two tools' responsibilities blur |
 | A-03 | Remote checks apply to GitHub-hosted repos only. Other forges and local-only repos report **unavailable**, not fail | Reporting "unprotected" for a GitLab repo is a false negative that destroys trust in the whole command |
-| A-04 | The query layer built here is what item 74's **M-04 reuses** (`FR-27` of the item 74 BRD) | Two implementations of the same queries, and the M-04 metric is delayed further |
+| A-04 | The query layer built here is what item 74's **M-04 reuses** (`FR-27` of the item 74 BRD — cross-branch reference; that BRD is not yet merged to `dev`) | Two implementations of the same queries, and the M-04 metric is delayed further |
 | A-05 | `doctor`'s existing severity model (`critical`/`high`/`medium`/`low`), `--json` output shape and exit-code rule are **extended, not replaced** | Breaking `--json` breaks any CI consuming it, including the smoke gates that assert doctor is CRIT/HIGH-clean |
-| A-06 | No new runtime dependency (7 deps today; none is an HTTP client) | Contradicts the security posture and NFR-04 of the wider programme |
+| A-06 | No new runtime dependency (7 deps today; none is an HTTP client) | Contradicts the documented security posture. Expressed as `FR-32` in this BRD — note this item's own `NFR-04` is Compatibility, not the dependency rule |
 
 ---
 
@@ -87,7 +87,8 @@ currently true inside `doctor` itself.
 |---|---|---|---|
 | R-01 **Rulesets vs legacy branch protection are two different APIs.** A repo may use either, both, or neither. Querying only `/branches/{b}/protection` reports "unprotected" on a repo protected by a ruleset | **High** | **High** | Query both surfaces and merge. This is the single largest correctness risk: a false "unprotected" is worse than no check |
 | R-02 **`gh` is not installed on most user machines.** The highest-value checks then report `unavailable` for the majority of adopters | High | Med | Q-01's answer must make `unavailable` a first-class, clearly-explained state — not a silent pass and not a failure |
-| R-03 **The documented security claim changes.** `SECURITY.md` and the backlog state the only shell-out is `spawnSync('git', [args])`. Adding `gh` makes that false | Med | Med | Update `SECURITY.md` **in the same change**. This is exactly the doc-drift class the 2026-08-12 incident was root-caused to |
+| R-03 **The documented security claim changes.** The security-posture bullet in `docs/process/pre-npm-publish-todo.md` states the only shell-out is `spawnSync('git', [args])`. Adding `gh` makes that false. **`SECURITY.md` does not contain this claim** — it is an un-customised disclosure-policy boilerplate whose Scope section still names `apps/`, `packages/` and `infra/`, none of which hold this project's code | Med | Med | Update the **backlog's** security-posture bullet in the same change. This is the doc-drift class the 2026-08-12 incident was root-caused to |
+| R-07 **`SECURITY.md` is stale boilerplate** — its Scope section names directories this project does not have | Low | Low | Out of scope here. Worth a separate `docs/*` ticket; noted so a reader does not assume it was reviewed |
 | R-04 **False confidence.** A passing `doctor` becomes a claim that governance is enforced, and users will cite it as such | Med | High | Every check reports what it actually verified; `unavailable` never renders as a tick |
 | R-05 **Item 74's M-04 slips with this item.** Snapshot #2 cannot add bypass frequency until this ships | Med | Low | Accepted and recorded; M-04 is already null with a start condition |
 | R-06 **Read scope may exceed a normal token.** `setup-branch-protection.sh` requires `admin:repo` to write; what reading requires is unverified | Med | Med | Spike, below |
@@ -96,7 +97,7 @@ currently true inside `doctor` itself.
 
 ## Technical Unknowns / Spike Required
 
-**Spike — 0.5 day. This is the spike item 74 deliberately deferred here (`FR-27`).**
+**Spike — 0.5 day. This is the spike item 74 deliberately deferred here (`FR-27` of the item 74 BRD, on the unmerged `feature/74-…` branch).**
 
 Two questions, both answerable by running `gh api` against this repository:
 
@@ -116,10 +117,13 @@ extraction contract simultaneously.
 **PROCEED TO BRD — with the spike scheduled as the first task, before implementation estimates are
 committed to.**
 
-Q-01, Q-02 and Q-03 are BLOCKER ambiguities under `.claude/agents/solution-analyst.md`'s rule
-(*"never proceed past this analysis if there are unresolved BLOCKER ambiguities"*). They are
-maintainer decisions about semantics, not discoveries — the BRD gives concrete options to decide
-against. The BRD must stay Draft until they are resolved.
+**Recorded deviation.** `.claude/agents/solution-analyst.md` states: *"Never proceed past this
+analysis if there are unresolved BLOCKER ambiguities."* Q-01, Q-02 and Q-03 are unresolved blockers,
+so by that rule the BRD should not be written yet. It was written anyway, on the same reasoning used
+for item 74: these are maintainer decisions about semantics, not discoveries, and a concrete BRD
+gives options to decide against. The BRD stays Draft, and Stage 2 must not be committed to, until
+they are resolved. Recorded rather than argued away — the alternative is paraphrasing the rule into
+a weaker one that permits the action.
 
 ---
 

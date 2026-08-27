@@ -23,8 +23,11 @@
   action, for: no `gh`, not authenticated, no remote, non-GitHub remote, timeout.
 - **`--json` extension**, additive only, with `state` / `verifiedBy` / `reason`.
 - **A documented query contract** that item 74's M-04 consumes rather than reimplements.
-- **`SECURITY.md` correction** in the same commit, since adding a `gh` shell-out falsifies the
-  documented "only shell-out is `spawnSync('git', …)`" claim.
+- **Correction to the backlog's security-posture bullet** in the same commit, since adding a `gh`
+  shell-out falsifies its "only shell-out is `spawnSync('git', [args])`" claim. **`SECURITY.md` is
+  not the target** — it contains no such claim; it is un-customised disclosure-policy boilerplate
+  whose Scope section still names `apps/`, `packages/` and `infra/`, none of which hold this
+  project's code. Fixing that is a separate `docs/*` ticket.
 
 ## Out of Scope
 
@@ -63,7 +66,8 @@ Per `.claude/agents/pm.md` — the PM produces the communication and flags the d
 | 1 | **Q-01** — offline / no-`gh`: `unavailable` without affecting exit code, or failure? Decides whether `doctor` is usable offline and in CI | Product behaviour call |
 | 2 | **Q-02** — detected gap: gate (exit 1) or dashboard (exit 0)? | Product behaviour call, with a live consequence: see the contingency below |
 | 3 | **Q-03** — which repository is checked, and how is it resolved in a fork or monorepo? | Product behaviour call |
-| 4 | **Spike first.** Commit the 0.5-day spike, not the 11.7-day total, until the GitHub API shape is verified | Estimation discipline, flagged not decided |
+| 4 | **Spike first.** Commit the 0.5-day spike, not the 12.25-day total, until the GitHub API shape is verified | Estimation discipline, flagged not decided |
+| 5 | **Size escalation S → M.** Update the backlog rank table, or reject the escalation and re-scope | Sizing selects the gate set — a PM cannot change it unilaterally |
 
 **Contingency, outside the estimate:** if Q-02 is answered "gaps fail the exit code", this
 repository's own protection settings may immediately fail `doctor` in CI. That is a *finding*, not a
@@ -76,12 +80,15 @@ defect in this item. Budget +0.5 to +2 days against the roadmap.
 | Stage | Realistic | Note |
 |---|---|---|
 | Spike | 0.5 d | Gates the rest; also the spike item 74 deferred here |
-| Implementation + tests + docs + review | 11.2 d | One coherent unit — the checks share the query module |
-| **Total** | **11.7 d** | ~16.7 calendar days at 0.7 capacity |
+| Implementation + tests + docs + review | 11.75 d | One coherent unit — the checks share the query module |
+| **Total** | **12.25 d** | ~17.5 calendar days at 0.7 capacity |
 
-> The Wave 1 summary's indicative ~4 days was **too low by roughly 3×**. It priced the checks and
-> omitted the query module, the five degradation paths, the test fixtures and the `--json`
-> compatibility guarantee.
+> An indicative ~4 days was given in conversation on 2026-08-27 and is **not recorded in this
+> repository**. The backlog sizes item 26 `S`, and `task-size-policy.md` has no size-to-days mapping.
+> This estimate is 3.06× that conversational figure, which omitted the query module, the five
+> degradation paths, the test fixtures and the `--json` compatibility guarantee.
+>
+> **Size escalated S → M and the backlog rank table not yet updated — flagged to the Tech Lead.**
 
 ---
 

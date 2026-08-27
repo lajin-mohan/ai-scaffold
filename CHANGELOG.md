@@ -144,14 +144,15 @@ This file is configured with `merge=union` in `.gitattributes` so parallel addit
   Documents only; no code changes. The BRD is **not approved** — three
   behavioural decisions block it (offline/no-`gh` handling, whether a detected
   gap fails the exit code, and which repository is resolved).
-  Findings that shaped the spec: `doctor`'s ~20 checks are all local filesystem
-  reads with no network call anywhere in `src/cli/`, and its own
+  Findings that shaped the spec: `doctor`'s 15 checks are all local filesystem
+  reads with no network call anywhere in `src/`, and its own
   `checkHooksWired` passes on a settings file while `.git/hooks/pre-commit` may
   be absent — the "configured intent is not a pass" failure this item exists to
   fix is currently true inside `doctor` itself. Transport is the `gh` CLI
   following `scripts/setup-branch-protection.sh`, which also means the
-  documented "only shell-out is `spawnSync('git', …)`" claim in `SECURITY.md`
-  must change in the same commit as the code.
+  "only shell-out is `spawnSync('git', [args])`" claim must change in the same
+  commit as the code — that claim lives in the backlog's security-posture
+  bullet, not in `SECURITY.md`, which contains no shell-out text at all.
 
 ## [0.14.0] - 2026-08-21
 
