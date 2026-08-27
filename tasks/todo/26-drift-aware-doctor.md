@@ -4,8 +4,10 @@
 
 **Stages 1 and 2 COMPLETE (2026-08-27).** BRD Approved v2.0, estimate and scope
 statement approved. No open blockers.
-**Next: Stage 3 architecture, then the 0.5-day spike.** Implementation remains
-spike-gated — commit the spike, not the 13.1-day total.
+**Next: run the spike.** Designed at `docs/architecture/spike-26-github-api-shape.md`
+with a runnable probe at `scripts/spike-26-probe.sh` (throwaway, not shipped).
+The HLD waits on the spike results — writing it first would design against an
+unverified API. Implementation remains spike-gated.
 
 ## Artifacts
 
@@ -15,7 +17,8 @@ spike-gated — commit the spike, not the 13.1-day total.
 | 1 — Analysis | `docs/brd/26-drift-aware-doctor-brd.md` | **Approved v2.0** |
 | 2 — Plan | `docs/estimates/26-drift-aware-doctor-estimate.md` | Approved — spike-gated, LOW confidence, **13.1 d realistic** |
 | 2 — Plan | `docs/process/26-drift-aware-doctor-scope.md` | **Approved** |
-| 3 — Architecture | transport + protection-surface merge | **Real decision exists — unlike item 74** |
+| 3 — Architecture | `docs/architecture/spike-26-github-api-shape.md` + `scripts/spike-26-probe.sh` | **Spike designed — not yet run** |
+| 3 — Architecture | HLD + ADR | Blocked on spike results |
 
 ## Size
 
@@ -48,11 +51,15 @@ run against this repo's own settings in CI and may fail immediately. Budget
 
 ## Next action
 
-**Run the 0.5-day spike.** Two questions against this repo's own API:
-do reads of `enforce_admins`, required-check state and rulesets need `admin:repo`;
-and must both protection surfaces be queried and merged. Output is a documented
-query list that becomes both the implementation contract and item 74's M-04
-extraction contract.
+**Run `scripts/spike-26-probe.sh` twice** — once with your `admin:repo` token,
+once with a read-only token — and diff the outputs. Then fill in the Results
+section of `docs/architecture/spike-26-github-api-shape.md`.
+
+The delta between the two runs answers the question that decides this item's
+reach: whether ordinary users can read enforcement state at all, or whether
+`unavailable` becomes the normal case for everyone outside the scaffold's own CI.
+
+Timebox 4 hours. Stop there and record what is known.
 
 ## Decision log
 
@@ -62,6 +69,8 @@ extraction contract.
 | 2026-08-27 | Both legacy branch protection **and** rulesets are queried and merged | A repo may use either or both. Querying one surface reports a false "unprotected", which is worse than no check at all (BR-04) |
 | 2026-08-27 | `doctor` stays read-only; writing stays in `setup-branch-protection.sh` | A diagnostic that mutates state is not safe to run, and blurs two tools' responsibilities |
 | 2026-08-27 | `unavailable` is a first-class third state, never collapsed into pass or fail | With `gh` absent on most user machines, a silent pass would make the whole command dishonest |
+| 2026-08-27 | Spike designed before the HLD, not after | Two of the HLD's core decisions — whether to design one tier or two, and whether the two protection surfaces must be merged by hand — are determined by the probe results. Writing the HLD first would be designing against an unverified API, then rewriting it |
+| 2026-08-27 | Probe script lives in `scripts/` and is verified not shipped | `package.json` `files` ships only `scripts/token-report.js`; checked programmatically with picomatch. A spike produces a PoC, never shippable code (task-size-policy) |
 | 2026-08-27 | Q-01 = D — report by default, `--require-remote` to enforce | `gh` is absent on most machines. A diagnostic that fails because a tool is missing gets removed from CI rather than fixed. The flag enforces where `gh` is guaranteed |
 | 2026-08-27 | Q-02 = B — detected gap is `high`, exit 1 | `high` already means "a core guarantee is inert" in doctor's model, which is exactly what these checks detect. Reuses the existing exit rule with no new semantics |
 | 2026-08-27 | Q-03 = C — `gh repo view` + `--repo` override | Identical to `setup-branch-protection.sh:60`. Read side and write side disagreeing on "which repo" would be a defect |

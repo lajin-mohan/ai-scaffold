@@ -171,6 +171,20 @@ This file is configured with `merge=union` in `.gitattributes` so parallel addit
   a 0.5-day spike against the GitHub API shape, not the total. Size escalated
   `S` → `M`; the backlog rank table still says `S` and is flagged for update.
 
+- **Spike design for item 26** at `docs/architecture/spike-26-github-api-shape.md`,
+  with a throwaway probe at `scripts/spike-26-probe.sh` (verified not shipped —
+  the `files` allowlist carries only `scripts/token-report.js` from `scripts/`).
+  It tests one hypothesis that decides the item's reach: that GitHub exposes
+  **two tiers** of readability — a coarse tier (`/branches/{b}`, its `protected`
+  boolean, and `/rules/branches/{b}`) readable with ordinary repo read access,
+  and a detailed tier (`/branches/{b}/protection`, `/rulesets`) that needs admin.
+  If the coarse tier is readable without `admin:repo`, C-01 works for every user
+  and only C-03 degrades; if not, `unavailable` becomes the normal case outside
+  the scaffold's own CI and the item's scope needs reopening. The probe is run
+  twice, with an admin token and a read-only token, and the delta is the answer.
+  **The HLD deliberately waits on the results** — writing it first would design
+  against an unverified API.
+
 ## [0.14.0] - 2026-08-21
 
 ### Added
