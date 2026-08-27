@@ -2,17 +2,16 @@
 
 ## Status
 
-**Stage 1 — Analysis complete. BRD drafted, NOT approved.**
-Blocked on maintainer decisions Q-01, Q-02, Q-03. Stage 2 estimation must not
-begin until those are resolved.
+**Stage 1 — Analysis complete. BRD APPROVED 2026-08-27.**
+Ready for Stage 2 — estimation. No open blockers.
 
 ## Artifacts
 
 | Stage | Artifact | State |
 |---|---|---|
-| 1 — Analysis | `docs/brd/74-scaffold-effectiveness-baseline-analysis.md` | Draft |
-| 1 — Analysis | `docs/brd/74-scaffold-effectiveness-baseline-brd.md` | Draft — approval blocked |
-| 2 — Plan | `docs/estimates/74-*-estimate.md` | Not started |
+| 1 — Analysis | `docs/brd/74-scaffold-effectiveness-baseline-analysis.md` | Closed |
+| 1 — Analysis | `docs/brd/74-scaffold-effectiveness-baseline-brd.md` | **Approved v2.0** |
+| 2 — Plan | `docs/estimates/74-scaffold-effectiveness-baseline-estimate.md` | **Next** |
 
 ## Why this gates Wave 1
 
@@ -24,29 +23,32 @@ The 2026-08-21 priority reset sequences Wave 0 (baseline) before Wave 1 (items
 **M** per `docs/process/task-size-policy.md` — full workflow. BRD, estimation,
 and architecture are required gates; no fast lane.
 
-## Open decisions (blockers)
+## Decisions (all closed 2026-08-27)
 
-- **Q-01** Retro-computable baseline only, or a prospective observation window before Wave 1 starts?
-- **Q-02** Any opt-in telemetry permitted, or strictly local/manual collection?
-- **Q-03** Which events count as a "bypass"? Only some leave durable artifacts.
+- **Q-01** Retro-computable baseline only, with a dated cut-off. Prospective
+  counters run in parallel, labeled trend-only.
+- **Q-02** Strictly local. No telemetry. Item 15 stays a local log.
+- **Q-03** GitHub-observable bypasses only; unobservable ones named as not
+  measured, by construction.
+- **Q-05–Q-09** resolved as consequences. **Q-04** carries a proposed definition
+  the maintainer may override without reopening approval. Full rationale in the
+  BRD §9.
 
-Non-blocking: Q-04 (false-done definition and recorder), Q-05 (hard gate vs
-parallel track), Q-06 (script vs document), Q-07 (all 5 profiles or
-pilot-covered only), Q-08 (pilot data here or in item 55), Q-09 (upgrade-conflict
-metrics before item 25).
-
-## Recorded deviation
+## Recorded deviation (closed)
 
 `.claude/agents/solution-analyst.md`: *"Never proceed past this analysis if there
 are unresolved BLOCKER ambiguities."* The BRD was drafted ahead of that rule on
-explicit maintainer instruction. It is marked Draft and must not be approved
-until Q-01–Q-03 are resolved.
+explicit maintainer instruction; the blockers were resolved the same day, which
+closes it. Recorded because it happened.
 
 ## Decision log
 
 | Date | Decision | Rationale |
 |---|---|---|
 | 2026-08-27 | BRD drafted ahead of the solution-analyst BLOCKER rule | Maintainer instructed "go" on writing the BRD in the 2026-08-27 Cowork session while Q-01–Q-03 were open. Recorded as a deviation, not a rule change; the BRD stays Draft |
+| 2026-08-27 | Q-01 — retro-computable baseline only, dated cut-off | Prospective data comes largely from the pilots (item 55), gated on handover, gated on Wave 1. Waiting would make Wave 0 depend on Wave 1's outputs |
+| 2026-08-27 | Q-02 — strictly local, no telemetry | Emitting anything becomes a procurement/security-review item for a product sold as governance over client code, and contradicts the documented no-collection posture. N=2 pilots offered no meaningful field data anyway |
+| 2026-08-27 | Q-03 — GitHub-observable bypasses only | A metric that cannot be computed from an artifact gets computed from memory, and the sole reporter is the sole maintainer. Reuses item 26's API surface |
 | 2026-08-27 | Objective restated as regression detection and trend, not proof that governance reduces rework | No control group and N=2 pilots; causation is not recoverable from this design (analysis R-01) |
 | 2026-08-27 | Field data from the general npm install base is out of scope | No telemetry and no audit trail (item 15, unbuilt); not retroactively recoverable |
 | 2026-08-27 | Existing token-report baseline (2026-07-13, ~138K est-tokens) is reused, not re-derived | T0 is done; a second baseline with a different method and date would be worse than one |

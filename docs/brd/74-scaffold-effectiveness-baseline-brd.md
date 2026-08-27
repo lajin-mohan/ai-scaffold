@@ -1,16 +1,17 @@
 # Business Requirements Document
 **Project:** ai-scaffold
 **Feature:** Scaffold Effectiveness Baseline (backlog item 74 — Wave 0)
-**Version:** 1.0
+**Version:** 2.0
 **Date:** 2026-08-27
-**Status:** Draft — approval blocked on Q-01, Q-02, Q-03
+**Status:** **Approved** — 2026-08-27. Q-01, Q-02 and Q-03 resolved by the maintainer; see §9
 **Author:** Claude (Cowork session), executing `/create-brd` and `.claude/agents/solution-analyst.md` manually — the Claude Code CLI commands are not available in this runtime
-**Approved By:** TBD
+**Approved By:** Lajin M J (maintainer/owner), 2026-08-27
 
-> **Deviation recorded.** `.claude/agents/solution-analyst.md` says *"Never proceed past this
-> analysis if there are unresolved BLOCKER ambiguities."* Q-01, Q-02 and Q-03 are unresolved
-> blockers, so this draft was written ahead of that rule, on explicit maintainer instruction. It
-> must not be marked Approved and Stage 2 must not begin until they are resolved.
+> **Deviation recorded and closed.** `.claude/agents/solution-analyst.md` says *"Never proceed past
+> this analysis if there are unresolved BLOCKER ambiguities."* v1.0 of this BRD was drafted ahead of
+> that rule, on explicit maintainer instruction, while Q-01–Q-03 were open. Those three were
+> resolved on 2026-08-27 (§9), which closes the deviation. The record stays because the deviation
+> happened, not because it is outstanding.
 >
 > Companion solution analysis: `docs/brd/74-scaffold-effectiveness-baseline-analysis.md`.
 > Backlog definition: `docs/process/pre-npm-publish-todo.md` → "New work definitions" → item 74.
@@ -57,7 +58,7 @@ regression and show trend; it does not, and must not claim to, prove causation.
 | ID | Item | Reason |
 |---|---|---|
 | OS-01 | Any Wave 1 fix (items 26, 65 follow-up, 66) | Baseline must precede the changes it measures |
-| OS-02 | Opt-in or automatic telemetry from installed projects | Pending Q-02; a privacy/security posture decision must not be made implicitly inside a metrics ticket |
+| OS-02 | Any telemetry from installed projects, opt-in or automatic | **Decided 2026-08-27 (Q-02): strictly local, no telemetry.** The product is sold as governance for teams handling client code; anything emitted becomes a procurement and security-review item, and contradicts the documented no-collection posture. With N=2 pilots there was no meaningful field data to gain |
 | OS-03 | Field data from the general npm install base | No audit trail exists (item 15, Phase 1); not retroactively recoverable |
 | OS-04 | Item 51's Graphify pilot measurement | Separate metric set and separate adoption threshold |
 | OS-05 | Time-tracking-based maintenance effort | No agreed timesheet discipline; A-06 uses git-derived effort instead |
@@ -80,10 +81,10 @@ The seven families named in item 74. Every requirement, rule and criterion below
 | M-01 | Install and golden-path success | **No** — `pre-publish-smoke.sh` greps the generated README for the documented commands, it does not run them. Item 65's Wave 1 follow-up exists to change that. Null with start condition per BR-04 |
 | M-02 | Upgrade conflicts | **No** — no upgrade path exists until item 25 ships. Null with start condition |
 | M-03 | Maintenance effort | Yes — git-derived (files touched per change, cross-profile duplicate edits) |
-| M-04 | Bypass frequency | Partly — depends on Q-03 and on GitHub API retrievability (unverified) |
-| M-05 | Rework | Partly — artifact-derived for this repo; self-reported for pilots |
+| M-04 | Bypass frequency | Partly — GitHub-observable events only (FR-25); API retrievability still unverified, and unobservable bypasses are out by construction (FR-26) |
+| M-05 | Rework | Partly — artifact-derived for this repo; self-reported for pilots. No pre-Wave-1 history, so trend only per BR-08 |
 | M-06 | Escaped defects | Yes — git/CHANGELOG-derived for this repo |
-| M-07 | False completion claims | Partly — `tasks/lessons.md` gives caught instances only; definition pending Q-04 |
+| M-07 | False completion claims | Partly — `tasks/lessons.md` gives caught instances only; proposed definition at Q-04. Trend only per BR-08 |
 | M-08 | Surface usage (item 69 / T5) | Yes — command/agent surface is already measured (35 commands, 17 agents, 2026-08-13) |
 
 > M-08 is not one of item 74's seven families; it is added because Wave 0's own scope line names
@@ -128,6 +129,8 @@ The seven families named in item 74. Every requirement, rule and criterion below
 | FR-12 | The snapshot SHALL cite the commit SHA and the published package version it was taken against | Must Have |
 | FR-13 | The snapshot SHALL reference the existing token-report baseline by date and value rather than re-deriving it | Must Have |
 | FR-14 | Raw counts SHALL be recorded with their denominators; derived percentages and ratings SHALL NOT be recorded where the denominator is under 10 | Must Have |
+| FR-15 | Any metric with no pre-existing history SHALL be labeled `instrumented from <date> — trend only`, and SHALL NOT be presented as a pre-Wave-1 baseline | Must Have |
+| FR-16 | The snapshot SHALL record a dated cut-off after which Wave 1 may begin, independent of whether prospective metrics have accumulated data | Must Have |
 
 ### 5.3 Reproducibility
 
@@ -138,7 +141,16 @@ The seven families named in item 74. Every requirement, rule and criterion below
 | FR-22 | The report SHOULD emit machine-readable output (JSON) alongside the human-readable form, so later runs can be diffed | Should Have |
 | FR-23 | The report MAY degrade honestly when no authenticated GitHub remote is available, reporting the affected metrics as unavailable rather than zero | Nice to Have |
 
-### 5.4 Pilot-reported metrics
+### 5.4 Bypass definition (M-04)
+
+| ID | Requirement | Priority |
+|---|---|---|
+| FR-25 | M-04 SHALL count only GitHub-observable events: merge with a required check missing or failing; admin or force merge overriding branch protection; self-merge (author approved their own PR); direct push to `dev`/`main` skipping the PR; force-push to a protected branch | Must Have |
+| FR-26 | The definitions document SHALL name the unobservable bypasses as explicitly not measured, by construction: `git commit --no-verify` (produces a byte-identical commit), a lifecycle stage skipped (absence of an artifact is ambiguous between fast lane and skip), and prompt-level rules the model ignored (item 66 — `CLAUDE.md` is not an enforcement layer) | Must Have |
+| FR-27 | M-04's extraction SHALL reuse item 26's GitHub API query surface rather than implementing a second one | Must Have |
+| FR-28 | M-04 MAY later add "merged `feature/*` PR with no corresponding `docs/brd/` artifact" once task size is machine-readable (item 73). It SHALL NOT be added before then | Nice to Have |
+
+### 5.5 Pilot-reported metrics
 
 | ID | Requirement | Priority |
 |---|---|---|
@@ -158,6 +170,8 @@ The seven families named in item 74. Every requirement, rule and criterion below
 | BR-05 | No metric introduces data collection from installed projects without an explicit, separately approved telemetry decision |
 | BR-06 | The baseline document is superseded by re-runs, never edited in place; each run is a new dated snapshot |
 | BR-07 | Improvement claims against the baseline name the metric ID and the two snapshot dates being compared |
+| BR-08 | A metric with no pre-Wave-1 history is never described as a baseline. It is a trend series with a start date, and no before/after claim is made from it |
+| BR-09 | A bypass is counted only where a durable artifact evidences it. An unobservable bypass is reported as not measured, never as zero and never from recollection |
 
 ---
 
@@ -200,21 +214,21 @@ The seven families named in item 74. Every requirement, rule and criterion below
 
 ## 9. Open Questions
 
-**Q-01, Q-02 and Q-03 are blockers. This BRD cannot move to Approved, and Stage 2 estimation must not begin, until they are resolved.**
+**All blockers resolved 2026-08-27.** Q-01, Q-02 and Q-03 were decided by the maintainer. Q-05–Q-09
+follow from those decisions or from mechanical facts and are resolved here. Q-04 carries a proposed
+definition the maintainer may override without reopening approval.
 
-| ID | Question | Owner | Due Date | Resolution |
+| ID | Question | Owner | Status | Resolution |
 |---|---|---|---|---|
-| Q-01 | Does "baseline captured" mean the retro-computable set only, or must prospective counters run for a defined observation window before Wave 1 starts? | Maintainer | Before Stage 2 | |
-| Q-02 | Is any opt-in telemetry acceptable, or is collection strictly local and manual? | Maintainer | Before Stage 2 | |
-| Q-03 | Which events count as a "bypass"? (`--no-verify` commit, admin merge, self-merge, merge with a required check missing, lifecycle stage skipped without a fast-lane record) | Maintainer | Before Stage 2 | |
-| Q-04 | What counts as a "false-done claim" and who records one? `tasks/lessons.md` holds 20 dated entries, at least three of this class, but only caught instances are recorded | Maintainer | Before FR-01 | |
-| Q-05 | Is item 74 a hard gate on Wave 1, or a parallel track? Ranked 8 / P1, yet Wave 0 sequences it first | Maintainer | Before Stage 2 | |
-| Q-06 | One-off document or re-runnable script? FR-20 assumes script; confirm | Maintainer | Before Stage 2 | |
-| Q-07 | Does the baseline cover all 5 profiles, or only those with pilot coverage? | Maintainer | Before FR-10 | |
-| Q-08 | Is pilot-project data collection part of this item, or part of item 55? | Maintainer | Before FR-30 | |
-| Q-09 | Can upgrade-conflict metrics (M-02) exist before `ais update` ships? | Maintainer | Before FR-10 | |
-
----
+| Q-01 | Retro-computable baseline only, or a prospective observation window before Wave 1? | Maintainer | **Resolved 2026-08-27** | **Retro-computable only, with a dated cut-off.** Prospective counters start in parallel and are labeled trend-only (FR-15, BR-08). Deciding fact: the prospective data comes largely from the pilots (item 55), which are gated on handover, which is gated on Wave 1 — waiting would make Wave 0 depend on Wave 1's outputs |
+| Q-02 | Any opt-in telemetry, or strictly local? | Maintainer | **Resolved 2026-08-27** | **Strictly local. No telemetry, opt-in or otherwise.** See OS-02. Item 15 therefore stays a local append-only log with no client, server, or privacy policy. A future deliberate `ais report --send` remains possible; it is not built here |
+| Q-03 | Which events count as a bypass? | Maintainer | **Resolved 2026-08-27** | **GitHub-observable events only** (FR-25). Unobservable bypasses are named as not measured (FR-26). Rationale: a metric that cannot be computed from an artifact gets computed from memory, and the sole reporter is also the sole maintainer (R-03) |
+| Q-04 | What counts as a false-done claim, and who records one? | Maintainer | **Proposed — override without reopening approval** | Proposed: a completion claim that later verification contradicted, recorded in `tasks/lessons.md` by whoever catches it, at review or release. `tasks/lessons.md` already holds at least three of this class. Known bias: only caught instances are counted — stated in the definitions document per FR-04 |
+| Q-05 | Hard gate on Wave 1, or parallel track? | Maintainer | **Resolved 2026-08-27** | **Hard gate.** Q-01 reduces the retro capture to roughly a day of work, so gating costs almost nothing |
+| Q-06 | One-off document or re-runnable script? | Maintainer | **Resolved** | **Script**, per OBJ-03 and FR-20. Re-runnability is what makes trend possible; the 2026-08-12 incident is the standing evidence that prose drifts from process |
+| Q-07 | All 5 profiles, or only pilot-covered? | Maintainer | **Resolved** | **All 5.** M-01 is null regardless of profile, and M-03 is git-derived across all five at no extra cost |
+| Q-08 | Pilot data collection here, or in item 55? | Maintainer | **Resolved** | **Instrument here, collect there.** This item ships the self-report template (FR-30); item 55 runs the pilots that fill it in |
+| Q-09 | Upgrade-conflict metrics before `ais update` ships? | Maintainer | **Resolved** | **No.** M-02 is null with start condition "first released `ais update`" (§3a, BR-04) |
 
 ## 10. Dependencies
 
@@ -263,4 +277,5 @@ The seven families named in item 74. Every requirement, rule and criterion below
 | Version | Date | Author | Change |
 |---|---|---|---|
 | 1.0 | 2026-08-27 | Claude (Cowork) | Initial draft from backlog item 74 and the companion solution analysis |
+| 2.0 | 2026-08-27 | Lajin M J / Claude (Cowork) | **Approved.** Q-01 retro-computable baseline with a dated cut-off; Q-02 strictly local, no telemetry; Q-03 GitHub-observable bypasses only. Q-05–Q-09 resolved as consequences; Q-04 carries a proposed definition. Added FR-15, FR-16, §5.4 (FR-25–FR-28), BR-08, BR-09. Solution-analyst deviation closed |
 | 1.1 | 2026-08-27 | Claude (Cowork) | Verification pass (two rounds): added the `M-xx` metric ID class (§3a); corrected the golden-path source — `pre-publish-smoke.sh` greps READMEs, it does not execute the documented commands, so M-01 is null at baseline (new FR-05, AC-09); recorded the solution-analyst rule deviation; recorded the Wave 0 / Wave 4 split; made AC-02/03/07/08 mechanically checkable and added AC-09–AC-12 to cover FR-05, FR-13, FR-22 and BR-01 |

@@ -2,7 +2,7 @@
 
 **Analyst:** Claude (Cowork session), following `.claude/agents/solution-analyst.md`
 **Date:** 2026-08-27
-**Status:** DRAFT — Pending stakeholder review
+**Status:** CLOSED 2026-08-27 — blockers resolved; see the BRD §9
 **Confidence:** MEDIUM — the request is well-defined in intent, under-defined in measurement method and data source
 
 ---
@@ -114,15 +114,17 @@ be retrieved retroactively.
 
 ## Recommended Next Step
 
-**NEEDS STAKEHOLDER DECISION — Q-01, Q-02 and Q-03 are BLOCKER ambiguities.**
+**RESOLVED 2026-08-27 — the three BLOCKER ambiguities were decided by the maintainer. The BRD is Approved.**
+
+*Original recommendation, retained:* NEEDS STAKEHOLDER DECISION — Q-01, Q-02 and Q-03 are BLOCKER ambiguities.
 
 `.claude/agents/solution-analyst.md` states: *"Never proceed past this analysis if there are
 unresolved BLOCKER ambiguities."* By that rule the BRD should not be written yet. The correct next
 step is a maintainer decision on Q-01–Q-03, then the BRD.
 
-**Recorded deviation (2026-08-27):** a draft BRD was written anyway, on explicit maintainer
-instruction, before those blockers were resolved. It is marked Draft and must not be approved, and
-Stage 2 estimation must not begin, until Q-01–Q-03 are resolved. The deviation is recorded here
+**Recorded deviation (2026-08-27, now closed):** a draft BRD was written before those blockers were
+resolved, on explicit maintainer instruction. The blockers were resolved the same day, which closes
+the deviation. It stays recorded because it happened. The deviation is recorded here
 rather than hidden, because the alternative — paraphrasing the rule into a weaker one that permits
 the action — is the exact failure mode this scaffold documents at `docs/process/pre-npm-publish-todo.md`
 (2026-08-12: the docs described a superseded process).

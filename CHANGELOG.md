@@ -95,6 +95,13 @@ This file is configured with `merge=union` in `.gitattributes` so parallel addit
   commands rather than executing them, so its 113/113 pass count cannot serve as
   a golden-path *success* baseline — that metric is recorded null until item
   65's Wave 1 execution follow-up ships.
+  **Approved 2026-08-27** (BRD v2.0) once the three blocking decisions landed:
+  the baseline is retro-computable-only with a dated cut-off so Wave 0 does not
+  end up waiting on Wave 1's own outputs; collection stays strictly local with
+  no telemetry, which fixes item 15 as a local log; and a bypass counts only
+  where a durable GitHub artifact evidences it, with `--no-verify`, skipped
+  lifecycle stages and ignored prompt-level rules named as not measured by
+  construction rather than reported as zero.
 
 ## [0.14.0] - 2026-08-21
 
