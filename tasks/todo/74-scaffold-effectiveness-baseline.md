@@ -2,8 +2,8 @@
 
 ## Status
 
-**Stage 1 — Analysis complete. BRD APPROVED 2026-08-27.**
-Ready for Stage 2 — estimation. No open blockers.
+**Stage 2 — Plan. Estimate drafted 2026-08-27, awaiting Tech Lead sign-off.**
+Stage 1 complete: BRD Approved v2.0. No open blockers.
 
 ## Artifacts
 
@@ -11,7 +11,13 @@ Ready for Stage 2 — estimation. No open blockers.
 |---|---|---|
 | 1 — Analysis | `docs/brd/74-scaffold-effectiveness-baseline-analysis.md` | Closed |
 | 1 — Analysis | `docs/brd/74-scaffold-effectiveness-baseline-brd.md` | **Approved v2.0** |
-| 2 — Plan | `docs/estimates/74-scaffold-effectiveness-baseline-estimate.md` | **Next** |
+| 2 — Plan | `docs/estimates/74-scaffold-effectiveness-baseline-estimate.md` | Draft — sign-off pending |
+| 3 — Architecture | not required at this size? see note | TBD |
+
+> **Size note.** `task-size-policy.md` marks M as requiring architecture (HLD + ADR). This
+> deliverable is one definitions document plus a script that copies the existing `token-report`
+> structure — there is no new architecture to design. Recommend an ADR recording *why* architecture
+> was skipped, rather than skipping the gate silently.
 
 ## Why this gates Wave 1
 
@@ -46,6 +52,8 @@ closes it. Recorded because it happened.
 | Date | Decision | Rationale |
 |---|---|---|
 | 2026-08-27 | BRD drafted ahead of the solution-analyst BLOCKER rule | Maintainer instructed "go" on writing the BRD in the 2026-08-27 Cowork session while Q-01–Q-03 were open. Recorded as a deviation, not a rule change; the BRD stays Draft |
+| 2026-08-27 | Phase A (4.0 d) gates Wave 1; Phase B (9.0 d) runs alongside it | Phase B's value is repeatability on the *second* run, and there is no second run until Wave 1 has changed something. One 13-day block before Wave 1 buys nothing |
+| 2026-08-27 | M-04 (bypass) deferred to snapshot #2 | FR-27 requires reusing item 26's GitHub query surface, and item 26 is Wave 1. Building M-04 in Wave 0 would make Wave 0 depend on Wave 1's output — the same circularity Q-01 was decided to avoid |
 | 2026-08-27 | Q-01 — retro-computable baseline only, dated cut-off | Prospective data comes largely from the pilots (item 55), gated on handover, gated on Wave 1. Waiting would make Wave 0 depend on Wave 1's outputs |
 | 2026-08-27 | Q-02 — strictly local, no telemetry | Emitting anything becomes a procurement/security-review item for a product sold as governance over client code, and contradicts the documented no-collection posture. N=2 pilots offered no meaningful field data anyway |
 | 2026-08-27 | Q-03 — GitHub-observable bypasses only | A metric that cannot be computed from an artifact gets computed from memory, and the sole reporter is the sole maintainer. Reuses item 26's API surface |

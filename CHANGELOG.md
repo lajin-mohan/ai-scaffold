@@ -102,6 +102,14 @@ This file is configured with `merge=union` in `.gitattributes` so parallel addit
   where a durable GitHub artifact evidences it, with `--no-verify`, skipped
   lifecycle stages and ignored prompt-level rules named as not measured by
   construction rather than reported as zero.
+- **Stage 2 estimate for item 74** at
+  `docs/estimates/74-scaffold-effectiveness-baseline-estimate.md`. Three-point,
+  split into Phase A (4.0 realistic days — the retro-computable snapshot that
+  actually gates Wave 1) and Phase B (9.0 days — the tested re-runnable harness,
+  which runs alongside Wave 1 because its value is repeatability on the second
+  run). M-04 (bypass frequency) is deferred to snapshot #2: FR-27 requires
+  reusing item 26's GitHub query surface, and item 26 is Wave 1, so building it
+  now would make Wave 0 depend on Wave 1's output.
 
 ## [0.14.0] - 2026-08-21
 
