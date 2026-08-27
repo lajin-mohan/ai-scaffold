@@ -3,9 +3,9 @@
 **Date:** 2026-08-27
 **Estimated By:** Claude (Cowork session), following `.claude/agents/estimator.md`
 **Reviewed By:** TBD — Technical Lead sign-off pending
-**Confidence:** **LOW→MEDIUM** — the GitHub API shape is unverified. LOW until the spike lands, MEDIUM after.
-**Status:** Draft — **not commitable until Q-01–Q-03 are resolved and the spike has run**
-**Source spec:** `docs/brd/26-drift-aware-doctor-brd.md` (Draft v1.0)
+**Confidence:** **LOW→MEDIUM** — the GitHub API shape is unverified. LOW until the spike lands, MEDIUM after. Behavioural blockers are now resolved, which removes requirement risk but not API risk.
+**Status:** Draft — Q-01–Q-03 resolved 2026-08-27; **still spike-gated. Commit the spike, not the total.**
+**Source spec:** `docs/brd/26-drift-aware-doctor-brd.md` (**Approved v2.0**, 2026-08-27)
 
 > **Template adaptation.** `.claude/templates/estimation-template.md` assumes a web feature
 > (migrations, repository layer, page components, staging/production deploys). This is a CLI command
@@ -55,6 +55,8 @@ Business days, 1 day = 7.5 productive hours.
 | C-03 administrator bypass (`enforce_admins` + ruleset bypass actors) | 0.25 | 0.5 | 1.0 | Two sources to merge |
 | C-04 real `.git/hooks/pre-commit` check, kept separate from `checkHooksWired` | 0.25 | 0.25 | 0.5 | Pure filesystem. Lowest risk item in the set |
 | Degradation paths — no `gh`, no auth, no remote, non-GitHub, timeout | 0.5 | 1.0 | 2.0 | Five paths, each needing a distinct reason string |
+| `--require-remote` flag + scaffold CI wiring (Q-01 = D) | 0.25 | 0.25 | 0.5 | Reuses the `unavailable` state machine |
+| Repo resolution via `gh repo view` + `--repo` override + naming the repo in output (Q-03 = C) | 0.25 | 0.5 | 1.0 | Delegates SSH/HTTPS/rewrite handling to `gh` |
 | `--json` extension + `state`/`verifiedBy`/`reason` fields | 0.25 | 0.5 | 1.0 | |
 | Documented query contract for M-04 | 0.25 | 0.5 | 0.75 | |
 | **Testing** | | | | |
@@ -68,9 +70,9 @@ Business days, 1 day = 7.5 productive hours.
 | QA sign-off | 0.25 | 0.5 | 1.0 | |
 | **Release** | | | | |
 | Release inclusion + packed-tarball check | 0.25 | 0.25 | 0.5 | Per the 2026-07-10 lesson: verify the tarball, not the working tree |
-| **Subtotal** | **5.45** | **10.65** | **19.8** | |
-| **Buffer (15%)** | 0.82 | 1.60 | 2.97 | |
-| **TOTAL** | **6.3** | **12.25** | **22.8** | |
+| **Subtotal** | **5.95** | **11.4** | **21.3** | |
+| **Buffer (15%)** | 0.89 | 1.71 | 3.20 | |
+| **TOTAL** | **6.8** | **13.1** | **24.5** | |
 
 ---
 
@@ -81,13 +83,17 @@ Business days, 1 day = 7.5 productive hours.
 | Rulesets vs legacy branch protection are separate APIs; one surface gives false negatives | High | High | 1.3× on the query module | Spike first; FR-01 and BR-04 require both surfaces |
 | Reads may require `admin:repo`, which users will not grant for a diagnostic | Med | Med | in spike | If true, the feature's reach shrinks and Q-01's answer matters more |
 | `gh` absent on most user machines | High | Med | — | Degradation paths are 1.0 realistic day of the estimate precisely because of this |
-| Q-02 answered as "fail the exit code" turns this repo's own gaps into CI failures | Med | Med | — | Budget contingency below, not in the total |
+| **Confirmed:** Q-02 = B turns this repo's own gaps into CI failures | **High** | Med | — | Contingency below, outside the total. Expect it to fire |
 | Unclear requirements | Low | — | **not applied** | Requirements are specific; the unknown is an external API, which is priced as third-party risk, not requirement risk |
 
-**Contingency, deliberately outside the total:** if Q-02 is answered "detected gaps fail the exit
-code", this repo's own protection settings may immediately fail `doctor` in CI. Fixing that is real
-work of unknown size — it is a *finding*, not a defect in this item. Budget **+0.5 to +2 days**
-against the roadmap, not against this estimate.
+**Contingency, now live and still outside the total.** Q-02 was answered **B** — detected gaps are
+`high` and fail the exit code. This repository's own protection settings may therefore fail `doctor`
+the first time the checks run, and `--require-remote` in the scaffold's CI (FR-16) guarantees the
+checks actually run there. Fixing whatever it finds is real work of unknown size, and it is a
+**finding, not a defect in this item**. Budget **+0.5 to +2 days** against the roadmap.
+
+The honest framing: if this fires, item 26 worked. The uncomfortable part is that the first thing it
+will report on is your own repo.
 
 ---
 
@@ -109,22 +115,22 @@ C-01 without C-03 would report protection while saying nothing about who can ove
 
 | Scenario | Total | Calendar days (÷0.7 capacity) |
 |---|---|---|
-| Optimistic | 6.3 | 9.0 |
-| Realistic | **12.25** | **17.5** |
-| Pessimistic | 22.8 | 32.5 |
+| Optimistic | 6.8 | 9.8 |
+| Realistic | **13.1** | **18.7** |
+| Pessimistic | 24.5 | 35.0 |
 
-**Recommended commitment:** the **0.5-day spike only**, then re-confirm. Committing 12.25 days
+**Recommended commitment:** the **0.5-day spike only**, then re-confirm. Committing 13.1 days
 against an unverified external API shape is how estimates become fiction.
 
 **Against the earlier indicative figure.** An indicative ~4 realistic days was given for item 26 in
 conversation on 2026-08-27. **That figure is not recorded anywhere in this repository** — the
 backlog sizes item 26 `S` ("small enforcement slice") and `task-size-policy.md` contains no
 size-to-days mapping, so `S` cannot be converted to a day figure either. Against that conversational
-~4, this estimate is **3.06× higher**: it prices the query module, the five degradation paths, the
+~4, this estimate is **3.3× higher**: it prices the query module, the five degradation paths, the
 mocked test fixtures and the `--json` compatibility guarantee, none of which the indicative number
 included.
 
-**Size escalation, recorded.** The backlog sizes this `S`; 12.25 realistic days is `M`.
+**Size escalation, recorded.** The backlog sizes this `S`; 13.1 realistic days is `M`.
 `task-size-policy.md` permits escalation and says it "is not failure — it means the initial sizing
 was imprecise." **The backlog rank table still says `S` and has not been updated** — flagged to the
 Tech Lead, because size selects the gate set.

@@ -138,21 +138,38 @@ This file is configured with `merge=union` in `.gitattributes` so parallel addit
   left untouched per BR-06; the correction is appended as an amendment rather
   than rewritten, since a scope correction is not a re-run.
 ### Added
-- **Stage 1 and Stage 2 artifacts for backlog item 26** (drift-aware `doctor`,
-  Wave 1, rank 3, P0): solution analysis, draft BRD, spike-gated estimate and
-  scope statement under `docs/brd/`, `docs/estimates/` and `docs/process/`.
-  Documents only; no code changes. The BRD is **not approved** — three
-  behavioural decisions block it (offline/no-`gh` handling, whether a detected
-  gap fails the exit code, and which repository is resolved).
-  Findings that shaped the spec: `doctor`'s 15 checks are all local filesystem
-  reads with no network call anywhere in `src/`, and its own
-  `checkHooksWired` passes on a settings file while `.git/hooks/pre-commit` may
-  be absent — the "configured intent is not a pass" failure this item exists to
-  fix is currently true inside `doctor` itself. Transport is the `gh` CLI
-  following `scripts/setup-branch-protection.sh`, which also means the
-  "only shell-out is `spawnSync('git', [args])`" claim must change in the same
-  commit as the code — that claim lives in the backlog's security-posture
-  bullet, not in `SECURITY.md`, which contains no shell-out text at all.
+- **Specification for backlog item 26 — drift-aware `doctor`, enforcement slice**
+  (Wave 1, rank 3, P0). Solution analysis, **approved BRD v2.0**, approved
+  spike-gated estimate and scope statement under `docs/brd/`, `docs/estimates/`
+  and `docs/process/`. Documents only; no code changes yet.
+
+  **The finding that justifies the item:** all 15 of `doctor`'s checks are local
+  filesystem reads, and there is no network call anywhere in `src/`. Its own
+  `checkHooksWired` passes when `.claude/settings.json` has a non-empty `hooks`
+  object — it never checks whether `.git/hooks/pre-commit` exists or is
+  executable, the hook `create` installs at `0o755`. So *"configured intent is
+  not a pass"*, the failure this item exists to fix, is currently true inside
+  `doctor` itself.
+
+  **Decisions:** `unavailable` is a first-class third state that does not affect
+  the exit code by default, with `--require-remote` to enforce it where `gh` is
+  guaranteed; a **detected** gap is `high` and fails the exit code, reusing
+  `doctor`'s existing rule rather than inventing one; and the target repository
+  is resolved by `gh repo view --json nameWithOwner` with a `--repo` override,
+  identical to the write-side `setup-branch-protection.sh`. The principle
+  underneath all three: inability to check and a detected gap never share an exit
+  code — the first is an environment problem the user may not control, the second
+  is one they can fix.
+
+  **Transport is the `gh` CLI**, so no GitHub token ever enters this package.
+  That makes the *"only shell-out is `spawnSync('git', [args])`"* claim false and
+  it must change in the same commit as the code — that claim lives in the
+  backlog's security-posture bullet, **not** in `SECURITY.md`, which contains no
+  shell-out text at all.
+
+  Estimate 6.8 / **13.1** / 24.5 days, still spike-gated: the committed scope is
+  a 0.5-day spike against the GitHub API shape, not the total. Size escalated
+  `S` → `M`; the backlog rank table still says `S` and is flagged for update.
 
 ## [0.14.0] - 2026-08-21
 

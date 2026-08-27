@@ -3,7 +3,7 @@
 **Version:** 1.0
 **Date:** 2026-08-27
 **Owner:** Lajin M J (PM, Tech Lead and Product Owner are the same person on this project)
-**Status:** Draft — the in/out boundary below is stable, but Stage 2 does not close until Q-01–Q-03 are resolved and the spike has run
+**Status:** **Approved** — Q-01–Q-03 resolved 2026-08-27 (D / B / C). Stage 2 closed. Implementation remains spike-gated.
 
 > Per `.claude/agents/pm.md` format 1. Scope detail governed by
 > `docs/brd/26-drift-aware-doctor-brd.md` §3 and §5.
@@ -20,7 +20,12 @@
 - **C-04 real hook installation** — `.git/hooks/pre-commit` exists and is executable, reported
   separately from the existing settings-file check.
 - **Honest degradation** — `unavailable` as a first-class third state with a reason and a suggested
-  action, for: no `gh`, not authenticated, no remote, non-GitHub remote, timeout.
+  action, for: no `gh`, not authenticated, no remote, non-GitHub remote, timeout. Does not affect the
+  exit code by default; **`--require-remote`** makes it fail, and the scaffold's own CI uses it.
+- **Repository resolution** via `gh repo view --json nameWithOwner` with a `--repo` override,
+  identical to the write-side script. The output names the repo it checked.
+- **Detected gaps are `high` and fail the exit code.** `doctor` becomes a gate for gaps it can
+  actually see, while staying a report for checks it cannot run.
 - **`--json` extension**, additive only, with `state` / `verifiedBy` / `reason`.
 - **A documented query contract** that item 74's M-04 consumes rather than reimplements.
 - **Correction to the backlog's security-posture bullet** in the same commit, since adding a `gh`
@@ -63,15 +68,16 @@ Per `.claude/agents/pm.md` — the PM produces the communication and flags the d
 
 | # | Decision needed | Why it is not decided here |
 |---|---|---|
-| 1 | **Q-01** — offline / no-`gh`: `unavailable` without affecting exit code, or failure? Decides whether `doctor` is usable offline and in CI | Product behaviour call |
-| 2 | **Q-02** — detected gap: gate (exit 1) or dashboard (exit 0)? | Product behaviour call, with a live consequence: see the contingency below |
-| 3 | **Q-03** — which repository is checked, and how is it resolved in a fork or monorepo? | Product behaviour call |
-| 4 | **Spike first.** Commit the 0.5-day spike, not the 12.25-day total, until the GitHub API shape is verified | Estimation discipline, flagged not decided |
-| 5 | **Size escalation S → M.** Update the backlog rank table, or reject the escalation and re-scope | Sizing selects the gate set — a PM cannot change it unilaterally |
+| 1 | ~~Q-01~~ | **Resolved — D.** Report-only by default; `--require-remote` enforces |
+| 2 | ~~Q-02~~ | **Resolved — B.** `high`, exit 1. Contingency below is now live |
+| 3 | ~~Q-03~~ | **Resolved — C.** `gh repo view` + `--repo`; output names the repo |
+| 4 | **Spike first.** Commit the 0.5-day spike, not the 13.1-day total, until the GitHub API shape is verified | Still open. Estimation discipline, flagged not decided |
+| 5 | **Size escalation S → M.** Update the backlog rank table, or reject the escalation and re-scope | Still open. Sizing selects the gate set — a PM cannot change it unilaterally |
 
-**Contingency, outside the estimate:** if Q-02 is answered "gaps fail the exit code", this
-repository's own protection settings may immediately fail `doctor` in CI. That is a *finding*, not a
-defect in this item. Budget +0.5 to +2 days against the roadmap.
+**Contingency, now live and outside the estimate:** Q-02 = B means this repository's own protection
+settings may fail `doctor` the first time the checks run, and FR-16 puts `--require-remote` in the
+scaffold's CI so they will run. That is a *finding*, not a defect in this item. Budget +0.5 to +2
+days against the roadmap. If it fires, item 26 worked.
 
 ---
 
@@ -80,19 +86,19 @@ defect in this item. Budget +0.5 to +2 days against the roadmap.
 | Stage | Realistic | Note |
 |---|---|---|
 | Spike | 0.5 d | Gates the rest; also the spike item 74 deferred here |
-| Implementation + tests + docs + review | 11.75 d | One coherent unit — the checks share the query module |
-| **Total** | **12.25 d** | ~17.5 calendar days at 0.7 capacity |
+| Implementation + tests + docs + review | 12.6 d | One coherent unit — the checks share the query module |
+| **Total** | **13.1 d** | ~18.7 calendar days at 0.7 capacity |
 
 > An indicative ~4 days was given in conversation on 2026-08-27 and is **not recorded in this
 > repository**. The backlog sizes item 26 `S`, and `task-size-policy.md` has no size-to-days mapping.
-> This estimate is 3.06× that conversational figure, which omitted the query module, the five
+> This estimate is 3.3× that conversational figure, which omitted the query module, the five
 > degradation paths, the test fixtures and the `--json` compatibility guarantee.
 >
 > **Size escalated S → M and the backlog rank table not yet updated — flagged to the Tech Lead.**
 
 ---
 
-**Approved by:** _pending_ (PM) | _pending_ (Tech Lead) | N/A (no external client)
-**Date:**
+**Approved by:** Lajin M J (PM) | Lajin M J (Tech Lead) | N/A (no external client)
+**Date:** 2026-08-27
 
 > No independent approval exists. PM, Tech Lead and Product Owner are the same person.

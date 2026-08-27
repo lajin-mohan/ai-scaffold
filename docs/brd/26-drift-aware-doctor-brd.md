@@ -1,12 +1,12 @@
 # Business Requirements Document
 **Project:** ai-scaffold
 **Feature:** Drift-aware `doctor` — enforcement verification slice (backlog item 26)
-**Version:** 1.0
+**Version:** 2.0
 **Date:** 2026-08-27
-**Status:** Draft — approval blocked on Q-01, Q-02, Q-03
+**Status:** **Approved** — 2026-08-27. Q-01 = D, Q-02 = B, Q-03 = C; see §9
 **Size:** escalated **S → M**. The backlog sizes item 26 `S` ("small enforcement slice"); the estimate is 12.25 realistic days. `task-size-policy.md` permits escalation ("Escalation is not failure"). **The backlog rank table has not been updated — flagged to the Tech Lead**
 **Author:** Claude (Cowork session), executing `/create-brd` and `solution-analyst` manually
-**Approved By:** TBD
+**Approved By:** Lajin M J (maintainer/owner), 2026-08-27
 
 > Companion analysis: `docs/brd/26-drift-aware-doctor-analysis.md`.
 > Backlog: `docs/process/pre-npm-publish-todo.md` → Phase 1 → item 26. Wave 1, rank 3, P0.
@@ -83,6 +83,9 @@ hook installation. Configured intent stops counting as a pass.
 | FR-11 | `unavailable` SHALL NOT render as a pass in any output mode, and SHALL be visually distinct from both pass and fail | Must Have |
 | FR-12 | The command SHALL remain fully functional offline for all local checks | Must Have |
 | FR-13 | When a remote check is `unavailable`, the output SHALL name the one action that would make it available (install `gh`, authenticate, add a remote) | Should Have |
+| FR-14 | `unavailable` SHALL NOT affect the exit code by default (Q-01 = D) | Must Have |
+| FR-15 | A `--require-remote` flag SHALL make any `unavailable` remote check fail the exit code, for use in environments where `gh` is guaranteed | Must Have |
+| FR-16 | The scaffold's own CI SHALL invoke `doctor --require-remote`, so the checks are enforced somewhere even though most users see a report | Should Have |
 
 ### 5.3 Output and integration
 
@@ -91,6 +94,7 @@ hook installation. Configured intent stops counting as a pass.
 | FR-20 | The existing `--json` shape SHALL be extended additively. No existing field is renamed, removed or repurposed | Must Have |
 | FR-21 | Each check's JSON entry SHALL carry `state` (`pass`/`fail`/`unavailable`), `verifiedBy` (`api`/`filesystem`), and on `unavailable` a `reason` | Must Have |
 | FR-22 | The severity model (`critical`/`high`/`medium`/`low`) and the exit-code rule SHALL be extended, not replaced | Must Have |
+| FR-24 | A **detected** enforcement gap SHALL be severity `high`, which fails the exit code under `doctor`'s existing rule (Q-02 = B). `critical` is reserved for a broken installation and SHALL NOT be used for a governance gap | Must Have |
 | FR-23 | The query list SHALL be documented as a stable contract so item 74's M-04 consumes it rather than reimplementing it | Must Have |
 
 ### 5.4 Transport
@@ -98,6 +102,8 @@ hook installation. Configured intent stops counting as a pass.
 | ID | Requirement | Priority |
 |---|---|---|
 | FR-30 | Remote queries SHALL use the `gh` CLI, invoked via `spawnSync` in array form, following `scripts/setup-branch-protection.sh` | Must Have |
+| FR-34 | The target repository SHALL be resolved with `gh repo view --json nameWithOwner`, the same mechanism `setup-branch-protection.sh` uses, with a `--repo owner/name` override (Q-03 = C) | Must Have |
+| FR-35 | The output SHALL name the repository it checked, so a fork is never mistaken for upstream | Must Have |
 | FR-31 | The CLI SHALL NOT accept, store, read from disk, or log a GitHub token. Authentication is `gh`'s responsibility | Must Have |
 | FR-32 | No new runtime dependency SHALL be added | Must Have |
 | FR-33 | The security-posture bullet in `docs/process/pre-npm-publish-todo.md` stating the only shell-out is `spawnSync('git', …)` SHALL be updated **in the same change** as the code that falsifies it. `SECURITY.md` contains no such claim and is **not** in scope for this edit | Must Have |
@@ -112,6 +118,8 @@ hook installation. Configured intent stops counting as a pass.
 | BR-02 | `doctor` is read-only. It never mutates repository or local settings |
 | BR-03 | `unavailable` is a distinct third state. It is never collapsed into pass or fail |
 | BR-04 | A false "unprotected" is worse than no check. Where the API can be read two ways, both are queried before a negative is reported |
+| BR-06 | Inability to check and a detected gap are different failures and never share an exit code. Not being able to verify is an environment problem the user may not control; finding a gap is a problem they can fix |
+| BR-07 | The read side and the write side resolve the target repository by the same mechanism. `doctor` and `setup-branch-protection.sh` disagreeing on "which repo" is a defect, not a configuration option |
 | BR-05 | A documented security claim and the code it describes change in the same commit. Before relying on this rule, locate where the claim actually lives — for this item it is the backlog, not `SECURITY.md` |
 
 ---
@@ -144,24 +152,28 @@ hook installation. Configured intent stops counting as a pass.
 | AC-06 | Given no network, when `doctor` runs, then it completes and no check hangs | Asserts FR-12, NFR-03 |
 | AC-07 | Given the previous release's `--json` output, when compared to this release's, then every pre-existing field is present with the same name and meaning | Schema diff — asserts FR-20, NFR-04 |
 | AC-08 | Given the packed tarball, when the smoke suite runs, then all existing gates still pass and no dependency was added | `npm pack` + dependency diff + smoke — asserts FR-32, per the 2026-07-10 lesson |
+| AC-10 | Given `gh` absent and `--require-remote` passed, when `doctor` runs, then the exit code is non-zero and the reason names the missing prerequisite | Asserts FR-15 |
+| AC-11 | Given a repo with `enforce_admins` disabled, when `doctor` runs without `--require-remote`, then C-03 fails at `high` and the exit code is 1 | Asserts FR-24, Q-02 = B |
+| AC-12 | Given a fork, when `doctor` runs, then the output names the fork as the repository checked | Asserts FR-35 |
 | AC-09 | Given the commit that adds the `gh` shell-out, when its diff is inspected, then it also edits the security-posture bullet in `docs/process/pre-npm-publish-todo.md`, and no stale `spawnSync('git', …)`-only claim remains anywhere in the repo | `grep` the repo for the claim after the change — asserts FR-33, BR-05 |
 
 ---
 
 ## 9. Open Questions
 
-**Q-01, Q-02 and Q-03 are blockers. This BRD cannot move to Approved, and Stage 2 estimation must not be committed to, until they are resolved.**
+**All blockers resolved 2026-08-27.** Q-04–Q-06 follow as consequences and are resolved here.
 
-| ID | Question | Owner | Due | Resolution |
-|---|---|---|---|---|
-| Q-01 | Offline / no-`gh` behaviour: `unavailable` without affecting exit code, or failure? | Maintainer | Before Stage 2 | |
-| Q-02 | A detected gap (admin bypass on, required check missing): `critical`/`high` and exit 1, or `medium` and exit 0? Gate or dashboard? | Maintainer | Before Stage 2 | |
-| Q-03 | Which repository is checked, and how is it resolved — the project's own remote, and what happens in a fork or monorepo? | Maintainer | Before Stage 2 | |
-| Q-04 | Ships to generated projects, or maintainer-only? | Maintainer | Before FR-20 | |
-| Q-05 | C-04: content hash, or presence plus executable bit? Content checking overlaps the Wave 2 drift slice | Maintainer | Before FR-04 | |
-| Q-06 | Caching or rate-limit handling for repeated runs? | Maintainer | Before FR-30 | |
+| ID | Question | Status | Resolution |
+|---|---|---|---|
+| Q-01 | Offline / no-`gh` behaviour | **Resolved — option D** | `unavailable` does not affect the exit code by default; `--require-remote` opts into failing. Rationale: `gh` is absent on most machines, and a diagnostic that fails because a tool is missing gets removed from CI rather than fixed. The flag gives the scaffold's own CI, where `gh` is guaranteed, a way to enforce what most users only see reported |
+| Q-02 | Detected gap: gate or dashboard | **Resolved — option B** | Severity `high`, exit 1, reusing `doctor`'s existing rule. `high` already means "a core guarantee is inert", which is exactly what these checks detect. `critical` stays reserved for a broken installation. **Accepted consequence:** this may fail on the scaffold's own repo immediately — see the contingency in the estimate |
+| Q-03 | Repository resolution | **Resolved — option C** | `gh repo view --json nameWithOwner` with a `--repo` override, identical to `setup-branch-protection.sh:60`. The output names the repo it checked, so the fork case (where `gh` correctly returns the fork, not upstream) cannot be misread |
+| Q-04 | Ship to generated projects? | **Resolved** | **Yes.** `doctor` already ships, and these checks are most valuable in an adopting team's repo — that is where inert governance is least likely to be noticed |
+| Q-05 | Hook content hash, or presence + executable bit? | **Resolved** | **Presence and the executable bit only.** Content verification overlaps the managed-file drift slice deferred to Wave 2 with item 25 |
+| Q-06 | Caching / rate limits? | **Resolved** | **None in this slice.** A single run makes a handful of calls, well inside GitHub's limits. Revisit on evidence, not speculation |
 
----
+> Q-04–Q-06 were resolved as consequences of Q-01–Q-03 and existing scope decisions, not decided
+> independently by the maintainer. Any of them can be overridden without reopening approval.
 
 ## 10. Dependencies
 
@@ -204,4 +216,6 @@ hook installation. Configured intent stops counting as a pass.
 
 | Version | Date | Author | Change |
 |---|---|---|---|
+| 2.0 | 2026-08-27 | Lajin M J / Claude (Cowork) | **Approved.** Q-01 = D (report-only by default, `--require-remote` to enforce), Q-02 = B (`high`, exit 1), Q-03 = C (`gh repo view` + `--repo`). Added FR-14–FR-16, FR-24, FR-34, FR-35, BR-06, BR-07, AC-10–AC-12. Q-04–Q-06 resolved as consequences |
+| 1.1 | 2026-08-27 | Claude (Cowork) | Verification pass: FR-33/AC-09 retargeted from `SECURITY.md` (which carries no shell-out claim) to the backlog's security-posture bullet; the "~4 day" comparison re-attributed as conversational, not a repo baseline; estimate subtotals corrected; check count 15, not "~20"; S→M escalation recorded; ADR-003 and item 74 BRD labeled cross-branch |
 | 1.0 | 2026-08-27 | Claude (Cowork) | Initial draft from backlog item 26 and the companion analysis |
