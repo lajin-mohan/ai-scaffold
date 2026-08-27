@@ -137,6 +137,21 @@ This file is configured with `merge=union` in `.gitattributes` so parallel addit
   (item 26 shipped **and** a pilot running). Snapshot #1's recorded values are
   left untouched per BR-06; the correction is appended as an amendment rather
   than rewritten, since a scope correction is not a re-run.
+### Added
+- **Stage 1 and Stage 2 artifacts for backlog item 26** (drift-aware `doctor`,
+  Wave 1, rank 3, P0): solution analysis, draft BRD, spike-gated estimate and
+  scope statement under `docs/brd/`, `docs/estimates/` and `docs/process/`.
+  Documents only; no code changes. The BRD is **not approved** — three
+  behavioural decisions block it (offline/no-`gh` handling, whether a detected
+  gap fails the exit code, and which repository is resolved).
+  Findings that shaped the spec: `doctor`'s ~20 checks are all local filesystem
+  reads with no network call anywhere in `src/cli/`, and its own
+  `checkHooksWired` passes on a settings file while `.git/hooks/pre-commit` may
+  be absent — the "configured intent is not a pass" failure this item exists to
+  fix is currently true inside `doctor` itself. Transport is the `gh` CLI
+  following `scripts/setup-branch-protection.sh`, which also means the
+  documented "only shell-out is `spawnSync('git', …)`" claim in `SECURITY.md`
+  must change in the same commit as the code.
 
 ## [0.14.0] - 2026-08-21
 
