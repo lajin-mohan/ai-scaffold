@@ -4,10 +4,10 @@
 
 **Stages 1 and 2 COMPLETE (2026-08-27).** BRD Approved v2.0, estimate and scope
 statement approved. No open blockers.
-**Next: run the spike.** Designed at `docs/architecture/spike-26-github-api-shape.md`
-with a runnable probe at `scripts/spike-26-probe.sh` (throwaway, not shipped).
-The HLD waits on the spike results — writing it first would design against an
-unverified API. Implementation remains spike-gated.
+**Spike RUN 2026-08-27 — partially complete.** Anonymous tier established, merge
+requirement proven, query list documented (`FR-23` / item 74 `FR-27` satisfied).
+**Two questions remain: authenticated non-admin reads, and private repositories.**
+The private-repo case is untested and is the case most adopters are in.
 
 ## Artifacts
 
@@ -17,8 +17,8 @@ unverified API. Implementation remains spike-gated.
 | 1 — Analysis | `docs/brd/26-drift-aware-doctor-brd.md` | **Approved v2.0** |
 | 2 — Plan | `docs/estimates/26-drift-aware-doctor-estimate.md` | Approved — spike-gated, LOW confidence, **13.1 d realistic** |
 | 2 — Plan | `docs/process/26-drift-aware-doctor-scope.md` | **Approved** |
-| 3 — Architecture | `docs/architecture/spike-26-github-api-shape.md` + `scripts/spike-26-probe.sh` | **Spike designed — not yet run** |
-| 3 — Architecture | HLD + ADR | Blocked on spike results |
+| 3 — Architecture | `docs/architecture/spike-26-github-api-shape.md` + `scripts/spike-26-probe.sh` | **Run — partial. Query list documented** |
+| 3 — Architecture | HLD + ADR | Unblocked for the two-tier design; private-repo answer still wanted |
 
 ## Size
 
@@ -51,15 +51,28 @@ run against this repo's own settings in CI and may fail immediately. Budget
 
 ## Next action
 
-**Run `scripts/spike-26-probe.sh` twice** — once with your `admin:repo` token,
-once with a read-only token — and diff the outputs. Then fill in the Results
-section of `docs/architecture/spike-26-github-api-shape.md`.
+**Close the two open spike questions**, then write the HLD.
 
-The delta between the two runs answers the question that decides this item's
-reach: whether ordinary users can read enforcement state at all, or whether
-`unavailable` becomes the normal case for everyone outside the scaffold's own CI.
+1. Run `scripts/spike-26-probe.sh` against a **private** repository. Anonymous
+   access worked only because this repo is public; most adopting teams are
+   private, and their floor is untested.
+2. Run it with an authenticated **non-admin** token to see whether
+   `/branches/{b}/protection` opens up below `admin:repo`.
 
-Timebox 4 hours. Stop there and record what is known.
+Then: HLD for the two-tier design + an ADR for the "effective protection"
+merge semantics.
+
+## Findings about this repo, surfaced by the spike
+
+Both are the class item 26 exists to detect, found before it was built.
+
+1. **No status check is required on `main`.** Ruleset `protected-main` carries
+   only `deletion`, `non_fast_forward` and `pull_request`. CI runs and is green,
+   but nothing observed makes it required. Needs confirming with a token, since
+   legacy protection on `main` was not readable anonymously.
+2. **`main` requires 1 approval and the maintainer is the only approver**, with
+   `require_last_push_approval: false` — so a self-approval satisfies the gate.
+   This is the self-merge case `FR-25` counts as a bypass.
 
 ## Decision log
 
@@ -69,6 +82,8 @@ Timebox 4 hours. Stop there and record what is known.
 | 2026-08-27 | Both legacy branch protection **and** rulesets are queried and merged | A repo may use either or both. Querying one surface reports a false "unprotected", which is worse than no check at all (BR-04) |
 | 2026-08-27 | `doctor` stays read-only; writing stays in `setup-branch-protection.sh` | A diagnostic that mutates state is not safe to run, and blurs two tools' responsibilities |
 | 2026-08-27 | `unavailable` is a first-class third state, never collapsed into pass or fail | With `gh` absent on most user machines, a silent pass would make the whole command dishonest |
+| 2026-08-27 | "Effective protection" = most-restrictive-wins for protection, most-permissive-wins for bypass | Derived from the observed split: `main` ruleset-protected, `dev` legacy-protected. A branch is protected if either mechanism protects it; a bypass exists if either allows one |
+| 2026-08-27 | C-03 is authentication-gated by construction, not by circumstance | `bypass_actors` is absent from anonymous ruleset detail and `/branches/{b}/protection` returns 401. Its `unavailable` reason must say so rather than implying a transient problem |
 | 2026-08-27 | Spike designed before the HLD, not after | Two of the HLD's core decisions — whether to design one tier or two, and whether the two protection surfaces must be merged by hand — are determined by the probe results. Writing the HLD first would be designing against an unverified API, then rewriting it |
 | 2026-08-27 | Probe script lives in `scripts/` and is verified not shipped | `package.json` `files` ships only `scripts/token-report.js`; checked programmatically with picomatch. A spike produces a PoC, never shippable code (task-size-policy) |
 | 2026-08-27 | Q-01 = D — report by default, `--require-remote` to enforce | `gh` is absent on most machines. A diagnostic that fails because a tool is missing gets removed from CI rather than fixed. The flag enforces where `gh` is guaranteed |

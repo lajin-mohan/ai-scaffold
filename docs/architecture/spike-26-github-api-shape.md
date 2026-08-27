@@ -3,7 +3,7 @@
 **Date:** 2026-08-27
 **Timebox:** 0.5 day (4 hours). Stop at the timebox and record what is known.
 **Owner:** Lajin M J
-**Status:** Designed — not yet run
+**Status:** **Run 2026-08-27 — partially complete.** The anonymous tier is established; the authenticated tiers are not. See Results.
 **Gates:** the 13.1-day implementation estimate in `docs/estimates/26-drift-aware-doctor-estimate.md`
 **Probe:** `scripts/spike-26-probe.sh` (not shipped — the `package.json` `files` allowlist ships only `scripts/token-report.js`)
 
@@ -105,6 +105,113 @@ Until that section exists, the 13.1-day estimate stays LOW confidence and is not
 
 ---
 
-## Results
+## Results — run 2026-08-27, anonymous tier only
 
-*Not yet run.*
+**Probed against `lajin-mohan/ai-scaffold` (public) with no credentials at all.** This is a *lower*
+floor than the read-only-token run the method called for — and it turned out to be the informative
+one.
+
+### Per-endpoint access
+
+| Endpoint | Anonymous | Carries |
+|---|---|---|
+| `GET /repos/{o}/{r}` | **200** | repo metadata, `private: false` |
+| `GET /repos/{o}/{r}/branches/{b}` | **200** | `protected` boolean, `protection_url` |
+| `GET /repos/{o}/{r}/rules/branches/{b}` | **200** | **rules in effect** for the branch, with `ruleset_id` |
+| `GET /repos/{o}/{r}/rulesets` | **200** | id, name, target, `enforcement` |
+| `GET /repos/{o}/{r}/rulesets/{id}` | **200** | `rules` + full `parameters` — but **no `bypass_actors` key at all** |
+| `GET /repos/{o}/{r}/branches/{b}/protection` | **401** | `{"message": "Requires authentication"}` |
+| `GET /repos/{o}/{r}/commits/{ref}/check-runs` | **200** | actual check runs and conclusions |
+| `GET /repos/{o}/{r}/pulls?state=closed` | **200** | PR history for C-02's lookback |
+
+### Question 1 — do reads need `admin:repo`?
+
+**Partially answered: no, not for the coarse tier — on a public repo, not even a token.**
+
+The `protected` boolean, the effective-rules list, the ruleset list and full ruleset rule
+*parameters* are all readable anonymously. **C-01 can therefore give every user a real answer**,
+which is the good outcome the hypothesis was hoping for.
+
+**`bypass_actors` is absent from the anonymous ruleset detail** — not empty, the key is not present.
+`enforce_admins` lives only in `/branches/{b}/protection`, which is 401. **C-03 is authentication-
+gated by construction** and must say so in its `unavailable` reason rather than implying a transient
+problem.
+
+### Question 2 — must both surfaces be queried and merged?
+
+**Answered: yes, and the proof is in this repository.**
+
+| Branch | `protected` | `/rules/branches/{b}` | Protected by |
+|---|---|---|---|
+| `main` | `true` | `deletion`, `non_fast_forward`, `pull_request` (ruleset 18470539 `protected-main`, `enforcement: active`) | **Ruleset** |
+| `dev` | `true` | **`[]` — empty** | **Legacy branch protection** (inferred: protected with no ruleset rules) |
+
+This repository uses **a different mechanism per branch**. Querying only `/rules/branches/{b}` would
+report `dev` as unruled; querying only `/branches/{b}/protection` returns 401 without auth. Either
+single-surface implementation misreports one of the two branches.
+
+**`BR-04` — "a false 'unprotected' is worse than no check" — was not a theoretical risk. It is the
+live state of this repo.**
+
+**"Effective" is therefore defined as:** a branch is protected if **either** mechanism protects it
+(most-restrictive-wins for protection); a bypass exists if **either** mechanism allows one
+(most-permissive-wins for bypass).
+
+### Decision-table outcomes
+
+| Finding | Observed | Consequence |
+|---|---|---|
+| Coarse tier readable without `admin:repo` | **Yes** (anonymous, public repo) | Design for two tiers. C-01 works for everyone |
+| Everything needs `admin:repo` | No | — |
+| `rules/branches/{b}` returns effective rules from both mechanisms | **No** — ruleset rules only; `dev` returns `[]` while being protected | The merge problem is real. FR-01 stands |
+| Rulesets and branch protection must be merged by hand | **Yes** | Definition above |
+| Bypass actors only in admin-gated data | **Yes** | C-03 is `unavailable` without auth, by construction |
+| Required-check history retrievable | **Yes** | `/commits/{ref}/check-runs` and `/pulls` both 200 anonymously |
+
+### Still unanswered — the spike is not finished
+
+1. **Does a non-admin *authenticated* token read `/branches/{b}/protection`?** Only anonymous was
+   tested. This decides whether C-03 needs `admin:repo` or merely any authenticated token — a
+   materially different ask of the user.
+2. **Private repositories.** Anonymous access worked *because this repo is public*. Most adopting
+   teams are private, where even the coarse tier needs a token. **The floor for the actual user
+   population is untested**, and this is now the highest-value remaining question.
+3. Legacy branch-protection detail for `dev` was never seen (401), so `dev`'s protection is inferred
+   from `protected: true` plus an empty rules list, not observed directly.
+
+Re-run `scripts/spike-26-probe.sh` with (a) an admin token, (b) a read-only token, and (c) against a
+private repo, to close these.
+
+---
+
+## Query list — the implementation contract (`FR-23`)
+
+Also item 74's M-04 extraction contract (`FR-27` of the item 74 BRD).
+
+| Check | Calls | Tier |
+|---|---|---|
+| C-01 protection | `GET /repos/{o}/{r}/branches/{b}` → `protected`; `GET /repos/{o}/{r}/rules/branches/{b}` → rule types; merge | coarse |
+| C-02 required checks | rules/ruleset for a `required_status_checks` rule; `GET /repos/{o}/{r}/commits/{ref}/check-runs` for observed reporting; `GET /repos/{o}/{r}/pulls?state=closed` for the lookback | coarse |
+| C-03 admin bypass | `GET /repos/{o}/{r}/branches/{b}/protection` → `enforce_admins`; `GET /repos/{o}/{r}/rulesets/{id}` → `bypass_actors` | **authenticated** |
+| C-04 hook | local filesystem — `.git/hooks/pre-commit` exists and is executable | none |
+| repo resolution | `gh repo view --json nameWithOwner`, `--repo` override | none |
+
+---
+
+## Governance findings about *this* repository
+
+Incidental to the spike, and both are exactly the class item 26 exists to detect.
+
+**1. No status check is required on `main`.** Ruleset `protected-main` carries only `deletion`,
+`non_fast_forward` and `pull_request`. There is **no `required_status_checks` rule**, and
+`/rules/branches/main` confirms the same three. CI does run — `CI passed`, `CLI package checks`,
+`Publish to npm`, all green on the current head — but nothing observed makes them *required*. A red
+CI run does not appear to block a merge to `main`. Legacy protection on `main` could not be read
+without auth, so this needs confirming with a token before being treated as settled.
+
+**2. `main` requires 1 approval, and the maintainer is the only approver.** With
+`required_approving_review_count: 1` and `require_last_push_approval: false`, a self-approval
+satisfies the gate. This is the self-merge case `FR-25` counts as a bypass.
+
+**Neither is a defect in item 26.** They are the first two findings item 26 would have produced, and
+they arrived before it was built.

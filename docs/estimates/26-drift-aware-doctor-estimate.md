@@ -3,8 +3,8 @@
 **Date:** 2026-08-27
 **Estimated By:** Claude (Cowork session), following `.claude/agents/estimator.md`
 **Reviewed By:** TBD — Technical Lead sign-off pending
-**Confidence:** **LOW→MEDIUM** — the GitHub API shape is unverified. LOW until the spike lands, MEDIUM after. Behavioural blockers are now resolved, which removes requirement risk but not API risk.
-**Status:** Draft — Q-01–Q-03 resolved 2026-08-27; **still spike-gated. Commit the spike, not the total.**
+**Confidence:** **MEDIUM** — spike run 2026-08-27, anonymous tier established and the query list documented. Two questions remain open (authenticated non-admin reads; private repositories), so this is not yet HIGH.
+**Status:** Draft — Q-01–Q-03 resolved; spike partially run 2026-08-27. **Re-confirm before committing the total: the private-repo case is untested and it is the case most adopters are in.**
 **Source spec:** `docs/brd/26-drift-aware-doctor-brd.md` (**Approved v2.0**, 2026-08-27)
 
 > **Template adaptation.** `.claude/templates/estimation-template.md` assumes a web feature
@@ -45,14 +45,15 @@ Business days, 1 day = 7.5 productive hours.
 | Task | Optimistic | Realistic | Pessimistic | Risk notes |
 |---|---|---|---|---|
 | **Spike (first, gates the rest)** | | | | |
-| Token scope for reads; rulesets vs branch-protection merge semantics; produce the query list | 0.25 | 0.5 | 1.0 | Answers R-05 and R-01. Also the item 74 spike deferred here |
+| ~~Anonymous tier + merge semantics + query list~~ — **DONE 2026-08-27** | — | — | — | Query list documented in the spike doc |
+| Remaining spike: authenticated non-admin reads, and a private repo | 0.1 | 0.25 | 0.5 | The private-repo case is the one that matters — most adopters are private |
 | **Analysis** | | | | |
 | Resolve Q-01–Q-03 with maintainer; fold into the BRD | 0.25 | 0.5 | 0.5 | Decisions, not discovery |
 | **Implementation** | | | | |
 | `src/cli/core/` query module — `gh` invocation, both protection surfaces, merge, timeout | 0.5 | 1.5 | 3.0 | 1.3× third-party API. Largest single unknown |
 | C-01 branch / ruleset coverage | 0.25 | 0.5 | 1.0 | |
 | C-02 required checks configured **and** reporting | 0.5 | 1.0 | 2.0 | "Observed reporting on recent PRs" needs a defined lookback window |
-| C-03 administrator bypass (`enforce_admins` + ruleset bypass actors) | 0.25 | 0.5 | 1.0 | Two sources to merge |
+| C-03 administrator bypass (`enforce_admins` + ruleset bypass actors) | 0.25 | 0.5 | 1.0 | Two sources to merge. **Confirmed authentication-gated** — `bypass_actors` is absent from anonymous ruleset detail and `/protection` returns 401 |
 | C-04 real `.git/hooks/pre-commit` check, kept separate from `checkHooksWired` | 0.25 | 0.25 | 0.5 | Pure filesystem. Lowest risk item in the set |
 | Degradation paths — no `gh`, no auth, no remote, non-GitHub, timeout | 0.5 | 1.0 | 2.0 | Five paths, each needing a distinct reason string |
 | `--require-remote` flag + scaffold CI wiring (Q-01 = D) | 0.25 | 0.25 | 0.5 | Reuses the `unavailable` state machine |
@@ -80,8 +81,9 @@ Business days, 1 day = 7.5 productive hours.
 
 | Risk | Likelihood | Impact | Multiplier applied | Mitigation |
 |---|---|---|---|---|
-| Rulesets vs legacy branch protection are separate APIs; one surface gives false negatives | High | High | 1.3× on the query module | Spike first; FR-01 and BR-04 require both surfaces |
-| Reads may require `admin:repo`, which users will not grant for a diagnostic | Med | Med | in spike | If true, the feature's reach shrinks and Q-01's answer matters more |
+| **Confirmed live in this repo:** `main` is ruleset-protected, `dev` is legacy-protected. Either single-surface implementation misreports one branch | **Certain** | High | 1.3× on the query module | FR-01 and BR-04 stand, now on evidence rather than caution |
+| ~~Reads may require `admin:repo`~~ — **disproved for the coarse tier on a public repo** (readable with no token at all) | — | — | — | C-01 and C-02 reach every user of a public repo |
+| **Private repositories are untested.** Anonymous access worked because this repo is public; most adopters are private | **High** | **High** | — | Highest-value remaining question. Close it before committing the total |
 | `gh` absent on most user machines | High | Med | — | Degradation paths are 1.0 realistic day of the estimate precisely because of this |
 | **Confirmed:** Q-02 = B turns this repo's own gaps into CI failures | **High** | Med | — | Contingency below, outside the total. Expect it to fire |
 | Unclear requirements | Low | — | **not applied** | Requirements are specific; the unknown is an external API, which is priced as third-party risk, not requirement risk |
