@@ -68,9 +68,11 @@ record no decision, and would set the precedent that the M-gate is satisfiable w
 
 ### Option B: Re-size item 74 to S to dodge the gate
 **Description:** Declare the item S, which per the size matrix requires no architecture.
-**Why rejected:** Dishonest. The item is 13 realistic days; S is not a defensible size, and sizing
-work to fit the gate you want is precisely the bypass class M-04 is meant to count. Re-sizing to
-avoid a control is worse than an argued exception to it.
+**Why rejected:** Dishonest. The item is 13 realistic days; S is not a defensible size. Sizing work
+to fit the gate you want is a bypass — and notably one that **M-04 cannot count**: `FR-26` lists "a
+lifecycle stage skipped" under explicitly-not-measured, because an absent artifact is ambiguous
+between a fast lane and a skip. That it would go unmeasured is an argument against doing it, not
+for. Re-sizing to avoid a control is worse than an argued exception to it.
 
 ### Option C: Record the exception in an ADR (chosen)
 **Description:** Skip the HLD, and make the skip itself the Stage 3 artifact — with the reasoning,

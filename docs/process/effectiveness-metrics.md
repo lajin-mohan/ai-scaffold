@@ -82,7 +82,7 @@ a zero asserts an observation that was never made.
 - **Source:** git history.
 - **Method:** for each commit touching `templates/`, count distinct profile directories in its
   changed paths. Report the distribution, not a mean.
-- **Denominator:** all commits in the window; and all `templates/`-touching commits.
+- **Denominator:** **non-merge commits only.** Git history simplification means a merge commit effectively cannot enter the numerator, so including merges in the denominator understates the ratio. Both the numerator and denominator exclude merges.
 - **Kind:** artifact.
 - **Status:** measured.
 
@@ -159,11 +159,17 @@ a zero asserts an observation that was never made.
 
 - **Counts:** governance surface — files and estimated tokens by category.
 - **Source:** `npm run token-report` (`scripts/token-report.js`, item T0).
-- **Method:** run the existing report; record its category table verbatim.
+- **Method:** run the existing report; record its category table verbatim. **Trend is computed by
+  re-running the report against the anchor commit, never by subtracting a rounded figure from prose.**
+  The 2026-07-13 anchor is commit `6081ea0` (138,331 est-tokens), not the backlog's "~138K".
 - **Denominator:** none — absolute counts, compared across snapshots.
 - **Kind:** artifact.
 - **Status:** measured.
 
+> **This metric measures bytes, not count.** File, command and agent counts are recorded alongside
+> the token total precisely so a byte increase is not misread as surface growth. Item 69 / T5's
+> prune argument rests on *count*; do not cite this metric's token delta as evidence for it.
+>
 > Not one of item 74's seven families. Added because Wave 0's scope line names "surface usage".
 > Wave 0 also names "duplication", which has no separate ID and is covered only as a component of
 > M-03. If duplication needs to trend independently it wants its own metric.
