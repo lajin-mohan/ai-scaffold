@@ -77,8 +77,18 @@ unless a UI-heavy pilot provides evidence to raise it.
 
 ### Execution waves
 
-1. **Wave 0 — baseline:** capture profile success, maintenance effort,
-   duplication, bypasses, false-done incidents, and surface usage before fixes.
+1. **Wave 0 — baseline: ✅ CAPTURED 2026-08-27.** Snapshot #1 at
+   `docs/process/effectiveness-baseline-2026-08-27.md`; definitions at
+   `docs/process/effectiveness-metrics.md`. Four of eight metrics are null or
+   trend-only and are recorded as such, not as zero: golden-path success has no
+   honest source until item 65's execution follow-up ships (the smoke gate greps
+   READMEs rather than running the commands), upgrade conflicts need item 25,
+   bypass frequency needs item 26's GitHub query surface, and rework has no
+   pre-Wave-1 history. **Wave 1 is unblocked from this commit.** Headline
+   figures: 90.3% of profile-touching commits edit 2+ of the 5 copies (item 34);
+   surface grew +1.8% in 45 days despite T1 and T3 (item 69/T5); 4 of 20 recorded
+   lessons are false-done claims, all of the "a gate passed but the artifact was
+   wrong" class.
 2. **Wave 1 — stop immediate failures:** items 26, 65 follow-up, and 66's
    objectively checkable controls.
 3. **Wave 2 — safe lifecycle:** item 25's ownership/update slices and item 34's

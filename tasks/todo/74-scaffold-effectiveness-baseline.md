@@ -2,9 +2,9 @@
 
 ## Status
 
-**Stage 2 — Plan COMPLETE (2026-08-27).** Estimate signed off, phasing defined,
-scope statement produced. Stage 1 complete (BRD Approved v2.0).
-Next: the architecture-gate decision, then Phase A.
+**Phase A COMPLETE (2026-08-27). WAVE 0 CLOSED — Wave 1 is unblocked.**
+Stages 1–3 complete; Stage 3 satisfied by exception (ADR-003).
+Remaining: Phase B (report harness, 9.0 d) alongside Wave 1; M-04 at snapshot #2.
 
 ## Artifacts
 
@@ -14,7 +14,9 @@ Next: the architecture-gate decision, then Phase A.
 | 1 — Analysis | `docs/brd/74-scaffold-effectiveness-baseline-brd.md` | **Approved v2.0** |
 | 2 — Plan | `docs/estimates/74-scaffold-effectiveness-baseline-estimate.md` | **Reviewed — Tech Lead signed off** |
 | 2 — Plan | `docs/process/74-scaffold-effectiveness-baseline-scope.md` | **Approved** |
-| 3 — Architecture | ADR recording why it was skipped, or run the gate | **Decision needed** |
+| 3 — Architecture | `docs/architecture/adr/003-no-architecture-stage-for-item-74.md` | **Accepted — satisfied by exception** |
+| 5 — Phase A | `docs/process/effectiveness-metrics.md` + `effectiveness-baseline-2026-08-27.md` | **Complete** |
+| 5 — Phase B | report harness | Not started — runs alongside Wave 1 |
 
 > **Size note.** `task-size-policy.md` marks M as requiring architecture (HLD + ADR). This
 > deliverable is one definitions document plus a script that copies the existing `token-report`

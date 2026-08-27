@@ -116,6 +116,16 @@ This file is configured with `merge=union` in `.gitattributes` so parallel addit
   Lead rather than resolving them: the architecture gate for an M-sized item
   with no architecture to design, Q-04's proposed false-done definition, and
   whether Wave 1 starts on the Phase A snapshot commit.
+- **Wave 0 baseline captured (Phase A).** `docs/process/effectiveness-metrics.md`
+  publishes the M-01–M-08 definitions, and
+  `docs/process/effectiveness-baseline-2026-08-27.md` records snapshot #1.
+  Definitions were committed first so git order proves BR-01. Four of eight
+  metrics are null or trend-only and recorded as such rather than as zero.
+  Measured: 90.3% of profile-touching commits edit 2 or more of the 5 profile
+  copies; governance surface grew 1.8% in 45 days despite T1 and T3 shipping;
+  4 of 20 recorded lessons are false-done claims (>= 6 incidents), all of the
+  "a gate passed but the artifact was wrong" class. **Wave 1 is unblocked.**
+  ADR-003 records why no HLD was produced for an M-sized item.
 
 ## [0.14.0] - 2026-08-21
 
