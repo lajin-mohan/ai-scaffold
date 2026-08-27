@@ -2,8 +2,9 @@
 
 ## Status
 
-**Stage 2 — Plan. Estimate drafted 2026-08-27, awaiting Tech Lead sign-off.**
-Stage 1 complete: BRD Approved v2.0. No open blockers.
+**Stage 2 — Plan. Estimate signed off by Tech Lead 2026-08-27.**
+Stage 1 complete (BRD Approved v2.0). Stage 2 still needs the `@pm` scope
+statement, or a recorded waiver, before it closes.
 
 ## Artifacts
 
@@ -11,7 +12,8 @@ Stage 1 complete: BRD Approved v2.0. No open blockers.
 |---|---|---|
 | 1 — Analysis | `docs/brd/74-scaffold-effectiveness-baseline-analysis.md` | Closed |
 | 1 — Analysis | `docs/brd/74-scaffold-effectiveness-baseline-brd.md` | **Approved v2.0** |
-| 2 — Plan | `docs/estimates/74-scaffold-effectiveness-baseline-estimate.md` | Draft — sign-off pending |
+| 2 — Plan | `docs/estimates/74-scaffold-effectiveness-baseline-estimate.md` | **Reviewed — Tech Lead signed off** |
+| 2 — Plan | `@pm` scope statement | **Missing — or waive with a recorded reason** |
 | 3 — Architecture | not required at this size? see note | TBD |
 
 > **Size note.** `task-size-policy.md` marks M as requiring architecture (HLD + ADR). This
@@ -52,6 +54,7 @@ closes it. Recorded because it happened.
 | Date | Decision | Rationale |
 |---|---|---|
 | 2026-08-27 | BRD drafted ahead of the solution-analyst BLOCKER rule | Maintainer instructed "go" on writing the BRD in the 2026-08-27 Cowork session while Q-01–Q-03 were open. Recorded as a deviation, not a rule change; the BRD stays Draft |
+| 2026-08-27 | Estimate signed off by Tech Lead at 4.0 d (Phase A) + 9.0 d (Phase B), M-04 deferred | The split and the deferral are part of the signed scope, not implementation latitude |
 | 2026-08-27 | Phase A (4.0 d) gates Wave 1; Phase B (9.0 d) runs alongside it | Phase B's value is repeatability on the *second* run, and there is no second run until Wave 1 has changed something. One 13-day block before Wave 1 buys nothing |
 | 2026-08-27 | M-04 (bypass) deferred to snapshot #2 | FR-27 requires reusing item 26's GitHub query surface, and item 26 is Wave 1. Building M-04 in Wave 0 would make Wave 0 depend on Wave 1's output — the same circularity Q-01 was decided to avoid |
 | 2026-08-27 | Q-01 — retro-computable baseline only, dated cut-off | Prospective data comes largely from the pilots (item 55), gated on handover, gated on Wave 1. Waiting would make Wave 0 depend on Wave 1's outputs |

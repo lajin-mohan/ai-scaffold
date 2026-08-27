@@ -2,9 +2,9 @@
 
 **Date:** 2026-08-27
 **Estimated By:** Claude (Cowork session), following `.claude/agents/estimator.md`
-**Reviewed By:** TBD — Technical Lead sign-off pending
+**Reviewed By:** Lajin M J (Technical Lead) — signed off 2026-08-27
 **Confidence:** MEDIUM
-**Status:** Draft
+**Status:** Reviewed — Technical Lead signed off 2026-08-27
 **Source spec:** `docs/brd/74-scaffold-effectiveness-baseline-brd.md` (Approved v2.0, 2026-08-27)
 
 > **Template adaptation, recorded.** `.claude/templates/estimation-template.md` assumes a web
@@ -172,8 +172,13 @@ separate spike here would duplicate item 26's first slice. Budget the answer the
 
 | Role | Name | Date | Status |
 |---|---|---|---|
-| Technical Lead | Lajin M J | | Pending |
+| Technical Lead | Lajin M J | 2026-08-27 | **Signed off** |
 | Product Owner | Lajin M J | | Pending |
+
+**Signed-off scope:** Phase A committed at 4.0 realistic days. Phase B (9.0 d) scheduled alongside
+Wave 1. M-04 deferred to snapshot #2. The deferral and the Phase A/B split are part of what was
+signed off, not implementation latitude — changing either is a >20% deviation and requires
+re-estimation per `docs/estimates/README.md`.
 
 > Both roles are the same person. This estimate has had no independent review. That is a stated
 > limitation of the current team size, not an oversight — recorded here so a later reader does not
