@@ -13,6 +13,73 @@ This file is configured with `merge=union` in `.gitattributes` so parallel addit
 
 ## [Unreleased]
 
+### Fixed
+- **AI attribution removed from 22 unmerged commits across four branches.**
+  `branching-rules.md:79` prohibits `Co-Authored-By` and any AI identity in
+  commit messages, and `tasks/lessons.md` already recorded this exact mistake on
+  `2026-05-10`. It recurred anyway. Messages rewritten; the new lesson records
+  the real root cause — the `~/.gitmessage` template cited as the `2026-05-10`
+  fix does not apply to `git commit -m`/`-F`, so the enforcement that closed
+  that lesson never covered the path actually used. **A `commit-msg` hook is
+  still needed**; until then the rule is prose, which is backlog item 66's
+  finding reached from another direction. Item 66 now carries the hook's scope:
+  generated-project enforcement, optional scaffold-maintainer enforcement
+  requiring an explicit exception to the no-commit-gates directive, packed-
+  artifact and installation behaviour, exact `^Co-Authored-By:` matching, and
+  tests covering `-m`, `-F`, editor commits, casing, multiple trailers and
+  legitimate prose.
+
+### Changed
+- **`CLAUDE.md` replaced with a scaffold-owned draft — approved design, partial
+  implementation.** This is **not** the completed item 76 split. Root
+  `AGENTS.md`, `.cursorrules`, `.github/copilot-instructions.md`,
+  `.claude/memory/`, `.claude/rules/`, `.claude/commands/` and `.claude/agents/`
+  are still template-derived (agents 17/17 identical to `templates/generic`,
+  commands 33/35, memory 6/6; `.cursorrules` holds 8 live project placeholders,
+  Copilot instructions 6, `project-context.md` 6). The new file states the
+  governance model and the maintainer operating contract; completing the root
+  set is the remainder of item 76.
+
+  The model it records: **AI Scaffold is a project with its own governance** —
+  governed by scaffold-maintainer rules, not by the generated-project governance
+  it ships. It also drops the line claiming this repository runs the configured
+  CLI checks for `/review`.
+
+### Added
+- **Backlog item 76 — give the scaffold repository its own governance.**
+  The repo currently governs itself with a copy of what it sells: root
+  `CLAUDE.md` is a hand-diverged near-duplicate of `templates/*/CLAUDE.md` (69
+  changed lines), and root `.claude/` is a 6th copy of the corpus (agents 17/17
+  identical, commands 33/35, templates 13/13, rules 9/17). `README.md` /
+  `README.scaffold.md` / `README.template.md` is the precedent, but the naming
+  cannot be mirrored literally — Claude Code loads `CLAUDE.md` by filename, so a
+  sibling `CLAUDE.scaffold.md` would never be read. Recommended shape is a
+  content split: root `CLAUDE.md` becomes scaffold-owned, the project template
+  lives only under `templates/`. Pairs with item 34 and changes what M-08
+  measures.
+
+  Reframed after discussion: the problem is **two identities in one file set**,
+  not duplication. An agent working here reads rules written for a team building
+  a SaaS application and cannot tell whether it is editing the tool or a project
+  built with it. The directory layout is already correct — `/.claude` is the
+  scaffold's, `/templates/*/.claude` ships — so this is an authoring job, not
+  restructuring. A draft scaffold-owned `CLAUDE.md` on
+  `docs/scaffold-self-governance` runs **144 lines / ~1,600 est-tokens against
+  486 / ~7,170**. Sequenced **before** item 34, and paired with a
+  `pre-publish-smoke.sh` assertion so the two file sets cannot silently re-merge.
+
+  The rule it enforces: **scaffold-owned files must not carry project
+  placeholders.** The repo is permanently half-bootstrapped — `.cursorrules` (8),
+  `.github/copilot-instructions.md` (6) and `.claude/memory/project-context.md`
+  (6) are still un-substituted template copies, and `/bootstrap` is correctly
+  never run here, so they stay that way. This is the root cause of the
+  `/what-next` Stage 0 false positive: `{{CURRENT_EPIC}}` in
+  `project-context.md` is a documented bootstrap-detection signal, so a literal
+  run reports "BLOCKED — run /bootstrap" on a published v0.14.0 package.
+  Authoring placeholders inside output templates (`{{FEATURE_NAME}}` in
+  `brd-template.md`) are legitimate and explicitly excluded.
+
+
 ## [0.14.0] - 2026-08-21
 
 ### Added

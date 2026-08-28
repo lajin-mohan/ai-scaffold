@@ -99,6 +99,67 @@ unless a UI-heavy pilot provides evidence to raise it.
   for BRDs, ADRs, tasks, and handoffs: identity, status, phase, owner, approval,
   dependency, supersession, evidence, and requirement/test references. Preserve
   readable Markdown bodies and operational checklist restatement. *(P1, medium)*
+- **76. Give the scaffold repository its own governance.** Raised 2026-08-27.
+  **The problem is not duplication, it is two identities in one file set.** Root
+  `CLAUDE.md`, `.claude/`, `AGENTS.md` and `.cursorrules` are filled-in copies of
+  the project template, so an agent working here reads rules written for a team
+  building a SaaS application. It cannot tell whether it is editing the tool or a
+  project built with the tool, and it inherits a 10-stage BRD → architecture →
+  UX → code workflow for work that is actually "edit a Markdown rule, bump a
+  version, cut an npm release."
+
+  **The directory layout is already correct.** `/.claude` is the scaffold's;
+  `/templates/*/.claude` is what ships. Nothing needs restructuring. Root's
+  *contents* were seeded from the template and never rewritten. This is an
+  authoring job, not surgery — which makes it far smaller than it first looks.
+
+  **Evidence.** Root `CLAUDE.md` is a hand-maintained fork of the template at 69
+  changed lines. Root `.claude/` is a 6th copy: agents **17/17 identical**,
+  commands **33/35**, templates **13/13**, rules **9/17**. Root's Tech Stack
+  table is 11 rows of `N/A — CLI tool`, present only because the template has a
+  Tech Stack table. Root loads 10 `/ux-*` commands and 4 UX agents that have no
+  meaning when the deliverable is a CLI. `.cursorrules` (**8**),
+  `.github/copilot-instructions.md` (**6**) and
+  `.claude/memory/project-context.md` (**6**) still carry live project
+  placeholders, and `/bootstrap` correctly never runs here, so they stay
+  un-substituted forever.
+
+  **Mechanism constraint.** Claude Code loads `CLAUDE.md` **by filename**, so the
+  `README.md` / `README.scaffold.md` naming cannot be mirrored: a sibling
+  `CLAUDE.scaffold.md` would never be read. Scaffold-owned content goes *in* root
+  `CLAUDE.md`; the project template lives only under `templates/`.
+
+  **Shape.** Root files are rewritten for the work actually done here — verify
+  the packed tarball not the working tree; a release is not shipped until
+  `npm view` confirms it; change all 5 profiles or none; a root placeholder is a
+  defect; when a flow is designed out, its docs go in the same change. A draft
+  scaffold-owned `CLAUDE.md` exists on `docs/scaffold-self-governance`:
+  **144 lines / ~1,600 est-tokens against 486 lines / ~7,170 today**, a ~78%
+  reduction in what loads every session. Same treatment for `AGENTS.md`,
+  `.cursorrules`, `.github/copilot-instructions.md` and `.claude/memory/*`, whose
+  files should hold real scaffold state rather than template stubs.
+
+  **The real cost, recorded.** Today the root copy is read by agents daily, so
+  defects in the shipped corpus surface through use. Stop dogfooding and nothing
+  exercises it. The mitigation is item **65's follow-up** — CI that generates a
+  project and runs its documented commands. **This item makes 65's follow-up more
+  important, not less.**
+
+  **Guard against silent re-merge.** Add an assertion to
+  `scripts/pre-publish-smoke.sh` — product QA, not a governance gate on this repo
+  — that root governance files contain no project placeholders and are not
+  byte-identical to their `templates/generic/` equivalents. Without it, the next
+  file copied up to root quietly recreates the problem.
+
+  **Sequence before item 34.** Doing 76 first removes root from the equation, so
+  34 designs base-plus-overlays for 5 uniform copies instead of 5 plus one
+  special case. (This revises an earlier note that said either order worked.)
+
+  **Affects M-08.** `token-report` measures the root corpus (94 files, 140,531
+  est-tokens at 2026-08-27). Shrinking root changes what the metric counts;
+  `docs/process/effectiveness-metrics.md` needs a note so snapshot #2 does not
+  read the drop as governance being pruned. *(P1, medium)*
+
 - **74. Scaffold-effectiveness baseline and metrics.** Record install and
   golden-path success, upgrade conflicts, maintenance effort, bypass frequency,
   rework, escaped defects, and false completion claims. Capture the baseline
@@ -541,6 +602,24 @@ saving starts costing correctness.
   verify "was a plan actually approved" as a concept. *(medium — needs a
   real design for what "approval" means as a checkable artifact, not just a
   hook wiring exercise)*
+  **Commit-identity enforcement (added 2026-08-27).** AI attribution recurred on
+  22 commits despite `branching-rules.md:79`, because the `~/.gitmessage`
+  template that closed the `2026-05-10` lesson does not cover `git commit -m`
+  or `-F`. A `commit-msg` hook is the mechanical control. It belongs here rather
+  than in a docs branch: it changes executable behaviour, needs tests and
+  installation semantics, and raises a scope question. **Specify separately:**
+  - **generated-project enforcement** — the default, shipped;
+  - **scaffold-maintainer enforcement** — optional, and requiring an **explicit
+    exception** to the 2026-08-27 directive that excluded commit gates from this
+    repository. Do not assume the exception; ask for it;
+  - **installation and packed-artifact behaviour** — the hook must survive
+    `npm pack` and be wired on `create`, per the 2026-07-10 tarball lesson;
+  - **exact `^Co-Authored-By:` matching** — with the colon, not the bare phrase.
+    Prose discussing the rule can legitimately begin a wrapped line with those
+    words;
+  - **tests** for `git commit -m`, `-F`, editor/template commits, casing
+    variants, multiple trailers, and legitimate prose that must not be rejected.
+
   **P1 scope rule:** mechanically enforce objective signals first—CHANGELOG
   policy, branch/PR path, required checks, and approval artifacts where their
   semantics are explicit. Do not claim that a superficial marker proves human
