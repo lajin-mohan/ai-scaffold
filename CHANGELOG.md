@@ -22,7 +22,12 @@ This file is configured with `merge=union` in `.gitattributes` so parallel addit
   fix does not apply to `git commit -m`/`-F`, so the enforcement that closed
   that lesson never covered the path actually used. **A `commit-msg` hook is
   still needed**; until then the rule is prose, which is backlog item 66's
-  finding reached from another direction.
+  finding reached from another direction. Item 66 now carries the hook's scope:
+  generated-project enforcement, optional scaffold-maintainer enforcement
+  requiring an explicit exception to the no-commit-gates directive, packed-
+  artifact and installation behaviour, exact `^Co-Authored-By:` matching, and
+  tests covering `-m`, `-F`, editor commits, casing, multiple trailers and
+  legitimate prose.
 
 ### Changed
 - **`CLAUDE.md` replaced with a scaffold-owned draft — approved design, partial

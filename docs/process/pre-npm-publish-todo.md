@@ -602,6 +602,24 @@ saving starts costing correctness.
   verify "was a plan actually approved" as a concept. *(medium — needs a
   real design for what "approval" means as a checkable artifact, not just a
   hook wiring exercise)*
+  **Commit-identity enforcement (added 2026-08-27).** AI attribution recurred on
+  22 commits despite `branching-rules.md:79`, because the `~/.gitmessage`
+  template that closed the `2026-05-10` lesson does not cover `git commit -m`
+  or `-F`. A `commit-msg` hook is the mechanical control. It belongs here rather
+  than in a docs branch: it changes executable behaviour, needs tests and
+  installation semantics, and raises a scope question. **Specify separately:**
+  - **generated-project enforcement** — the default, shipped;
+  - **scaffold-maintainer enforcement** — optional, and requiring an **explicit
+    exception** to the 2026-08-27 directive that excluded commit gates from this
+    repository. Do not assume the exception; ask for it;
+  - **installation and packed-artifact behaviour** — the hook must survive
+    `npm pack` and be wired on `create`, per the 2026-07-10 tarball lesson;
+  - **exact `^Co-Authored-By:` matching** — with the colon, not the bare phrase.
+    Prose discussing the rule can legitimately begin a wrapped line with those
+    words;
+  - **tests** for `git commit -m`, `-F`, editor/template commits, casing
+    variants, multiple trailers, and legitimate prose that must not be rejected.
+
   **P1 scope rule:** mechanically enforce objective signals first—CHANGELOG
   policy, branch/PR path, required checks, and approval artifacts where their
   semantics are explicit. Do not claim that a superficial marker proves human

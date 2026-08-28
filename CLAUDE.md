@@ -28,8 +28,10 @@ Concretely, that means:
 - **Not bootstrapped.** There is nothing here to fill in; `/bootstrap` is what an
   adopting project runs. A `{{PLACEHOLDER}}` in a root file is a defect (item 76),
   never a value to guess.
-- **Not a SaaS application.** `apps/` and `packages/` hold a small layered
-  reference example that ships as documentation. The source is `src/cli/`.
+- **Not a SaaS application.** `apps/`, `packages/` and `infra/` hold a small
+  layered reference example kept **in this repository only** — they are excluded
+  from the `package.json` `files` allowlist and are not distributed on npm. The
+  source is `src/cli/`.
 - **No 10-stage product workflow** for maintainer work. Sizing and fast lanes
   still apply — see `docs/process/task-size-policy.md`.
 
@@ -46,6 +48,13 @@ These bind here regardless of what the shipped templates say:
 | **Lessons** | When a correction reveals a repeatable failure, record it in `tasks/lessons.md` **in the same session**, not later. |
 | **Destructive actions** | No force-push to `dev`/`main`, no history rewrite on pushed branches, no deletion outside an explicit request. |
 
+> This six-row contract stays **in this file**, not in a rule file. It is short,
+> always loaded, and an agent must know it *before* choosing a workflow — moving
+> it into `.claude/rules/` would make the identity boundary conditional context,
+> which is the original problem. A future
+> `.claude/rules/scaffold-maintainer-rules.md` may hold expanded detail; this
+> table stays here as the authoritative summary and links to it.
+
 **Root `.claude/rules/` remains binding** — `branching-rules`, `ai-coding-rules`,
 `coding-standards`, `review-rules`, `testing-rules`, `security-rules`,
 `token-usage-rules`, `governance`. Where a root rule presumes a generated project
@@ -61,7 +70,8 @@ it is, prefer asking over assuming a rule is inapplicable.
 bin/ai-scaffold.js      CLI entry point
 src/cli/commands/       create, init, update, status, doctor, list, export-context
 src/cli/core/           copy, file-plan, prompts, manifest, content-templates, …
-templates/<profile>/    what ships to a generated project — 5 profiles, kept identical
+templates/<profile>/    what ships to a generated project — 5 profiles that share a
+                        common governance corpus but intentionally differ by stack
 scripts/                maintainer tooling: pre-publish-smoke, token-report, release checks
 docs/                   architecture, process, estimates, brd, setup
 tasks/                  todo/ (per-ticket), done/, lessons.md
@@ -153,8 +163,9 @@ The corpus under `templates/*/.claude/` is the product. When changing it:
   `ais create`; the second must survive it.
 - A new project placeholder needs a matching entry in `resolvePlaceholders`
   (`src/cli/core/content-templates.js`) or it ships unresolved to every adopter.
-- Governance surface has a running cost: 140,531 est-tokens across 94 files.
-  `npm run token-report` before and after.
+- Governance surface has a running cost. Run `npm run token-report` before and
+  after — it reports the current corpus size by category. Do not quote a token
+  figure in prose; it goes stale within a commit or two.
 
 ---
 
