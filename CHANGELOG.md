@@ -270,6 +270,26 @@ This file is configured with `merge=union` in `.gitattributes` so parallel addit
   cannot observe: harmless here, load-bearing in an adopting team's repo. The write-side twin of item 26 and sequenced
   after it: the read side must establish what "effective" means before the write
   side converges on it.
+- **Backlog item 77 — placeholder-substitution audit of generated projects.**
+  Audited by generating real projects and inspecting the output rather than
+  reading templates. The mechanism is sound: identity, stack, commands and every
+  generated file come out clean, and 48 of the 49 files containing `{{…}}` hold
+  legitimate authoring slots or GitHub Actions `${{ }}` syntax. Three real gaps,
+  all in the token map:
+  **D1** `.claude/memory/project-context.md` ships with live `{{CURRENT_EPIC}}`
+  and `{{SPRINT_NUMBER}}`, which `what-next.md` names as a Stage 0 halt signal —
+  so `/what-next` tells a freshly-created project to run `/bootstrap` while its
+  manifest says `bootstrapped: true`. Token-name drift: the map wires
+  `{{EPIC_NAME}}` while the file uses `{{CURRENT_EPIC}}`, and the value already
+  exists as `project.firstEpic`.
+  **D2** `lifecycleStage` is collected, computed and stored, then overridden by a
+  hardcoded `'Active Development'` literal — `--lifecycle-stage production`
+  produces `context.md: production` and `CLAUDE.md: Active Development`.
+  **D3** 8 tech-stack rows are hardcoded `N/A` and never asked, plus 3 hardcoded
+  opinions (GitHub Actions, GitHub Projects, UNLICENSED); 21 of 34 tokens come
+  from user input, 13 are constants.
+  **D4** `{{RUNTIME}}` is a dead token.
+
 
 ## [0.14.0] - 2026-08-21
 
