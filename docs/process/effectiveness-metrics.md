@@ -1,7 +1,7 @@
 # Scaffold Effectiveness Metrics — Definitions
 
-**Version:** 1.0
-**Date:** 2026-08-27
+**Version:** 1.1
+**Date:** 2026-08-27 (v1.1 same day — M-04 population corrected to adopting projects)
 **Owner:** Lajin M J
 **Spec:** `docs/brd/74-scaffold-effectiveness-baseline-brd.md` (Approved v2.0), FR-01 – FR-05, FR-26
 
@@ -101,11 +101,22 @@ a zero asserts an observation that was never made.
   - self-merge (author approved their own PR)
   - direct push to `dev`/`main`, skipping the PR
   - force-push to a protected branch
-- **Denominator:** merged PRs in the window.
+- **Population:** **adopting projects only** (pilot projects, item 55). The `ai-scaffold` repository
+  is excluded — maintainer directive 2026-08-27: the scaffold repo is the tool, not a governed
+  project, and is not subject to the gates it ships. Counting bypasses of gates that were never
+  meant to apply here would measure nothing.
+- **Denominator:** merged PRs in an adopting project, in the window.
 - **Kind:** artifact.
-- **Status:** **null.** Starts when item 26 ships its GitHub query surface (`FR-27` — reuse it, do
-  not build a second one).
+- **Status:** **null**, with a **compound** start condition — both must be true: (a) item 26 has
+  shipped its GitHub query surface (`FR-27` — reuse it, do not build a second one), and (b) at least
+  one pilot project (item 55) is running and its `doctor` output is available.
+- **Known weakness:** with two pilots at most, the denominator will be far below 10, so `FR-14`
+  applies — raw counts only, no derived rate.
 
+> **Scope note (2026-08-27).** This metric's population is adopting projects, not this repository.
+> The scaffold repo's own merge and protection history is out of scope by directive, not by
+> oversight.
+>
 > **Explicitly not measured, by construction (`FR-26`).** These are real bypasses that leave no
 > durable artifact, and they are named here so their absence is not read as zero:
 > - `git commit --no-verify` — produces a byte-identical commit; nothing records the skip.

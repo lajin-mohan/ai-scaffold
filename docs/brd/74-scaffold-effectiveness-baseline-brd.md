@@ -1,7 +1,7 @@
 # Business Requirements Document
 **Project:** ai-scaffold
 **Feature:** Scaffold Effectiveness Baseline (backlog item 74 — Wave 0)
-**Version:** 2.0
+**Version:** 2.1
 **Date:** 2026-08-27
 **Status:** **Approved** — 2026-08-27. Q-01, Q-02 and Q-03 resolved by the maintainer; see §9
 **Author:** Claude (Cowork session), executing `/create-brd` and `.claude/agents/solution-analyst.md` manually — the Claude Code CLI commands are not available in this runtime
@@ -81,7 +81,7 @@ The seven families named in item 74. Every requirement, rule and criterion below
 | M-01 | Install and golden-path success | **No** — `pre-publish-smoke.sh` greps the generated README for the documented commands, it does not run them. Item 65's Wave 1 follow-up exists to change that. Null with start condition per BR-04 |
 | M-02 | Upgrade conflicts | **No** — no upgrade path exists until item 25 ships. Null with start condition |
 | M-03 | Maintenance effort | Yes — git-derived (files touched per change, cross-profile duplicate edits) |
-| M-04 | Bypass frequency | Partly — GitHub-observable events only (FR-25); API retrievability still unverified, and unobservable bypasses are out by construction (FR-26) |
+| M-04 | Bypass frequency | **No** — population corrected 2026-08-27 to **adopting projects only**; the scaffold repo is not a governed project. Compound start condition: item 26 shipped **and** a pilot running. GitHub-observable events only (FR-25) |
 | M-05 | Rework | Partly — artifact-derived for this repo; self-reported for pilots. No pre-Wave-1 history, so trend only per BR-08 |
 | M-06 | Escaped defects | Yes — git/CHANGELOG-derived for this repo |
 | M-07 | False completion claims | Partly — `tasks/lessons.md` gives caught instances only; proposed definition at Q-04. Trend only per BR-08 |
@@ -277,5 +277,6 @@ definition the maintainer may override without reopening approval.
 | Version | Date | Author | Change |
 |---|---|---|---|
 | 1.0 | 2026-08-27 | Claude (Cowork) | Initial draft from backlog item 74 and the companion solution analysis |
+| 2.1 | 2026-08-27 | Lajin M J / Claude (Cowork) | Maintainer directive: the `ai-scaffold` repo is the tool, not a governed project. M-04's population corrected from this repository to adopting projects, with a compound start condition (item 26 shipped **and** a pilot running). M-01, M-02, M-03, M-05, M-06, M-07 and M-08 are unaffected — they measure the product and its development, not governance applied to this repo |
 | 2.0 | 2026-08-27 | Lajin M J / Claude (Cowork) | **Approved.** Q-01 retro-computable baseline with a dated cut-off; Q-02 strictly local, no telemetry; Q-03 GitHub-observable bypasses only. Q-05–Q-09 resolved as consequences; Q-04 carries a proposed definition. Added FR-15, FR-16, §5.4 (FR-25–FR-28), BR-08, BR-09. Solution-analyst deviation closed |
 | 1.1 | 2026-08-27 | Claude (Cowork) | Verification pass (two rounds): added the `M-xx` metric ID class (§3a); corrected the golden-path source — `pre-publish-smoke.sh` greps READMEs, it does not execute the documented commands, so M-01 is null at baseline (new FR-05, AC-09); recorded the solution-analyst rule deviation; recorded the Wave 0 / Wave 4 split; made AC-02/03/07/08 mechanically checkable and added AC-09–AC-12 to cover FR-05, FR-13, FR-22 and BR-01 |

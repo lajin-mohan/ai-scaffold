@@ -201,3 +201,30 @@ this data, by design.
 **Snapshot #2** should be taken after Wave 1 completes, and should add M-04 once item 26 ships its
 GitHub query surface. Per `BR-06` it is a new dated file, not an edit of this one. Per `BR-07` any
 improvement claim names the metric ID and both snapshot dates.
+
+---
+
+## Amendment — 2026-08-27 (same day, after capture)
+
+**Recorded values above are unchanged.** `BR-06` forbids editing a snapshot in place; a scope
+correction is not a re-run, so it is appended here rather than rewritten above.
+
+**What changed:** the maintainer scoped the scaffold's governance to **generated projects**. The
+`ai-scaffold` repository is the tool, not a governed project — it keeps its build, test and release
+workflows and is not subject to the branch, commit or CI gates it ships.
+
+**Effect on this snapshot: one metric.**
+
+- **M-04 (bypass frequency)** — the start condition recorded above ("when item 26 ships its GitHub
+  query surface") is **incomplete as written**. M-04's population is now adopting projects, not this
+  repository, so the condition is compound: item 26 shipped **and** at least one pilot (item 55)
+  running with `doctor` output available. Snapshot #2 must use the corrected condition. The recorded
+  value — null — was and remains correct.
+- **M-01, M-02, M-03, M-05, M-06, M-07, M-08 — unaffected.** They measure the product and how it is
+  developed (profile golden paths, upgrade conflicts, maintenance cost, rework, escaped defects,
+  recorded false-done claims, governance surface), none of which depends on the scaffold repo being
+  a governed project.
+
+**Not a defect in the capture.** The scope was clarified after the snapshot was taken. It is recorded
+here because a start condition that is wrong by the time snapshot #2 runs would silently produce a
+metric nobody can interpret.

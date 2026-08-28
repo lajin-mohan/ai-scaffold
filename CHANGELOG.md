@@ -130,6 +130,14 @@ This file is configured with `merge=union` in `.gitattributes` so parallel addit
   Q-04's definition stays Proposed. **Wave 1 is unblocked.**
   ADR-003 records why no HLD was produced for an M-sized item.
 
+  **Amended the same day** after the maintainer scoped the scaffold's governance
+  to generated projects: the `ai-scaffold` repository is the tool, not a governed
+  project. Only M-04 (bypass frequency) is affected — its population moves from
+  this repository to adopting projects, and its start condition becomes compound
+  (item 26 shipped **and** a pilot running). Snapshot #1's recorded values are
+  left untouched per BR-06; the correction is appended as an amendment rather
+  than rewritten, since a scope correction is not a re-run.
+
 ## [0.14.0] - 2026-08-21
 
 ### Added
