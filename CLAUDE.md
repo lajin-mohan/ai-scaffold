@@ -5,19 +5,24 @@ This file governs how Claude, Codex, and other AI tools collaborate on every pro
 ---
 
 > [!IMPORTANT]
-> **TEMPLATE STATE — placeholders below are intentional**
+> **You are working on the tool, not on a project built with it.**
 >
-> If you see bracket-placeholders in the Project Identity or Tech Stack table below, the scaffold has not been bootstrapped for a real project yet. Do not treat them as bugs to fix or guess at values. Run `/bootstrap` instead — it walks through identity, stack, tenancy, and compliance one decision at a time and updates every file that holds a placeholder.
->
-> While in template state, generated projects do not receive a CI workflow by
-> default. Add CI through project-specific setup or a future AI Scaffold CI pack.
+> This repository *is* AI Scaffold. It has no `{{PLACEHOLDER}}` values to fill and
+> `/bootstrap` is not run here — bootstrap is what an adopting project runs. The
+> project-facing template lives under `templates/`; this file governs work on the
+> scaffold itself.
 >
 > **This repository is the tool, not a governed project.** The branch, commit and
 > CI gates defined here are a deliverable — they apply to projects generated from
 > this scaffold. The scaffold repository keeps only its own build, test and
 > release workflows and is not subject to the gates it ships.
 >
-> If you are editing this template itself (improving rules, agents, commands), the placeholders stay. If you are starting a real project, run `/bootstrap` first.
+> **Known inconsistency (backlog item 76).** Several root files are still
+> un-substituted copies of the project template and carry live project
+> placeholders — `.cursorrules` (8), `.github/copilot-instructions.md` (6),
+> `.claude/memory/project-context.md` (6). They are not bugs to "fix" by guessing
+> values, and they must not be bootstrapped. Item 76 replaces them with
+> scaffold-owned files.
 
 ---
 

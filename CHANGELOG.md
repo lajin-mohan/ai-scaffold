@@ -33,6 +33,17 @@ This file is configured with `merge=union` in `.gitattributes` so parallel addit
   lives only under `templates/`. Pairs with item 34 and changes what M-08
   measures.
 
+  The rule it enforces: **scaffold-owned files must not carry project
+  placeholders.** The repo is permanently half-bootstrapped — `.cursorrules` (8),
+  `.github/copilot-instructions.md` (6) and `.claude/memory/project-context.md`
+  (6) are still un-substituted template copies, and `/bootstrap` is correctly
+  never run here, so they stay that way. This is the root cause of the
+  `/what-next` Stage 0 false positive: `{{CURRENT_EPIC}}` in
+  `project-context.md` is a documented bootstrap-detection signal, so a literal
+  run reports "BLOCKED — run /bootstrap" on a published v0.14.0 package.
+  Authoring placeholders inside output templates (`{{FEATURE_NAME}}` in
+  `brd-template.md`) are legitimate and explicitly excluded.
+
 
 ## [0.14.0] - 2026-08-21
 

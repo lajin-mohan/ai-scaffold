@@ -134,6 +134,27 @@ unless a UI-heavy pilot provides evidence to raise it.
   shrinks 34's blast radius from 6 copies to 5. Either order works; do not do
   them simultaneously.
 
+  **Rule this item enforces:** *scaffold-owned files must not carry project
+  placeholders.* The repo is permanently half-bootstrapped — root `CLAUDE.md` has
+  its identity filled in, but `.cursorrules` (**8** placeholders),
+  `.github/copilot-instructions.md` (**6**) and `.claude/memory/project-context.md`
+  (**6**, including `{{CURRENT_EPIC}}` and `{{SPRINT_NUMBER}}`) are still
+  un-substituted template copies, plus `business-rules.md` (2) and
+  `architecture-decisions.md` (3). `/bootstrap` is correctly never run here, so
+  they will sit un-substituted forever.
+
+  Distinguish two kinds of `{{...}}` and do not sweep them together: **project
+  placeholders** awaiting bootstrap (the list above — these are the defect) and
+  **authoring placeholders** inside output templates such as
+  `.claude/templates/brd-template.md`'s `{{FEATURE_NAME}}` (legitimate, keep).
+
+  **This is the root cause of the `/what-next` Stage 0 false positive** found
+  2026-08-27: `what-next.md` lists `{{CURRENT_EPIC}}` in
+  `.claude/memory/project-context.md` as a bootstrap-detection signal that halts
+  before every other stage. Run literally in this repo, `/what-next` reports
+  "🔴 BLOCKED — run `/bootstrap`" on a published v0.14.0 package. Fixing item 76
+  fixes that without needing a special case in `what-next.md`.
+
   **Affects M-08.** `token-report` measures the root corpus (94 files, 140,531
   est-tokens at 2026-08-27). Shrinking root changes what the metric counts, so
   `docs/process/effectiveness-metrics.md` needs a note and snapshot #2 must not
