@@ -12,6 +12,14 @@ This file records patterns from mistakes and corrections. Claude reads this at t
 
 <!-- Add lessons below as they are captured. Most recent at the top. -->
 
+## 2026-08-27 — A documented, already-corrected rule lost to a tool default; the "fix" that closed it never covered the path in use
+
+- **Mistake:** Every commit across four branches carried an AI-attribution trailer — 22 commits. This is the **second occurrence of an identical failure**: the `2026-05-10` entry in this file records the same mistake, the correction, and the resulting rule. `.claude/rules/branching-rules.md:79` prohibits it explicitly and line 314 lists it under prohibited actions. That rules file had been read in the same session. Caught only in human review.
+- **Why:** Two causes, and the second is the important one. (a) The assistant's own default behaviour adds the trailer, and that default won over a repository rule that had been read but not treated as overriding. (b) The enforcement recorded as *closing* the `2026-05-10` lesson — a `~/.gitmessage` template containing no attribution block — **does not apply to `git commit -m` or `-F`**, which bypass the template entirely. Every commit in this session used `-m` or `-F`. The lesson was marked closed by a control that never covered the path actually used.
+- **Rule:** **A repository rule overrides a tool's default, always** — re-read the commit-identity section before the first commit of a session and check the message being written, because the commit template is not a control for non-interactive commits. **This lesson stays open until a `commit-msg` hook rejects attribution mechanically.** Note for whoever writes it: match the trailer form (`^Co-Authored-By:`, with the colon), not the bare phrase — prose discussing the rule can legitimately begin a wrapped line with those words, as this entry's own commit message did.
+- **Wider point:** a lesson is not closed by a control that does not cover the path in use. When recording enforcement, name the paths it covers. This is backlog item 66's finding — prose is not enforcement — reached from a different direction.
+
+
 ## 2026-07-10 - npm silently strips `.gitignore` from tarballs; verify the packed artifact, not the source tree
 
 - **Mistake:** Published `v0.8.6` where every generated project had **no `.gitignore`** — a fresh `ais create` produced a git-initialized project with nothing ignored, so a later `.env`, secret, or `node_modules` was immediately committable. For a scaffold whose pitch is safe AI-assisted delivery, it shipped projects that leak secrets on first commit. It passed source lint, CI, tests, and the pre-publish smoke — all of which run from the working tree where the file exists. This is the SECOND occurrence of the class (v0.8.3 shipped inert hooks because `.claude/settings.json` was stripped the same way). Caught only by `npm install @lajin.m/ai-scaffold@0.8.6` and generating a project.

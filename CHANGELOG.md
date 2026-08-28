@@ -13,6 +13,17 @@ This file is configured with `merge=union` in `.gitattributes` so parallel addit
 
 ## [Unreleased]
 
+### Fixed
+- **AI attribution removed from 22 unmerged commits across four branches.**
+  `branching-rules.md:79` prohibits `Co-Authored-By` and any AI identity in
+  commit messages, and `tasks/lessons.md` already recorded this exact mistake on
+  `2026-05-10`. It recurred anyway. Messages rewritten; the new lesson records
+  the real root cause — the `~/.gitmessage` template cited as the `2026-05-10`
+  fix does not apply to `git commit -m`/`-F`, so the enforcement that closed
+  that lesson never covered the path actually used. **A `commit-msg` hook is
+  still needed**; until then the rule is prose, which is backlog item 66's
+  finding reached from another direction.
+
 ### Changed
 - **`CLAUDE.md` replaced with a scaffold-owned draft — approved design, partial
   implementation.** This is **not** the completed item 76 split. Root
