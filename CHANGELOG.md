@@ -21,7 +21,7 @@ This file is configured with `merge=union` in `.gitattributes` so parallel addit
   the configured CLI checks for `/review`.
 
 ### Added
-- **Backlog item 76 — split scaffold-owned governance from shipped governance.**
+- **Backlog item 76 — give the scaffold repository its own governance.**
   The repo currently governs itself with a copy of what it sells: root
   `CLAUDE.md` is a hand-diverged near-duplicate of `templates/*/CLAUDE.md` (69
   changed lines), and root `.claude/` is a 6th copy of the corpus (agents 17/17
@@ -32,6 +32,16 @@ This file is configured with `merge=union` in `.gitattributes` so parallel addit
   content split: root `CLAUDE.md` becomes scaffold-owned, the project template
   lives only under `templates/`. Pairs with item 34 and changes what M-08
   measures.
+
+  Reframed after discussion: the problem is **two identities in one file set**,
+  not duplication. An agent working here reads rules written for a team building
+  a SaaS application and cannot tell whether it is editing the tool or a project
+  built with it. The directory layout is already correct — `/.claude` is the
+  scaffold's, `/templates/*/.claude` ships — so this is an authoring job, not
+  restructuring. A draft scaffold-owned `CLAUDE.md` on
+  `docs/scaffold-self-governance` runs **144 lines / ~1,600 est-tokens against
+  486 / ~7,170**. Sequenced **before** item 34, and paired with a
+  `pre-publish-smoke.sh` assertion so the two file sets cannot silently re-merge.
 
   The rule it enforces: **scaffold-owned files must not carry project
   placeholders.** The repo is permanently half-bootstrapped — `.cursorrules` (8),

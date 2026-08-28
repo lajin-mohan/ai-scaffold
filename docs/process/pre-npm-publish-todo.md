@@ -99,66 +99,66 @@ unless a UI-heavy pilot provides evidence to raise it.
   for BRDs, ADRs, tasks, and handoffs: identity, status, phase, owner, approval,
   dependency, supersession, evidence, and requirement/test references. Preserve
   readable Markdown bodies and operational checklist restatement. *(P1, medium)*
-- **76. Split scaffold-owned governance from shipped governance.** Raised
-  2026-08-27 alongside the directive that this repository is the tool, not a
-  governed project. Today the two are the same files, so the scaffold governs
-  itself with a copy of what it sells.
+- **76. Give the scaffold repository its own governance.** Raised 2026-08-27.
+  **The problem is not duplication, it is two identities in one file set.** Root
+  `CLAUDE.md`, `.claude/`, `AGENTS.md` and `.cursorrules` are filled-in copies of
+  the project template, so an agent working here reads rules written for a team
+  building a SaaS application. It cannot tell whether it is editing the tool or a
+  project built with the tool, and it inherits a 10-stage BRD → architecture →
+  UX → code workflow for work that is actually "edit a Markdown rule, bump a
+  version, cut an npm release."
 
-  **Measured duplication:** root `CLAUDE.md` (28,463 B) is a hand-diverged
-  near-duplicate of `templates/*/CLAUDE.md` (28,020 B) — 69 changed lines, and
-  the 5 template copies are byte-identical to each other. Root `.claude/` is
-  effectively a **6th copy** of the corpus: agents **17/17 identical**, commands
-  **33/35**, templates **13/13**, rules **9/17**. `AGENTS.md` and
-  `.claude/MEMORY.template.md` are byte-identical root-to-template;
-  `.cursorrules` and `.claude/settings.json` differ.
+  **The directory layout is already correct.** `/.claude` is the scaffold's;
+  `/templates/*/.claude` is what ships. Nothing needs restructuring. Root's
+  *contents* were seeded from the template and never rewritten. This is an
+  authoring job, not surgery — which makes it far smaller than it first looks.
 
-  **Precedent already in the repo:** `README.md` (npm-facing),
-  `README.scaffold.md` (scaffold-internal) and `templates/*/README.template.md`
-  (what a generated project gets), declared in `.ai-scaffold.json`
-  `documentation`. The same three-way separation is what the governance files
-  need.
+  **Evidence.** Root `CLAUDE.md` is a hand-maintained fork of the template at 69
+  changed lines. Root `.claude/` is a 6th copy: agents **17/17 identical**,
+  commands **33/35**, templates **13/13**, rules **9/17**. Root's Tech Stack
+  table is 11 rows of `N/A — CLI tool`, present only because the template has a
+  Tech Stack table. Root loads 10 `/ux-*` commands and 4 UX agents that have no
+  meaning when the deliverable is a CLI. `.cursorrules` (**8**),
+  `.github/copilot-instructions.md` (**6**) and
+  `.claude/memory/project-context.md` (**6**) still carry live project
+  placeholders, and `/bootstrap` correctly never runs here, so they stay
+  un-substituted forever.
 
-  **Mechanism constraint — decides the shape.** Claude Code loads `CLAUDE.md`
-  **by filename**. A sibling `CLAUDE.scaffold.md` would never be read, so the
-  split cannot mirror README's naming literally. Scaffold-owned content must live
-  *in* root `CLAUDE.md`; the shipped template must live only under `templates/`.
+  **Mechanism constraint.** Claude Code loads `CLAUDE.md` **by filename**, so the
+  `README.md` / `README.scaffold.md` naming cannot be mirrored: a sibling
+  `CLAUDE.scaffold.md` would never be read. Scaffold-owned content goes *in* root
+  `CLAUDE.md`; the project template lives only under `templates/`.
 
-  | Shape | Verdict |
-  |---|---|
-  | **A. Content split.** Root `CLAUDE.md` becomes short, scaffold-owned governance about building and releasing the CLI. The project template exists only at `templates/*/CLAUDE.md`. Root stops carrying a copy of the shipped corpus | **Recommended** — works with the loading mechanism, removes the 6th copy |
-  | B. Add `CLAUDE.scaffold.md` beside `CLAUDE.md`, mirroring README's names | Rejected on mechanism: the tool would not load it |
+  **Shape.** Root files are rewritten for the work actually done here — verify
+  the packed tarball not the working tree; a release is not shipped until
+  `npm view` confirms it; change all 5 profiles or none; a root placeholder is a
+  defect; when a flow is designed out, its docs go in the same change. A draft
+  scaffold-owned `CLAUDE.md` exists on `docs/scaffold-self-governance`:
+  **144 lines / ~1,600 est-tokens against 486 lines / ~7,170 today**, a ~78%
+  reduction in what loads every session. Same treatment for `AGENTS.md`,
+  `.cursorrules`, `.github/copilot-instructions.md` and `.claude/memory/*`, whose
+  files should hold real scaffold state rather than template stubs.
 
-  **Sequencing with item 34** (de-duplicate the 5 profiles into a shared base
-  plus overlays): the same problem one level down. Doing **34 first** makes 76
-  nearly free — 76 becomes "root stops consuming the overlay". Doing **76 first**
-  shrinks 34's blast radius from 6 copies to 5. Either order works; do not do
-  them simultaneously.
+  **The real cost, recorded.** Today the root copy is read by agents daily, so
+  defects in the shipped corpus surface through use. Stop dogfooding and nothing
+  exercises it. The mitigation is item **65's follow-up** — CI that generates a
+  project and runs its documented commands. **This item makes 65's follow-up more
+  important, not less.**
 
-  **Rule this item enforces:** *scaffold-owned files must not carry project
-  placeholders.* The repo is permanently half-bootstrapped — root `CLAUDE.md` has
-  its identity filled in, but `.cursorrules` (**8** placeholders),
-  `.github/copilot-instructions.md` (**6**) and `.claude/memory/project-context.md`
-  (**6**, including `{{CURRENT_EPIC}}` and `{{SPRINT_NUMBER}}`) are still
-  un-substituted template copies, plus `business-rules.md` (2) and
-  `architecture-decisions.md` (3). `/bootstrap` is correctly never run here, so
-  they will sit un-substituted forever.
+  **Guard against silent re-merge.** Add an assertion to
+  `scripts/pre-publish-smoke.sh` — product QA, not a governance gate on this repo
+  — that root governance files contain no project placeholders and are not
+  byte-identical to their `templates/generic/` equivalents. Without it, the next
+  file copied up to root quietly recreates the problem.
 
-  Distinguish two kinds of `{{...}}` and do not sweep them together: **project
-  placeholders** awaiting bootstrap (the list above — these are the defect) and
-  **authoring placeholders** inside output templates such as
-  `.claude/templates/brd-template.md`'s `{{FEATURE_NAME}}` (legitimate, keep).
-
-  **This is the root cause of the `/what-next` Stage 0 false positive** found
-  2026-08-27: `what-next.md` lists `{{CURRENT_EPIC}}` in
-  `.claude/memory/project-context.md` as a bootstrap-detection signal that halts
-  before every other stage. Run literally in this repo, `/what-next` reports
-  "🔴 BLOCKED — run `/bootstrap`" on a published v0.14.0 package. Fixing item 76
-  fixes that without needing a special case in `what-next.md`.
+  **Sequence before item 34.** Doing 76 first removes root from the equation, so
+  34 designs base-plus-overlays for 5 uniform copies instead of 5 plus one
+  special case. (This revises an earlier note that said either order worked.)
 
   **Affects M-08.** `token-report` measures the root corpus (94 files, 140,531
-  est-tokens at 2026-08-27). Shrinking root changes what the metric counts, so
-  `docs/process/effectiveness-metrics.md` needs a note and snapshot #2 must not
-  read the drop as governance being pruned. *(P1, medium–large)*
+  est-tokens at 2026-08-27). Shrinking root changes what the metric counts;
+  `docs/process/effectiveness-metrics.md` needs a note so snapshot #2 does not
+  read the drop as governance being pruned. *(P1, medium)*
 
 - **74. Scaffold-effectiveness baseline and metrics.** Record install and
   golden-path success, upgrade conflicts, maintenance effort, bypass frequency,
