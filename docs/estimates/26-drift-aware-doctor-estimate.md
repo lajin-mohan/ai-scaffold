@@ -56,7 +56,7 @@ Business days, 1 day = 7.5 productive hours.
 | C-03 administrator bypass (`enforce_admins` + ruleset bypass actors) | 0.25 | 0.5 | 1.0 | Two sources to merge. **Confirmed authentication-gated** — `bypass_actors` is absent from anonymous ruleset detail and `/protection` returns 401 |
 | C-04 real `.git/hooks/pre-commit` check, kept separate from `checkHooksWired` | 0.25 | 0.25 | 0.5 | Pure filesystem. Lowest risk item in the set |
 | Degradation paths — no `gh`, no auth, no remote, non-GitHub, timeout | 0.5 | 1.0 | 2.0 | Five paths, each needing a distinct reason string |
-| `--require-remote` flag + scaffold CI wiring (Q-01 = D) | 0.25 | 0.25 | 0.5 | Reuses the `unavailable` state machine |
+| `--require-remote` flag + docs for adopting projects (Q-01 = D) | 0.25 | 0.25 | 0.5 | Reuses the `unavailable` state machine. **Not** wired into the scaffold repo's own CI |
 | Repo resolution via `gh repo view` + `--repo` override + naming the repo in output (Q-03 = C) | 0.25 | 0.5 | 1.0 | Delegates SSH/HTTPS/rewrite handling to `gh` |
 | `--json` extension + `state`/`verifiedBy`/`reason` fields | 0.25 | 0.5 | 1.0 | |
 | Documented query contract for M-04 | 0.25 | 0.5 | 0.75 | |
@@ -85,17 +85,14 @@ Business days, 1 day = 7.5 productive hours.
 | ~~Reads may require `admin:repo`~~ — **disproved for the coarse tier on a public repo** (readable with no token at all) | — | — | — | C-01 and C-02 reach every user of a public repo |
 | **Private repositories are untested.** Anonymous access worked because this repo is public; most adopters are private | **High** | **High** | — | Highest-value remaining question. Close it before committing the total |
 | `gh` absent on most user machines | High | Med | — | Degradation paths are 1.0 realistic day of the estimate precisely because of this |
-| **Confirmed:** Q-02 = B turns this repo's own gaps into CI failures | **High** | Med | — | Contingency below, outside the total. Expect it to fire |
+| ~~Q-02 = B turns this repo's own gaps into CI failures~~ — **withdrawn.** The scaffold repo is not a governed project | — | — | — | No contingency carried |
 | Unclear requirements | Low | — | **not applied** | Requirements are specific; the unknown is an external API, which is priced as third-party risk, not requirement risk |
 
-**Contingency, now live and still outside the total.** Q-02 was answered **B** — detected gaps are
-`high` and fail the exit code. This repository's own protection settings may therefore fail `doctor`
-the first time the checks run, and `--require-remote` in the scaffold's CI (FR-16) guarantees the
-checks actually run there. Fixing whatever it finds is real work of unknown size, and it is a
-**finding, not a defect in this item**. Budget **+0.5 to +2 days** against the roadmap.
-
-The honest framing: if this fires, item 26 worked. The uncomfortable part is that the first thing it
-will report on is your own repo.
+**Contingency withdrawn (2026-08-27).** An earlier version of this estimate budgeted +0.5 to +2 days
+for `doctor` failing against the scaffold repository's own protection settings. The maintainer has
+since scoped the governance to **generated projects only** — the scaffold repo is the tool, not a
+governed project — so `--require-remote` is not wired into its CI and there is nothing here for the
+checks to fail against. **No contingency is carried.**
 
 ---
 

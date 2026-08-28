@@ -8,6 +8,12 @@
 **Author:** Claude (Cowork session), executing `/create-brd` and `solution-analyst` manually
 **Approved By:** Lajin M J (maintainer/owner), 2026-08-27
 
+> **Scope note — where these rules apply (maintainer directive, 2026-08-27).** The governance this
+> item builds applies to **generated projects**, not to the `ai-scaffold` repository. The scaffold
+> repo is the tool; it keeps its build, test and release workflows, and it is not itself subject to
+> the gates it ships. Nothing in this BRD asserts a requirement against the scaffold repo's own
+> branch protection, commit rules or CI gates.
+>
 > Companion analysis: `docs/brd/26-drift-aware-doctor-analysis.md`.
 > Backlog: `docs/process/pre-npm-publish-todo.md` → Phase 1 → item 26. Wave 1, rank 3, P0.
 > **Scope is the P0 enforcement slice only.** Managed-file drift and the `update` boundary are the
@@ -85,7 +91,7 @@ hook installation. Configured intent stops counting as a pass.
 | FR-13 | When a remote check is `unavailable`, the output SHALL name the one action that would make it available (install `gh`, authenticate, add a remote) | Should Have |
 | FR-14 | `unavailable` SHALL NOT affect the exit code by default (Q-01 = D) | Must Have |
 | FR-15 | A `--require-remote` flag SHALL make any `unavailable` remote check fail the exit code, for use in environments where `gh` is guaranteed | Must Have |
-| FR-16 | The scaffold's own CI SHALL invoke `doctor --require-remote`, so the checks are enforced somewhere even though most users see a report | Should Have |
+| FR-16 | Generated projects SHOULD be documented as able to run `doctor --require-remote` in their own CI. **The scaffold repository itself is out of scope** — it is the tool, not a governed project, and does not run its own governance gates | Should Have |
 
 ### 5.3 Output and integration
 
@@ -165,8 +171,8 @@ hook installation. Configured intent stops counting as a pass.
 
 | ID | Question | Status | Resolution |
 |---|---|---|---|
-| Q-01 | Offline / no-`gh` behaviour | **Resolved — option D** | `unavailable` does not affect the exit code by default; `--require-remote` opts into failing. Rationale: `gh` is absent on most machines, and a diagnostic that fails because a tool is missing gets removed from CI rather than fixed. The flag gives the scaffold's own CI, where `gh` is guaranteed, a way to enforce what most users only see reported |
-| Q-02 | Detected gap: gate or dashboard | **Resolved — option B** | Severity `high`, exit 1, reusing `doctor`'s existing rule. `high` already means "a core guarantee is inert", which is exactly what these checks detect. `critical` stays reserved for a broken installation. **Accepted consequence:** this may fail on the scaffold's own repo immediately — see the contingency in the estimate |
+| Q-01 | Offline / no-`gh` behaviour | **Resolved — option D** | `unavailable` does not affect the exit code by default; `--require-remote` opts into failing. Rationale: `gh` is absent on most machines, and a diagnostic that fails because a tool is missing gets removed from CI rather than fixed. The flag exists for an **adopting project's** CI, where the team can guarantee `gh`. It is **not** wired into the scaffold repository's own CI (see the scope note below) |
+| Q-02 | Detected gap: gate or dashboard | **Resolved — option B** | Severity `high`, exit 1, reusing `doctor`'s existing rule. `high` already means "a core guarantee is inert", which is exactly what these checks detect. `critical` stays reserved for a broken installation. The earlier contingency — that this would fail on the scaffold's own repo — **no longer applies**: the scaffold repo is not a governed project |
 | Q-03 | Repository resolution | **Resolved — option C** | `gh repo view --json nameWithOwner` with a `--repo` override, identical to `setup-branch-protection.sh:60`. The output names the repo it checked, so the fork case (where `gh` correctly returns the fork, not upstream) cannot be misread |
 | Q-04 | Ship to generated projects? | **Resolved** | **Yes.** `doctor` already ships, and these checks are most valuable in an adopting team's repo — that is where inert governance is least likely to be noticed |
 | Q-05 | Hook content hash, or presence + executable bit? | **Resolved** | **Presence and the executable bit only.** Content verification overlaps the managed-file drift slice deferred to Wave 2 with item 25 |
@@ -216,6 +222,7 @@ hook installation. Configured intent stops counting as a pass.
 
 | Version | Date | Author | Change |
 |---|---|---|---|
+| 2.1 | 2026-08-27 | Lajin M J / Claude (Cowork) | Maintainer directive: the scaffold repo is not a governed project. FR-16 retargeted from the scaffold's own CI to adopting projects; Q-01 and Q-02 rationales corrected; the "fails on our own repo" contingency withdrawn |
 | 2.0 | 2026-08-27 | Lajin M J / Claude (Cowork) | **Approved.** Q-01 = D (report-only by default, `--require-remote` to enforce), Q-02 = B (`high`, exit 1), Q-03 = C (`gh repo view` + `--repo`). Added FR-14–FR-16, FR-24, FR-34, FR-35, BR-06, BR-07, AC-10–AC-12. Q-04–Q-06 resolved as consequences |
 | 1.1 | 2026-08-27 | Claude (Cowork) | Verification pass: FR-33/AC-09 retargeted from `SECURITY.md` (which carries no shell-out claim) to the backlog's security-posture bullet; the "~4 day" comparison re-attributed as conversational, not a repo baseline; estimate subtotals corrected; check count 15, not "~20"; S→M escalation recorded; ADR-003 and item 74 BRD labeled cross-branch |
 | 1.0 | 2026-08-27 | Claude (Cowork) | Initial draft from backlog item 26 and the companion analysis |

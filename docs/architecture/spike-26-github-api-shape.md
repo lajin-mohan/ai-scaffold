@@ -198,29 +198,32 @@ Also item 74's M-04 extraction contract (`FR-27` of the item 74 BRD).
 
 ---
 
-## Governance findings about *this* repository
+## Observations about this repository
 
-Incidental to the spike, and both are exactly the class item 26 exists to detect.
+**Scope correction, 2026-08-27.** An earlier version of this section listed two of these as
+*governance findings*. They are not. The maintainer has scoped the scaffold's governance to
+**generated projects**: the `ai-scaffold` repository is the tool, not a governed project, and is
+deliberately not subject to the branch, commit or CI gates it ships. Retained below as **API
+observations** — they are evidence about how GitHub behaves, which is what the spike needed.
 
-**1. No status check is required on `main`.** Ruleset `protected-main` carries only `deletion`,
-`non_fast_forward` and `pull_request`. There is **no `required_status_checks` rule**, and
-`/rules/branches/main` confirms the same three. CI does run — `CI passed`, `CLI package checks`,
-`Publish to npm`, all green on the current head — but nothing observed makes them *required*. A red
-CI run does not appear to block a merge to `main`. Legacy protection on `main` could not be read
-without auth, so this needs confirming with a token before being treated as settled.
+**1. `main` is ruleset-governed; `dev` is legacy-protected.** Ruleset `protected-main` carries
+`deletion`, `non_fast_forward` and `pull_request` (1 approval,
+`require_last_push_approval: false`). `dev` reports `protected: true` with an empty effective-rules
+list. This is the evidence for FR-01 and BR-04 — a repo really can use a different mechanism per
+branch. **Not a criticism of this repo's configuration.**
 
-**2. `main` requires 1 approval, and the maintainer is the only approver.** With
-`required_approving_review_count: 1` and `require_last_push_approval: false`, a self-approval
-satisfies the gate. This is the self-merge case `FR-25` counts as a bypass.
+**2. No status check is required on `main` via the ruleset.** The legacy surface returned 401 and
+was not read, so this is an observation about the ruleset only, not a statement about effective
+protection. **Not a finding** — this repo is not held to the scaffold's gates.
 
-**3. The shipped write-side script is blind to the surface that governs `main`.**
+**3. The shipped write-side script is blind to the surface that governs `main`.** This one **is** a
+product defect, and it stands independently of how the scaffold repo is governed.
 `scripts/setup-branch-protection.sh` — shipped to all 5 profiles — writes only
 `PUT /branches/{b}/protection`. Its payload sets `require_last_push_approval: true` and
 `dismiss_stale_reviews: true`; ruleset `protected-main` sets **both to `false`**. The same two
-controls carry different values on two surfaces right now, the script prints `OK` regardless, and
-nothing reports which is in force. Raised as **backlog item 75**, sequenced after item 26 — the read
-side must establish what "effective" means before the write side tries to converge on it.
+controls carry different values on two surfaces, the script prints `OK` regardless, and nothing
+reports which is in force.
 
-**None of these is a defect in item 26.** They are the first three findings item 26 would have
-produced, and they arrived before it was built. Finding 3 in particular is the argument for the item:
-the scaffold currently ships a tool that configures governance it cannot observe.
+This repository is merely the specimen that made the behaviour visible. The defect is that **a
+shipped tool configures governance it cannot observe** — which would bite an adopting team, where
+the governance is real. Raised as **backlog item 75**, sequenced after item 26.
