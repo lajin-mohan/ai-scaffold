@@ -13,6 +13,27 @@ This file is configured with `merge=union` in `.gitattributes` so parallel addit
 
 ## [Unreleased]
 
+### Changed
+- **`CLAUDE.md` now states that this repository is the tool, not a governed
+  project.** The branch, commit and CI gates it defines are a deliverable that
+  applies to generated projects; the scaffold repo keeps only its own build,
+  test and release workflows. Replaces the line claiming this repository runs
+  the configured CLI checks for `/review`.
+
+### Added
+- **Backlog item 76 — split scaffold-owned governance from shipped governance.**
+  The repo currently governs itself with a copy of what it sells: root
+  `CLAUDE.md` is a hand-diverged near-duplicate of `templates/*/CLAUDE.md` (69
+  changed lines), and root `.claude/` is a 6th copy of the corpus (agents 17/17
+  identical, commands 33/35, templates 13/13, rules 9/17). `README.md` /
+  `README.scaffold.md` / `README.template.md` is the precedent, but the naming
+  cannot be mirrored literally — Claude Code loads `CLAUDE.md` by filename, so a
+  sibling `CLAUDE.scaffold.md` would never be read. Recommended shape is a
+  content split: root `CLAUDE.md` becomes scaffold-owned, the project template
+  lives only under `templates/`. Pairs with item 34 and changes what M-08
+  measures.
+
+
 ## [0.14.0] - 2026-08-21
 
 ### Added

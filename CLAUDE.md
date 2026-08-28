@@ -11,7 +11,11 @@ This file governs how Claude, Codex, and other AI tools collaborate on every pro
 >
 > While in template state, generated projects do not receive a CI workflow by
 > default. Add CI through project-specific setup or a future AI Scaffold CI pack.
-> This scaffold repository itself runs the configured CLI checks for `/review`.
+>
+> **This repository is the tool, not a governed project.** The branch, commit and
+> CI gates defined here are a deliverable — they apply to projects generated from
+> this scaffold. The scaffold repository keeps only its own build, test and
+> release workflows and is not subject to the gates it ships.
 >
 > If you are editing this template itself (improving rules, agents, commands), the placeholders stay. If you are starting a real project, run `/bootstrap` first.
 

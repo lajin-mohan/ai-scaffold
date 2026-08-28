@@ -99,6 +99,46 @@ unless a UI-heavy pilot provides evidence to raise it.
   for BRDs, ADRs, tasks, and handoffs: identity, status, phase, owner, approval,
   dependency, supersession, evidence, and requirement/test references. Preserve
   readable Markdown bodies and operational checklist restatement. *(P1, medium)*
+- **76. Split scaffold-owned governance from shipped governance.** Raised
+  2026-08-27 alongside the directive that this repository is the tool, not a
+  governed project. Today the two are the same files, so the scaffold governs
+  itself with a copy of what it sells.
+
+  **Measured duplication:** root `CLAUDE.md` (28,463 B) is a hand-diverged
+  near-duplicate of `templates/*/CLAUDE.md` (28,020 B) — 69 changed lines, and
+  the 5 template copies are byte-identical to each other. Root `.claude/` is
+  effectively a **6th copy** of the corpus: agents **17/17 identical**, commands
+  **33/35**, templates **13/13**, rules **9/17**. `AGENTS.md` and
+  `.claude/MEMORY.template.md` are byte-identical root-to-template;
+  `.cursorrules` and `.claude/settings.json` differ.
+
+  **Precedent already in the repo:** `README.md` (npm-facing),
+  `README.scaffold.md` (scaffold-internal) and `templates/*/README.template.md`
+  (what a generated project gets), declared in `.ai-scaffold.json`
+  `documentation`. The same three-way separation is what the governance files
+  need.
+
+  **Mechanism constraint — decides the shape.** Claude Code loads `CLAUDE.md`
+  **by filename**. A sibling `CLAUDE.scaffold.md` would never be read, so the
+  split cannot mirror README's naming literally. Scaffold-owned content must live
+  *in* root `CLAUDE.md`; the shipped template must live only under `templates/`.
+
+  | Shape | Verdict |
+  |---|---|
+  | **A. Content split.** Root `CLAUDE.md` becomes short, scaffold-owned governance about building and releasing the CLI. The project template exists only at `templates/*/CLAUDE.md`. Root stops carrying a copy of the shipped corpus | **Recommended** — works with the loading mechanism, removes the 6th copy |
+  | B. Add `CLAUDE.scaffold.md` beside `CLAUDE.md`, mirroring README's names | Rejected on mechanism: the tool would not load it |
+
+  **Sequencing with item 34** (de-duplicate the 5 profiles into a shared base
+  plus overlays): the same problem one level down. Doing **34 first** makes 76
+  nearly free — 76 becomes "root stops consuming the overlay". Doing **76 first**
+  shrinks 34's blast radius from 6 copies to 5. Either order works; do not do
+  them simultaneously.
+
+  **Affects M-08.** `token-report` measures the root corpus (94 files, 140,531
+  est-tokens at 2026-08-27). Shrinking root changes what the metric counts, so
+  `docs/process/effectiveness-metrics.md` needs a note and snapshot #2 must not
+  read the drop as governance being pruned. *(P1, medium–large)*
+
 - **74. Scaffold-effectiveness baseline and metrics.** Record install and
   golden-path success, upgrade conflicts, maintenance effort, bypass frequency,
   rework, escaped defects, and false completion claims. Capture the baseline
