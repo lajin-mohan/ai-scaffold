@@ -185,6 +185,16 @@ This file is configured with `merge=union` in `.gitattributes` so parallel addit
   **The HLD deliberately waits on the results** — writing it first would design
   against an unverified API.
 
+- **Backlog item 75** — the shipped `setup-branch-protection.sh` writes only the
+  legacy `PUT /branches/{b}/protection` surface and is blind to rulesets, which
+  are increasingly the default for new GitHub organisations. It ships to all 5
+  profiles. Found by running item 26's spike against this repository, where
+  ruleset `protected-main` and the script's payload disagree on two controls at
+  once (`require_last_push_approval` and stale-review dismissal), with nothing
+  reporting which is in force. The write-side twin of item 26 and sequenced
+  after it: the read side must establish what "effective" means before the write
+  side converges on it.
+
 ## [0.14.0] - 2026-08-21
 
 ### Added

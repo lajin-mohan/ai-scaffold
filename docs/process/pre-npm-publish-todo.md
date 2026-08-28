@@ -73,6 +73,7 @@ unless a UI-heavy pilot provides evidence to raise it.
 | 8 | P1 | Effectiveness metrics and baseline | 74 (new) | M | Proves whether governance reduces rework, defects, bypasses, and false-done claims |
 | 9 | P1 | Windows CI and a published compatibility matrix | 60 | M | Converts platform-support claims into evidence |
 | 10 | P1 | Enforce recurring objective misses: changelog, branch/PR path, checkable approval evidence | 66 expanded | S–M | Stops repeated failures without pretending prose is enforcement |
+| 10b | P1 | Ruleset-aware branch protection on the write side | 75 (new) | M | The shipped script writes only the legacy surface; on ruleset-governed repos it configures something other than what governs. Sequence after 26 |
 | 11 | P2 | Agent-facing design manifest, token validation, and token-aware review | `tasks/todo/P2-agent-facing-design-manifest.md` | M–L | Makes existing design governance concise and mechanically reviewable |
 
 ### Execution waves
@@ -111,6 +112,32 @@ unless a UI-heavy pilot provides evidence to raise it.
   for BRDs, ADRs, tasks, and handoffs: identity, status, phase, owner, approval,
   dependency, supersession, evidence, and requirement/test references. Preserve
   readable Markdown bodies and operational checklist restatement. *(P1, medium)*
+- **75. The shipped branch-protection script writes only the legacy surface and
+  is blind to rulesets.** Found 2026-08-27 while running item 26's API spike
+  against this repository. `scripts/setup-branch-protection.sh` — which ships to
+  **all 5 profiles** at `.ai-scaffold/setup/` — writes exclusively to
+  `PUT /repos/{o}/{r}/branches/{b}/protection`, the legacy API. Its only two
+  references to rulesets are `echo` lines telling the operator to configure them
+  by hand. GitHub applies **both** mechanisms where both exist, so on a
+  ruleset-governed repository the script's settings coexist with ruleset rules
+  rather than replacing them, and the script prints `OK` either way.
+
+  **Observed live in this repo, on `main`:** the ruleset `protected-main` sets
+  `require_last_push_approval: false` and `dismiss_stale_reviews_on_push: false`,
+  while the script's payload sets `require_last_push_approval: true` and
+  `dismiss_stale_reviews: true`. The same two controls carry different values on
+  two surfaces simultaneously, and nothing in the tooling reports which is in
+  force. Also on `main`: the ruleset requires **no status check at all** — only
+  `deletion`, `non_fast_forward` and `pull_request`. Whether the legacy surface
+  requires any could not be read without authentication, so this is unconfirmed,
+  not settled.
+
+  This is the write-side twin of item 26. Item 26 makes the state *readable*;
+  this item makes it *manageable*. Rulesets are increasingly the default for new
+  GitHub organisations, so a generated project's protection may be governed
+  entirely by a surface the shipped script cannot see or set. **Sequence after
+  item 26** — the read side establishes what "effective" means before the write
+  side tries to converge on it. *(P1, medium)*
 - **76. Give the scaffold repository its own governance.** Raised 2026-08-27.
   **The problem is not duplication, it is two identities in one file set.** Root
   `CLAUDE.md`, `.claude/`, `AGENTS.md` and `.cursorrules` are filled-in copies of

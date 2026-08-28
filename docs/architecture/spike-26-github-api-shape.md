@@ -213,5 +213,14 @@ without auth, so this needs confirming with a token before being treated as sett
 `required_approving_review_count: 1` and `require_last_push_approval: false`, a self-approval
 satisfies the gate. This is the self-merge case `FR-25` counts as a bypass.
 
-**Neither is a defect in item 26.** They are the first two findings item 26 would have produced, and
-they arrived before it was built.
+**3. The shipped write-side script is blind to the surface that governs `main`.**
+`scripts/setup-branch-protection.sh` — shipped to all 5 profiles — writes only
+`PUT /branches/{b}/protection`. Its payload sets `require_last_push_approval: true` and
+`dismiss_stale_reviews: true`; ruleset `protected-main` sets **both to `false`**. The same two
+controls carry different values on two surfaces right now, the script prints `OK` regardless, and
+nothing reports which is in force. Raised as **backlog item 75**, sequenced after item 26 — the read
+side must establish what "effective" means before the write side tries to converge on it.
+
+**None of these is a defect in item 26.** They are the first three findings item 26 would have
+produced, and they arrived before it was built. Finding 3 in particular is the argument for the item:
+the scaffold currently ships a tool that configures governance it cannot observe.

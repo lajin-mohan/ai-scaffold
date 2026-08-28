@@ -73,6 +73,11 @@ Both are the class item 26 exists to detect, found before it was built.
 2. **`main` requires 1 approval and the maintainer is the only approver**, with
    `require_last_push_approval: false` — so a self-approval satisfies the gate.
    This is the self-merge case `FR-25` counts as a bypass.
+3. **The shipped `setup-branch-protection.sh` writes only the legacy surface**
+   and sets `require_last_push_approval: true` / `dismiss_stale_reviews: true`,
+   while the ruleset governing `main` sets both to `false`. Two surfaces, two
+   values, no reporting of which is in force. Raised as **backlog item 75**,
+   sequenced after this one.
 
 ## Decision log
 
