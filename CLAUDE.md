@@ -16,17 +16,42 @@ Markdown rule file, you have read the wrong file set.
 
 ---
 
-## What this repository is not
+## How this repository is governed
 
-- **Not a governed project.** The branch, commit and CI gates defined in
-  `templates/` apply to generated projects. This repo keeps only its own build,
-  test and release workflows.
-- **Not bootstrapped.** There is nothing here to fill in. `/bootstrap` is what an
-  adopting project runs. **A `{{PLACEHOLDER}}` in a root file is a defect
-  (backlog item 76), never a value to guess.**
+**AI Scaffold is a project with its own governance.** It is governed by
+*scaffold-maintainer* rules — the ones below and in `.claude/rules/` — **not** by
+the generated-project governance it ships under `templates/`. Those are a
+deliverable, not rules for this repo.
+
+Concretely, that means:
+
+- **Not bootstrapped.** There is nothing here to fill in; `/bootstrap` is what an
+  adopting project runs. A `{{PLACEHOLDER}}` in a root file is a defect (item 76),
+  never a value to guess.
 - **Not a SaaS application.** `apps/` and `packages/` hold a small layered
-  reference example that ships as documentation. They are not this project's
-  source; the source is `src/cli/`.
+  reference example that ships as documentation. The source is `src/cli/`.
+- **No 10-stage product workflow** for maintainer work. Sizing and fast lanes
+  still apply — see `docs/process/task-size-policy.md`.
+
+### Maintainer operating contract
+
+These bind here regardless of what the shipped templates say:
+
+| | |
+|---|---|
+| **Commit identity** | All commits use the human owner's identity **only**. Never add `Co-Authored-By`, AI attribution, or any third-party identity. `branching-rules.md:79` and the `2026-05-10` lesson. If a commit carries one, rewrite it before push. |
+| **Plan and confirm** | State the plan and get agreement before multi-step or destructive work. |
+| **Verify before claiming done** | "Done" means checked against the artifact — the packed tarball, the registry, a generated project — not against the working tree or a green local run. |
+| **Task tracking** | One file per active ticket in `tasks/todo/`, moved to `tasks/done/` when complete. `CHANGELOG.md` is the permanent record. |
+| **Lessons** | When a correction reveals a repeatable failure, record it in `tasks/lessons.md` **in the same session**, not later. |
+| **Destructive actions** | No force-push to `dev`/`main`, no history rewrite on pushed branches, no deletion outside an explicit request. |
+
+**Root `.claude/rules/` remains binding** — `branching-rules`, `ai-coding-rules`,
+`coding-standards`, `review-rules`, `testing-rules`, `security-rules`,
+`token-usage-rules`, `governance`. Where a root rule presumes a generated project
+(UX gates, API standards, compliance scope), it does not apply here; **which
+rules those are has not yet been settled — that is open work in item 76.** Until
+it is, prefer asking over assuming a rule is inapplicable.
 
 ---
 
@@ -61,13 +86,18 @@ npm run release:check # release readiness
 npm run token-report  # governance corpus size (T0 baseline)
 ```
 
-Branches: `feature/*`, `fix/*`, `chore/*`, `docs/*` from `dev` → PR to `dev`;
-`dev` → `main` by a separate PR. `hotfix/*` from `main` is the one exception and
-requires a back-merge. Conventional Commits.
+Branches: `feature/*`, `fix/*`, `chore/*`, `docs/*` from `dev` → squash PR to
+`dev`. Conventional Commits.
 
-**Releases go through the one-button Release Action.** See
-`docs/setup/release-flow.md`. Cutting a release by hand from a `release/*` branch
-is how v0.12.0 sat untagged and unpublished for 9 days.
+**There is no promotion PR from `dev` to `main`.** Releases go through the
+one-button **Release** Action, which stamps the version and CHANGELOG on `dev`,
+**fast-forwards `main` to that exact commit**, then tags — and the tag push
+triggers publish. No release branch, no promotion PR, no sync PR. Fast-forward is
+what keeps `main` a true ancestor of `dev`, so there is nothing to sync back.
+Full contract: `docs/setup/release-flow.md`.
+
+Cutting a release by hand from a `release/*` branch is how v0.12.0 sat untagged
+and unpublished for 9 days.
 
 ---
 
@@ -86,9 +116,15 @@ wrong. Full detail in `tasks/lessons.md`.
    the **tag push**, not the merge to `main`. Treat every "done" / "merged" /
    "published" as a claim to verify against the registry.
 
-3. **Change all 5 profiles, or none.** 90.3% of commits touching `templates/`
-   touch two or more profile copies; 51.6% touch all five. A change landed in one
-   profile is a latent bug in four. (Item 34 exists to remove this tax.)
+3. **Shared changes go to every affected profile; stack-specific changes stay
+   scoped.** Governance and common template assets are byte-identical across the
+   five profiles — a shared change landed in one is a latent bug in four (90.3%
+   of `templates/` commits touch 2+ copies; 51.6% touch all five). But the
+   profiles **intentionally differ**: Python has `pyproject.toml` and
+   `test_smoke.py`, Go has `go.mod` / `main.go` / `main_test.go`, Laravel has
+   `composer.json` and `phpunit.xml`. Never propagate stack-specific behaviour
+   across profiles; prove intentional differences with tests. (Item 34 exists to
+   make the shared half mechanical.)
 
 4. **A root file carrying a project placeholder is a defect.** `/bootstrap` never
    runs here. `.cursorrules`, `.github/copilot-instructions.md` and
@@ -106,7 +142,10 @@ wrong. Full detail in `tasks/lessons.md`.
 
 The corpus under `templates/*/.claude/` is the product. When changing it:
 
-- Apply the change to **all five profiles**. They are byte-identical by design.
+- **Shared governance and common assets**: apply to all five profiles — they are
+  byte-identical by design. **Stack-specific files** (`pyproject.toml`, `go.mod`,
+  `composer.json`, `phpunit.xml`, profile test files) stay scoped to their
+  profile. Check which kind you are touching before copying anything sideways.
 - Placeholders in shipped files are of two kinds and must not be swept together:
   **project placeholders** awaiting bootstrap (`{{PROJECT_NAME}}`,
   `{{BACKEND_STACK}}`) and **authoring slots** inside output templates
@@ -116,19 +155,6 @@ The corpus under `templates/*/.claude/` is the product. When changing it:
   (`src/cli/core/content-templates.js`) or it ships unresolved to every adopter.
 - Governance surface has a running cost: 140,531 est-tokens across 94 files.
   `npm run token-report` before and after.
-
----
-
-## Current state
-
-- **Version:** 0.14.0, published with provenance. `dev` and `main` aligned.
-- **Roadmap:** `docs/process/pre-npm-publish-todo.md` — the value-ordered backlog
-  and the wave sequencing. Read it before proposing work.
-- **Wave 0** (effectiveness baseline, item 74) captured 2026-08-27;
-  `docs/process/effectiveness-baseline-2026-08-27.md`. **Wave 1** is unblocked:
-  items 26, 65 follow-up, 66.
-- **Open structural items:** 76 (split this file set from the shipped one),
-  34 (de-duplicate the 5 profiles), 77 (placeholder-substitution gaps).
 
 ---
 
@@ -142,3 +168,11 @@ The corpus under `templates/*/.claude/` is the product. When changing it:
 | Task sizing and fast lanes | `docs/process/task-size-policy.md` |
 | Architecture decisions | `docs/architecture/adr/` |
 | What ships in the package | `package.json` `files` allowlist |
+| Current version | `package.json` — and `npm view @lajin.m/ai-scaffold version` for what is actually published |
+| Roadmap, wave status, open items | `docs/process/pre-npm-publish-todo.md` |
+| Work in flight | `tasks/todo/` |
+
+> **No project state is recorded in this file** — version, wave status and open
+> item numbers live in the sources above. The previous `CLAUDE.md` carried a
+> Current State block that went stale (it still named `v0.10.0` and two merged
+> branches at `v0.14.0`). Do not reintroduce one.

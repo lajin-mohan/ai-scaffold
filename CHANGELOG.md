@@ -14,11 +14,20 @@ This file is configured with `merge=union` in `.gitattributes` so parallel addit
 ## [Unreleased]
 
 ### Changed
-- **`CLAUDE.md` now states that this repository is the tool, not a governed
-  project.** The branch, commit and CI gates it defines are a deliverable that
-  applies to generated projects; the scaffold repo keeps only its own build,
-  test and release workflows. Replaces the line claiming this repository runs
-  the configured CLI checks for `/review`.
+- **`CLAUDE.md` replaced with a scaffold-owned draft — approved design, partial
+  implementation.** This is **not** the completed item 76 split. Root
+  `AGENTS.md`, `.cursorrules`, `.github/copilot-instructions.md`,
+  `.claude/memory/`, `.claude/rules/`, `.claude/commands/` and `.claude/agents/`
+  are still template-derived (agents 17/17 identical to `templates/generic`,
+  commands 33/35, memory 6/6; `.cursorrules` holds 8 live project placeholders,
+  Copilot instructions 6, `project-context.md` 6). The new file states the
+  governance model and the maintainer operating contract; completing the root
+  set is the remainder of item 76.
+
+  The model it records: **AI Scaffold is a project with its own governance** —
+  governed by scaffold-maintainer rules, not by the generated-project governance
+  it ships. It also drops the line claiming this repository runs the configured
+  CLI checks for `/review`.
 
 ### Added
 - **Backlog item 76 — give the scaffold repository its own governance.**
