@@ -122,15 +122,15 @@ unless a UI-heavy pilot provides evidence to raise it.
   ruleset-governed repository the script's settings coexist with ruleset rules
   rather than replacing them, and the script prints `OK` either way.
 
-  **Observed live in this repo, on `main`:** the ruleset `protected-main` sets
-  `require_last_push_approval: false` and `dismiss_stale_reviews_on_push: false`,
-  while the script's payload sets `require_last_push_approval: true` and
-  `dismiss_stale_reviews: true`. The same two controls carry different values on
-  two surfaces simultaneously, and nothing in the tooling reports which is in
-  force. Also on `main`: the ruleset requires **no status check at all** — only
-  `deletion`, `non_fast_forward` and `pull_request`. Whether the legacy surface
-  requires any could not be read without authentication, so this is unconfirmed,
-  not settled.
+  **Demonstrated on this repository, which is the specimen and not the problem**
+  (the scaffold repo is deliberately not a governed project): ruleset
+  `protected-main` sets `require_last_push_approval: false` and
+  `dismiss_stale_reviews_on_push: false`, while the script's payload sets
+  `require_last_push_approval: true` and `dismiss_stale_reviews: true`. The same
+  two controls carry different values on two surfaces simultaneously, and the
+  script reports neither. The defect is that **a shipped tool configures
+  governance it cannot observe** — harmless here, load-bearing in an adopting
+  team's repo where the governance is real.
 
   This is the write-side twin of item 26. Item 26 makes the state *readable*;
   this item makes it *manageable*. Rulesets are increasingly the default for new

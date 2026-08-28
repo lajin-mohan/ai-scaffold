@@ -151,6 +151,10 @@ This file is configured with `merge=union` in `.gitattributes` so parallel addit
   not a pass"*, the failure this item exists to fix, is currently true inside
   `doctor` itself.
 
+  **Scope:** this governance applies to **generated projects**. The `ai-scaffold`
+  repository is the tool, not a governed project — it keeps its build, test and
+  release workflows and is not subject to the gates it ships.
+
   **Decisions:** `unavailable` is a first-class third state that does not affect
   the exit code by default, with `--require-remote` to enforce it where `gh` is
   guaranteed; a **detected** gap is `high` and fails the exit code, reusing
@@ -188,10 +192,12 @@ This file is configured with `merge=union` in `.gitattributes` so parallel addit
 - **Backlog item 75** — the shipped `setup-branch-protection.sh` writes only the
   legacy `PUT /branches/{b}/protection` surface and is blind to rulesets, which
   are increasingly the default for new GitHub organisations. It ships to all 5
-  profiles. Found by running item 26's spike against this repository, where
-  ruleset `protected-main` and the script's payload disagree on two controls at
-  once (`require_last_push_approval` and stale-review dismissal), with nothing
-  reporting which is in force. The write-side twin of item 26 and sequenced
+  profiles. Demonstrated on this repository — the specimen, not the problem,
+  since the scaffold repo is deliberately not a governed project — where ruleset
+  `protected-main` and the script's payload disagree on two controls at once
+  (`require_last_push_approval` and stale-review dismissal), with the script
+  reporting neither. The defect is that a shipped tool configures governance it
+  cannot observe: harmless here, load-bearing in an adopting team's repo. The write-side twin of item 26 and sequenced
   after it: the read side must establish what "effective" means before the write
   side converges on it.
 

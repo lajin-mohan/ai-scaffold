@@ -62,22 +62,26 @@ run against this repo's own settings in CI and may fail immediately. Budget
 Then: HLD for the two-tier design + an ADR for the "effective protection"
 merge semantics.
 
-## Findings about this repo, surfaced by the spike
+## Scope: what this governance applies to
 
-Both are the class item 26 exists to detect, found before it was built.
+**Maintainer directive 2026-08-27.** The `ai-scaffold` repository is the tool,
+not a governed project. It keeps its build/test/release workflows and is **not**
+subject to the branch, commit or CI gates it ships. Nothing in this item asserts
+a requirement against this repo's own protection settings.
 
-1. **No status check is required on `main`.** Ruleset `protected-main` carries
-   only `deletion`, `non_fast_forward` and `pull_request`. CI runs and is green,
-   but nothing observed makes it required. Needs confirming with a token, since
-   legacy protection on `main` was not readable anonymously.
-2. **`main` requires 1 approval and the maintainer is the only approver**, with
-   `require_last_push_approval: false` — so a self-approval satisfies the gate.
-   This is the self-merge case `FR-25` counts as a bypass.
-3. **The shipped `setup-branch-protection.sh` writes only the legacy surface**
-   and sets `require_last_push_approval: true` / `dismiss_stale_reviews: true`,
-   while the ruleset governing `main` sets both to `false`. Two surfaces, two
-   values, no reporting of which is in force. Raised as **backlog item 75**,
-   sequenced after this one.
+Consequences already applied: FR-16 retargeted to adopting projects; the
+"fails on our own repo" contingency withdrawn from the estimate; the spike's
+repo-level observations demoted from findings to API evidence.
+
+## One real defect surfaced by the spike
+
+**The shipped `setup-branch-protection.sh` writes only the legacy surface.** It
+sets `require_last_push_approval: true` / `dismiss_stale_reviews: true`, while
+the ruleset governing `main` here sets both to `false` — and it prints `OK`
+regardless. This repo is the specimen, not the problem: the defect is that a
+shipped tool configures governance it cannot observe, which is harmless here and
+load-bearing in an adopting team's repo. Raised as **backlog item 75**,
+sequenced after this one.
 
 ## Decision log
 
