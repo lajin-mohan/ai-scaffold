@@ -4,8 +4,8 @@
 **Estimated By:** Claude (Cowork session), following `.claude/agents/estimator.md`
 **Reviewed By:** Lajin M J — remaining spike only approved 2026-08-31; full estimate pending
 **Confidence:** **MEDIUM** — spike run 2026-08-27, anonymous tier established and the query list documented. Two questions remain open (authenticated non-admin reads; private repositories), so this is not yet HIGH.
-**Status:** Remaining spike approved (0.25 realistic days); full 13.1-day estimate pending. Q-01–Q-03 are resolved and the spike was partially run 2026-08-27. **Re-confirm before committing the total: the private-repo case is untested and it is the case most adopters are in.**
-**Source spec:** `docs/brd/26-drift-aware-doctor-brd.md` (**Approved v2.0**, 2026-08-27)
+**Status:** Remaining spike approved (0.25 realistic days); full **14.0-day** estimate pending — **re-opened 2026-08-31** after `/review` corrected the arithmetic and priced Stage 3. Q-01–Q-03 are resolved and the spike was partially run 2026-08-27. **Re-confirm before committing the total: the private-repo case is untested and it is the case most adopters are in.**
+**Source spec:** `docs/brd/26-drift-aware-doctor-brd.md` (**Approved v2.2**, 2026-08-31)
 
 > **Template adaptation.** `.claude/templates/estimation-template.md` assumes a web feature
 > (migrations, repository layer, page components, staging/production deploys). This is a CLI command
@@ -30,11 +30,11 @@ security-posture bullet (**not** `SECURITY.md`, which contains no shell-out clai
 ## Assumptions
 
 1. `gh` is the transport (A-01). Raw `fetch` plus token handling would add ~2 days and a security review.
-2. `doctor` is extended, not rewritten. The existing 346 lines and ~20 checks stay.
+2. `doctor` is extended, not rewritten. The existing 346 lines and **15** checks stay.
 3. The existing `--json` shape is extended additively, so no consumer migration is budgeted.
-4. Q-01–Q-03 are resolved before implementation starts. They change behaviour, not volume — except Q-02, which can add a smoke-gate fix if a detected gap starts failing CI on this very repo.
+4. Q-01–Q-03 were resolved 2026-08-27 (D / B / C). They change behaviour, not volume. **No smoke-gate contingency** — see the withdrawal note below.
 5. Single maintainer, working serially.
-6. Mocked API fixtures are acceptable for AC-01…AC-03. Live-API integration tests are not budgeted.
+6. Fixtures are recorded `gh` **stdout + exit code**, not HTTP responses — the transport is a subprocess. Live-API integration tests are not budgeted. NFR-05 requires an injected runner so the boundary is swappable.
 
 ---
 
@@ -71,9 +71,11 @@ Business days, 1 day = 7.5 productive hours.
 | QA sign-off | 0.25 | 0.5 | 1.0 | |
 | **Release** | | | | |
 | Release inclusion + packed-tarball check | 0.25 | 0.25 | 0.5 | Per the 2026-07-10 lesson: verify the tarball, not the working tree |
-| **Subtotal** | **5.95** | **11.4** | **21.3** | |
-| **Buffer (15%)** | 0.89 | 1.71 | 3.20 | |
-| **TOTAL** | **6.8** | **13.1** | **24.5** | |
+| **Stage 3 — Architecture** | | | | |
+| HLD + ADR: `gh` transport wrapper, two-surface merge semantics, pass/fail/unavailable state machine, permission-dependent degradation | 0.5 | 1.0 | 2.0 | `task-size-policy.md` requires HLD + ADR at size M. Unpriced until the 2026-08-31 review |
+| **Subtotal** | **6.30** | **12.15** | **22.80** | |
+| **Buffer (15%)** | 0.95 | 1.82 | 3.42 | |
+| **TOTAL** | **7.3** | **14.0** | **26.2** | |
 
 ---
 
@@ -93,6 +95,13 @@ for `doctor` failing against the scaffold repository's own protection settings. 
 since scoped the governance to **generated projects only** — the scaffold repo is the tool, not a
 governed project — so `--require-remote` is not wired into its CI and there is nothing here for the
 checks to fail against. **No contingency is carried.**
+
+**The premise that makes this safe, now stated rather than assumed.** Under Q-02 = B / FR-24 a
+detected gap is `high` and exits 1 *without* `--require-remote`, and
+`scripts/pre-publish-smoke.sh:442,463,667` grep for `✗ [CRIT|HIGH]`. Those gates are safe only
+because they run `doctor` against freshly generated temp projects with **no remote**, so every remote
+check is `unavailable` (FR-14, FR-17). If a future gate runs `doctor` against a repo that has a
+remote, the conclusion no longer holds. FR-11 and AC-18 exist to protect that path.
 
 ---
 
@@ -114,23 +123,30 @@ C-01 without C-03 would report protection while saying nothing about who can ove
 
 | Scenario | Total | Calendar days (÷0.7 capacity) |
 |---|---|---|
-| Optimistic | 6.8 | 9.8 |
-| Realistic | **13.1** | **18.7** |
-| Pessimistic | 24.5 | 35.0 |
+| Optimistic | 7.3 | 10.3 |
+| Realistic | **14.0** | **20.0** |
+| Pessimistic | 26.2 | 37.5 |
+
+> **Corrected 2026-08-31.** The previous subtotals (5.95 / 11.4 / 21.3) did not equal their own task
+> rows: when the spike row was replaced by the 0.1 / 0.25 / 0.5 remainder, the original
+> 0.25 / 0.5 / 1.0 was never subtracted — a 0.15 / 0.25 / 0.50 overstatement, giving a true 12.8
+> rather than 13.1. Pricing the missing Stage 3 row then moves the realistic total to 14.0.
+> **Re-add the column after editing any row** — this is the second arithmetic error in this document
+> from that same cause.
 
 **Approved commitment:** the **remaining 0.25-day spike only** (2026-08-31), then re-confirm. The
 full spike was estimated at 0.5 days; its anonymous/public portion is already complete. Committing
-13.1 days against an unverified external API shape is how estimates become fiction.
+14.0 days against an unverified external API shape is how estimates become fiction.
 
 **Against the earlier indicative figure.** An indicative ~4 realistic days was given for item 26 in
 conversation on 2026-08-27. **That figure is not recorded anywhere in this repository** — the
 original backlog sized item 26 `S` ("small enforcement slice") and `task-size-policy.md` contains no
 size-to-days mapping, so `S` cannot be converted to a day figure either. Against that conversational
-~4, this estimate is **3.3× higher**: it prices the query module, the five degradation paths, the
+~4, this estimate is **3.5× higher**: it prices the query module, the five degradation paths, the
 mocked test fixtures and the `--json` compatibility guarantee, none of which the indicative number
 included.
 
-**Size escalation, recorded.** The backlog now sizes this `M`; 13.1 realistic days exceeds the
+**Size escalation, recorded.** The backlog now sizes this `M`; 14.0 realistic days exceeds the
 original `S` framing. `task-size-policy.md` permits escalation and says it "is not failure — it
 means the initial sizing was imprecise."
 

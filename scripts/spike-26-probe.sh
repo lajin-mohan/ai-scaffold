@@ -7,6 +7,9 @@
 # Usage:
 #   scripts/spike-26-probe.sh [owner/repo] [branch]
 #
+# OUTPUT IS INTENDED FOR A COMMITTED DOCUMENT. Review before pasting: it names
+# the repository and the token's scopes.
+#
 # Run it TWICE — once with your admin:repo token, once with a read-only token —
 # and diff the two outputs. The delta is the answer to "do reads need admin:repo".
 
@@ -38,8 +41,11 @@ echo "repo:   $REPO"
 echo "branch: $BRANCH"
 echo "date:   $(date -u +%Y-%m-%dT%H:%M:%SZ)"
 echo
+# Only the scopes line. `gh auth status` also prints every configured host and
+# account -- including GitHub Enterprise hostnames -- and this output is meant to
+# be transcribed into a committed document. Do not widen this filter.
 echo "## Token scopes seen by gh"
-gh auth status 2>&1 | sed 's/^/  /'
+gh auth status 2>&1 | grep -oE "Token scopes:.*" | sed 's/^/  /' || echo "  (none reported)"
 echo
 
 probe() {
@@ -55,8 +61,10 @@ probe() {
     200) printf '    result:   READABLE\n' ;;
     403) printf '    result:   FORBIDDEN — scope or permission insufficient\n' ;;
     404) printf '    result:   NOT FOUND — absent, or hidden by insufficient permission\n' ;;
-    *)   printf '    result:   see raw output below\n'
-         printf '%s\n' "$body" | head -12 | sed 's/^/      /' ;;
+    *)   printf '    result:   unexpected status\n'
+         # Status line only. Raw --include output carries response headers,
+         # which on an authenticated run include x-oauth-scopes.
+         printf '%s\n' "$body" | grep -m1 -E '^HTTP/' | sed 's/^/      /' ;;
   esac
   echo
 }

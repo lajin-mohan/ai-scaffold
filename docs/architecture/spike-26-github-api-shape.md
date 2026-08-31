@@ -4,7 +4,7 @@
 **Timebox:** 0.5 day (4 hours). Stop at the timebox and record what is known.
 **Owner:** Lajin M J
 **Status:** **Run 2026-08-27 — partially complete.** The anonymous tier is established; the authenticated tiers are not. See Results.
-**Gates:** the 13.1-day implementation estimate in `docs/estimates/26-drift-aware-doctor-estimate.md`
+**Gates:** the 14.0-day implementation estimate in `docs/estimates/26-drift-aware-doctor-estimate.md`
 **Probe:** `scripts/spike-26-probe.sh` (not shipped — the `package.json` `files` allowlist ships only `scripts/token-report.js`)
 
 > A spike produces a written summary or a PoC, never shippable code
@@ -70,7 +70,7 @@ Record the outcome against each row before writing the HLD.
 | Finding | Consequence for the design |
 |---|---|
 | Coarse tier readable without `admin:repo` | C-01 works for everyone. C-03 degrades to `unavailable` without admin. **Best case — design for two tiers** |
-| Everything needs `admin:repo` | C-01–C-03 are `unavailable` for most users. Q-01's `--require-remote` becomes the main path, and the item's reach is mostly the scaffold's own CI. **Re-open scope with the maintainer** |
+| Everything needs `admin:repo` | C-01–C-03 are `unavailable` for most users. Q-01's `--require-remote` becomes the main path, and the item's reach shrinks to admin-token users. **Re-open scope with the maintainer** |
 | `rules/branches/{branch}` returns effective rules from both mechanisms | One call answers C-01. The "merge two surfaces" problem may not exist |
 | Rulesets and branch protection must be merged by hand | Define "effective" explicitly: a branch is protected if **either** mechanism protects it; bypass exists if **either** allows it. Most-permissive-wins for bypass, most-restrictive-wins for protection |
 | Bypass actors are only in ruleset definitions (admin-gated) | C-03 is admin-only by construction. Say so in the check's `unavailable` reason rather than implying a transient problem |
@@ -92,7 +92,7 @@ section with:
    implementation contract (`FR-23`) and item 74's M-04 extraction contract (`FR-27` of the item 74
    BRD).
 
-Until that section exists, the 13.1-day estimate stays LOW confidence and is not commitable.
+Until that section exists, the 14.0-day estimate stays LOW confidence and is not commitable.
 
 ---
 
@@ -220,7 +220,7 @@ protection. **Not a finding** — this repo is not held to the scaffold's gates.
 product defect, and it stands independently of how the scaffold repo is governed.
 `scripts/setup-branch-protection.sh` — shipped to all 5 profiles — writes only
 `PUT /branches/{b}/protection`. Its payload sets `require_last_push_approval: true` and
-`dismiss_stale_reviews: true`; ruleset `protected-main` sets **both to `false`**. The same two
+`dismiss_stale_reviews: true` (legacy field names; the ruleset parameter is `dismiss_stale_reviews_on_push`); ruleset `protected-main` sets **both to `false`**. The same two
 controls carry different values on two surfaces, the script prints `OK` regardless, and nothing
 reports which is in force.
 

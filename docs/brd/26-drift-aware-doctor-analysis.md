@@ -31,7 +31,7 @@ currently true inside `doctor` itself.
 | Requester | Lajin M J (maintainer) | Exit-code semantics, severity assignment, ship-to-generated-projects decision |
 | End Users | Adopting teams running `ais doctor` in a generated project | Whether `gh` is realistically installed on their machines |
 | Approver | Lajin M J | BRD sign-off |
-| Affected Systems | `src/cli/commands/doctor.js`, `scripts/setup-branch-protection.sh`, `SECURITY.md`, item 74's M-04 | |
+| Affected Systems | `src/cli/commands/doctor.js`, `scripts/setup-branch-protection.sh`, `docs/cli-reference.md`, the backlog security-posture bullet, item 74's M-04 (**not `SECURITY.md`** — it carries no shell-out claim; R-03, R-07) | |
 
 ---
 

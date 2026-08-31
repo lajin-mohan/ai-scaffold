@@ -1,6 +1,6 @@
 # Scope Statement — ai-scaffold / Item 26, Drift-aware `doctor` (enforcement slice)
 
-**Version:** 1.0
+**Version:** 1.1
 **Date:** 2026-08-27
 **Owner:** Lajin M J (PM, Tech Lead and Product Owner are the same person on this project)
 **Status:** **Approved** — Q-01–Q-03 resolved 2026-08-27 (D / B / C). Stage 2 closed. Implementation remains spike-gated.
@@ -72,7 +72,7 @@ Per `.claude/agents/pm.md` — the PM produces the communication and flags the d
 | 1 | ~~Q-01~~ | **Resolved — D.** Report-only by default; `--require-remote` enforces |
 | 2 | ~~Q-02~~ | **Resolved — B.** `high`, exit 1. No contingency — see below |
 | 3 | ~~Q-03~~ | **Resolved — C.** `gh repo view` + `--repo`; output names the repo |
-| 4 | **Spike first.** Commit the remaining 0.25-day spike, not the 13.1-day total, until the GitHub API shape is verified | **Resolved 2026-08-31.** Remaining spike approved; full estimate stays pending |
+| 4 | **Spike first.** Commit the remaining 0.25-day spike, not the 14.0-day total, until the GitHub API shape is verified | **Resolved 2026-08-31.** Remaining spike approved; full estimate stays pending |
 | 5 | **Size escalation S → M.** Update the backlog rank table, or reject the escalation and re-scope | **Resolved 2026-08-27.** Backlog rank table and item definition now say `M` |
 
 **Contingency withdrawn (2026-08-27).** An earlier version of this statement budgeted +0.5 to +2 days
@@ -87,13 +87,14 @@ fail against. **No contingency is carried.**
 
 | Stage | Realistic | Note |
 |---|---|---|
-| Spike | 0.5 d total; 0.25 d remaining | Gates the rest; remaining private/non-admin probe approved 2026-08-31 |
-| Implementation + tests + docs + review | 12.6 d | One coherent unit — the checks share the query module |
-| **Total** | **13.1 d** | ~18.7 calendar days at 0.7 capacity |
+| Spike | 0.5 d total; **0.25 d remaining** | Remaining private/non-admin probe approved 2026-08-31 |
+| Stage 3 — HLD + ADR | 1.0 d | Required at size M; unpriced until the 2026-08-31 review |
+| Implementation + tests + docs + review | 12.75 d | One coherent unit — the checks share the query module |
+| **Total** | **14.0 d** | ~20.0 calendar days at 0.7 capacity |
 
 > An indicative ~4 days was given in conversation on 2026-08-27 and is **not recorded in this
 > repository**. The original backlog sized item 26 `S`, and `task-size-policy.md` has no size-to-days mapping.
-> This estimate is 3.3× that conversational figure, which omitted the query module, the five
+> This estimate is 3.5× that conversational figure, which omitted the query module, the five
 > degradation paths, the test fixtures and the `--json` compatibility guarantee.
 >
 > **Size escalated S → M; the backlog rank table and item definition are updated.**

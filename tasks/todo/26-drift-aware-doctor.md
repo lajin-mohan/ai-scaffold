@@ -2,10 +2,11 @@
 
 ## Status
 
-**Stages 1 and 2 COMPLETE (2026-08-27).** BRD Approved v2.0, estimate and scope
+**Stages 1 and 2 COMPLETE (2026-08-27).** BRD Approved v2.2, estimate and scope
 statement approved. No open blockers.
 **Spike RUN 2026-08-27 — partially complete.** Anonymous tier established, merge
-requirement proven, query list documented (`FR-23` / item 74 `FR-27` satisfied).
+requirement proven, query list documented **at the anonymous tier** — `FR-23` / item 74 `FR-27`
+**provisional** until the authenticated and private-repo tiers are probed.
 **Two questions remain: authenticated non-admin reads, and private repositories.**
 The private-repo case is untested and is the case most adopters are in.
 
@@ -14,8 +15,8 @@ The private-repo case is untested and is the case most adopters are in.
 | Stage | Artifact | State |
 |---|---|---|
 | 1 — Analysis | `docs/brd/26-drift-aware-doctor-analysis.md` | Draft |
-| 1 — Analysis | `docs/brd/26-drift-aware-doctor-brd.md` | **Approved v2.0** |
-| 2 — Plan | `docs/estimates/26-drift-aware-doctor-estimate.md` | Remaining spike approved; full **13.1 d realistic** estimate pending, MEDIUM confidence |
+| 1 — Analysis | `docs/brd/26-drift-aware-doctor-brd.md` | **Approved v2.2** (review fixes 2026-08-31) |
+| 2 — Plan | `docs/estimates/26-drift-aware-doctor-estimate.md` | Remaining spike approved; full **14.0 d realistic** estimate pending, MEDIUM confidence |
 | 2 — Plan | `docs/process/26-drift-aware-doctor-scope.md` | **Approved** |
 | 3 — Architecture | `docs/architecture/spike-26-github-api-shape.md` + `scripts/spike-26-probe.sh` | **Run — partial. Query list documented** |
 | 3 — Architecture | HLD + ADR | Unblocked for the two-tier design; private-repo answer still wanted |
@@ -23,7 +24,7 @@ The private-repo case is untested and is the case most adopters are in.
 ## Size
 
 **Escalated S → M.** The backlog rank table and item definition now say `M`; the
-estimate is 13.1 realistic days. `task-size-policy.md` permits this — "Escalation
+estimate is 14.0 realistic days. `task-size-policy.md` permits this — "Escalation
 is not failure. It means the initial sizing was imprecise."
 
 Unlike item 74, this item has genuine architecture to design (transport choice,
@@ -101,4 +102,4 @@ sequenced after this one.
 | 2026-08-27 | FR-33 targets the backlog's security-posture bullet, not `SECURITY.md` | `SECURITY.md` contains no shell-out claim — it is un-customised boilerplate whose Scope section names `apps/`, `packages/`, `infra/`, none of which hold this project's code. An earlier draft pointed FR-33 and AC-09 at a claim that does not exist |
 | 2026-08-27 | Branched from `origin/dev`, not stacked on the item 74 branch | Per the 2026-07-14 lesson: stacked PRs conflict under a squash-merge policy |
 | 2026-08-27 | Commit only the 0.5-day spike, not the 13.1-day total | Committing to an estimate that rests on an unverified external API shape is how estimates become fiction |
-| 2026-08-31 | Approve the remaining 0.25-day spike only; keep the full 13.1-day estimate pending | The authenticated non-admin and private-repository behavior still determines product reach and architecture confidence |
+| 2026-08-31 | Approve the remaining 0.25-day spike only; keep the full 14.0-day estimate pending | The authenticated non-admin and private-repository behavior still determines product reach and architecture confidence |
