@@ -171,8 +171,9 @@ This file is configured with `merge=union` in `.gitattributes` so parallel addit
   backlog's security-posture bullet, **not** in `SECURITY.md`, which contains no
   shell-out text at all.
 
-  Estimate **7.8 / 15.4 / 28.8** days, still spike-gated: the committed scope is
-  the 0.25-day spike remainder, not the total. Size escalated `S` → `M` in both
+  **BRD v2.2 and the full estimate approved 2026-08-31** at 7.8 / **15.4** / 28.8
+  days; the signed scope includes the Stage 3 row and the six v2.2 requirements.
+  **Stages 1 and 2 are closed; Stage 3 (HLD + ADR) is the open gate.** Size escalated `S` → `M` in both
   the rank table and the item definition.
 
   **`/review` run 2026-08-31** — security, qa and architect, escalated from

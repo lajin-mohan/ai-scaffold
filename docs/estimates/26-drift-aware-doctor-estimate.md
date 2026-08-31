@@ -2,10 +2,10 @@
 
 **Date:** 2026-08-27
 **Estimated By:** Claude (Cowork session), following `.claude/agents/estimator.md`
-**Reviewed By:** Lajin M J — remaining spike only approved 2026-08-31; full estimate pending
+**Reviewed By:** Lajin M J — **full estimate approved 2026-08-31**
 **Confidence:** **MEDIUM** — spike run 2026-08-27, anonymous tier established and the query list documented. Two questions remain open (authenticated non-admin reads; private repositories), so this is not yet HIGH.
-**Status:** Remaining spike approved (0.25 realistic days); full **15.4-day** estimate pending — **re-opened 2026-08-31** after `/review` corrected the arithmetic and priced Stage 3. Q-01–Q-03 are resolved and the spike was partially run 2026-08-27. **Re-confirm before committing the total: the private-repo case is untested and it is the case most adopters are in.**
-**Source spec:** `docs/brd/26-drift-aware-doctor-brd.md` — v2.1 approved 2026-08-27; **v2.2 pending re-approval**
+**Status:** **Approved 2026-08-31** at 7.8 / **15.4** / 28.8 days, after `/review` corrected the arithmetic, priced Stage 3, and priced the six v2.2 requirements. Q-01–Q-03 are resolved and the spike was partially run 2026-08-27. **Re-confirm before committing the total: the private-repo case is untested and it is the case most adopters are in.**
+**Source spec:** `docs/brd/26-drift-aware-doctor-brd.md` (**Approved v2.2**, 2026-08-31)
 
 > **Template adaptation.** `.claude/templates/estimation-template.md` assumes a web feature
 > (migrations, repository layer, page components, staging/production deploys). This is a CLI command
@@ -180,8 +180,13 @@ extraction contract.
 
 | Role | Name | Date | Status |
 |---|---|---|---|
-| Technical Lead | Lajin M J | 2026-08-31 | Remaining spike approved; full estimate pending |
-| Product Owner | Lajin M J | 2026-08-31 | Remaining spike approved; full estimate pending |
+| Technical Lead | Lajin M J | 2026-08-31 | **Signed off — full estimate** |
+| Product Owner | Lajin M J | 2026-08-31 | **Signed off** |
+
+**Signed-off scope:** 15.4 realistic days, including the 1.0 d Stage 3 (HLD + ADR) row and the 1.25 d
+v2.2-requirements row; the 0.25 d spike remainder sits inside that total. Changing the requirement
+set or dropping Stage 3 is a >20% deviation and requires re-estimation per
+`docs/estimates/README.md`.
 
 > Both roles are the same person; this estimate has had no independent review. Recorded so a later
 > reader does not mistake the sign-off for assurance.

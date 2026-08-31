@@ -3,7 +3,7 @@
 **Version:** 1.1
 **Date:** 2026-08-27
 **Owner:** Lajin M J (PM, Tech Lead and Product Owner are the same person on this project)
-**Status:** **Approved** — Q-01–Q-03 resolved 2026-08-27 (D / B / C). Stage 2 closed. Implementation remains spike-gated.
+**Status:** **Approved** — Q-01–Q-03 resolved 2026-08-27 (D / B / C); BRD v2.2 and the full 15.4-day estimate approved 2026-08-31. **Stages 1 and 2 are closed; Stage 3 is the open gate.**
 
 > Per `.claude/agents/pm.md` format 1. Scope detail governed by
 > `docs/brd/26-drift-aware-doctor-brd.md` §3 and §5.

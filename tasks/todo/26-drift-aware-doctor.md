@@ -2,9 +2,11 @@
 
 ## Status
 
-**Stages 1 and 2 COMPLETE (2026-08-27).** BRD v2.1 approved (v2.2 pending re-approval), estimate and scope
-statement approved. No open blockers.
-**Spike RUN 2026-08-27 — partially complete.** Anonymous tier established, merge
+**Stages 1 and 2 CLOSED 2026-08-31.** BRD **v2.2 approved** and the full **15.4-day**
+estimate approved; the scope statement is approved. **Stage 3 (HLD + ADR) is the
+only open gate**; `/kickoff` follows it.
+
+**Spike run 2026-08-27 — partial.** Anonymous tier established, merge
 requirement proven, query list documented **at the anonymous tier** — `FR-23` / item 74 `FR-27`
 **provisional** until the authenticated and private-repo tiers are probed.
 **Two questions remain: authenticated non-admin reads, and private repositories.**
@@ -15,8 +17,8 @@ The private-repo case is untested and is the case most adopters are in.
 | Stage | Artifact | State |
 |---|---|---|
 | 1 — Analysis | `docs/brd/26-drift-aware-doctor-analysis.md` | Draft |
-| 1 — Analysis | `docs/brd/26-drift-aware-doctor-brd.md` | v2.1 approved; **v2.2 pending re-approval** (six new Must-Haves from `/review`) |
-| 2 — Plan | `docs/estimates/26-drift-aware-doctor-estimate.md` | Remaining spike approved; full **15.4 d realistic** estimate pending, MEDIUM confidence |
+| 1 — Analysis | `docs/brd/26-drift-aware-doctor-brd.md` | **Approved v2.2** 2026-08-31 |
+| 2 — Plan | `docs/estimates/26-drift-aware-doctor-estimate.md` | **Approved 2026-08-31** — **15.4 d realistic**, MEDIUM confidence |
 | 2 — Plan | `docs/process/26-drift-aware-doctor-scope.md` | **Approved** |
 | 3 — Architecture | `docs/architecture/spike-26-github-api-shape.md` + `scripts/spike-26-probe.sh` | **Run — partial. Query list documented** |
 | 3 — Architecture | HLD + ADR | Unblocked for the two-tier design; private-repo answer still wanted |
@@ -112,4 +114,5 @@ sequenced after this one.
 | 2026-08-27 | FR-33 targets the backlog's security-posture bullet, not `SECURITY.md` | `SECURITY.md` contains no shell-out claim — it is un-customised boilerplate whose Scope section names `apps/`, `packages/`, `infra/`, none of which hold this project's code. An earlier draft pointed FR-33 and AC-09 at a claim that does not exist |
 | 2026-08-27 | Branched from `origin/dev`, not stacked on the item 74 branch | Per the 2026-07-14 lesson: stacked PRs conflict under a squash-merge policy |
 | 2026-08-27 | Commit only the 0.5-day spike, not the 13.1-day total | Committing to an estimate that rests on an unverified external API shape is how estimates become fiction |
-| 2026-08-31 | Approve the remaining 0.25-day spike only; keep the full 14.0-day estimate pending | The authenticated non-admin and private-repository behavior still determines product reach and architecture confidence |
+| 2026-08-31 | BRD v2.2 and the full 15.4-day estimate approved | Signed scope includes the 1.0 d Stage 3 row and the 1.25 d v2.2-requirements row. Changing the requirement set or dropping Stage 3 is a >20% deviation requiring re-estimation |
+| 2026-08-31 | Approve the remaining 0.25-day spike only; keep the full estimate pending | Superseded the same day by the full approval above. The authenticated non-admin and private-repository behaviour still determines product reach and architecture confidence |
