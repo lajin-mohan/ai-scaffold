@@ -2,9 +2,10 @@
 
 ## Status
 
-**Stages 1–3 drafted 2026-08-31.** BRD v2.2 and the 15.4-day estimate approved.
-**Stage 3 artifacts written — HLD + ADR-004 + ADR-005 — pending Tech Lead
-approval.** `/kickoff` follows approval; Stage 4 (UX) is N/A, recorded below.
+**Stages 1–4 CLOSED 2026-08-31. `/kickoff` = 🟢 GO.** BRD v2.2, the 15.4-day
+estimate, and the HLD are all approved; ADR-004 and ADR-005 accepted; Stage 4
+(UX) recorded N/A. **Stage 5 (Execution) is unblocked** — two conditions carried,
+below.
 
 **Spike run 2026-08-27 — partial.** Anonymous tier established, merge
 requirement proven, query list documented **at the anonymous tier** — `FR-23` / item 74 `FR-27`
@@ -21,7 +22,7 @@ The private-repo case is untested and is the case most adopters are in.
 | 2 — Plan | `docs/estimates/26-drift-aware-doctor-estimate.md` | **Approved 2026-08-31** — **15.4 d realistic**, MEDIUM confidence |
 | 2 — Plan | `docs/process/26-drift-aware-doctor-scope.md` | **Approved** |
 | 3 — Architecture | `docs/architecture/spike-26-github-api-shape.md` + `scripts/spike-26-probe.sh` | **Run — partial. Query list documented** |
-| 3 — Architecture | `docs/architecture/hld-26-drift-aware-doctor.md` | **Draft — pending approval** |
+| 3 — Architecture | `docs/architecture/hld-26-drift-aware-doctor.md` | **Approved 2026-08-31** |
 | 3 — Architecture | `docs/architecture/adr/004-gh-subprocess-transport-with-injected-runner.md` | Accepted |
 | 3 — Architecture | `docs/architecture/adr/005-effective-protection-merge-semantics.md` | Accepted |
 | 4 — UX | **N/A — recorded, not skipped** | No UI. `task-size-policy.md` marks UX "Required (if UI)" at size M; `doctor` is a CLI whose only surface is stdout and `--json`. Recorded so `/kickoff` sees a decision rather than an absence |
@@ -53,6 +54,27 @@ artifact on this one.
 **No scaffold-repository contingency is carried.** `--require-remote` is for an
 adopting project's CI; this repository does not run the governance gates it
 ships.
+
+## `/kickoff` — 2026-08-31 · 🟢 GO
+
+| Gate | | Note |
+|---|---|---|
+| 1 — Requirements | ✅ | BRD Approved v2.2 — 26 FRs, 6 NFRs, 18 ACs, analysis closed |
+| 2 — UX / Design | ✅ N/A | No UI; `doctor`'s only surface is stdout and `--json`. Recorded as a decision |
+| 3 — Architecture | ✅ | HLD approved; ADR-004 + ADR-005 accepted; `/architecture-review` run |
+| 4 — Estimation | ✅ | Approved at 7.8 / 15.4 / 28.8; 13 risks across BRD + estimate |
+| 5 — QA Strategy | ⚠️ | Fixtures and test mapping in HLD §8. **No UAT plan** — likely N/A for a maintainer-facing check, but undecided |
+| 6 — Governance | ⚠️ | CR template, DoD rules, escalation path all exist. **RACI is one person** — recorded, not resolvable at this team size |
+
+**Blockers: none.** Both prior blockers — the Draft HLD and the unrun
+`/architecture-review` — are closed.
+
+**Conditions carried into Stage 5** (per `/kickoff`'s rules, each needs an owner):
+
+1. **UAT decision** — produce a plan or record N/A with a reason. Owner: maintainer.
+2. **Private-repo probe** — does not block the design (tier availability is a
+   runtime discovery), but determines whether C-01 reaches most adopters or only
+   admin-token users. Owner: maintainer. **Worth closing before spending 15 days.**
 
 ## `/architecture-review` — 2026-08-31
 

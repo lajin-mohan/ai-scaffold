@@ -2,7 +2,7 @@
 
 **Date:** 2026-08-31
 **Author:** Claude (Cowork session)
-**Status:** Draft — Stage 3 artifact, pending Tech Lead approval
+**Status:** **Approved** — 2026-08-31, Lajin M J (Technical Lead). Amended the same day after `/architecture-review`; see §1, §4, §7 and ADR-005 rule 3
 **Spec:** `docs/brd/26-drift-aware-doctor-brd.md` (Approved v2.2)
 **Decisions:** ADR-004 (`gh` transport), ADR-005 (effective-protection merge)
 

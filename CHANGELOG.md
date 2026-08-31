@@ -201,7 +201,12 @@ This file is configured with `merge=union` in `.gitattributes` so parallel addit
   and thence CI logs — the same class already fixed in the spike probe — and
   "read-only" was unenforceable because `gh api` POSTs on any `-f`/`-F`, so the
   runner becomes a closed constructor taking an endpoint path rather than an
-  argv array. Size escalated `S` → `M` in both
+  argv array.
+
+  **HLD approved 2026-08-31 and `/kickoff` returns 🟢 GO.** Gates 1–4 pass;
+  Gate 5 (no UAT plan) and Gate 6 (RACI is one person) are carried as conditions,
+  not blockers. **Stages 1–4 are closed and Stage 5 is unblocked** — the first
+  Wave 1 item to reach it. Size escalated `S` → `M` in both
   the rank table and the item definition.
 
   **`/review` run 2026-08-31** — security, qa and architect, escalated from
