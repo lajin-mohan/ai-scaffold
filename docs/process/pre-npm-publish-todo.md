@@ -20,10 +20,18 @@ verification against npm/git, not kept as history.
   is designed out, the docs describing it must go in the same change.**
 - **Security posture reviewed 2026-07-13:** 7 mainstream runtime deps, 0 npm-audit
   findings at any level, OIDC trusted publishing (no long-lived token), CI runs
-  gitleaks + audit, no secret patterns in tracked code, only shell-out is
-  `spawnSync('git', [args])` (array form — no shell interpolation), tarball
+  gitleaks + audit, no secret patterns in tracked code, tarball
   carries no env/secret/local-settings files, generated projects ship hook
   wiring + a `.gitignore` that ignores `.env`.
+  **Amended 2026-08-31 (item 26):** `spawnSync('git', [args])` is no longer the
+  only shell-out. `src/cli/core/gh-runner.js` adds `spawnSync('gh', [...])` for
+  `doctor`'s remote governance checks — array form, a closed constructor rather
+  than an argv passthrough, and read-only by construction (`gh api --method GET`
+  and `gh repo view` are the only two commands it can build). No token is
+  accepted, stored, read from disk or logged; authentication is `gh`'s. The
+  process environment is inherited deliberately so generated projects can run
+  `doctor --require-remote` in their own CI, and `gh` stderr never leaves the
+  runner because it carries repository and host names.
 - Post-release `main→dev` sync is automated but still semi-manual until item
   47's repo settings land. Keep release metadata aligned during promotions so
   `dev` never downgrades the published version on the next `dev→main` PR.

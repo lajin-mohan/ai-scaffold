@@ -131,13 +131,21 @@ behave the same way and will not announce itself.
 |---|---|---|---|---|
 | `pass` | `true` | `✓` | counted as success | — |
 | `fail` | `false` | `✗ [CRIT/HIGH/MED/LOW]` | counted | 1 if critical/high |
-| `unavailable` | `false` | `? [SKIP]` + reason | **excluded by default**; counted as failure under `--require-remote` | per FR-20 |
+| `unavailable` | `false` | `? [UNAVAILABLE]` + reason | **excluded by default**; counted as failure under `--require-remote` | per FR-20 |
 
 `passed === (state === 'pass')` (FR-25). The glyph constraint is not cosmetic:
 `scripts/pre-publish-smoke.sh:442,463` grep `✗ \[(CRIT|HIGH)\]` and require zero, and `:668` greps
 `"criticalFailed": 0`. **Generated projects have no remote, so every remote check is `unavailable`
-there — that path is guaranteed on every release.** `? [SKIP]` and the narrowed aggregates are what
-keep those gates green (FR-11, AC-18).
+there — that path is guaranteed on every release.** The distinct glyph and the narrowed aggregates
+are what keep those gates green (FR-11, AC-18).
+
+**Amended 2026-08-31 during implementation: the label is `[UNAVAILABLE]`, not `[SKIP]`.** "Skipped"
+reads as an intentional omission; `unavailable` means verification was attempted and could not
+produce evidence. FR-11 constrains only the glyph and the severity label, so this is a naming
+correction within the approved requirement, not a spec change. The rendered line is
+`? [UNAVAILABLE] Administrator bypass (GitHub) — insufficient GitHub permission`, with the remedy
+on the following line: the condition and the action are different halves of the same sentence and
+FR-13 wants both.
 
 **Severity, and the C-04 trap.** §4's safety argument — that release gates stay green because
 generated projects have no remote — covers only the three *remote* checks. **C-04 is local**: it

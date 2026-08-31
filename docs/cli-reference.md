@@ -116,16 +116,54 @@ settings overrides, managed files, meaningful setup values, wired hooks,
 verification commands, and git presence. Exits non-zero when a critical or
 high-severity check fails, so CI and scripts can gate on it.
 
+It also reports **effective** governance rather than configured intent: whether
+`main` and `dev` are actually protected (by legacy branch protection, a ruleset,
+or both), whether administrators can bypass that protection, and whether
+`.git/hooks/pre-commit` is really installed and executable. The hook check is
+local; the two GitHub checks use the `gh` CLI and are read-only.
+
 Run it after setup and after any manual change to scaffold-managed files.
 
 ```bash
 ais doctor
 ais doctor ./my-project --json
+ais doctor --require-remote --repo acme/widgets
 ```
 
 | Option | Meaning |
 |---|---|
 | `--json` | Output diagnostics as JSON |
+| `--require-remote` | Treat an unavailable **GitHub** check as a failure. For CI where `gh` is installed and authenticated |
+| `--repo <owner/name>` | Repository to check, overriding `gh repo view` detection. Same precedence as `scripts/setup-branch-protection.sh` |
+
+### Three states, not two
+
+Every check reports `pass`, `fail`, or `unavailable`, and `passed` is true only
+for `pass`.
+
+| State | Human output | Counted in `criticalFailed`/`highFailed`/… |
+|---|---|---|
+| `pass` | `✓ [SEV] name` | no |
+| `fail` | `✗ [SEV] name` | yes |
+| `unavailable` | `? [UNAVAILABLE] name — reason` | **no by default**; yes for GitHub checks under `--require-remote` |
+
+`unavailable` means verification was attempted and could not produce evidence —
+`gh` is missing, unauthenticated, or lacks permission; there is no GitHub remote;
+the budget expired; or the API returned a 200 without the field. It is never a
+skip and never a pass: a check that could not read `bypass_actors` reports
+`unavailable`, not "no bypass". Each one names the single action that would make
+it available.
+
+`--require-remote` affects **only** the GitHub checks (`verifiedBy: "api"`). A
+local check that verified nothing — the hook check in a directory with no `.git`
+— stays out of the counts in both modes.
+
+The `--json` output names the repository it checked under `repository`, adds
+`state`, `verifiedBy` and (when unavailable) `reason` to every check, and adds a
+top-level `unavailableCount`. All pre-existing fields keep their names and types;
+the five aggregates (`allPassed`, `criticalFailed`, `highFailed`, `mediumFailed`,
+`lowFailed`) now count `state === "fail"`, which is what `!passed` meant before
+the third state existed.
 
 ---
 
@@ -198,6 +236,12 @@ ais update --dry-run
 |---|---|
 | `0` | Success |
 | `1` | Failure — including `doctor` critical/high findings and `export-context` finding nothing to back up |
+
+`doctor` exits `0` when a check is `unavailable` and no check failed: being
+unable to verify is an environment problem the user may not control, while a
+detected gap is one they can fix, and collapsing the two is what makes
+diagnostics get ignored. Pass `--require-remote` where `gh` is guaranteed to
+turn an unavailable GitHub check into exit `1`.
 
 ## See also
 

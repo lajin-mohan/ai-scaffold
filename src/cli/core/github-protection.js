@@ -165,7 +165,7 @@ const REASON_PRECEDENCE = Object.freeze([
   REASONS.UNKNOWN,
 ]);
 
-function pickReason(reasons) {
+export function pickReason(reasons) {
   if (reasons.length === 0) return null;
   const rank = (r) => {
     const i = REASON_PRECEDENCE.indexOf(r);

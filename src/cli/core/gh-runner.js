@@ -30,6 +30,8 @@ export const REASONS = Object.freeze({
   FORBIDDEN: 'forbidden',
   NOT_FOUND: 'not-found',
   TIMEOUT: 'timeout',
+  INVALID_REPO: 'invalid-repo',
+  NO_REPO: 'no-repo',
   UNKNOWN: 'unknown',
 });
 
@@ -40,6 +42,8 @@ const REMEDY = Object.freeze({
   [REASONS.FORBIDDEN]: 'This check needs more permission on the repository than the current token has',
   [REASONS.NOT_FOUND]: 'The repository or branch was not found, or is not visible to the current token',
   [REASONS.TIMEOUT]: 'The GitHub API did not respond within the time budget',
+  [REASONS.INVALID_REPO]: 'Pass a valid repository as --repo owner/name',
+  [REASONS.NO_REPO]: 'No GitHub repository is configured here; add a GitHub remote or pass --repo owner/name',
   [REASONS.UNKNOWN]: 'The GitHub CLI failed for an unrecognised reason; run the same query with `gh api` to see it',
 });
 
@@ -160,4 +164,67 @@ export function runGhApi(endpointPath, { cwd, budget } = {}) {
 export function createBudget(totalMs, now = () => Date.now()) {
   const start = now();
   return { remainingMs: () => Math.max(0, totalMs - (now() - start)) };
+}
+
+/**
+ * Resolve the repository the way the WRITE side already does.
+ *
+ * `scripts/setup-branch-protection.sh:58-66` takes an explicit `owner/repo`
+ * argument first and otherwise falls back to `gh repo view --json nameWithOwner`.
+ * Read side and write side disagreeing on "which repository" would be a defect
+ * in its own right, so the source and the precedence are deliberately identical.
+ * The one addition is NFR-02 validation: this value is interpolated into request
+ * paths, which the shell script never does with it.
+ *
+ * Still a closed constructor — `repo` and `view` are fixed, and no caller-supplied
+ * string reaches argv.
+ */
+export function runGhRepoView({ cwd, budget } = {}) {
+  const remaining = budget ? budget.remainingMs() : undefined;
+  if (remaining !== undefined && remaining <= 0) {
+    return { ok: false, reason: REASONS.TIMEOUT, remedy: remedyFor(REASONS.TIMEOUT) };
+  }
+
+  const result = spawnSync('gh', ['repo', 'view', '--json', 'nameWithOwner', '-q', '.nameWithOwner'], {
+    cwd,
+    encoding: 'utf-8',
+    stdio: ['ignore', 'pipe', 'pipe'],
+    env: { ...process.env, GH_NO_UPDATE_NOTIFIER: '1' },
+    ...(remaining !== undefined ? { timeout: remaining } : {}),
+  });
+
+  const reason = classify({
+    status: result.status,
+    signal: result.signal,
+    errorCode: result.error?.code,
+    stderr: result.stderr ?? '',
+  });
+  if (reason) return { ok: false, reason, remedy: remedyFor(reason) };
+
+  const repo = (result.stdout ?? '').trim();
+  // `gh repo view` exits 0 with empty stdout outside a repository with a remote.
+  if (repo === '') return { ok: false, reason: REASONS.NO_REPO, remedy: remedyFor(REASONS.NO_REPO) };
+  return { ok: true, repo };
+}
+
+/**
+ * `--repo` first, `gh repo view` second, validation over both (FR-34, Q-03 = C).
+ * `source` is kept so the output can say where the name came from — FR-35 exists
+ * because a fork silently checked as upstream is a wrong answer, not a missing one.
+ *
+ * @returns {{ok:true,repo:string,source:'flag'|'gh'}|{ok:false,reason:string,remedy:string}}
+ */
+export function resolveRepo({ repoOverride, cwd, budget, run = runGhRepoView } = {}) {
+  if (repoOverride !== undefined && repoOverride !== null && repoOverride !== '') {
+    const check = validateRepo(repoOverride);
+    if (!check.ok) return { ok: false, reason: REASONS.INVALID_REPO, remedy: check.message };
+    return { ok: true, repo: check.value, source: 'flag' };
+  }
+
+  const res = run({ cwd, budget });
+  if (!res.ok) return res;
+
+  const check = validateRepo(res.repo);
+  if (!check.ok) return { ok: false, reason: REASONS.INVALID_REPO, remedy: check.message };
+  return { ok: true, repo: check.value, source: 'gh' };
 }
