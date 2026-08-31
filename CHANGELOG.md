@@ -79,6 +79,64 @@ This file is configured with `merge=union` in `.gitattributes` so parallel addit
   Authoring placeholders inside output templates (`{{FEATURE_NAME}}` in
   `brd-template.md`) are legitimate and explicitly excluded.
 
+### Added
+- **Wave 0 baseline groundwork for backlog item 74.** Solution analysis and a
+  draft BRD for the scaffold-effectiveness baseline now live at
+  `docs/brd/74-scaffold-effectiveness-baseline-analysis.md` and
+  `docs/brd/74-scaffold-effectiveness-baseline-brd.md`, with the ticket tracked
+  at `tasks/todo/74-scaffold-effectiveness-baseline.md`. Documents only — no
+  metric has been measured yet. The BRD is explicitly **not approved**: three
+  maintainer decisions (observation window, telemetry stance, bypass
+  definition) block Stage 2 estimation. The objective is stated as regression
+  detection and trend rather than proof that governance reduces rework, because
+  with no control group and two pilot projects causation is not recoverable.
+  A verification pass corrected a load-bearing error in the first draft:
+  `pre-publish-smoke.sh` greps each generated README for the documented day-one
+  commands rather than executing them, so its 113/113 pass count cannot serve as
+  a golden-path *success* baseline — that metric is recorded null until item
+  65's Wave 1 execution follow-up ships.
+  **Approved 2026-08-27** (BRD v2.0) once the three blocking decisions landed:
+  the baseline is retro-computable-only with a dated cut-off so Wave 0 does not
+  end up waiting on Wave 1's own outputs; collection stays strictly local with
+  no telemetry, which fixes item 15 as a local log; and a bypass counts only
+  where a durable GitHub artifact evidences it, with `--no-verify`, skipped
+  lifecycle stages and ignored prompt-level rules named as not measured by
+  construction rather than reported as zero.
+- **Stage 2 estimate for item 74** at
+  `docs/estimates/74-scaffold-effectiveness-baseline-estimate.md`. Three-point,
+  split into Phase A (4.0 realistic days — the retro-computable snapshot that
+  actually gates Wave 1) and Phase B (9.0 days — the tested re-runnable harness,
+  which runs alongside Wave 1 because its value is repeatability on the second
+  run). M-04 (bypass frequency) is deferred to snapshot #2: FR-27 requires
+  reusing item 26's GitHub query surface, and item 26 is Wave 1, so building it
+  now would make Wave 0 depend on Wave 1's output.
+- **Stage 2 closed for item 74.** Estimate signed off by Tech Lead, and a scope
+  statement at `docs/process/74-scaffold-effectiveness-baseline-scope.md`
+  records the in/out/deferred boundary and flags three decisions to the Tech
+  Lead rather than resolving them: the architecture gate for an M-sized item
+  with no architecture to design, Q-04's proposed false-done definition, and
+  whether Wave 1 starts on the Phase A snapshot commit.
+- **Wave 0 baseline captured (Phase A).** `docs/process/effectiveness-metrics.md`
+  publishes the M-01–M-08 definitions, and
+  `docs/process/effectiveness-baseline-2026-08-27.md` records snapshot #1.
+  Definitions were committed first so git order proves BR-01. Four of eight
+  metrics are null or trend-only and recorded as such rather than as zero.
+  Measured at commit `a4a2eb2`: 90.3% (28/31) of non-merge commits touching
+  `templates/` edit 2 or more of the 5 profile copies, and 51.6% edit all five;
+  the governance corpus grew 1.59% in tokens over 45 days (138,331 → 140,531)
+  with file, command and agent counts unchanged, so the growth is accretion
+  inside existing files rather than surface expansion; and 4 of 20 recorded
+  lessons are false-done claims (>= 6 incidents), reported as a floor while
+  Q-04's definition stays Proposed. **Wave 1 is unblocked.**
+  ADR-003 records why no HLD was produced for an M-sized item.
+
+  **Amended the same day** after the maintainer scoped the scaffold's governance
+  to generated projects: the `ai-scaffold` repository is the tool, not a governed
+  project. Only M-04 (bypass frequency) is affected — its population moves from
+  this repository to adopting projects, and its start condition becomes compound
+  (item 26 shipped **and** a pilot running). Snapshot #1's recorded values are
+  left untouched per BR-06; the correction is appended as an amendment rather
+  than rewritten, since a scope correction is not a re-run.
 
 ## [0.14.0] - 2026-08-21
 
