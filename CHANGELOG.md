@@ -171,9 +171,43 @@ This file is configured with `merge=union` in `.gitattributes` so parallel addit
   backlog's security-posture bullet, **not** in `SECURITY.md`, which contains no
   shell-out text at all.
 
-  Estimate 6.8 / **13.1** / 24.5 days, still spike-gated: the committed scope is
-  a 0.5-day spike against the GitHub API shape, not the total. Size escalated
-  `S` → `M`; the backlog rank table still says `S` and is flagged for update.
+  Estimate **7.3 / 14.0 / 26.2** days, still spike-gated: the committed scope is
+  the 0.25-day spike remainder, not the total. Size escalated `S` → `M` in both
+  the rank table and the item definition.
+
+  **`/review` run 2026-08-31** — security, qa and architect, escalated from
+  `--lite`. Eight BLOCK-class findings, all fixed or recorded. Four were design
+  gaps with an exact requirement-level fix and became requirements: **FR-06** (a
+  ruleset counts only at `enforcement: active`; an `evaluate` ruleset appears in
+  the rules list and blocks nothing, which is `BR-01`'s "configured intent is not
+  a pass" arriving through the design), **FR-17** (`passed === (state === 'pass')`
+  and `unavailable` excluded from the severity aggregates), **FR-36** (no
+  fall-through to an ambient repository), and amendments to **FR-34** (every `gh`
+  call runs with `cwd` set to the resolved `[target-dir]` — otherwise
+  `ais doctor ./project` reports the ambient repo's protection, which
+  `pre-publish-smoke.sh` would have hit on CI) and **FR-11** (an `unavailable`
+  check may use neither `✗` nor a `[CRIT]`/`[HIGH]` label, which is what keeps
+  the profile smoke gates green). **FR-20** now records that five `--json`
+  aggregates are narrowed rather than claiming the change is purely additive.
+  Added AC-13–AC-18; fixed AC-03/06/07/09 testability.
+
+  The estimate's subtotals did not equal their own rows — replacing the spike row
+  never subtracted the original — and Stage 3 was unpriced despite
+  `task-size-policy.md` requiring HLD + ADR at size M. Both corrected and
+  re-verified programmatically.
+
+  Three questions are **recorded rather than answered**, because they need design
+  and not wording: **R-08** org-level rulesets are not addressable under
+  `/repos/{o}/{r}/rulesets/{id}` and the probe only ran against a personal repo;
+  **R-09** `doctor` as specified cannot detect the two-surface control
+  disagreement item 75 exists to fix; and the mock seam, since the transport is a
+  subprocess and the test suite has no `vi.mock` precedent.
+
+  Security: the spike probe echoed raw `gh auth status` into output the spike doc
+  tells you to commit — that names every configured host, Enterprise included,
+  plus token scopes. Now filtered to the scopes line. `NFR-02` gains path
+  validation: array form prevents shell injection but does not sanitise the API
+  path, and `$REPO` reached it unvalidated.
 
 - **Spike design for item 26** at `docs/architecture/spike-26-github-api-shape.md`,
   with a throwaway probe at `scripts/spike-26-probe.sh` (verified not shipped —
