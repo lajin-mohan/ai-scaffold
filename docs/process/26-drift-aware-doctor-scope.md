@@ -21,7 +21,8 @@
   separately from the existing settings-file check.
 - **Honest degradation** — `unavailable` as a first-class third state with a reason and a suggested
   action, for: no `gh`, not authenticated, no remote, non-GitHub remote, timeout. Does not affect the
-  exit code by default; **`--require-remote`** makes it fail, and the scaffold's own CI uses it.
+  exit code by default; **`--require-remote`** makes it fail, for use in an **adopting project's**
+  CI. The scaffold repository is out of scope — it is the tool, not a governed project.
 - **Repository resolution** via `gh repo view --json nameWithOwner` with a `--repo` override,
   identical to the write-side script. The output names the repo it checked.
 - **Detected gaps are `high` and fail the exit code.** `doctor` becomes a gate for gaps it can
@@ -69,15 +70,16 @@ Per `.claude/agents/pm.md` — the PM produces the communication and flags the d
 | # | Decision needed | Why it is not decided here |
 |---|---|---|
 | 1 | ~~Q-01~~ | **Resolved — D.** Report-only by default; `--require-remote` enforces |
-| 2 | ~~Q-02~~ | **Resolved — B.** `high`, exit 1. Contingency below is now live |
+| 2 | ~~Q-02~~ | **Resolved — B.** `high`, exit 1. No contingency — see below |
 | 3 | ~~Q-03~~ | **Resolved — C.** `gh repo view` + `--repo`; output names the repo |
 | 4 | **Spike first.** Commit the 0.5-day spike, not the 13.1-day total, until the GitHub API shape is verified | Still open. Estimation discipline, flagged not decided |
 | 5 | **Size escalation S → M.** Update the backlog rank table, or reject the escalation and re-scope | Still open. Sizing selects the gate set — a PM cannot change it unilaterally |
 
-**Contingency, now live and outside the estimate:** Q-02 = B means this repository's own protection
-settings may fail `doctor` the first time the checks run, and FR-16 puts `--require-remote` in the
-scaffold's CI so they will run. That is a *finding*, not a defect in this item. Budget +0.5 to +2
-days against the roadmap. If it fires, item 26 worked.
+**Contingency withdrawn (2026-08-27).** An earlier version of this statement budgeted +0.5 to +2 days
+for `doctor` failing against this repository's own protection settings. The maintainer has since
+scoped the governance to **generated projects only** — the scaffold repo is the tool, not a governed
+project — so `--require-remote` is not wired into its CI and there is nothing here for the checks to
+fail against. **No contingency is carried.**
 
 ---
 

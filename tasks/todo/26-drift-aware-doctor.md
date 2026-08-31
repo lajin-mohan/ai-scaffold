@@ -37,7 +37,8 @@ artifact on this one.
 ## Decisions (all closed 2026-08-27)
 
 - **Q-01 = D** — `unavailable` does not affect the exit code by default;
-  `--require-remote` opts into failing, and the scaffold's own CI uses it.
+  `--require-remote` opts into failing, for an **adopting project's** CI. The
+  scaffold repository is out of scope; no contingency is carried.
 - **Q-02 = B** — a detected gap is `high` and fails the exit code. `critical`
   stays reserved for a broken installation.
 - **Q-03 = C** — repo resolved by `gh repo view --json nameWithOwner` with a
