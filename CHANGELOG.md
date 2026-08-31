@@ -137,6 +137,106 @@ This file is configured with `merge=union` in `.gitattributes` so parallel addit
   (item 26 shipped **and** a pilot running). Snapshot #1's recorded values are
   left untouched per BR-06; the correction is appended as an amendment rather
   than rewritten, since a scope correction is not a re-run.
+### Added
+- **Specification for backlog item 26 — drift-aware `doctor`, enforcement slice**
+  (Wave 1, rank 3, P0). Solution analysis, **approved BRD v2.0**, approved
+  spike-gated estimate and scope statement under `docs/brd/`, `docs/estimates/`
+  and `docs/process/`. Documents only; no code changes yet.
+
+  **The finding that justifies the item:** all 15 of `doctor`'s checks are local
+  filesystem reads, and there is no network call anywhere in `src/`. Its own
+  `checkHooksWired` passes when `.claude/settings.json` has a non-empty `hooks`
+  object — it never checks whether `.git/hooks/pre-commit` exists or is
+  executable, the hook `create` installs at `0o755`. So *"configured intent is
+  not a pass"*, the failure this item exists to fix, is currently true inside
+  `doctor` itself.
+
+  **Scope:** this governance applies to **generated projects**. The `ai-scaffold`
+  repository is the tool, not a governed project — it keeps its build, test and
+  release workflows and is not subject to the gates it ships.
+
+  **Decisions:** `unavailable` is a first-class third state that does not affect
+  the exit code by default, with `--require-remote` to enforce it where `gh` is
+  guaranteed; a **detected** gap is `high` and fails the exit code, reusing
+  `doctor`'s existing rule rather than inventing one; and the target repository
+  is resolved by `gh repo view --json nameWithOwner` with a `--repo` override,
+  identical to the write-side `setup-branch-protection.sh`. The principle
+  underneath all three: inability to check and a detected gap never share an exit
+  code — the first is an environment problem the user may not control, the second
+  is one they can fix.
+
+  **Transport is the `gh` CLI**, so no GitHub token ever enters this package.
+  That makes the *"only shell-out is `spawnSync('git', [args])`"* claim false and
+  it must change in the same commit as the code — that claim lives in the
+  backlog's security-posture bullet, **not** in `SECURITY.md`, which contains no
+  shell-out text at all.
+
+  **BRD v2.2 and the full estimate approved 2026-08-31** at 7.8 / **15.4** / 28.8
+  days; the signed scope includes the Stage 3 row and the six v2.2 requirements.
+  **Stages 1 and 2 are closed; Stage 3 (HLD + ADR) is the open gate.** Size escalated `S` → `M` in both
+  the rank table and the item definition.
+
+  **`/review` run 2026-08-31** — security, qa and architect, escalated from
+  `--lite`. Eight BLOCK-class findings, all fixed or recorded. Four were design
+  gaps with an exact requirement-level fix and became requirements: **FR-06** (a
+  ruleset counts only at `enforcement: active`; an `evaluate` ruleset appears in
+  the rules list and blocks nothing, which is `BR-01`'s "configured intent is not
+  a pass" arriving through the design), **FR-17** (`passed === (state === 'pass')`
+  and `unavailable` excluded from the severity aggregates), **FR-36** (no
+  fall-through to an ambient repository), and amendments to **FR-34** (every `gh`
+  call runs with `cwd` set to the resolved `[target-dir]` — otherwise
+  `ais doctor ./project` reports the ambient repo's protection, which
+  `pre-publish-smoke.sh` would have hit on CI) and **FR-11** (an `unavailable`
+  check may use neither `✗` nor a `[CRIT]`/`[HIGH]` label, which is what keeps
+  the profile smoke gates green). **FR-20** now records that five `--json`
+  aggregates are narrowed rather than claiming the change is purely additive.
+  Added AC-13–AC-18; fixed AC-03/06/07/09 testability.
+
+  The estimate's subtotals did not equal their own rows — replacing the spike row
+  never subtracted the original — and Stage 3 was unpriced despite
+  `task-size-policy.md` requiring HLD + ADR at size M. Both corrected and
+  re-verified programmatically.
+
+  Three questions are **recorded rather than answered**, because they need design
+  and not wording: **R-08** org-level rulesets are not addressable under
+  `/repos/{o}/{r}/rulesets/{id}` and the probe only ran against a personal repo;
+  **R-09** `doctor` as specified cannot detect the two-surface control
+  disagreement item 75 exists to fix; and the mock seam, since the transport is a
+  subprocess and the test suite has no `vi.mock` precedent.
+
+  Security: the spike probe echoed raw `gh auth status` into output the spike doc
+  tells you to commit — that names every configured host, Enterprise included,
+  plus token scopes. Now filtered to the scopes line. `NFR-02` gains path
+  validation: array form prevents shell injection but does not sanitise the API
+  path. **The requirement was hardened; the throwaway probe script was not** — it
+  still interpolates `$REPO` unvalidated, which is acceptable for an
+  operator-only spike and would not be in `src/`.
+
+- **Spike design for item 26** at `docs/architecture/spike-26-github-api-shape.md`,
+  with a throwaway probe at `scripts/spike-26-probe.sh` (verified not shipped —
+  the `files` allowlist carries only `scripts/token-report.js` from `scripts/`).
+  It tests one hypothesis that decides the item's reach: that GitHub exposes
+  **two tiers** of readability — a coarse tier (`/branches/{b}`, its `protected`
+  boolean, and `/rules/branches/{b}`) readable with ordinary repo read access,
+  and a detailed tier (`/branches/{b}/protection`, `/rulesets`) that needs admin.
+  If the coarse tier is readable without `admin:repo`, C-01 works for every user
+  and only C-03 degrades; if not, `unavailable` becomes the normal case outside
+  the scaffold's own CI and the item's scope needs reopening. The probe is run
+  twice, with an admin token and a read-only token, and the delta is the answer.
+  **The HLD deliberately waits on the results** — writing it first would design
+  against an unverified API.
+
+- **Backlog item 75** — the shipped `setup-branch-protection.sh` writes only the
+  legacy `PUT /branches/{b}/protection` surface and is blind to rulesets, which
+  are increasingly the default for new GitHub organisations. It ships to all 5
+  profiles. Demonstrated on this repository — the specimen, not the problem,
+  since the scaffold repo is deliberately not a governed project — where ruleset
+  `protected-main` and the script's payload disagree on two controls at once
+  (`require_last_push_approval` and stale-review dismissal), with the script
+  reporting neither. The defect is that a shipped tool configures governance it
+  cannot observe: harmless here, load-bearing in an adopting team's repo. The write-side twin of item 26 and sequenced
+  after it: the read side must establish what "effective" means before the write
+  side converges on it.
 
 ## [0.14.0] - 2026-08-21
 
