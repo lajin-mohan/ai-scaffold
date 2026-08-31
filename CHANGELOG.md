@@ -173,7 +173,20 @@ This file is configured with `merge=union` in `.gitattributes` so parallel addit
 
   **BRD v2.2 and the full estimate approved 2026-08-31** at 7.8 / **15.4** / 28.8
   days; the signed scope includes the Stage 3 row and the six v2.2 requirements.
-  **Stages 1 and 2 are closed; Stage 3 (HLD + ADR) is the open gate.** Size escalated `S` → `M` in both
+  **Stages 1 and 2 are closed. Stage 3 drafted 2026-08-31**:
+  `docs/architecture/hld-26-drift-aware-doctor.md` plus **ADR-004** (`gh`
+  subprocess transport behind an injected runner) and **ADR-005** (effective-
+  protection merge semantics). The three open design questions are resolved —
+  org-level rulesets branch on `ruleset_source_type` and report `null` rather
+  than "no bypass"; a two-surface control disagreement is reported at `medium`
+  so the read side can see the defect item 75 exists to fix; and the mock seam
+  is an injected runner, so fixtures are recorded `gh` stdout plus exit code and
+  no `vi.mock` of `child_process` is needed. The HLD makes **tier availability a
+  runtime discovery rather than a design-time assumption**, which is why it could
+  be written before the private-repo probe: the same code serves a public repo
+  read anonymously and a private one read with a scoped token, so the probe now
+  confirms product reach instead of gating architecture. Stage 4 (UX) is recorded
+  **N/A** — `doctor` is a CLI — rather than silently skipped. Size escalated `S` → `M` in both
   the rank table and the item definition.
 
   **`/review` run 2026-08-31** — security, qa and architect, escalated from

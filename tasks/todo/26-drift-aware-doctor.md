@@ -2,9 +2,9 @@
 
 ## Status
 
-**Stages 1 and 2 CLOSED 2026-08-31.** BRD **v2.2 approved** and the full **15.4-day**
-estimate approved; the scope statement is approved. **Stage 3 (HLD + ADR) is the
-only open gate**; `/kickoff` follows it.
+**Stages 1–3 drafted 2026-08-31.** BRD v2.2 and the 15.4-day estimate approved.
+**Stage 3 artifacts written — HLD + ADR-004 + ADR-005 — pending Tech Lead
+approval.** `/kickoff` follows approval; Stage 4 (UX) is N/A, recorded below.
 
 **Spike run 2026-08-27 — partial.** Anonymous tier established, merge
 requirement proven, query list documented **at the anonymous tier** — `FR-23` / item 74 `FR-27`
@@ -21,7 +21,10 @@ The private-repo case is untested and is the case most adopters are in.
 | 2 — Plan | `docs/estimates/26-drift-aware-doctor-estimate.md` | **Approved 2026-08-31** — **15.4 d realistic**, MEDIUM confidence |
 | 2 — Plan | `docs/process/26-drift-aware-doctor-scope.md` | **Approved** |
 | 3 — Architecture | `docs/architecture/spike-26-github-api-shape.md` + `scripts/spike-26-probe.sh` | **Run — partial. Query list documented** |
-| 3 — Architecture | HLD + ADR | Unblocked for the two-tier design; private-repo answer still wanted |
+| 3 — Architecture | `docs/architecture/hld-26-drift-aware-doctor.md` | **Draft — pending approval** |
+| 3 — Architecture | `docs/architecture/adr/004-gh-subprocess-transport-with-injected-runner.md` | Accepted |
+| 3 — Architecture | `docs/architecture/adr/005-effective-protection-merge-semantics.md` | Accepted |
+| 4 — UX | **N/A — recorded, not skipped** | No UI. `task-size-policy.md` marks UX "Required (if UI)" at size M; `doctor` is a CLI whose only surface is stdout and `--json`. Recorded so `/kickoff` sees a decision rather than an absence |
 
 ## Size
 
@@ -51,15 +54,23 @@ artifact on this one.
 adopting project's CI; this repository does not run the governance gates it
 ships.
 
-## Open design questions — Stage 3 inputs (added 2026-08-31)
+## Open design questions — RESOLVED by Stage 3 (2026-08-31)
 
-- **R-08** Org-level rulesets are not addressable under `/repos/{o}/{r}/rulesets/{id}`;
-  the probe ran only against a personal repo, and adopting teams are the org case.
-- **R-09** `doctor` as specified cannot detect the two-surface control disagreement
-  item 75 exists to fix — C-01 collapses to protected/unprotected.
-- **Mock seam** — the transport is a subprocess, so a fixture is stdout plus an
-  exit code; the suite has no `vi.mock` precedent. Whether NFR-05 requires an
-  injected runner is undecided.
+- **R-08** org-level rulesets → **ADR-005**: branch on `ruleset_source_type`; where
+  the org endpoint is inaccessible the bypass contribution is `null`, never "no bypass".
+- **R-09** two-surface control disagreement → **ADR-005 rule 3**: reported at
+  `medium` alongside the merged verdict, so the read side can see the defect
+  item 75 exists to fix. Initial control set is three; extending it is additive.
+- **Mock seam** → **ADR-004**: an injected runner (`{ run = defaultGhRun } = {}`).
+  Fixtures are recorded `gh` stdout plus exit code, so no `vi.mock` of
+  `child_process` is needed — the suite has no such precedent and this avoids
+  establishing one.
+
+**The private-repo question is no longer a Stage 3 blocker.** The HLD makes tier
+availability a **runtime discovery** rather than a design-time assumption, so the
+same code serves a public repo read anonymously and a private one read with a
+scoped token. The probe still matters — it tells us the product's *reach* — but it
+no longer gates the design.
 
 ## Next action
 
@@ -114,5 +125,7 @@ sequenced after this one.
 | 2026-08-27 | FR-33 targets the backlog's security-posture bullet, not `SECURITY.md` | `SECURITY.md` contains no shell-out claim — it is un-customised boilerplate whose Scope section names `apps/`, `packages/`, `infra/`, none of which hold this project's code. An earlier draft pointed FR-33 and AC-09 at a claim that does not exist |
 | 2026-08-27 | Branched from `origin/dev`, not stacked on the item 74 branch | Per the 2026-07-14 lesson: stacked PRs conflict under a squash-merge policy |
 | 2026-08-27 | Commit only the 0.5-day spike, not the 13.1-day total | Committing to an estimate that rests on an unverified external API shape is how estimates become fiction |
+| 2026-08-31 | Stage 3 written before the private-repo probe, deliberately | The HLD treats tier availability as runtime discovery, not a design-time assumption, so the design is correct either way. The probe now confirms reach rather than shaping architecture |
+| 2026-08-31 | Stage 4 (UX) recorded N/A rather than skipped | `doctor` is a CLI; its only surface is stdout and `--json`. Same discipline as ADR-003 — a silent skip is the pattern this scaffold exists to catch |
 | 2026-08-31 | BRD v2.2 and the full 15.4-day estimate approved | Signed scope includes the 1.0 d Stage 3 row and the 1.25 d v2.2-requirements row. Changing the requirement set or dropping Stage 3 is a >20% deviation requiring re-estimation |
 | 2026-08-31 | Approve the remaining 0.25-day spike only; keep the full estimate pending | Superseded the same day by the full approval above. The authenticated non-admin and private-repository behaviour still determines product reach and architecture confidence |
