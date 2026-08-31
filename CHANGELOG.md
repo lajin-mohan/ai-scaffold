@@ -186,7 +186,22 @@ This file is configured with `merge=union` in `.gitattributes` so parallel addit
   be written before the private-repo probe: the same code serves a public repo
   read anonymously and a private one read with a scoped token, so the probe now
   confirms product reach instead of gating architecture. Stage 4 (UX) is recorded
-  **N/A** — `doctor` is a CLI — rather than silently skipped. Size escalated `S` → `M` in both
+  **N/A** — `doctor` is a CLI — rather than silently skipped.
+
+  **`/architecture-review` run 2026-08-31** (architect + security): APPROVED WITH
+  CHANGES. Four findings changed the design. The tier model contradicted the
+  spike on `/rulesets/{id}` — 200 with `bypass_actors` **absent**, not 401 — so a
+  status-code-driven model would have read the missing key as "no bypass",
+  the false negative `BR-04` exists to prevent, on data already observed;
+  ADR-005 gains a rule that field absence is unavailability. The smoke-gate
+  safety argument covered only the three remote checks, while C-04 is local and
+  would have failed `pre-publish-smoke.sh:667-673` on every release; C-04 now has
+  an explicit state table. On security: raw `gh` stderr had no defined sink and
+  would have carried private repo names and Enterprise hostnames into `--json`
+  and thence CI logs — the same class already fixed in the spike probe — and
+  "read-only" was unenforceable because `gh api` POSTs on any `-f`/`-F`, so the
+  runner becomes a closed constructor taking an endpoint path rather than an
+  argv array. Size escalated `S` → `M` in both
   the rank table and the item definition.
 
   **`/review` run 2026-08-31** — security, qa and architect, escalated from

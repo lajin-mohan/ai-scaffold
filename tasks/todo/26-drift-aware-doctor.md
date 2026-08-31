@@ -54,11 +54,42 @@ artifact on this one.
 adopting project's CI; this repository does not run the governance gates it
 ships.
 
+## `/architecture-review` — 2026-08-31
+
+**Verdict: APPROVED WITH CHANGES** (architect) / **CHANGES REQUIRED** (security).
+Not a redesign — both reviewers found the structural decisions sound. Four
+findings changed the design and are fixed:
+
+- **C1** the tier model contradicted the spike on `/rulesets/{id}`: 200 with
+  `bypass_actors` **absent**, not 401. A status-driven model would have read the
+  missing key as "no bypass" — the false negative `BR-04` exists to prevent, on
+  observed data. Fixed by ADR-005 rule 3: field absence is unavailability.
+- **C3** the smoke-gate safety argument covered only remote checks. C-04 is
+  local; `init.js` has no git logic, so `INIT_DIR` has no `.git`, and at `high`
+  the gate at `pre-publish-smoke.sh:667-673` would fail every release. Fixed by
+  an explicit C-04 state table: no `.git` → `unavailable`.
+- **Security BLOCK-1** `detail` had no defined sink; raw `gh` stderr would have
+  reached `--json` → CI logs, carrying private repo names and Enterprise
+  hostnames. Same class as the spike-probe fix. Stderr now never leaves the runner.
+- **Security BLOCK-2** "read-only" was unenforceable — `gh api` POSTs on any
+  `-f`/`-F`. The runner is now a closed constructor taking an endpoint path.
+
+Also fixed: env inheritance stated as a deliberate decision (FR-16 depends on
+it); branch validation tightened (`main#x` would have silently read the coarse
+endpoint); bypass actors reported by type not identity; two false claims of mine
+withdrawn.
+
+**Deferred to implementation** — the reviewers' remaining Significant items are
+§3/§5 precision (the `reason` enum overflowing its own table, per-field reason
+slots, the `doctor.js` line-by-line change list, the branch-name source, and
+splitting the pure merge module). Each is the kind of thing the first fixture
+forces. **Recorded so they are chosen, not forgotten.**
+
 ## Open design questions — RESOLVED by Stage 3 (2026-08-31)
 
 - **R-08** org-level rulesets → **ADR-005**: branch on `ruleset_source_type`; where
   the org endpoint is inaccessible the bypass contribution is `null`, never "no bypass".
-- **R-09** two-surface control disagreement → **ADR-005 rule 3**: reported at
+- **R-09** two-surface control disagreement → **ADR-005 rule 4**: reported at
   `medium` alongside the merged verdict, so the read side can see the defect
   item 75 exists to fix. Initial control set is three; extending it is additive.
 - **Mock seam** → **ADR-004**: an injected runner (`{ run = defaultGhRun } = {}`).

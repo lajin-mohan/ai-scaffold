@@ -1,7 +1,7 @@
 # ADR-004: `gh` subprocess transport, behind an injected runner
 
 **Date:** 2026-08-31
-**Status:** Accepted
+**Status:** Accepted (amended 2026-08-31 after `/architecture-review` — runner is a closed constructor; environment and `detail` handling stated)
 **Deciders:** Lajin M J (Technical Lead)
 **Consulted:** `docs/brd/26-drift-aware-doctor-brd.md` v2.2 (FR-30, FR-31, NFR-02, NFR-05), `docs/architecture/spike-26-github-api-shape.md`, `scripts/setup-branch-protection.sh`, `src/cli/commands/create.js`
 
@@ -33,8 +33,17 @@ Two further constraints emerged from review:
 injected runner** in `src/cli/core/gh-runner.js`:
 
 ```js
-export function getProtection(opts, { run = defaultGhRun } = {}) { … }
+// the injected boundary
+export function getProtection(opts, { run = defaultGhApi } = {}) { … }
+
+// the runner it defaults to — a constructor, not a passthrough
+runGhApi(endpointPath, { cwd, budget })   // always argv ['api','--method','GET',endpointPath]
 ```
+
+**The runner takes an endpoint path, never an argv array.** A free-form `runGh(args)` cannot enforce
+BR-02's read-only guarantee: `gh api` switches to POST on any `-f`/`-F`/`--field`/`--input`, so an
+`-X` check is insufficient, and nothing would stop `args[0]` being `repo delete`. Constructing the
+argv internally makes read-only a property of the code.
 
 The runner maps the process outcome to a closed set of reasons — `gh-missing`, `unauthenticated`,
 `forbidden`, `not-found`, `timeout`, `unknown` — and is the only place that mapping exists. A
@@ -105,7 +114,18 @@ to a single tested function.
 - Validate `owner/repo` and branch **before** interpolation into any API path (NFR-02). Array form
   prevents shell injection; it does not sanitise a request path.
 - `cwd` is threaded to every invocation (FR-34) — `create.js:266-272` is the precedent.
-- The runner is read-only: no method other than GET reaches `gh api`.
+- The runner is read-only **by construction**: it emits `['api', '--method', 'GET', path]` and
+  accepts nothing else.
+- **Environment is inherited deliberately.** `spawnSync` passes `process.env`, so where `GH_TOKEN` /
+  `GITHUB_TOKEN` is set the credential transits this process. The claim above is about **custody** —
+  the CLI never reads, stores or logs it — not isolation. Inheritance is load-bearing: FR-16 wants
+  generated projects to run `doctor --require-remote` in CI, where `gh` authenticates by env alone.
+  Spawn options are never serialised into an error or log, since `options.env` would carry the token.
+- **Raw `gh` stderr never leaves the runner.** It is matched to classify a `reason`, then dropped.
+  It carries the endpoint path (private repo name) and resolved host (Enterprise hostname), and
+  `doctor --json` is echoed into CI logs — the disclosure class already fixed in
+  `scripts/spike-26-probe.sh`. User-facing text comes from a fixed `reason` → message table.
+- `stdio: ['ignore','pipe','pipe']` and `GH_NO_UPDATE_NOTIFIER=1`.
 
 ---
 
