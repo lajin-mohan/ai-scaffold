@@ -4,7 +4,7 @@
 **Version:** 2.0
 **Date:** 2026-08-27
 **Status:** **Approved** — 2026-08-27. Q-01 = D, Q-02 = B, Q-03 = C; see §9
-**Size:** escalated **S → M**. The backlog sizes item 26 `S` ("small enforcement slice"); the estimate is 12.25 realistic days. `task-size-policy.md` permits escalation ("Escalation is not failure"). **The backlog rank table has not been updated — flagged to the Tech Lead**
+**Size:** escalated **S → M**. The backlog rank table and item definition now say `M`; the estimate is 13.1 realistic days. `task-size-policy.md` permits escalation ("Escalation is not failure").
 **Author:** Claude (Cowork session), executing `/create-brd` and `solution-analyst` manually
 **Approved By:** Lajin M J (maintainer/owner), 2026-08-27
 

@@ -72,8 +72,8 @@ Per `.claude/agents/pm.md` — the PM produces the communication and flags the d
 | 1 | ~~Q-01~~ | **Resolved — D.** Report-only by default; `--require-remote` enforces |
 | 2 | ~~Q-02~~ | **Resolved — B.** `high`, exit 1. No contingency — see below |
 | 3 | ~~Q-03~~ | **Resolved — C.** `gh repo view` + `--repo`; output names the repo |
-| 4 | **Spike first.** Commit the 0.5-day spike, not the 13.1-day total, until the GitHub API shape is verified | Still open. Estimation discipline, flagged not decided |
-| 5 | **Size escalation S → M.** Update the backlog rank table, or reject the escalation and re-scope | Still open. Sizing selects the gate set — a PM cannot change it unilaterally |
+| 4 | **Spike first.** Commit the remaining 0.25-day spike, not the 13.1-day total, until the GitHub API shape is verified | **Resolved 2026-08-31.** Remaining spike approved; full estimate stays pending |
+| 5 | **Size escalation S → M.** Update the backlog rank table, or reject the escalation and re-scope | **Resolved 2026-08-27.** Backlog rank table and item definition now say `M` |
 
 **Contingency withdrawn (2026-08-27).** An earlier version of this statement budgeted +0.5 to +2 days
 for `doctor` failing against this repository's own protection settings. The maintainer has since
@@ -87,16 +87,16 @@ fail against. **No contingency is carried.**
 
 | Stage | Realistic | Note |
 |---|---|---|
-| Spike | 0.5 d | Gates the rest; also the spike item 74 deferred here |
+| Spike | 0.5 d total; 0.25 d remaining | Gates the rest; remaining private/non-admin probe approved 2026-08-31 |
 | Implementation + tests + docs + review | 12.6 d | One coherent unit — the checks share the query module |
 | **Total** | **13.1 d** | ~18.7 calendar days at 0.7 capacity |
 
 > An indicative ~4 days was given in conversation on 2026-08-27 and is **not recorded in this
-> repository**. The backlog sizes item 26 `S`, and `task-size-policy.md` has no size-to-days mapping.
+> repository**. The original backlog sized item 26 `S`, and `task-size-policy.md` has no size-to-days mapping.
 > This estimate is 3.3× that conversational figure, which omitted the query module, the five
 > degradation paths, the test fixtures and the `--json` compatibility guarantee.
 >
-> **Size escalated S → M and the backlog rank table not yet updated — flagged to the Tech Lead.**
+> **Size escalated S → M; the backlog rank table and item definition are updated.**
 
 ---
 

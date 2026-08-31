@@ -2,9 +2,9 @@
 
 **Date:** 2026-08-27
 **Estimated By:** Claude (Cowork session), following `.claude/agents/estimator.md`
-**Reviewed By:** TBD — Technical Lead sign-off pending
+**Reviewed By:** Lajin M J — remaining spike only approved 2026-08-31; full estimate pending
 **Confidence:** **MEDIUM** — spike run 2026-08-27, anonymous tier established and the query list documented. Two questions remain open (authenticated non-admin reads; private repositories), so this is not yet HIGH.
-**Status:** Draft — Q-01–Q-03 resolved; spike partially run 2026-08-27. **Re-confirm before committing the total: the private-repo case is untested and it is the case most adopters are in.**
+**Status:** Remaining spike approved (0.25 realistic days); full 13.1-day estimate pending. Q-01–Q-03 are resolved and the spike was partially run 2026-08-27. **Re-confirm before committing the total: the private-repo case is untested and it is the case most adopters are in.**
 **Source spec:** `docs/brd/26-drift-aware-doctor-brd.md` (**Approved v2.0**, 2026-08-27)
 
 > **Template adaptation.** `.claude/templates/estimation-template.md` assumes a web feature
@@ -118,27 +118,29 @@ C-01 without C-03 would report protection while saying nothing about who can ove
 | Realistic | **13.1** | **18.7** |
 | Pessimistic | 24.5 | 35.0 |
 
-**Recommended commitment:** the **0.5-day spike only**, then re-confirm. Committing 13.1 days
-against an unverified external API shape is how estimates become fiction.
+**Approved commitment:** the **remaining 0.25-day spike only** (2026-08-31), then re-confirm. The
+full spike was estimated at 0.5 days; its anonymous/public portion is already complete. Committing
+13.1 days against an unverified external API shape is how estimates become fiction.
 
 **Against the earlier indicative figure.** An indicative ~4 realistic days was given for item 26 in
 conversation on 2026-08-27. **That figure is not recorded anywhere in this repository** — the
-backlog sizes item 26 `S` ("small enforcement slice") and `task-size-policy.md` contains no
+original backlog sized item 26 `S` ("small enforcement slice") and `task-size-policy.md` contains no
 size-to-days mapping, so `S` cannot be converted to a day figure either. Against that conversational
 ~4, this estimate is **3.3× higher**: it prices the query module, the five degradation paths, the
 mocked test fixtures and the `--json` compatibility guarantee, none of which the indicative number
 included.
 
-**Size escalation, recorded.** The backlog sizes this `S`; 13.1 realistic days is `M`.
-`task-size-policy.md` permits escalation and says it "is not failure — it means the initial sizing
-was imprecise." **The backlog rank table still says `S` and has not been updated** — flagged to the
-Tech Lead, because size selects the gate set.
+**Size escalation, recorded.** The backlog now sizes this `M`; 13.1 realistic days exceeds the
+original `S` framing. `task-size-policy.md` permits escalation and says it "is not failure — it
+means the initial sizing was imprecise."
 
 ---
 
 ## Spike Required?
 
-**Yes — 0.5 realistic days, before implementation.**
+**Yes — 0.5 realistic days total, before implementation.** The anonymous/public portion is
+complete; the authenticated non-admin/private-repository remainder is approved at 0.25 realistic
+days.
 
 Answers: (1) does reading `enforce_admins`, required-check state and rulesets need `admin:repo`?
 (2) must both protection surfaces be queried and merged, and what is "effective" when they disagree?
@@ -152,8 +154,8 @@ extraction contract.
 
 | Role | Name | Date | Status |
 |---|---|---|---|
-| Technical Lead | Lajin M J | | Pending |
-| Product Owner | Lajin M J | | Pending |
+| Technical Lead | Lajin M J | 2026-08-31 | Remaining spike approved; full estimate pending |
+| Product Owner | Lajin M J | 2026-08-31 | Remaining spike approved; full estimate pending |
 
 > Both roles are the same person; this estimate has had no independent review. Recorded so a later
 > reader does not mistake the sign-off for assurance.

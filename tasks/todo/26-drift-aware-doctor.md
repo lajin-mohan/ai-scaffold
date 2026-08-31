@@ -15,18 +15,16 @@ The private-repo case is untested and is the case most adopters are in.
 |---|---|---|
 | 1 — Analysis | `docs/brd/26-drift-aware-doctor-analysis.md` | Draft |
 | 1 — Analysis | `docs/brd/26-drift-aware-doctor-brd.md` | **Approved v2.0** |
-| 2 — Plan | `docs/estimates/26-drift-aware-doctor-estimate.md` | Approved — spike-gated, LOW confidence, **13.1 d realistic** |
+| 2 — Plan | `docs/estimates/26-drift-aware-doctor-estimate.md` | Remaining spike approved; full **13.1 d realistic** estimate pending, MEDIUM confidence |
 | 2 — Plan | `docs/process/26-drift-aware-doctor-scope.md` | **Approved** |
 | 3 — Architecture | `docs/architecture/spike-26-github-api-shape.md` + `scripts/spike-26-probe.sh` | **Run — partial. Query list documented** |
 | 3 — Architecture | HLD + ADR | Unblocked for the two-tier design; private-repo answer still wanted |
 
 ## Size
 
-**Escalated S → M.** The backlog sizes item 26 `S` ("small enforcement slice");
-the estimate is 12.25 realistic days, which is `M`. `task-size-policy.md` permits
-this — "Escalation is not failure. It means the initial sizing was imprecise."
-**The backlog rank table still says `S`. Flagged to the Tech Lead**, because size
-selects the gate set this ticket then claims to follow.
+**Escalated S → M.** The backlog rank table and item definition now say `M`; the
+estimate is 13.1 realistic days. `task-size-policy.md` permits this — "Escalation
+is not failure. It means the initial sizing was imprecise."
 
 Unlike item 74, this item has genuine architecture to design (transport choice,
 two-API merge semantics, degradation model). ADR-003's no-architecture exception
@@ -46,9 +44,9 @@ artifact on this one.
 - **Q-04–Q-06** resolved as consequences: the checks ship to generated projects;
   C-04 verifies presence and the executable bit only; no caching in this slice.
 
-**Live contingency:** Q-02 = B plus FR-16 means `doctor --require-remote` will
-run against this repo's own settings in CI and may fail immediately. Budget
-+0.5 to +2 days against the roadmap. If it fires, item 26 worked.
+**No scaffold-repository contingency is carried.** `--require-remote` is for an
+adopting project's CI; this repository does not run the governance gates it
+ships.
 
 ## Next action
 
@@ -102,4 +100,5 @@ sequenced after this one.
 | 2026-08-27 | Inability to check and a detected gap never share an exit code (BR-06) | Not being able to verify is an environment problem the user may not control; finding a gap is one they can fix. Collapsing them is what makes diagnostics get ignored |
 | 2026-08-27 | FR-33 targets the backlog's security-posture bullet, not `SECURITY.md` | `SECURITY.md` contains no shell-out claim — it is un-customised boilerplate whose Scope section names `apps/`, `packages/`, `infra/`, none of which hold this project's code. An earlier draft pointed FR-33 and AC-09 at a claim that does not exist |
 | 2026-08-27 | Branched from `origin/dev`, not stacked on the item 74 branch | Per the 2026-07-14 lesson: stacked PRs conflict under a squash-merge policy |
-| 2026-08-27 | Commit only the 0.5-day spike, not the 12.25-day total | Committing to an estimate that rests on an unverified external API shape is how estimates become fiction |
+| 2026-08-27 | Commit only the 0.5-day spike, not the 13.1-day total | Committing to an estimate that rests on an unverified external API shape is how estimates become fiction |
+| 2026-08-31 | Approve the remaining 0.25-day spike only; keep the full 13.1-day estimate pending | The authenticated non-admin and private-repository behavior still determines product reach and architecture confidence |
