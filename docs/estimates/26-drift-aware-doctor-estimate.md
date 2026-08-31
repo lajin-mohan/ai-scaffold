@@ -4,8 +4,8 @@
 **Estimated By:** Claude (Cowork session), following `.claude/agents/estimator.md`
 **Reviewed By:** Lajin M J — remaining spike only approved 2026-08-31; full estimate pending
 **Confidence:** **MEDIUM** — spike run 2026-08-27, anonymous tier established and the query list documented. Two questions remain open (authenticated non-admin reads; private repositories), so this is not yet HIGH.
-**Status:** Remaining spike approved (0.25 realistic days); full **14.0-day** estimate pending — **re-opened 2026-08-31** after `/review` corrected the arithmetic and priced Stage 3. Q-01–Q-03 are resolved and the spike was partially run 2026-08-27. **Re-confirm before committing the total: the private-repo case is untested and it is the case most adopters are in.**
-**Source spec:** `docs/brd/26-drift-aware-doctor-brd.md` (**Approved v2.2**, 2026-08-31)
+**Status:** Remaining spike approved (0.25 realistic days); full **15.4-day** estimate pending — **re-opened 2026-08-31** after `/review` corrected the arithmetic and priced Stage 3. Q-01–Q-03 are resolved and the spike was partially run 2026-08-27. **Re-confirm before committing the total: the private-repo case is untested and it is the case most adopters are in.**
+**Source spec:** `docs/brd/26-drift-aware-doctor-brd.md` — v2.1 approved 2026-08-27; **v2.2 pending re-approval**
 
 > **Template adaptation.** `.claude/templates/estimation-template.md` assumes a web feature
 > (migrations, repository layer, page components, staging/production deploys). This is a CLI command
@@ -31,10 +31,10 @@ security-posture bullet (**not** `SECURITY.md`, which contains no shell-out clai
 
 1. `gh` is the transport (A-01). Raw `fetch` plus token handling would add ~2 days and a security review.
 2. `doctor` is extended, not rewritten. The existing 346 lines and **15** checks stay.
-3. The existing `--json` shape is extended additively, so no consumer migration is budgeted.
+3. The `--json` shape is extended additively **except** FR-20's documented aggregate narrowing. No consumer migration is budgeted: the smoke gates are the only known consumer, and AC-18 protects them.
 4. Q-01–Q-03 were resolved 2026-08-27 (D / B / C). They change behaviour, not volume. **No smoke-gate contingency** — see the withdrawal note below.
 5. Single maintainer, working serially.
-6. Fixtures are recorded `gh` **stdout + exit code**, not HTTP responses — the transport is a subprocess. Live-API integration tests are not budgeted. NFR-05 requires an injected runner so the boundary is swappable.
+6. Fixtures are recorded `gh` **stdout + exit code**, not HTTP responses — the transport is a subprocess. Live-API integration tests are not budgeted. Whether the boundary is made swappable by an injected runner is an **open design question for the HLD**, not settled here — NFR-05 currently says only that query logic lives in `src/cli/core/`.
 
 ---
 
@@ -64,7 +64,8 @@ Business days, 1 day = 7.5 productive hours.
 | Unit tests with mocked API fixtures (25% of implementation) | 0.7 | 1.4 | 2.8 | |
 | `--json` backward-compatibility test (AC-07) | 0.25 | 0.5 | 0.75 | |
 | **Docs** | | | | |
-| Backlog security-posture bullet, same commit (FR-33) | 0.25 | 0.25 | 0.5 | `SECURITY.md` has no shell-out claim to correct |
+| Backlog security-posture bullet **and `docs/cli-reference.md`** options + exit codes, same commit (FR-33) | 0.25 | 0.5 | 0.75 | FR-33's scope grew on 2026-08-31. `SECURITY.md` has no shell-out claim to correct |
+| v2.2 requirements from `/review`: FR-06 enforcement-mode branching, FR-25 `unavailableCount` + aggregate rework, FR-36, NFR-01 wall-clock budget threading, NFR-02 path validation | 0.5 | 1.0 | 2.0 | Six new Must-Haves, previously unpriced |
 | **Review & QA** | | | | |
 | AI review + fixes | 0.25 | 0.5 | 1.0 | |
 | Human code review | 0.25 | 0.5 | 0.5 | Self-review in practice — no independent reviewer exists |
@@ -72,10 +73,10 @@ Business days, 1 day = 7.5 productive hours.
 | **Release** | | | | |
 | Release inclusion + packed-tarball check | 0.25 | 0.25 | 0.5 | Per the 2026-07-10 lesson: verify the tarball, not the working tree |
 | **Stage 3 — Architecture** | | | | |
-| HLD + ADR: `gh` transport wrapper, two-surface merge semantics, pass/fail/unavailable state machine, permission-dependent degradation | 0.5 | 1.0 | 2.0 | `task-size-policy.md` requires HLD + ADR at size M. Unpriced until the 2026-08-31 review |
-| **Subtotal** | **6.30** | **12.15** | **22.80** | |
-| **Buffer (15%)** | 0.95 | 1.82 | 3.42 | |
-| **TOTAL** | **7.3** | **14.0** | **26.2** | |
+| HLD + ADR: `gh` transport wrapper, two-surface merge semantics, pass/fail/unavailable state machine, permission-dependent degradation, mock-seam decision, R-08/R-09 | 0.5 | 1.0 | 2.0 | `task-size-policy.md` requires HLD + ADR at size M. Unpriced until the 2026-08-31 review |
+| **Subtotal** | **6.80** | **13.40** | **25.05** | |
+| **Buffer (15%)** | 1.02 | 2.01 | 3.76 | |
+| **TOTAL** | **7.8** | **15.4** | **28.8** | |
 
 ---
 
@@ -98,7 +99,7 @@ checks to fail against. **No contingency is carried.**
 
 **The premise that makes this safe, now stated rather than assumed.** Under Q-02 = B / FR-24 a
 detected gap is `high` and exits 1 *without* `--require-remote`, and
-`scripts/pre-publish-smoke.sh:442,463,667` grep for `✗ [CRIT|HIGH]`. Those gates are safe only
+`scripts/pre-publish-smoke.sh:442,463` grep for `✗ [CRIT|HIGH]` and `:668` greps `"criticalFailed": 0` / `"highFailed": 0`. Those gates are safe only
 because they run `doctor` against freshly generated temp projects with **no remote**, so every remote
 check is `unavailable` (FR-14, FR-17). If a future gate runs `doctor` against a repo that has a
 remote, the conclusion no longer holds. FR-11 and AC-18 exist to protect that path.
@@ -114,7 +115,7 @@ then re-confirm this estimate. If reads need `admin:repo`, or the two protection
 merged coherently, the shape of the item changes and re-estimation is cheaper than discovering it in
 implementation.
 
-Everything after the spike is one coherent unit — the checks share the query module, and shipping
+Stage 3 is a separate priced stage; everything after it is one coherent unit — the checks share the query module, and shipping
 C-01 without C-03 would report protection while saying nothing about who can override it.
 
 ---
@@ -123,30 +124,39 @@ C-01 without C-03 would report protection while saying nothing about who can ove
 
 | Scenario | Total | Calendar days (÷0.7 capacity) |
 |---|---|---|
-| Optimistic | 7.3 | 10.3 |
-| Realistic | **14.0** | **20.0** |
-| Pessimistic | 26.2 | 37.5 |
+| Optimistic | 7.8 | 11.2 |
+| Realistic | **15.4** | **22.0** |
+| Pessimistic | 28.8 | 41.2 |
 
-> **Corrected 2026-08-31.** The previous subtotals (5.95 / 11.4 / 21.3) did not equal their own task
+> **Corrected twice on 2026-08-31.** First pass: the subtotals did not equal their own task rows —
+> replacing the spike row with the 0.1 / 0.25 / 0.5 remainder never subtracted the original
+> 0.25 / 0.5 / 1.0 (a 0.15 / 0.25 / 0.50 overstatement, true value 12.8 not 13.1), and Stage 3 was
+> unpriced. Second pass, after re-review: `/review` added six Must-Have requirements and grew FR-33's
+> scope, and none of that had been priced — the estimate had risen for the arithmetic fix while
+> silently absorbing a scope increase. **Adding requirements without adding rows is the same class of
+> error as editing a row without re-adding the column.**
+>
+> Detail of the first pass: The previous subtotals (5.95 / 11.4 / 21.3) did not equal their own task
 > rows: when the spike row was replaced by the 0.1 / 0.25 / 0.5 remainder, the original
 > 0.25 / 0.5 / 1.0 was never subtracted — a 0.15 / 0.25 / 0.50 overstatement, giving a true 12.8
-> rather than 13.1. Pricing the missing Stage 3 row then moves the realistic total to 14.0.
+> rather than 13.1. Pricing the missing Stage 3 row moved it to 14.0; pricing the v2.2 requirements
+> moved it again to 15.4.
 > **Re-add the column after editing any row** — this is the second arithmetic error in this document
 > from that same cause.
 
 **Approved commitment:** the **remaining 0.25-day spike only** (2026-08-31), then re-confirm. The
 full spike was estimated at 0.5 days; its anonymous/public portion is already complete. Committing
-14.0 days against an unverified external API shape is how estimates become fiction.
+15.4 days against an unverified external API shape is how estimates become fiction.
 
 **Against the earlier indicative figure.** An indicative ~4 realistic days was given for item 26 in
 conversation on 2026-08-27. **That figure is not recorded anywhere in this repository** — the
 original backlog sized item 26 `S` ("small enforcement slice") and `task-size-policy.md` contains no
 size-to-days mapping, so `S` cannot be converted to a day figure either. Against that conversational
-~4, this estimate is **3.5× higher**: it prices the query module, the five degradation paths, the
+~4, this estimate is **3.9× higher**: it prices the query module, the five degradation paths, the
 mocked test fixtures and the `--json` compatibility guarantee, none of which the indicative number
 included.
 
-**Size escalation, recorded.** The backlog now sizes this `M`; 14.0 realistic days exceeds the
+**Size escalation, recorded.** The backlog now sizes this `M`; 15.4 realistic days exceeds the
 original `S` framing. `task-size-policy.md` permits escalation and says it "is not failure — it
 means the initial sizing was imprecise."
 

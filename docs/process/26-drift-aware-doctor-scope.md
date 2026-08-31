@@ -72,7 +72,7 @@ Per `.claude/agents/pm.md` — the PM produces the communication and flags the d
 | 1 | ~~Q-01~~ | **Resolved — D.** Report-only by default; `--require-remote` enforces |
 | 2 | ~~Q-02~~ | **Resolved — B.** `high`, exit 1. No contingency — see below |
 | 3 | ~~Q-03~~ | **Resolved — C.** `gh repo view` + `--repo`; output names the repo |
-| 4 | **Spike first.** Commit the remaining 0.25-day spike, not the 14.0-day total, until the GitHub API shape is verified | **Resolved 2026-08-31.** Remaining spike approved; full estimate stays pending |
+| 4 | **Spike first.** Commit the remaining 0.25-day spike, not the 15.4-day total, until the GitHub API shape is verified | **Resolved 2026-08-31.** Remaining spike approved; full estimate stays pending |
 | 5 | **Size escalation S → M.** Update the backlog rank table, or reject the escalation and re-scope | **Resolved 2026-08-27.** Backlog rank table and item definition now say `M` |
 
 **Contingency withdrawn (2026-08-27).** An earlier version of this statement budgeted +0.5 to +2 days
@@ -89,12 +89,13 @@ fail against. **No contingency is carried.**
 |---|---|---|
 | Spike | 0.5 d total; **0.25 d remaining** | Remaining private/non-admin probe approved 2026-08-31 |
 | Stage 3 — HLD + ADR | 1.0 d | Required at size M; unpriced until the 2026-08-31 review |
-| Implementation + tests + docs + review | 12.75 d | One coherent unit — the checks share the query module |
-| **Total** | **14.0 d** | ~20.0 calendar days at 0.7 capacity |
+| v2.2 requirements from `/review` | 1.25 d | Six new Must-Haves plus FR-33 scope growth; unpriced until the re-review |
+| Implementation + tests + docs + review | 12.9 d | One coherent unit — the checks share the query module |
+| **Total** | **15.4 d** | ~22.0 calendar days at 0.7 capacity |
 
 > An indicative ~4 days was given in conversation on 2026-08-27 and is **not recorded in this
 > repository**. The original backlog sized item 26 `S`, and `task-size-policy.md` has no size-to-days mapping.
-> This estimate is 3.5× that conversational figure, which omitted the query module, the five
+> This estimate is 3.9× that conversational figure, which omitted the query module, the five
 > degradation paths, the test fixtures and the `--json` compatibility guarantee.
 >
 > **Size escalated S → M; the backlog rank table and item definition are updated.**

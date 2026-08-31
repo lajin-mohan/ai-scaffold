@@ -65,7 +65,7 @@ unless a UI-heavy pilot provides evidence to raise it.
 |---:|---|---|---|---|---|
 | 1 | P0 | Safe `ais update`: ownership classes, migrations, dry-run, backup/rollback, compatibility policy | 25 | L | Improvements reach adopted projects without destroying project-owned work |
 | 2 | P1 | Deterministic state engine for lifecycle stage, blockers, coverage, and next action | 72 (new) | M–L | Agents and lifecycle commands report one computed state |
-| 3 | P0 | `ais doctor` verifies effective branch rules, required checks, and installed hooks | 26 expanded | **M** | Detects configured-but-inert governance. **Re-sized S → M 2026-08-27**: the enforcement slice estimates at 13.1 realistic days once the query module, five degradation paths, mocked fixtures and `--json` compatibility are priced |
+| 3 | P0 | `ais doctor` verifies effective branch rules, required checks, and installed hooks | 26 expanded | **M** | Detects configured-but-inert governance. **Re-sized S → M 2026-08-27**: the enforcement slice estimates at 15.4 realistic days once the query module, five degradation paths, fixtures, `--json` compatibility and Stage 3 are priced |
 | 4 | P0 | Golden-path CI runs each profile's documented first commands | 65 follow-up | S–M | A profile cannot ship when its day-one workflow fails |
 | 5 | P0 | Replace profile copies with a shared base plus overlays | 34 | M–L | Removes the largest drift and maintenance multiplier |
 | 6 | P1 | Prune commands, agents, and skills using measured usage | 69 / T5 | M | Makes the scaffold learnable and lowers recurring token cost |
@@ -280,7 +280,8 @@ The delete-and-reinstall safeguard remains a fallback, not the update strategy.
   **Re-sized S → M (2026-08-27).** The "small" estimate priced the checks and
   omitted the `gh` query module, the five degradation paths, the mocked API
   fixtures and the `--json` backward-compatibility guarantee; the formal estimate
-  is 6.8 / **13.1** / 24.5 days. Size selects the gate set, so this is recorded
+  is 7.8 / **15.4** / 28.8 days (corrected 2026-08-31 by `/review`, which
+  also priced the missing Stage 3). Size selects the gate set, so this is recorded
   rather than assumed — `task-size-policy.md`: *"Escalation is not failure. It
   means the initial sizing was imprecise."* The lifecycle slice that follows is
   unchanged and still pairs with 25.

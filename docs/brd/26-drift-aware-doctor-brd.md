@@ -1,12 +1,12 @@
 # Business Requirements Document
 **Project:** ai-scaffold
 **Feature:** Drift-aware `doctor` — enforcement verification slice (backlog item 26)
-**Version:** 2.2
+**Version:** 2.2 (2026-08-31)
 **Date:** 2026-08-27
-**Status:** **Approved** — 2026-08-27. Q-01 = D, Q-02 = B, Q-03 = C; see §9
-**Size:** escalated **S → M**. The backlog rank table and item definition now say `M`; the estimate is 14.0 realistic days. `task-size-policy.md` permits escalation ("Escalation is not failure").
+**Status:** v2.1 **Approved** 2026-08-27 (Q-01 = D, Q-02 = B, Q-03 = C; see §9). **v2.2 is PENDING RE-APPROVAL** — the 2026-08-31 `/review` added six Must-Have requirements (FR-06, FR-25, FR-36, and scope growth in FR-33, NFR-01, NFR-02) after that sign-off
+**Size:** escalated **S → M**. The backlog rank table and item definition now say `M`; the estimate is 15.4 realistic days. `task-size-policy.md` permits escalation ("Escalation is not failure").
 **Author:** Claude (Cowork session), executing `/create-brd` and `solution-analyst` manually
-**Approved By:** Lajin M J (maintainer/owner), 2026-08-27
+**Approved By:** Lajin M J (maintainer/owner) — **v2.1 only**, 2026-08-27. v2.2 unreviewed
 
 > **Scope note — where these rules apply (maintainer directive, 2026-08-27).** The governance this
 > item builds applies to **generated projects**, not to the `ai-scaffold` repository. The scaffold
@@ -39,7 +39,7 @@ hook installation. Configured intent stops counting as a pass.
 | OBJ-02 | Degrade honestly rather than silently | With no `gh`, no auth or no remote, every affected check reports `unavailable` with the reason; none renders as a pass |
 | OBJ-03 | Close `doctor`'s own configured-intent gap | `checkHooksWired` no longer passes when `.git/hooks/pre-commit` is missing or non-executable |
 | OBJ-04 | Supply item 74's M-04 extraction contract | The documented query list is reused by M-04 rather than reimplemented (`FR-27` of the item 74 BRD) |
-| OBJ-05 | Change nothing about how `doctor` is consumed | Existing `--json` consumers and the smoke gates that assert CRIT/HIGH-clean keep working unchanged |
+| OBJ-05 | Change how `doctor` is consumed as little as possible, and record what does change | Existing `--json` consumers and the smoke gates keep working; the only contract change is FR-20's aggregate narrowing, which is documented rather than silent |
 
 ---
 
@@ -98,8 +98,8 @@ hook installation. Configured intent stops counting as a pass.
 
 | ID | Requirement | Priority |
 |---|---|---|
-| FR-20 | The `--json` shape SHALL be extended additively **except** for one documented narrowing: `criticalFailed`, `highFailed`, `mediumFailed`, `lowFailed` and `allPassed` are redefined to count `state === 'fail'` only, so `unavailable` checks do not inflate them. No field is renamed or removed. A deliberate contract change, recorded rather than asserted away | Must Have |
-| FR-17 | The invariant `passed === (state === 'pass')` SHALL hold for every check. `unavailable` checks are excluded from the severity aggregates and the exit-code rule by default, and included only under `--require-remote`. A sibling `unavailableCount` SHALL be emitted | Must Have |
+| FR-20 | The `--json` shape SHALL be extended additively **except** for one documented narrowing: `criticalFailed`, `highFailed`, `mediumFailed`, `lowFailed` and `allPassed` count `state === 'fail'` by default. **Under `--require-remote`, `unavailable` also counts as a failure** (FR-15), so the aggregates and the exit code move together in both modes. No field is renamed or removed. A deliberate contract change, recorded rather than asserted away | Must Have |
+| FR-25 | The invariant `passed === (state === 'pass')` SHALL hold for every check. Whether an `unavailable` check enters the severity aggregates is governed by FR-20: excluded by default, counted under `--require-remote`. A sibling `unavailableCount` SHALL always be emitted | Must Have |
 | FR-21 | Each check's JSON entry SHALL carry `state` (`pass`/`fail`/`unavailable`), `verifiedBy` (`api`/`filesystem`), and on `unavailable` a `reason` | Must Have |
 | FR-22 | The severity model (`critical`/`high`/`medium`/`low`) and the exit-code rule SHALL be extended, not replaced | Must Have |
 | FR-24 | A **detected** enforcement gap SHALL be severity `high`, which fails the exit code under `doctor`'s existing rule (Q-02 = B). `critical` is reserved for a broken installation and SHALL NOT be used for a governance gap | Must Have |
@@ -129,7 +129,7 @@ hook installation. Configured intent stops counting as a pass.
 | BR-04 | A false "unprotected" is worse than no check. Where the API can be read two ways, both are queried before a negative is reported |
 | BR-06 | Inability to check and a detected gap are different failures and never share an exit code. Not being able to verify is an environment problem the user may not control; finding a gap is a problem they can fix |
 | BR-07 | The read side and the write side resolve the target repository by the same mechanism. `doctor` and `setup-branch-protection.sh` disagreeing on "which repo" is a defect, not a configuration option |
-| BR-05 | A documented security claim and the code it describes change in the same commit. Before relying on this rule, locate where the claim actually lives — for this item it is the backlog, not `SECURITY.md` |
+| BR-05 | A documented claim and the code it describes change in the same commit. Before relying on this rule, locate where the claim actually lives — for this item that is the backlog's security-posture bullet and `docs/cli-reference.md`, **not** `SECURITY.md` |
 
 ---
 
@@ -164,19 +164,19 @@ hook installation. Configured intent stops counting as a pass.
 | AC-10 | Given `gh` absent and `--require-remote` passed, when `doctor` runs, then the exit code is non-zero and the reason names the missing prerequisite | Asserts FR-15 |
 | AC-11 | Given a repo with `enforce_admins` disabled, when `doctor` runs without `--require-remote`, then C-03 fails at `high` and the exit code is 1 | Asserts FR-24, Q-02 = B |
 | AC-12 | Given a fork, when `doctor` runs, then the output names the fork as the repository checked | Asserts FR-35 |
-| AC-09 | **Review gate, not a test.** The commit adding the `gh` shell-out also edits `docs/process/pre-npm-publish-todo.md` and `docs/cli-reference.md`, and `grep -rn "only shell-out is" docs/` returns no stale claim | Manual gate — asserts FR-33, BR-05 |
-| AC-13 | Given any check's `--json` entry, when parsed, then `state` ∈ {pass, fail, unavailable}, `verifiedBy` ∈ {api, filesystem}, `reason` is non-empty whenever `state` is `unavailable`, and `passed === (state === 'pass')` | Automatable — asserts FR-17, FR-21 |
+| AC-09 | **Review gate, not a test.** The commit adding the `gh` shell-out also edits (a) the security-posture bullet in `docs/process/pre-npm-publish-todo.md`, which no longer asserts `spawnSync('git', …)` is the *only* shell-out, and (b) `docs/cli-reference.md`'s doctor options and exit-code sections | Manual gate — asserts FR-33, BR-05. *Not a repo-wide grep: this item's own documents quote the old claim in order to discuss it* |
+| AC-13 | Given any check's `--json` entry, when parsed, then `state` ∈ {pass, fail, unavailable}, `verifiedBy` ∈ {api, filesystem}, `reason` is non-empty whenever `state` is `unavailable`, and `passed === (state === 'pass')` | Automatable — asserts FR-25, FR-21 |
 | AC-14 | Given the query-contract document, when item 74's M-04 extraction is written, then it cites that document and adds no second implementation of the same calls | Review gate — asserts FR-23, OBJ-04 |
 | AC-15 | Given `GH_TOKEN` and `GITHUB_TOKEN` set to sentinel values, when `doctor --json` and stderr are captured, then neither sentinel appears in any output and no token file is read | Automatable — asserts FR-31 |
 | AC-16 | Given `ais doctor ./other-project` run from a different repository's working directory, when remote checks execute, then they report `./other-project`'s remote, not the ambient one | Asserts FR-34, FR-36 |
 | AC-17 | Given a ruleset with `enforcement: "evaluate"`, when C-01 runs, then the branch is **not** reported protected on that ruleset's account, and the evaluate-mode ruleset is named | Asserts FR-06 |
-| AC-18 | Given a generated project with no remote, when the profile smoke gates run `doctor`, then `grep -cE "✗ \[(CRIT|HIGH)\]"` returns 0 and `"highFailed": 0` holds | Protects `scripts/pre-publish-smoke.sh:442,463,668` — asserts FR-11, FR-17 |
+| AC-18 | Given a generated project with no remote, when the profile smoke gates run `doctor`, then `grep -cE "✗ \[(CRIT|HIGH)\]"` returns 0 and `"highFailed": 0` holds | Protects `scripts/pre-publish-smoke.sh:442,463,668` — asserts FR-11, FR-25 |
 
 ---
 
 ## 9. Open Questions
 
-**All blockers resolved 2026-08-27.** Q-04–Q-06 follow as consequences and are resolved here.
+**All Q-blockers resolved 2026-08-27.** Two **open design questions** remain and are tracked as R-08 and R-09 in §11; they are Stage 3 inputs, not Q-blockers, and the HLD answers them. Q-04–Q-06 follow as consequences and are resolved here.
 
 | ID | Question | Status | Resolution |
 |---|---|---|---|
@@ -235,7 +235,7 @@ hook installation. Configured intent stops counting as a pass.
 
 | Version | Date | Author | Change |
 |---|---|---|---|
-| 2.2 | 2026-08-31 | Claude (Cowork) | `/review` fixes. New: FR-06 (ruleset `enforcement` must be `active`), FR-17 (`passed === state==='pass'`; aggregates exclude `unavailable`), FR-36 (no fall-through to an ambient repo), AC-13–AC-18. Amended: FR-01 (surfaces not endpoints), FR-11 (glyph constraint protecting the smoke gates), FR-20 (records the aggregate narrowing instead of claiming pure additivity), FR-34 (cwd threading), FR-33 (adds `cli-reference.md`), NFR-01 (one wall-clock deadline), NFR-02 (path validation), AC-03/06/07/09 testability. R-05/R-06 renumbered to match the analysis; R-08/R-09 added as open HLD questions; GitHub API dependency status updated post-spike |
+| 2.2 | 2026-08-31 | Claude (Cowork) | `/review` fixes. New: FR-06 (ruleset `enforcement` must be `active`), FR-25 (`passed === state==='pass'`; aggregates exclude `unavailable`), FR-36 (no fall-through to an ambient repo), AC-13–AC-18. Amended: FR-01 (surfaces not endpoints), FR-11 (glyph constraint protecting the smoke gates), FR-20 (records the aggregate narrowing instead of claiming pure additivity), FR-34 (cwd threading), FR-33 (adds `cli-reference.md`), NFR-01 (one wall-clock deadline), NFR-02 (path validation), AC-03/06/07/09 testability. R-05/R-06 renumbered to match the analysis; R-08/R-09 added as open HLD questions; GitHub API dependency status updated post-spike |
 | 2.1 | 2026-08-27 | Lajin M J / Claude (Cowork) | Maintainer directive: the scaffold repo is not a governed project. FR-16 retargeted from the scaffold's own CI to adopting projects; Q-01 and Q-02 rationales corrected; the "fails on our own repo" contingency withdrawn |
 | 2.0 | 2026-08-27 | Lajin M J / Claude (Cowork) | **Approved.** Q-01 = D (report-only by default, `--require-remote` to enforce), Q-02 = B (`high`, exit 1), Q-03 = C (`gh repo view` + `--repo`). Added FR-14–FR-16, FR-24, FR-34, FR-35, BR-06, BR-07, AC-10–AC-12. Q-04–Q-06 resolved as consequences |
 | 1.1 | 2026-08-27 | Claude (Cowork) | Verification pass: FR-33/AC-09 retargeted from `SECURITY.md` (which carries no shell-out claim) to the backlog's security-posture bullet; the "~4 day" comparison re-attributed as conversational, not a repo baseline; estimate subtotals corrected; check count 15, not "~20"; S→M escalation recorded; ADR-003 and item 74 BRD labeled cross-branch |

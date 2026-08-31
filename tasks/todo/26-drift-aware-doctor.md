@@ -2,7 +2,7 @@
 
 ## Status
 
-**Stages 1 and 2 COMPLETE (2026-08-27).** BRD Approved v2.2, estimate and scope
+**Stages 1 and 2 COMPLETE (2026-08-27).** BRD v2.1 approved (v2.2 pending re-approval), estimate and scope
 statement approved. No open blockers.
 **Spike RUN 2026-08-27 — partially complete.** Anonymous tier established, merge
 requirement proven, query list documented **at the anonymous tier** — `FR-23` / item 74 `FR-27`
@@ -15,8 +15,8 @@ The private-repo case is untested and is the case most adopters are in.
 | Stage | Artifact | State |
 |---|---|---|
 | 1 — Analysis | `docs/brd/26-drift-aware-doctor-analysis.md` | Draft |
-| 1 — Analysis | `docs/brd/26-drift-aware-doctor-brd.md` | **Approved v2.2** (review fixes 2026-08-31) |
-| 2 — Plan | `docs/estimates/26-drift-aware-doctor-estimate.md` | Remaining spike approved; full **14.0 d realistic** estimate pending, MEDIUM confidence |
+| 1 — Analysis | `docs/brd/26-drift-aware-doctor-brd.md` | v2.1 approved; **v2.2 pending re-approval** (six new Must-Haves from `/review`) |
+| 2 — Plan | `docs/estimates/26-drift-aware-doctor-estimate.md` | Remaining spike approved; full **15.4 d realistic** estimate pending, MEDIUM confidence |
 | 2 — Plan | `docs/process/26-drift-aware-doctor-scope.md` | **Approved** |
 | 3 — Architecture | `docs/architecture/spike-26-github-api-shape.md` + `scripts/spike-26-probe.sh` | **Run — partial. Query list documented** |
 | 3 — Architecture | HLD + ADR | Unblocked for the two-tier design; private-repo answer still wanted |
@@ -24,7 +24,7 @@ The private-repo case is untested and is the case most adopters are in.
 ## Size
 
 **Escalated S → M.** The backlog rank table and item definition now say `M`; the
-estimate is 14.0 realistic days. `task-size-policy.md` permits this — "Escalation
+estimate is 15.4 realistic days. `task-size-policy.md` permits this — "Escalation
 is not failure. It means the initial sizing was imprecise."
 
 Unlike item 74, this item has genuine architecture to design (transport choice,
@@ -48,6 +48,16 @@ artifact on this one.
 **No scaffold-repository contingency is carried.** `--require-remote` is for an
 adopting project's CI; this repository does not run the governance gates it
 ships.
+
+## Open design questions — Stage 3 inputs (added 2026-08-31)
+
+- **R-08** Org-level rulesets are not addressable under `/repos/{o}/{r}/rulesets/{id}`;
+  the probe ran only against a personal repo, and adopting teams are the org case.
+- **R-09** `doctor` as specified cannot detect the two-surface control disagreement
+  item 75 exists to fix — C-01 collapses to protected/unprotected.
+- **Mock seam** — the transport is a subprocess, so a fixture is stdout plus an
+  exit code; the suite has no `vi.mock` precedent. Whether NFR-05 requires an
+  injected runner is undecided.
 
 ## Next action
 

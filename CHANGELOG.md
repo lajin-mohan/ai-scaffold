@@ -171,7 +171,7 @@ This file is configured with `merge=union` in `.gitattributes` so parallel addit
   backlog's security-posture bullet, **not** in `SECURITY.md`, which contains no
   shell-out text at all.
 
-  Estimate **7.3 / 14.0 / 26.2** days, still spike-gated: the committed scope is
+  Estimate **7.8 / 15.4 / 28.8** days, still spike-gated: the committed scope is
   the 0.25-day spike remainder, not the total. Size escalated `S` → `M` in both
   the rank table and the item definition.
 
@@ -207,7 +207,9 @@ This file is configured with `merge=union` in `.gitattributes` so parallel addit
   tells you to commit — that names every configured host, Enterprise included,
   plus token scopes. Now filtered to the scopes line. `NFR-02` gains path
   validation: array form prevents shell injection but does not sanitise the API
-  path, and `$REPO` reached it unvalidated.
+  path. **The requirement was hardened; the throwaway probe script was not** — it
+  still interpolates `$REPO` unvalidated, which is acceptable for an
+  operator-only spike and would not be in `src/`.
 
 - **Spike design for item 26** at `docs/architecture/spike-26-github-api-shape.md`,
   with a throwaway probe at `scripts/spike-26-probe.sh` (verified not shipped —
