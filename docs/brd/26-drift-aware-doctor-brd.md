@@ -3,10 +3,10 @@
 **Feature:** Drift-aware `doctor` — enforcement verification slice (backlog item 26)
 **Version:** 2.2 (2026-08-31)
 **Date:** 2026-08-27
-**Status:** v2.1 **Approved** 2026-08-27 (Q-01 = D, Q-02 = B, Q-03 = C; see §9). **v2.2 is PENDING RE-APPROVAL** — the 2026-08-31 `/review` added six Must-Have requirements (FR-06, FR-25, FR-36, and scope growth in FR-33, NFR-01, NFR-02) after that sign-off
+**Status:** **Approved v2.2** — 2026-08-31. v2.1 approved 2026-08-27 (Q-01 = D, Q-02 = B, Q-03 = C; see §9); v2.2 re-approved after the `/review` added six Must-Haves (FR-06, FR-25, FR-36, and scope growth in FR-33, NFR-01, NFR-02)
 **Size:** escalated **S → M**. The backlog rank table and item definition now say `M`; the estimate is 15.4 realistic days. `task-size-policy.md` permits escalation ("Escalation is not failure").
 **Author:** Claude (Cowork session), executing `/create-brd` and `solution-analyst` manually
-**Approved By:** Lajin M J (maintainer/owner) — **v2.1 only**, 2026-08-27. v2.2 unreviewed
+**Approved By:** Lajin M J (maintainer/owner) — v2.1 on 2026-08-27, **v2.2 on 2026-08-31**
 
 > **Scope note — where these rules apply (maintainer directive, 2026-08-27).** The governance this
 > item builds applies to **generated projects**, not to the `ai-scaffold` repository. The scaffold
