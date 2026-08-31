@@ -173,7 +173,40 @@ This file is configured with `merge=union` in `.gitattributes` so parallel addit
 
   **BRD v2.2 and the full estimate approved 2026-08-31** at 7.8 / **15.4** / 28.8
   days; the signed scope includes the Stage 3 row and the six v2.2 requirements.
-  **Stages 1 and 2 are closed; Stage 3 (HLD + ADR) is the open gate.** Size escalated `S` → `M` in both
+  **Stages 1 and 2 are closed. Stage 3 drafted 2026-08-31**:
+  `docs/architecture/hld-26-drift-aware-doctor.md` plus **ADR-004** (`gh`
+  subprocess transport behind an injected runner) and **ADR-005** (effective-
+  protection merge semantics). The three open design questions are resolved —
+  org-level rulesets branch on `ruleset_source_type` and report `null` rather
+  than "no bypass"; a two-surface control disagreement is reported at `medium`
+  so the read side can see the defect item 75 exists to fix; and the mock seam
+  is an injected runner, so fixtures are recorded `gh` stdout plus exit code and
+  no `vi.mock` of `child_process` is needed. The HLD makes **tier availability a
+  runtime discovery rather than a design-time assumption**, which is why it could
+  be written before the private-repo probe: the same code serves a public repo
+  read anonymously and a private one read with a scoped token, so the probe now
+  confirms product reach instead of gating architecture. Stage 4 (UX) is recorded
+  **N/A** — `doctor` is a CLI — rather than silently skipped.
+
+  **`/architecture-review` run 2026-08-31** (architect + security): APPROVED WITH
+  CHANGES. Four findings changed the design. The tier model contradicted the
+  spike on `/rulesets/{id}` — 200 with `bypass_actors` **absent**, not 401 — so a
+  status-code-driven model would have read the missing key as "no bypass",
+  the false negative `BR-04` exists to prevent, on data already observed;
+  ADR-005 gains a rule that field absence is unavailability. The smoke-gate
+  safety argument covered only the three remote checks, while C-04 is local and
+  would have failed `pre-publish-smoke.sh:667-673` on every release; C-04 now has
+  an explicit state table. On security: raw `gh` stderr had no defined sink and
+  would have carried private repo names and Enterprise hostnames into `--json`
+  and thence CI logs — the same class already fixed in the spike probe — and
+  "read-only" was unenforceable because `gh api` POSTs on any `-f`/`-F`, so the
+  runner becomes a closed constructor taking an endpoint path rather than an
+  argv array.
+
+  **HLD approved 2026-08-31 and `/kickoff` returns 🟢 GO.** Gates 1–4 pass;
+  Gate 5 (no UAT plan) and Gate 6 (RACI is one person) are carried as conditions,
+  not blockers. **Stages 1–4 are closed and Stage 5 is unblocked** — the first
+  Wave 1 item to reach it. Size escalated `S` → `M` in both
   the rank table and the item definition.
 
   **`/review` run 2026-08-31** — security, qa and architect, escalated from
@@ -237,6 +270,26 @@ This file is configured with `merge=union` in `.gitattributes` so parallel addit
   cannot observe: harmless here, load-bearing in an adopting team's repo. The write-side twin of item 26 and sequenced
   after it: the read side must establish what "effective" means before the write
   side converges on it.
+- **Backlog item 77 — placeholder-substitution audit of generated projects.**
+  Audited by generating real projects and inspecting the output rather than
+  reading templates. The mechanism is sound: identity, stack, commands and every
+  generated file come out clean, and 48 of the 49 files containing `{{…}}` hold
+  legitimate authoring slots or GitHub Actions `${{ }}` syntax. Three real gaps,
+  all in the token map:
+  **D1** `.claude/memory/project-context.md` ships with live `{{CURRENT_EPIC}}`
+  and `{{SPRINT_NUMBER}}`, which `what-next.md` names as a Stage 0 halt signal —
+  so `/what-next` tells a freshly-created project to run `/bootstrap` while its
+  manifest says `bootstrapped: true`. Token-name drift: the map wires
+  `{{EPIC_NAME}}` while the file uses `{{CURRENT_EPIC}}`, and the value already
+  exists as `project.firstEpic`.
+  **D2** `lifecycleStage` is collected, computed and stored, then overridden by a
+  hardcoded `'Active Development'` literal — `--lifecycle-stage production`
+  produces `context.md: production` and `CLAUDE.md: Active Development`.
+  **D3** 8 tech-stack rows are hardcoded `N/A` and never asked, plus 3 hardcoded
+  opinions (GitHub Actions, GitHub Projects, UNLICENSED); 21 of 34 tokens come
+  from user input, 13 are constants.
+  **D4** `{{RUNTIME}}` is a dead token.
+
 
 ## [0.14.0] - 2026-08-21
 

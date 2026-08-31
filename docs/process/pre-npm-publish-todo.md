@@ -112,6 +112,53 @@ unless a UI-heavy pilot provides evidence to raise it.
   for BRDs, ADRs, tasks, and handoffs: identity, status, phase, owner, approval,
   dependency, supersession, evidence, and requirement/test references. Preserve
   readable Markdown bodies and operational checklist restatement. *(P1, medium)*
+- **77. Placeholder-substitution gaps in generated projects.** Audited 2026-08-27
+  by generating real projects (`ais create --profile node --yes`, 159 files) and
+  inspecting the output, not by reading the templates. **The mechanism is sound**
+  — identity, stack, commands and every generated file (`MEMORY.md`,
+  `constitution.md`, `README.md`, `CHANGELOG.md`, `lessons.md`,
+  `.ai-scaffold/context.md`) come out clean. 49 of 159 files contain `{{…}}`, and
+  all but one are **authoring slots** in agent output formats and doc templates
+  (`{{DATE}}`, `{{ScreenName}}`, `{{FEATURE_NAME}}`) or GitHub Actions
+  `${{ github.* }}` syntax. Three real gaps, all in the token map rather than the
+  machinery:
+
+  **D1 — `.claude/memory/project-context.md` ships with live `{{CURRENT_EPIC}}`
+  and `{{SPRINT_NUMBER}}`.** It is a state file, not an output template, and
+  `what-next.md:61` names exactly those two as a **Stage 0 bootstrap-detection
+  signal that halts before every other stage**. So `/what-next` in a
+  freshly-created project reports *"🔴 BLOCKED — run `/bootstrap`"* while
+  `.ai-scaffold.json` says `bootstrapped: true`. Root cause is token-name drift:
+  the map wires `{{EPIC_NAME}}` (present in 15 template files, substitutes
+  correctly) while the memory file uses the unmapped `{{CURRENT_EPIC}}`. **The
+  value already exists** — `settings-overrides.json` carries
+  `project.firstEpic`. One-line fix.
+
+  **D2 — `lifecycleStage` is collected, computed, stored, and then overridden.**
+  `content-templates.js:28` maps
+  `'{{Active Development / MVP / Production}}'` to the **literal string**
+  `'Active Development'`. Verified: `create --lifecycle-stage production` yields
+  `.ai-scaffold/context.md` → `production` and `settings-overrides.json` →
+  `"status": "Production"`, while `CLAUDE.md` → `**Status** | Active
+  Development`. Two shipped files state different facts about the same project,
+  and the correct value is two files away.
+
+  **D3 — 8 tech-stack rows are hardcoded `N/A` and never asked**: `CACHE_QUEUE`,
+  `AUTH_STRATEGY`, `EMAIL_PROVIDER`, `STORAGE`, `CLOUD_PROVIDER`, `IAC_TOOL`,
+  `REPO_URL`, `SEED_COMMAND`. Three more are hardcoded to opinions with no flag
+  to change them: `CICD_PLATFORM` = GitHub Actions, `PM_TOOL` = GitHub Projects,
+  `LICENSE` = UNLICENSED. Of 34 tokens, **21 are sourced from user input and 13
+  are constants**. A team on GitLab CI and Jira gets a `CLAUDE.md` Tech Stack
+  table that is confidently wrong, and every agent prompt reads it as truth.
+
+  **D4 (trivial) — `{{RUNTIME}}` is a dead token**: in the map, absent from all
+  templates.
+
+  **Fix order:** D1 (one token, removes a day-one "your new project is broken"
+  message), D2 (one line, removes a contradiction between two shipped files),
+  then D3 — which is a product decision, not a bug: either ask for the 8 values,
+  or stop printing a table that implies they were chosen. D4 with either.
+  *(P1, small for D1+D2+D4; medium for D3)*
 - **75. The shipped branch-protection script writes only the legacy surface and
   is blind to rulesets.** Found 2026-08-27 while running item 26's API spike
   against this repository. `scripts/setup-branch-protection.sh` — which ships to
