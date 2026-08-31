@@ -2,6 +2,10 @@
 
 ## Status
 
+**Stage 5 IN PROGRESS.** First slice — `src/cli/core/gh-runner.js` + tests —
+complete: 18 tests, suite 92/92. Next: `github-protection.js` (tier discovery,
+ADR-005 merge), then the `doctor.js` wiring.
+
 **Stages 1–4 CLOSED 2026-08-31. `/kickoff` = 🟢 GO.** BRD v2.2, the 15.4-day
 estimate, and the HLD are all approved; ADR-004 and ADR-005 accepted; Stage 4
 (UX) recorded N/A. **Stage 5 (Execution) is unblocked** — two conditions carried,
@@ -25,6 +29,7 @@ The private-repo case is untested and is the case most adopters are in.
 | 3 — Architecture | `docs/architecture/hld-26-drift-aware-doctor.md` | **Approved 2026-08-31** |
 | 3 — Architecture | `docs/architecture/adr/004-gh-subprocess-transport-with-injected-runner.md` | Accepted |
 | 3 — Architecture | `docs/architecture/adr/005-effective-protection-merge-semantics.md` | Accepted |
+| 5 — Execution | `src/cli/core/gh-runner.js` + `src/__tests__/gh-runner.test.js` | **Slice 1 done** — 18 tests |
 | 4 — UX | **N/A — recorded, not skipped** | No UI. `task-size-policy.md` marks UX "Required (if UI)" at size M; `doctor` is a CLI whose only surface is stdout and `--json`. Recorded so `/kickoff` sees a decision rather than an absence |
 
 ## Size
