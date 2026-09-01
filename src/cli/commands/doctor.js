@@ -10,6 +10,7 @@ import crypto from 'crypto';
 import { validateManifestContext } from '../core/prompts.js';
 import { createBudget, resolveRepo } from '../core/gh-runner.js';
 import { getProtection } from '../core/github-protection.js';
+import { configuredContexts, observeContexts } from '../core/github-required-checks.js';
 import {
   LOCAL_REASONS,
   buildRemoteChecks,
@@ -25,6 +26,18 @@ const REMOTE_BUDGET_MS = 10_000;
 
 /** The branches the shipped write-side script protects (setup-branch-protection.sh). */
 const GOVERNED_BRANCHES = ['main', 'dev'];
+
+/**
+ * C-02 evaluates the first governed branch only.
+ *
+ * Two reasons, both about honesty rather than convenience. Required contexts are
+ * per-branch, so unioning them across branches and observing on one would let a
+ * dev-only requirement fail against main's history — a fabricated gap. And the
+ * observation half costs a call per pull request against ONE shared 10s deadline
+ * (NFR-01); doing it twice would push the common case into `timeout`, turning a
+ * verified answer into an unavailable one. The branch is named in the output.
+ */
+const REQUIRED_CHECKS_BRANCH = GOVERNED_BRANCHES[0];
 
 export function doctorCommand(cli) {
   cli.command('doctor [target-dir]', 'Diagnose scaffold installation health')
@@ -269,8 +282,35 @@ async function runRemoteChecks(target, options) {
 
   return {
     repository: { name: resolved.repo, source: resolved.source, state: 'ok' },
-    remoteChecks: buildRemoteChecks(report),
+    remoteChecks: buildRemoteChecks(report, {
+      requiredChecks: await gatherRequiredChecks({ repo: resolved.repo, report, cwd: target, budget }),
+    }),
   };
+}
+
+/**
+ * C-02's evidence. The configured half is free — it reads bodies `getProtection`
+ * already fetched — so the observation half only runs when there is something to
+ * look for. Nothing to observe is not the same as nothing observed, and the
+ * check distinguishes them.
+ */
+async function gatherRequiredChecks({ repo, report, cwd, budget }) {
+  const branchReport = report.branches[REQUIRED_CHECKS_BRANCH];
+  if (!branchReport) return { configured: undefined, observation: undefined };
+
+  const configured = configuredContexts(branchReport.raw);
+  if (configured.status !== 'ok' || configured.value.length === 0) {
+    return { configured, observation: undefined };
+  }
+
+  const observation = await observeContexts({
+    repo,
+    branch: REQUIRED_CHECKS_BRANCH,
+    contexts: configured.value,
+    cwd,
+    budget,
+  });
+  return { configured, observation };
 }
 
 async function findInvalidContextFields(manifestData, settingsFile) {
@@ -388,7 +428,7 @@ async function checkGovernanceSkeleton(target) {
   };
 }
 
-function printDiagnostics(diagnostics) {
+export function printDiagnostics(diagnostics) {
   const { checks, allPassed, criticalFailed, highFailed, mediumFailed, lowFailed, unavailableCount } = diagnostics;
 
   const severityColor = { critical: chalk.red, high: chalk.yellow, medium: chalk.yellow, low: chalk.gray };

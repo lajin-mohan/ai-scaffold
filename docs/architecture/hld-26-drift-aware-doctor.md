@@ -54,20 +54,33 @@ stops being a blocker on Stage 3 and becomes a confirmation of behaviour the des
 ## 2. Module breakdown
 
 ```
-src/cli/commands/doctor.js        existing — wires C-01..C-04 into runDiagnostics()
-src/cli/core/gh-runner.js         NEW — the subprocess boundary (ADR-004)
-src/cli/core/github-protection.js NEW — query, tier discovery, merge (ADR-005)
+src/cli/commands/doctor.js            existing — orchestrates, renders, aggregates, sets exit code
+src/cli/core/gh-runner.js             NEW — the subprocess boundary (ADR-004)
+src/cli/core/github-protection.js     NEW — query, tier discovery, protection merge (ADR-005)
+src/cli/core/github-required-checks.js NEW — C-02 configured-vs-observed evidence
+src/cli/core/governance-checks.js     NEW — reports → checks (state/severity/reason)
 ```
 
 | Module | Responsibility | Does not |
 |---|---|---|
-| `gh-runner` | Invoke `gh` via `spawnSync` array form; map process outcome to a typed result; enforce the shared wall-clock budget | Know about branches, rulesets or checks |
-| `github-protection` | Resolve the repo, probe tiers, fetch, merge two surfaces, emit a typed protection report | Spawn processes, format output, decide severity |
-| `doctor.js` | Turn the report into checks with `state`/`severity`/`reason`; render; aggregate; set exit code | Talk to GitHub |
+| `gh-runner` | Invoke `gh` via `spawnSync` array form; map process outcome to a typed result; enforce the shared wall-clock budget; resolve the repository | Know about branches, rulesets or checks |
+| `github-protection` | Probe tiers, fetch, merge the two protection surfaces, emit a typed protection report | Spawn processes, format output, decide severity |
+| `github-required-checks` | Collect configured contexts from both surfaces and observed check-run evidence over the lookback window | Decide severity, decide pass/fail |
+| `governance-checks` | Turn reports into checks with `state`/`severity`/`reason`/`verifiedBy`; C-04's filesystem evidence; the aggregates | Spawn processes, render, set the exit code |
+| `doctor.js` | Orchestrate, thread `cwd` and the budget, render, set exit code | Talk to GitHub, or decide what a check IS |
 
-The direction of dependency is one-way — `doctor.js` → `github-protection` → `gh-runner` — matching
-the existing `commands/` → `core/` split. `core/` today does filesystem I/O only; this introduces
-process and network into that layer, which is why the boundary is injected (ADR-004).
+**Amended 2026-08-31 during implementation.** The original table folded check construction into
+`doctor.js`. It moved to `core/governance-checks.js` for one reason: `passed === (state === 'pass')`
+(FR-25, AC-13) is an invariant over *every* check, and asserting it inside a command module means
+asserting it through a filesystem, a subprocess and a rendered line. As a `core/` module every check
+leaves through a single constructor, so the invariant holds by construction rather than by review,
+and the aggregates (FR-20) are testable against hand-built fixtures. No dependency direction
+changed — `commands/` → `core/` is exactly as before.
+
+The direction of dependency is one-way — `doctor.js` → `governance-checks` → `github-protection` /
+`github-required-checks` → `gh-runner` — matching the existing `commands/` → `core/` split. `core/`
+today does filesystem I/O only; this introduces process and network into that layer, which is why
+the boundary is injected (ADR-004).
 
 ---
 

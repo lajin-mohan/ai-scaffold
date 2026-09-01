@@ -140,6 +140,11 @@ export function mergeBranch({ protectedFlag, legacy, rulesets }) {
         : { status: 'unavailable', reason: rulesets.reason, remedy: rulesets.remedy },
     },
     inactiveRulesetNames: inactiveRulesets.map((rs) => rs.name).sort(),
+    // The tagged inputs, kept so C-02 can read the configured status checks off
+    // bodies already fetched rather than paying for them twice. Deliberately NOT
+    // part of any check's `details`: ruleset bodies carry bypass actor ids, and
+    // `--json` is echoed into CI logs.
+    raw: { legacy, rulesets },
     bypass,
     disagreements: findDisagreements(
       legacy.status === 'ok' ? legacy.value : null,
@@ -152,12 +157,14 @@ export function mergeBranch({ protectedFlag, legacy, rulesets }) {
  * Deterministic precedence for "why couldn't we tell?". Several surfaces can be
  * unreadable at once and first-one-wins would make the reported reason depend on
  * the order the code happens to check them. Ordered by what the operator must do
- * first: a missing or unauthenticated CLI blocks everything, a permission gap
+ * first: a missing or unauthenticated CLI blocks everything, an exhausted rate
+ * limit blocks every remaining call regardless of repository, a permission gap
  * blocks one surface, a timeout is transient, and absence is the weakest signal.
  */
 const REASON_PRECEDENCE = Object.freeze([
   REASONS.GH_MISSING,
   REASONS.UNAUTHENTICATED,
+  REASONS.RATE_LIMITED,
   REASONS.FORBIDDEN,
   REASONS.TIMEOUT,
   REASONS.NOT_FOUND,

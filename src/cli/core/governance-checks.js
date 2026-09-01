@@ -20,13 +20,15 @@
 
 import path from 'path';
 import fs from 'fs-extra';
-import { REASONS } from './gh-runner.js';
+import { REASONS, remedyFor } from './gh-runner.js';
 import { FIELD_ABSENT, pickReason } from './github-protection.js';
+import { NO_EVIDENCE } from './github-required-checks.js';
 
 /** Reasons this module raises that are not transport outcomes. */
 export const LOCAL_REASONS = Object.freeze({
   NO_GIT: 'no-git',
   GIT_DIR_UNREADABLE: 'git-dir-unreadable',
+  EVIDENCE_TRUNCATED: 'evidence-truncated',
 });
 
 /**
@@ -39,6 +41,7 @@ const PHRASE = Object.freeze({
   [REASONS.GH_MISSING]: 'GitHub CLI not installed',
   [REASONS.UNAUTHENTICATED]: 'GitHub CLI not authenticated',
   [REASONS.FORBIDDEN]: 'insufficient GitHub permission',
+  [REASONS.RATE_LIMITED]: 'GitHub API rate limit exhausted',
   [REASONS.NOT_FOUND]: 'repository or branch not visible',
   [REASONS.TIMEOUT]: 'GitHub API did not respond within the time budget',
   [REASONS.INVALID_REPO]: 'invalid repository name',
@@ -47,6 +50,8 @@ const PHRASE = Object.freeze({
   [FIELD_ABSENT]: 'not returned at this permission level',
   [LOCAL_REASONS.NO_GIT]: 'no git repository at the target',
   [LOCAL_REASONS.GIT_DIR_UNREADABLE]: '.git is not a readable directory',
+  [LOCAL_REASONS.EVIDENCE_TRUNCATED]: 'more check runs than the scan reads; absence not proven',
+  [NO_EVIDENCE]: 'no merged pull request in the lookback window',
 });
 
 export function reasonPhrase(reason) {
@@ -55,6 +60,7 @@ export function reasonPhrase(reason) {
 
 export const CHECK_NAMES = Object.freeze({
   C01: 'Branch protection effective (GitHub)',
+  C02: 'Required status checks reporting (GitHub)',
   C03: 'Administrator bypass (GitHub)',
   C04: 'Git pre-commit hook installed (.git/hooks/pre-commit)',
 });
@@ -163,7 +169,7 @@ export async function checkGitHook(target) {
 
 /** Every remote check reports the same reason when the repo could not be reached. */
 export function unavailableRemoteChecks(reason, remedy) {
-  return [CHECK_NAMES.C01, CHECK_NAMES.C03].map((name) => check({
+  return [CHECK_NAMES.C01, CHECK_NAMES.C02, CHECK_NAMES.C03].map((name) => check({
     name,
     state: 'unavailable',
     severity: 'high',
@@ -183,9 +189,122 @@ const branchList = (names) => names.join(', ');
  * not "unavailable" — BR-06 separates the two failures precisely so the one the
  * user can fix is not hidden behind the one they may not control.
  */
-export function buildRemoteChecks(report) {
+export function buildRemoteChecks(report, { requiredChecks } = {}) {
   const entries = Object.entries(report.branches);
-  return [protectionCheck(entries), bypassCheck(entries)];
+  return [
+    protectionCheck(entries),
+    requiredChecksCheck(requiredChecks ?? {}),
+    bypassCheck(entries),
+  ];
+}
+
+/**
+ * C-02. Enforcement is the INTERSECTION of configured and observed, so this
+ * check can fail in two directions and must not collapse them:
+ *
+ *   nothing required           verified fail — protection gates no checks
+ *   required, never reported   verified fail — the gate is inert (FR-02)
+ *   required and reporting     pass
+ *
+ * and it must refuse to answer in three more:
+ *
+ *   a surface we could not read      may require a context we never saw
+ *   no merged PR in the window       silence from an empty population is not
+ *                                    "zero successful checks"
+ *   a truncated check-run scan       the context may be on a page we skipped
+ *
+ * That third one is the subtle one. Not finding a check run is only evidence of
+ * absence when the scan was complete.
+ */
+export function requiredChecksCheck({ configured, observation } = {}) {
+  const named = { name: CHECK_NAMES.C02, verifiedBy: 'api', severity: 'high' };
+
+  if (!configured) {
+    return check({ ...named, state: 'unavailable', reason: REASONS.UNKNOWN, remedy: remedyFor(REASONS.UNKNOWN) });
+  }
+  if (configured.status !== 'ok') {
+    return check({ ...named, state: 'unavailable', reason: configured.reason, remedy: configured.remedy });
+  }
+
+  const contexts = configured.value;
+  const details = { configured: contexts, ...(configured.partialReason ? { partialReason: configured.partialReason } : {}) };
+
+  if (contexts.length === 0) {
+    // A surface we could not read might require checks. "None required" is only
+    // a finding when we could see every place a requirement can live.
+    if (configured.partialReason) {
+      return check({
+        ...named,
+        state: 'unavailable',
+        reason: configured.partialReason,
+        remedy: remedyFor(configured.partialReason),
+        note: 'No required status check was found on the surfaces that could be read.',
+        details,
+      });
+    }
+    return check({
+      ...named,
+      state: 'fail',
+      message: 'No status check is required to merge — branch protection gates review only, so a red build does not block a merge.',
+      details,
+    });
+  }
+
+  if (!observation || observation.status !== 'ok') {
+    return check({
+      ...named,
+      state: 'unavailable',
+      reason: observation?.reason ?? REASONS.UNKNOWN,
+      remedy: observation?.remedy ?? remedyFor(REASONS.UNKNOWN),
+      note: `${contexts.length} check(s) required: ${contexts.map((c) => c.context).sort().join(', ')}.`,
+      details,
+    });
+  }
+
+  const evidence = observation.value;
+  const withEvidence = { ...details, evidence };
+  const provenance = `Evidence: ${evidence.source}, over ${evidence.window}.`;
+
+  if (evidence.unobserved.length > 0) {
+    const inconclusive = evidence.truncated
+      ? LOCAL_REASONS.EVIDENCE_TRUNCATED
+      : evidence.unreadableReason;
+    if (inconclusive) {
+      return check({
+        ...named,
+        state: 'unavailable',
+        reason: inconclusive,
+        remedy: remedyFor(inconclusive),
+        note: `Not seen reporting, but the scan was incomplete: ${evidence.unobserved.map((c) => c.context).join(', ')}. ${provenance}`,
+        details: withEvidence,
+      });
+    }
+    return check({
+      ...named,
+      state: 'fail',
+      message: `Required but never reported: ${evidence.unobserved.map((c) => c.context).join(', ')}. `
+        + `A required check that never runs blocks every pull request; one that is required and absent blocks nothing. ${provenance}`,
+      details: withEvidence,
+    });
+  }
+
+  if (configured.partialReason) {
+    return check({
+      ...named,
+      state: 'unavailable',
+      reason: configured.partialReason,
+      remedy: remedyFor(configured.partialReason),
+      note: `Every requirement that could be read is reporting, but one protection surface could not be read and may require more. ${provenance}`,
+      details: withEvidence,
+    });
+  }
+
+  return check({
+    ...named,
+    state: 'pass',
+    note: provenance,
+    details: withEvidence,
+  });
 }
 
 function protectionCheck(entries) {

@@ -22,7 +22,7 @@ import {
   summarise,
   unavailableRemoteChecks,
 } from '../cli/core/governance-checks.js';
-import { runDiagnostics, setExitCode } from '../cli/commands/doctor.js';
+import { printDiagnostics, runDiagnostics, setExitCode } from '../cli/commands/doctor.js';
 
 let tmp;
 beforeEach(async () => {
@@ -49,16 +49,21 @@ const branch = (over = {}) => ({
 const report = (branches) => ({ repo: 'acme/widgets', branches });
 const byName = (checks, name) => checks.find((c) => c.name === name);
 
+// Look checks up by name, never by position: buildRemoteChecks returns three
+// entries now and would return more later, and an index would silently retarget.
+const c01Of = (r) => byName(buildRemoteChecks(r), CHECK_NAMES.C01);
+const c03Of = (r) => byName(buildRemoteChecks(r), CHECK_NAMES.C03);
+
 // ------------------------------------------------------------------ C-01/C-03
 
 describe('C-01 branch protection', () => {
   it('passes when every branch is protected', () => {
-    const [c01] = buildRemoteChecks(report({ main: branch(), dev: branch() }));
+    const c01 = c01Of(report({ main: branch(), dev: branch() }));
     expect(c01).toMatchObject({ state: 'pass', passed: true, verifiedBy: 'api' });
   });
 
   it('fails at high when a branch is verifiably unprotected', () => {
-    const [c01] = buildRemoteChecks(report({
+    const c01 = c01Of(report({
       main: branch(),
       dev: branch({ protected: okv(false), sources: { legacy: okv(false), rulesets: okv([]) } }),
     }));
@@ -67,7 +72,7 @@ describe('C-01 branch protection', () => {
   });
 
   it('lets a verified gap outrank an unreadable branch', () => {
-    const [c01] = buildRemoteChecks(report({
+    const c01 = c01Of(report({
       main: branch({ protected: unav(REASONS.FORBIDDEN) }),
       dev: branch({ protected: okv(false) }),
     }));
@@ -77,7 +82,7 @@ describe('C-01 branch protection', () => {
   });
 
   it('names an evaluate-mode ruleset instead of silently ignoring it (AC-17)', () => {
-    const [c01] = buildRemoteChecks(report({
+    const c01 = c01Of(report({
       main: branch({ protected: okv(false), inactiveRulesetNames: ['dry-run'] }),
     }));
     expect(c01.state).toBe('fail');
@@ -85,7 +90,7 @@ describe('C-01 branch protection', () => {
   });
 
   it('reports a surface disagreement even on a passing branch (R-09)', () => {
-    const [c01] = buildRemoteChecks(report({
+    const c01 = c01Of(report({
       main: branch({ disagreements: [{ control: 'required_approving_review_count', legacy: 2, ruleset: 1 }] }),
     }));
     expect(c01.state).toBe('pass');
@@ -94,7 +99,7 @@ describe('C-01 branch protection', () => {
   });
 
   it('is unavailable, never a pass, when no branch could be read', () => {
-    const [c01] = buildRemoteChecks(report({
+    const c01 = c01Of(report({
       main: branch({ protected: unav(REASONS.UNAUTHENTICATED) }),
       dev: branch({ protected: unav(REASONS.TIMEOUT) }),
     }));
@@ -102,13 +107,13 @@ describe('C-01 branch protection', () => {
   });
 
   it('keeps a passing check free of failure text (pre-existing checks set message unconditionally)', () => {
-    const [c01] = buildRemoteChecks(report({ main: branch() }));
+    const c01 = c01Of(report({ main: branch() }));
     expect(c01.message).toBeUndefined();
     expect(c01.note).toBeUndefined();
   });
 
   it('preserves per-branch provenance in details', () => {
-    const [c01] = buildRemoteChecks(report({
+    const c01 = c01Of(report({
       main: branch({ sources: { legacy: okv(false), rulesets: okv([{ id: 1, name: 'g', enforcement: 'active', counted: true }]) } }),
     }));
     expect(c01.details.main.legacy).toEqual(okv(false));
@@ -118,7 +123,7 @@ describe('C-01 branch protection', () => {
 
 describe('C-03 administrator bypass', () => {
   it('fails at high when a door is verified open', () => {
-    const [, c03] = buildRemoteChecks(report({
+    const c03 = c03Of(report({
       main: branch({ bypass: okv({ present: true, via: [{ type: 'admin', count: 1 }] }) }),
     }));
     expect(c03).toMatchObject({ state: 'fail', severity: 'high' });
@@ -126,7 +131,7 @@ describe('C-03 administrator bypass', () => {
   });
 
   it('reports both bypass sources together (AC-03)', () => {
-    const [, c03] = buildRemoteChecks(report({
+    const c03 = c03Of(report({
       main: branch({ bypass: okv({ present: true, via: [{ type: 'Team', count: 2 }, { type: 'admin', count: 1 }] }) }),
     }));
     expect(c03.message).toContain('Team×2');
@@ -134,7 +139,7 @@ describe('C-03 administrator bypass', () => {
   });
 
   it('never converts a permission absence into a pass', () => {
-    const [, c03] = buildRemoteChecks(report({ main: branch({ bypass: unav(REASONS.FORBIDDEN) }) }));
+    const c03 = c03Of(report({ main: branch({ bypass: unav(REASONS.FORBIDDEN) }) }));
     expect(c03).toMatchObject({ state: 'unavailable', passed: false, reason: REASONS.FORBIDDEN });
     expect(c03.remedy).toBe(remedyFor(REASONS.FORBIDDEN));
   });
@@ -313,5 +318,110 @@ describe('doctor wiring', () => {
       expect(c.passed).toBe(false);
     }
     expect(summarise(unavailableChecks).highFailed).toBe(0);
+  });
+});
+
+// ---------------------------------------------------------- the summary counter
+//
+// Written because a truncated sample run LOOKED like the summary was counting
+// unavailable checks as failures: one visible ✗ [HIGH] and two ? [UNAVAILABLE]
+// lines above "3 high-severity check(s) failed". The elided lines held two more
+// verified failures. The reading was wrong; the risk it names is not, and a
+// hand-built fixture is the only way to settle it without eliding anything.
+
+describe('unavailable is never counted as failed', () => {
+  const exitCodeFor = (summary) => {
+    const prev = process.exitCode;
+    process.exitCode = undefined;
+    setExitCode(summary);
+    const code = process.exitCode;
+    process.exitCode = prev;
+    return code;
+  };
+
+  /** EXACTLY three high-severity checks. Nothing else, so nothing can be elided. */
+  const fixture = () => [
+    {
+      name: CHECK_NAMES.C04,
+      passed: false, state: 'fail', severity: 'high', verifiedBy: 'filesystem',
+      message: 'No .git/hooks/pre-commit — commit-time enforcement is not installed.',
+    },
+    {
+      name: CHECK_NAMES.C01,
+      passed: false, state: 'unavailable', severity: 'high', verifiedBy: 'api',
+      reason: REASONS.GH_MISSING, remedy: remedyFor(REASONS.GH_MISSING),
+    },
+    {
+      name: CHECK_NAMES.C03,
+      passed: false, state: 'unavailable', severity: 'high', verifiedBy: 'api',
+      reason: REASONS.GH_MISSING, remedy: remedyFor(REASONS.GH_MISSING),
+    },
+  ];
+
+  const render = (checks, options) => {
+    const summary = summarise(checks, options);
+    const lines = [];
+    const original = console.log;
+    console.log = (...args) => lines.push(args.join(' '));
+    try {
+      printDiagnostics({ ...summary, checks, requireRemote: Boolean(options?.requireRemote) });
+    } finally {
+      console.log = original;
+    }
+    return { summary, lines };
+  };
+
+  it('counts one failure by default, and still exits 1', () => {
+    const summary = summarise(fixture());
+    expect(summary.highFailed).toBe(1);
+    expect(summary.unavailableCount).toBe(2);
+    expect(summary.criticalFailed).toBe(0);
+    expect(summary.allPassed).toBe(false);
+    expect(exitCodeFor(summary)).toBe(1);
+  });
+
+  it('counts all three under --require-remote, and exits 1', () => {
+    const summary = summarise(fixture(), { requireRemote: true });
+    expect(summary.highFailed).toBe(3);
+    expect(summary.unavailableCount).toBe(2);
+    expect(exitCodeFor(summary)).toBe(1);
+  });
+
+  it('does not describe an unavailable check as failed in default mode', () => {
+    const { lines } = render(fixture(), {});
+    const summaryLine = lines.find((l) => l.includes('high-severity check(s) failed'));
+    expect(summaryLine).toContain('1 high-severity check(s) failed');
+    expect(summaryLine).not.toContain('3 high-severity');
+
+    // The two unavailable checks appear, but never on a ✗ line and never with
+    // a severity label — FR-11, and what keeps the release smoke gates green.
+    const failLines = lines.filter((l) => l.includes('✗'));
+    expect(failLines).toHaveLength(1);
+    expect(failLines[0]).toContain(CHECK_NAMES.C04);
+    for (const name of [CHECK_NAMES.C01, CHECK_NAMES.C03]) {
+      const line = lines.find((l) => l.includes(name));
+      expect(line).toContain('? [UNAVAILABLE]');
+      expect(line).not.toContain('[HIGH]');
+    }
+    expect(lines.some((l) => l.includes('do not affect the exit code'))).toBe(true);
+  });
+
+  it('says three failed under --require-remote, where they genuinely do', () => {
+    const { lines } = render(fixture(), { requireRemote: true });
+    expect(lines.find((l) => l.includes('high-severity check(s) failed')))
+      .toContain('3 high-severity check(s) failed');
+    // The glyph still never becomes ✗ — the count changes, the evidence does not.
+    expect(lines.filter((l) => l.includes('✗'))).toHaveLength(1);
+    expect(lines.some((l) => l.includes('do not affect the exit code'))).toBe(false);
+  });
+
+  it('reports no failures and no false health when everything is unavailable', () => {
+    const onlyUnavailable = fixture().slice(1);
+    const { summary, lines } = render(onlyUnavailable, {});
+    expect(summary.highFailed).toBe(0);
+    expect(summary.allPassed).toBe(false);
+    expect(exitCodeFor(summary)).toBeUndefined();
+    expect(lines.some((l) => l.includes('All checks passed'))).toBe(false);
+    expect(lines.some((l) => l.includes('2 check(s) could not be verified'))).toBe(true);
   });
 });

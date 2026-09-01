@@ -28,6 +28,7 @@ export const REASONS = Object.freeze({
   GH_MISSING: 'gh-missing',
   UNAUTHENTICATED: 'unauthenticated',
   FORBIDDEN: 'forbidden',
+  RATE_LIMITED: 'rate-limited',
   NOT_FOUND: 'not-found',
   TIMEOUT: 'timeout',
   INVALID_REPO: 'invalid-repo',
@@ -40,6 +41,7 @@ const REMEDY = Object.freeze({
   [REASONS.GH_MISSING]: 'Install the GitHub CLI: https://cli.github.com',
   [REASONS.UNAUTHENTICATED]: 'Authenticate the GitHub CLI: gh auth login',
   [REASONS.FORBIDDEN]: 'This check needs more permission on the repository than the current token has',
+  [REASONS.RATE_LIMITED]: 'The GitHub API rate limit is exhausted; wait for it to reset, or authenticate `gh` for a higher limit',
   [REASONS.NOT_FOUND]: 'The repository or branch was not found, or is not visible to the current token',
   [REASONS.TIMEOUT]: 'The GitHub API did not respond within the time budget',
   [REASONS.INVALID_REPO]: 'Pass a valid repository as --repo owner/name',
@@ -110,6 +112,12 @@ export function classify({ status, signal, errorCode, stderr = '' }) {
     return REASONS.UNAUTHENTICATED;
   }
   if (s.includes('http 401') || s.includes('requires authentication')) return REASONS.UNAUTHENTICATED;
+  // Rate limiting arrives as 403 too, and is NOT a permission problem: the
+  // remedy is to wait, not to obtain access. Checked first so it is not
+  // reported as a missing scope the user would go looking for.
+  if (s.includes('rate limit') || s.includes('secondary rate') || s.includes('abuse detection')) {
+    return REASONS.RATE_LIMITED;
+  }
   if (s.includes('http 403') || s.includes('forbidden')) return REASONS.FORBIDDEN;
   if (s.includes('http 404') || s.includes('not found')) return REASONS.NOT_FOUND;
   return REASONS.UNKNOWN;
