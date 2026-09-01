@@ -2,20 +2,49 @@
 
 ## Status
 
-**Stage 5 IN PROGRESS.** First slice — `src/cli/core/gh-runner.js` + tests —
-complete: 18 tests, suite 92/92. Next: `github-protection.js` (tier discovery,
-ADR-005 merge), then the `doctor.js` wiring.
+**COMPLETE 2026-09-01.** All ten stages closed. Shipped across two pull
+requests:
 
-**Stages 1–4 CLOSED 2026-08-31. `/kickoff` = 🟢 GO.** BRD v2.2, the 15.4-day
-estimate, and the HLD are all approved; ADR-004 and ADR-005 accepted; Stage 4
-(UX) recorded N/A. **Stage 5 (Execution) is unblocked** — two conditions carried,
-below.
+| PR | Contents |
+|---|---|
+| [#134](https://github.com/lajin-mohan/ai-scaffold/pull/134) | Stage 5 — `gh-runner`, `github-protection`, `github-required-checks`, `governance-checks`, the `doctor` wiring, C-01…C-04, and the nine fixes from `/review` |
+| #135 | Documentation and distribution closure — the adopter-facing CLI reference and the package allowlist |
 
-**Spike run 2026-08-27 — partial.** Anonymous tier established, merge
-requirement proven, query list documented **at the anonymous tier** — `FR-23` / item 74 `FR-27`
-**provisional** until the authenticated and private-repo tiers are probed.
-**Two questions remain: authenticated non-admin reads, and private repositories.**
-The private-repo case is untested and is the case most adopters are in.
+### Acceptance criteria
+
+- [x] C-01 queries **both** protection surfaces and reports the merged result (FR-01)
+- [x] C-02 reports a required check satisfied only when configured **and** observed (FR-02)
+- [x] C-03 reports bypass from `enforce_admins` **and** ruleset bypass actors (FR-03)
+- [x] C-04 verifies the real `.git/hooks/pre-commit`, never inferred from settings (FR-04, FR-05)
+- [x] A non-enforcing ruleset contributes nothing and is named, not dropped (FR-06)
+- [x] `unavailable` is a first-class third state, never a pass, with a remedy naming one action (FR-10…FR-14, BR-03)
+- [x] `--require-remote` enforces remote checks; local unavailable checks are unaffected (FR-15)
+- [x] `--json` extended additively but for the documented aggregate narrowing (FR-20, FR-25)
+- [x] Every check carries `state`, `verifiedBy` and, when unavailable, `reason` (FR-21, AC-13)
+- [x] A detected gap is `high` and exits non-zero; inability to verify does not (FR-24, BR-06)
+- [x] `gh` transport, no token accepted/stored/read/logged, no new dependency (FR-30…FR-32)
+- [x] Falsified documentation updated in the same commits (FR-33, AC-09)
+- [x] Repository resolved as the write side resolves it, `cwd` threaded, output names it (FR-34…FR-36)
+- [x] Adopters receive the guidance: generated `.ai-scaffold/cli-reference.md` on both `create` and `init`, and `docs/cli-reference.md` in the packed artifact
+
+### Verification at closure
+
+- Unit suite **224/224**; publish smoke **115 OK / 0 FAIL**
+- Packed tarball installed and used to generate a project — guidance present
+- All five profiles plus `init` verified to receive the reference
+- No runtime dependency added; `eslint .` clean
+
+### Carried forward, deliberately
+
+- **The private-repository / non-admin probe was never run** — no `gh`, no
+  credentials, no private repository reachable from the authoring sandbox. The
+  design does not depend on the answer: tier availability is runtime discovery,
+  and the explicit third state is preserved everywhere behaviour would otherwise
+  have to be inferred. R-06 stays open in the BRD as a confirmation task.
+- **Item 78** (`init` overwrites the generated scaffold README) was found while
+  closing this item and is filed rather than fixed here.
+- **Item 75** (the write side is blind to rulesets) remains the counterpart:
+  `doctor` can now see a drift that `setup-branch-protection.sh` cannot repair.
 
 ## Artifacts
 

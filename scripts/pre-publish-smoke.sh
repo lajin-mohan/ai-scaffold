@@ -113,6 +113,16 @@ else
   fail "npm package ships ${GITIGNORE_IN_PACK}/5 gitignore + ${DOT_GITIGNORE_IN_PACK} dotted (generated projects would lack .gitignore)"
 fi
 
+# README.md ships and links to docs/cli-reference.md. A doc that is linked from a
+# packed file but is not itself packed is a dead link in every npm install — and
+# it is where the doctor flags, states and troubleshooting live, so an adopter
+# following the link finds nothing.
+if grep -q '"docs/cli-reference.md"' <<< "$PACK_OUTPUT"; then
+  pass "npm package ships docs/cli-reference.md (README links to it)"
+else
+  fail "npm package omits docs/cli-reference.md while README.md links to it (dead link on install)"
+fi
+
 # package.json exposes `npm run token-report` → scripts/token-report.js must ship,
 # or the script reference is broken in the published package (its module in
 # src/cli/core already ships via the src/cli/ glob).
@@ -446,6 +456,21 @@ else
   fail "fresh laravel project has $LARAVEL_DOCTOR_FAILS CRIT/HIGH doctor failures"
 fi
 
+# Adopters get the CLI guidance from the GENERATED .ai-scaffold/README.md, not
+# from the repository's docs/, which is not copied into projects. Assert the
+# flags, the third state and the troubleshooting table all arrive, or the
+# feature ships undocumented for everyone who is not reading this repository.
+LARAVEL_CLI_REF="$LARAVEL_DIR/.ai-scaffold/cli-reference.md"
+GUIDANCE_MISSING=0
+for NEEDLE in "--require-remote" "--repo owner/name" "[UNAVAILABLE]" "gh auth login" "rate limit" "no merged pull request"; do
+  grep -qF -- "$NEEDLE" "$LARAVEL_CLI_REF" 2>/dev/null || GUIDANCE_MISSING=$((GUIDANCE_MISSING + 1))
+done
+if [ "$GUIDANCE_MISSING" = "0" ]; then
+  pass "generated project documents the doctor flags, states and remedies"
+else
+  fail "generated project .ai-scaffold/cli-reference.md missing $GUIDANCE_MISSING doctor guidance item(s)"
+fi
+
 GENERIC_DIR=$(mktemp -d)/generic-smoke
 node bin/ai-scaffold.js create "$GENERIC_DIR" --profile generic --yes >/dev/null 2>&1 || true
 if [ -f "$GENERIC_DIR/README.md" ] && [ -f "$GENERIC_DIR/constitution.md" ]; then
@@ -670,6 +695,12 @@ if echo "$DOCTOR_OUT" | grep -q '"criticalFailed": 0' && echo "$DOCTOR_OUT" | gr
 else
   fail "doctor reports critical/high failures after init"
   echo "  Got: $DOCTOR_OUT"
+fi
+
+if grep -qF -- "--require-remote" "$INIT_DIR/.ai-scaffold/cli-reference.md" 2>/dev/null; then
+  pass "init install receives the doctor CLI reference"
+else
+  fail "init install has no .ai-scaffold/cli-reference.md (existing repos get no doctor guidance)"
 fi
 
 if grep -q '"managedFiles": \\[\\]' "$INIT_DIR/.ai-scaffold.json"; then
