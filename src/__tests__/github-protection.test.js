@@ -188,8 +188,8 @@ describe('both surfaces', () => {
       [B('branches/main/protection')]: okJson(LEGACY_STRICT),
     });
     expect(b.disagreements).toEqual([
-      { control: 'dismiss_stale_reviews', legacy: true, ruleset: false },
-      { control: 'required_approving_review_count', legacy: 2, ruleset: 1 },
+      { control: 'dismiss_stale_reviews', legacy: true, ruleset: false, rulesetId: 42 },
+      { control: 'required_approving_review_count', legacy: 2, ruleset: 1, rulesetId: 42 },
     ]);
     // Rule 4: a disagreement is a finding, not a merge input.
     expect(b.protected).toEqual({ status: 'ok', value: true });
@@ -290,12 +290,14 @@ describe('permission failures', () => {
   });
 
   it('names the failing surface rather than assuming forbidden', async () => {
+    // A 404 on the coarse branch endpoint now means the branch is absent, so the
+    // "coarse surface unreadable" case is a non-404 failure.
     const b = await branchOf({
-      [B('branches/main')]: fail(REASONS.NOT_FOUND),
+      [B('branches/main')]: fail(REASONS.RATE_LIMITED),
       [B('rules/branches/main')]: okJson([]),
     });
     expect(b.protected).toEqual({
-      status: 'unavailable', reason: REASONS.NOT_FOUND, remedy: remedyFor(REASONS.NOT_FOUND),
+      status: 'unavailable', reason: REASONS.RATE_LIMITED, remedy: remedyFor(REASONS.RATE_LIMITED),
     });
   });
 
@@ -327,13 +329,16 @@ describe('permission failures', () => {
 // ------------------------------------------------------ malformed responses
 
 describe('malformed responses', () => {
-  it('treats a non-array rules body as no rulesets rather than throwing', async () => {
+  it('treats a non-array rules body as unavailable, not as "no rulesets"', async () => {
     const b = await branchOf({
       [B('branches/main')]: okJson({ protected: false }),
       [B('rules/branches/main')]: okJson({ message: 'nope' }),
     });
-    expect(b.sources.rulesets).toEqual({ status: 'ok', value: [] });
-    expect(b.protected.value).toBe(false);
+    // Reading an unparsed body as an empty list let C-01 report a confident
+    // negative and C-03 a green pass off a response nobody understood.
+    expect(b.sources.rulesets).toMatchObject({ status: 'unavailable', reason: REASONS.UNKNOWN });
+    expect(b.protected.status).toBe('unavailable');
+    expect(b.bypass.status).toBe('unavailable');
   });
 
   it('survives a ruleset body missing name, enforcement and rules', async () => {
@@ -492,5 +497,88 @@ describe('mergeBranch is pure', () => {
     });
     expect(merged.protected).toEqual({ status: 'ok', value: true });
     expect(merged.bypass.status).toBe('unavailable');
+  });
+});
+
+// ------------------------------------------------- regressions from /review
+
+describe('regressions found by adversarial review', () => {
+  it('will not report a branch unprotected when a ruleset could not be read', async () => {
+    const b = await branchOf({
+      [B('branches/main')]: okJson({ protected: false }),
+      [B('rules/branches/main')]: okJson([
+        { type: 'pull_request', ruleset_id: 7, ruleset_source_type: 'Repository', ruleset_source: REPO },
+        { type: 'deletion', ruleset_id: 42, ruleset_source_type: 'Repository', ruleset_source: REPO },
+      ]),
+      [B('rulesets/7')]: okJson(rulesetStrict({ id: 7, name: 'seven', enforcement: 'evaluate' })),
+      [B('rulesets/42')]: fail(REASONS.FORBIDDEN),
+    });
+    // Ruleset 42 may be the one protecting this branch. A partial resolve
+    // supports a positive verdict, never a negative one.
+    expect(b.protected).toMatchObject({ status: 'unavailable', reason: REASONS.FORBIDDEN });
+  });
+
+  it('still reports protected when a resolved ruleset protects and another failed', async () => {
+    const b = await branchOf({
+      [B('branches/main')]: okJson({ protected: true }),
+      [B('rules/branches/main')]: okJson([
+        { type: 'pull_request', ruleset_id: 7, ruleset_source_type: 'Repository', ruleset_source: REPO },
+        { type: 'deletion', ruleset_id: 42, ruleset_source_type: 'Repository', ruleset_source: REPO },
+      ]),
+      [B('rulesets/7')]: okJson(rulesetStrict({ id: 7, name: 'seven' })),
+      [B('rulesets/42')]: fail(REASONS.FORBIDDEN),
+    });
+    expect(b.protected).toEqual({ status: 'ok', value: true });
+  });
+
+  it('marks a governed branch that does not exist as absent rather than unavailable', async () => {
+    const out = await getProtection({
+      repo: REPO,
+      branches: ['main', 'dev'],
+      run: makeRun({
+        [B('branches/main')]: okJson({ protected: true }),
+        [B('rules/branches/main')]: okJson([]),
+        [B('branches/main/protection')]: okJson(LEGACY_STRICT),
+        [B('branches/dev')]: fail(REASONS.NOT_FOUND),
+      }),
+    });
+    expect(out.branches.dev).toEqual({ absent: true, reason: REASONS.NOT_FOUND, remedy: expect.any(String) });
+    expect(out.branches.main.protected).toEqual({ status: 'ok', value: true });
+  });
+
+  it('does not query a branch it already found absent', async () => {
+    const run = makeRun({ [B('branches/dev')]: fail(REASONS.NOT_FOUND) });
+    await getProtection({ repo: REPO, branches: ['dev'], run });
+    expect(run.calls).toEqual([B('branches/dev')]);
+  });
+
+  it('ignores a disabled ruleset when looking for disagreements', () => {
+    const legacy = { required_pull_request_reviews: { required_approving_review_count: 2, dismiss_stale_reviews: true } };
+    const disabled = rulesetStrict({
+      id: 1, enforcement: 'disabled',
+      rules: [{ type: 'pull_request', parameters: { required_approving_review_count: 1, dismiss_stale_reviews_on_push: false } }],
+    });
+    expect(findDisagreements(legacy, [disabled])).toEqual([]);
+  });
+
+  it('compares every active ruleset, not only the first', () => {
+    const legacy = { required_pull_request_reviews: { required_approving_review_count: 2 } };
+    const agrees = rulesetStrict({ id: 1, rules: [{ type: 'pull_request', parameters: { required_approving_review_count: 2 } }] });
+    const differs = rulesetStrict({ id: 2, rules: [{ type: 'pull_request', parameters: { required_approving_review_count: 9 } }] });
+    expect(findDisagreements(legacy, [agrees, differs])).toEqual([
+      { control: 'required_approving_review_count', legacy: 2, ruleset: 9, rulesetId: 2 },
+    ]);
+  });
+
+  it('refuses a ruleset id that is not a safe non-negative integer', async () => {
+    const run = makeRun({
+      [B('branches/main')]: okJson({ protected: false }),
+      [B('rules/branches/main')]: okJson([
+        { type: 'pull_request', ruleset_id: '../../../../user', ruleset_source_type: 'Repository', ruleset_source: REPO },
+        { type: 'deletion', ruleset_id: -1, ruleset_source_type: 'Repository', ruleset_source: REPO },
+      ]),
+    });
+    await getProtection({ repo: REPO, branches: ['main'], run });
+    expect(run.calls.some((p) => p.includes('/rulesets/'))).toBe(false);
   });
 });

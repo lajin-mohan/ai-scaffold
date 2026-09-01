@@ -140,9 +140,13 @@ so its silence proves nothing.
 
 The check reports `unavailable` rather than guessing when the population is
 empty (no merged pull request in the window), when a protection surface could
-not be read and may require more, or when the check-run scan hit its page budget
-— a context may be on a page that was never fetched, and that is not evidence of
-absence.
+not be read and may require more, or when either scan hit its page budget — the
+listing of closed pull requests or the check runs on one head. A context may be
+on a page that was never fetched, and that is not evidence of absence.
+
+Governed branches that do not exist in the repository are excluded and named,
+not reported as unverifiable — a repository with `main` and no `dev` is not a
+governance gap.
 
 Run it after setup and after any manual change to scaffold-managed files.
 

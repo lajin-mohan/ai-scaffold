@@ -142,19 +142,19 @@ const ctx = (context, appId = null) => ({ context, appId });
 describe('observed evidence', () => {
   it('stops at the first pull request once every context is seen', async () => {
     const run = makeRun({
-      [`repos/${REPO}/pulls`]: okJson([PR(9, 'aaa', '2026-08-30T10:00:00Z'), PR(8, 'bbb', '2026-08-29T10:00:00Z')]),
-      [`repos/${REPO}/commits/aaa/check-runs`]: okJson(runsBody(['build', 'lint'])),
-      [`repos/${REPO}/commits/aaa/status`]: okJson({ statuses: [] }),
+      [`repos/${REPO}/pulls`]: okJson([PR(9, 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', '2026-08-30T10:00:00Z'), PR(8, 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb', '2026-08-29T10:00:00Z')]),
+      [`repos/${REPO}/commits/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/check-runs`]: okJson(runsBody(['build', 'lint'])),
+      [`repos/${REPO}/commits/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/status`]: okJson({ statuses: [] }),
     });
     const o = await observeContexts({ repo: REPO, branch: 'main', contexts: [ctx('build'), ctx('lint')], run });
     expect(o.value.unobserved).toEqual([]);
     expect(o.value.examined).toHaveLength(1);
-    expect(run.calls.some((c) => c.includes('/bbb/'))).toBe(false);
+    expect(run.calls.some((c) => c.includes('/bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb/'))).toBe(false);
   });
 
   it('ignores closed-but-unmerged pull requests', async () => {
     const run = makeRun({
-      [`repos/${REPO}/pulls`]: okJson([{ number: 9, head: { sha: 'aaa' }, merged_at: null }]),
+      [`repos/${REPO}/pulls`]: okJson([{ number: 9, head: { sha: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa' }, merged_at: null }]),
     });
     const o = await observeContexts({ repo: REPO, branch: 'main', contexts: [ctx('build')], run });
     expect(o).toMatchObject({ status: 'unavailable', reason: NO_EVIDENCE });
@@ -170,13 +170,13 @@ describe('observed evidence', () => {
   it('orders the window by merge time then number, not by API order', async () => {
     const same = '2026-08-30T10:00:00Z';
     const run = makeRun({
-      [`repos/${REPO}/pulls`]: okJson([PR(7, 'ccc', same), PR(9, 'aaa', same), PR(8, 'bbb', same)]),
-      [`repos/${REPO}/commits/aaa/check-runs`]: okJson(runsBody([])),
-      [`repos/${REPO}/commits/aaa/status`]: okJson({ statuses: [] }),
-      [`repos/${REPO}/commits/bbb/check-runs`]: okJson(runsBody([])),
-      [`repos/${REPO}/commits/bbb/status`]: okJson({ statuses: [] }),
-      [`repos/${REPO}/commits/ccc/check-runs`]: okJson(runsBody(['build'])),
-      [`repos/${REPO}/commits/ccc/status`]: okJson({ statuses: [] }),
+      [`repos/${REPO}/pulls`]: okJson([PR(7, 'cccccccccccccccccccccccccccccccccccccccc', same), PR(9, 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', same), PR(8, 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb', same)]),
+      [`repos/${REPO}/commits/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/check-runs`]: okJson(runsBody([])),
+      [`repos/${REPO}/commits/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/status`]: okJson({ statuses: [] }),
+      [`repos/${REPO}/commits/bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb/check-runs`]: okJson(runsBody([])),
+      [`repos/${REPO}/commits/bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb/status`]: okJson({ statuses: [] }),
+      [`repos/${REPO}/commits/cccccccccccccccccccccccccccccccccccccccc/check-runs`]: okJson(runsBody(['build'])),
+      [`repos/${REPO}/commits/cccccccccccccccccccccccccccccccccccccccc/status`]: okJson({ statuses: [] }),
     });
     const o = await observeContexts({ repo: REPO, branch: 'main', contexts: [ctx('build')], run });
     expect(o.value.examined.map((e) => e.pullRequest)).toEqual([9, 8, 7]);
@@ -185,11 +185,11 @@ describe('observed evidence', () => {
   it('paginates check runs and marks a scan it could not finish', async () => {
     const page1 = Array.from({ length: LOOKBACK.checkRunPageSize }, (_, i) => `noise-${i}`);
     const run = makeRun({
-      [`repos/${REPO}/pulls`]: okJson([PR(9, 'aaa', '2026-08-30T10:00:00Z')]),
-      [`repos/${REPO}/commits/aaa/check-runs`]: (p) => (p.includes('page=1')
+      [`repos/${REPO}/pulls`]: okJson([PR(9, 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', '2026-08-30T10:00:00Z')]),
+      [`repos/${REPO}/commits/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/check-runs`]: (p) => (p.includes('page=1')
         ? okJson(runsBody(page1, 5000))
         : okJson({ total_count: 5000, check_runs: [] })),
-      [`repos/${REPO}/commits/aaa/status`]: okJson({ statuses: [] }),
+      [`repos/${REPO}/commits/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/status`]: okJson({ statuses: [] }),
     });
     const o = await observeContexts({ repo: REPO, branch: 'main', contexts: [ctx('build')], run });
     expect(o.value.truncated).toBe(true);
@@ -198,9 +198,9 @@ describe('observed evidence', () => {
 
   it('accepts a commit status for an app-blind requirement', async () => {
     const run = makeRun({
-      [`repos/${REPO}/pulls`]: okJson([PR(9, 'aaa', '2026-08-30T10:00:00Z')]),
-      [`repos/${REPO}/commits/aaa/check-runs`]: okJson(runsBody([])),
-      [`repos/${REPO}/commits/aaa/status`]: okJson({ statuses: [{ context: 'ci/jenkins', state: 'success' }] }),
+      [`repos/${REPO}/pulls`]: okJson([PR(9, 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', '2026-08-30T10:00:00Z')]),
+      [`repos/${REPO}/commits/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/check-runs`]: okJson(runsBody([])),
+      [`repos/${REPO}/commits/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/status`]: okJson({ statuses: [{ context: 'ci/jenkins', state: 'success' }] }),
     });
     const o = await observeContexts({ repo: REPO, branch: 'main', contexts: [ctx('ci/jenkins')], run });
     expect(o.value.unobserved).toEqual([]);
@@ -208,9 +208,9 @@ describe('observed evidence', () => {
 
   it('refuses a commit status for an app-qualified requirement', async () => {
     const run = makeRun({
-      [`repos/${REPO}/pulls`]: okJson([PR(9, 'aaa', '2026-08-30T10:00:00Z')]),
-      [`repos/${REPO}/commits/aaa/check-runs`]: okJson(runsBody([])),
-      [`repos/${REPO}/commits/aaa/status`]: okJson({ statuses: [{ context: 'build', state: 'success' }] }),
+      [`repos/${REPO}/pulls`]: okJson([PR(9, 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', '2026-08-30T10:00:00Z')]),
+      [`repos/${REPO}/commits/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/check-runs`]: okJson(runsBody([])),
+      [`repos/${REPO}/commits/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/status`]: okJson({ statuses: [{ context: 'build', state: 'success' }] }),
     });
     const o = await observeContexts({ repo: REPO, branch: 'main', contexts: [ctx('build', 99)], run });
     expect(o.value.unobserved).toEqual([{ context: 'build', appId: 99 }]);
@@ -218,9 +218,9 @@ describe('observed evidence', () => {
 
   it('does not match a check run produced by the wrong app', async () => {
     const run = makeRun({
-      [`repos/${REPO}/pulls`]: okJson([PR(9, 'aaa', '2026-08-30T10:00:00Z')]),
-      [`repos/${REPO}/commits/aaa/check-runs`]: okJson(runsBody([{ name: 'build', appId: 1 }])),
-      [`repos/${REPO}/commits/aaa/status`]: okJson({ statuses: [] }),
+      [`repos/${REPO}/pulls`]: okJson([PR(9, 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', '2026-08-30T10:00:00Z')]),
+      [`repos/${REPO}/commits/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/check-runs`]: okJson(runsBody([{ name: 'build', appId: 1 }])),
+      [`repos/${REPO}/commits/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/status`]: okJson({ statuses: [] }),
     });
     const o = await observeContexts({ repo: REPO, branch: 'main', contexts: [ctx('build', 2)], run });
     expect(o.value.unobserved).toEqual([{ context: 'build', appId: 2 }]);
@@ -228,9 +228,9 @@ describe('observed evidence', () => {
 
   it('records an unreadable page rather than dropping it', async () => {
     const run = makeRun({
-      [`repos/${REPO}/pulls`]: okJson([PR(9, 'aaa', '2026-08-30T10:00:00Z')]),
-      [`repos/${REPO}/commits/aaa/check-runs`]: fail(REASONS.RATE_LIMITED),
-      [`repos/${REPO}/commits/aaa/status`]: okJson({ statuses: [] }),
+      [`repos/${REPO}/pulls`]: okJson([PR(9, 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', '2026-08-30T10:00:00Z')]),
+      [`repos/${REPO}/commits/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/check-runs`]: fail(REASONS.RATE_LIMITED),
+      [`repos/${REPO}/commits/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/status`]: okJson({ statuses: [] }),
     });
     const o = await observeContexts({ repo: REPO, branch: 'main', contexts: [ctx('build')], run });
     expect(o.value.unreadableReason).toBe(REASONS.RATE_LIMITED);
@@ -251,12 +251,12 @@ describe('observed evidence', () => {
 
   it('names the window and the evidence source', async () => {
     const run = makeRun({
-      [`repos/${REPO}/pulls`]: okJson([PR(9, 'aaa', '2026-08-30T10:00:00Z')]),
-      [`repos/${REPO}/commits/aaa/check-runs`]: okJson(runsBody(['build'])),
-      [`repos/${REPO}/commits/aaa/status`]: okJson({ statuses: [] }),
+      [`repos/${REPO}/pulls`]: okJson([PR(9, 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', '2026-08-30T10:00:00Z')]),
+      [`repos/${REPO}/commits/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/check-runs`]: okJson(runsBody(['build'])),
+      [`repos/${REPO}/commits/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/status`]: okJson({ statuses: [] }),
     });
     const o = await observeContexts({ repo: REPO, branch: 'main', contexts: [ctx('build')], run });
-    expect(o.value.window).toContain('merged pull requests into main');
+    expect(o.value.window).toContain('merged pull request(s) into main');
     expect(o.value.source).toContain('check runs');
   });
 });
@@ -355,5 +355,67 @@ describe('C-02 verdict', () => {
       requiredChecksCheck({ configured: { status: 'unavailable', reason: 'x', remedy: 'y' } }),
     ];
     for (const c of all) expect(c.passed).toBe(c.state === 'pass');
+  });
+});
+
+// ------------------------------------------------- regressions from /review
+
+describe('regressions found by adversarial review', () => {
+  it('marks the scan truncated when the page budget runs out and total_count is absent', async () => {
+    const fullPage = Array.from({ length: LOOKBACK.checkRunPageSize }, (_, i) => `noise-${i}`);
+    const run = makeRun({
+      [`repos/${REPO}/pulls`]: okJson([PR(9, 'a'.repeat(40), '2026-08-30T10:00:00Z')]),
+      // No `total_count` anywhere, and every page is full: the only signal that
+      // the scan stopped short is that the page budget ran out.
+      [`repos/${REPO}/commits/${'a'.repeat(40)}/check-runs`]: okJson({ check_runs: fullPage.map((n) => ({ name: n, app: { id: 1 } })) }),
+      [`repos/${REPO}/commits/${'a'.repeat(40)}/status`]: okJson({ statuses: [] }),
+    });
+    const o = await observeContexts({ repo: REPO, branch: 'main', contexts: [ctx('build')], run });
+    expect(o.value.truncated).toBe(true);
+    const c = requiredChecksCheck({ configured: { status: 'ok', value: [ctx('build')] }, observation: o });
+    expect(c).toMatchObject({ state: 'unavailable', reason: LOCAL_REASONS.EVIDENCE_TRUNCATED });
+  });
+
+  it('pages past closed-unmerged pull requests instead of settling for a stale window', async () => {
+    const unmerged = Array.from({ length: LOOKBACK.candidatePageSize }, (_, i) => ({ number: 100 + i, head: { sha: 'b'.repeat(40) }, merged_at: null }));
+    const run = makeRun({
+      [`repos/${REPO}/pulls`]: (p) => (p.includes('page=1')
+        ? okJson(unmerged)
+        : okJson([PR(9, 'a'.repeat(40), '2026-08-30T10:00:00Z')])),
+      [`repos/${REPO}/commits/${'a'.repeat(40)}/check-runs`]: okJson(runsBody(['build'])),
+      [`repos/${REPO}/commits/${'a'.repeat(40)}/status`]: okJson({ statuses: [] }),
+    });
+    const o = await observeContexts({ repo: REPO, branch: 'main', contexts: [ctx('build')], run });
+    expect(o.value.unobserved).toEqual([]);
+    expect(o.value.candidatesScanned).toBe(LOOKBACK.candidatePageSize + 1);
+  });
+
+  it('will not call a fail on a window it could not finish assembling', async () => {
+    const unmerged = (start) => Array.from({ length: LOOKBACK.candidatePageSize }, (_, i) => ({ number: start + i, head: { sha: 'b'.repeat(40) }, merged_at: null }));
+    const run = makeRun({
+      [`repos/${REPO}/pulls`]: (p) => okJson(p.includes('page=1') ? unmerged(100) : unmerged(200)),
+    });
+    const o = await observeContexts({ repo: REPO, branch: 'main', contexts: [ctx('build')], run });
+    // Every candidate was unmerged and the page budget is spent: no population.
+    expect(o).toMatchObject({ status: 'unavailable', reason: NO_EVIDENCE });
+  });
+
+  it('reports the window it actually examined, not the one it hoped for', async () => {
+    const run = makeRun({
+      [`repos/${REPO}/pulls`]: okJson([PR(9, 'a'.repeat(40), '2026-08-30T10:00:00Z')]),
+      [`repos/${REPO}/commits/${'a'.repeat(40)}/check-runs`]: okJson(runsBody(['build'])),
+      [`repos/${REPO}/commits/${'a'.repeat(40)}/status`]: okJson({ statuses: [] }),
+    });
+    const o = await observeContexts({ repo: REPO, branch: 'main', contexts: [ctx('build')], run });
+    expect(o.value.window).toBe('1 most recent merged pull request(s) into main (of 1 closed pull request(s) scanned)');
+  });
+
+  it('rejects a pull-request head sha that is not a sha', async () => {
+    const run = makeRun({
+      [`repos/${REPO}/pulls`]: okJson([{ number: 9, head: { sha: '../../../../user' }, merged_at: '2026-08-30T10:00:00Z' }]),
+    });
+    const o = await observeContexts({ repo: REPO, branch: 'main', contexts: [ctx('build')], run });
+    expect(o).toMatchObject({ status: 'unavailable', reason: NO_EVIDENCE });
+    expect(run.calls.some((p) => p.includes('/commits/'))).toBe(false);
   });
 });

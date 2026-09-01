@@ -295,7 +295,12 @@ async function runRemoteChecks(target, options) {
  * check distinguishes them.
  */
 async function gatherRequiredChecks({ repo, report, cwd, budget }) {
-  const branchReport = report.branches[REQUIRED_CHECKS_BRANCH];
+  // Prefer the first governed branch, but fall back to whichever governed branch
+  // actually exists: a repository with no `main` still has required checks worth
+  // verifying, and the branch is named in the evidence either way.
+  const branchName = [REQUIRED_CHECKS_BRANCH, ...GOVERNED_BRANCHES]
+    .find((b) => report.branches[b] && !report.branches[b].absent);
+  const branchReport = branchName ? report.branches[branchName] : undefined;
   if (!branchReport) return { configured: undefined, observation: undefined };
 
   const configured = configuredContexts(branchReport.raw);
@@ -305,7 +310,7 @@ async function gatherRequiredChecks({ repo, report, cwd, budget }) {
 
   const observation = await observeContexts({
     repo,
-    branch: REQUIRED_CHECKS_BRANCH,
+    branch: branchName,
     contexts: configured.value,
     cwd,
     budget,

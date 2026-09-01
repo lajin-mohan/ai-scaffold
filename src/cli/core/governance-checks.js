@@ -29,6 +29,8 @@ export const LOCAL_REASONS = Object.freeze({
   NO_GIT: 'no-git',
   GIT_DIR_UNREADABLE: 'git-dir-unreadable',
   EVIDENCE_TRUNCATED: 'evidence-truncated',
+  NOT_PROTECTED: 'not-protected',
+  BRANCH_ABSENT: 'branch-absent',
 });
 
 /**
@@ -50,7 +52,9 @@ const PHRASE = Object.freeze({
   [FIELD_ABSENT]: 'not returned at this permission level',
   [LOCAL_REASONS.NO_GIT]: 'no git repository at the target',
   [LOCAL_REASONS.GIT_DIR_UNREADABLE]: '.git is not a readable directory',
-  [LOCAL_REASONS.EVIDENCE_TRUNCATED]: 'more check runs than the scan reads; absence not proven',
+  [LOCAL_REASONS.EVIDENCE_TRUNCATED]: 'more evidence than the scan reads; absence not proven',
+  [LOCAL_REASONS.NOT_PROTECTED]: 'no protection exists on any governed branch to bypass',
+  [LOCAL_REASONS.BRANCH_ABSENT]: 'none of the governed branches exist in this repository',
   [NO_EVIDENCE]: 'no merged pull request in the lookback window',
 });
 
@@ -190,9 +194,20 @@ const branchList = (names) => names.join(', ');
  * user can fix is not hidden behind the one they may not control.
  */
 export function buildRemoteChecks(report, { requiredChecks } = {}) {
-  const entries = Object.entries(report.branches);
+  const all = Object.entries(report.branches);
+  const absentNames = all.filter(([, b]) => b.absent).map(([n]) => n).sort();
+  const entries = all.filter(([, b]) => !b.absent);
+
+  if (entries.length === 0) {
+    const [c01, , c03] = unavailableRemoteChecks(
+      LOCAL_REASONS.BRANCH_ABSENT,
+      `Create or rename a governed branch; none of ${absentNames.join(', ')} exist here`,
+    );
+    return [c01, requiredChecksCheck(requiredChecks ?? {}), c03];
+  }
+
   return [
-    protectionCheck(entries),
+    protectionCheck(entries, absentNames),
     requiredChecksCheck(requiredChecks ?? {}),
     bypassCheck(entries),
   ];
@@ -245,7 +260,8 @@ export function requiredChecksCheck({ configured, observation } = {}) {
     return check({
       ...named,
       state: 'fail',
-      message: 'No status check is required to merge — branch protection gates review only, so a red build does not block a merge.',
+      message: 'No status check is required to merge — branch protection gates review only, so a red build does not block a merge. '
+        + 'Neither protection surface returned a required-checks configuration; the legacy surface returns 401 outright without admin, so a readable body with none listed is read as none configured.',
       details,
     });
   }
@@ -266,7 +282,7 @@ export function requiredChecksCheck({ configured, observation } = {}) {
   const provenance = `Evidence: ${evidence.source}, over ${evidence.window}.`;
 
   if (evidence.unobserved.length > 0) {
-    const inconclusive = evidence.truncated
+    const inconclusive = (evidence.truncated || evidence.windowTruncated)
       ? LOCAL_REASONS.EVIDENCE_TRUNCATED
       : evidence.unreadableReason;
     if (inconclusive) {
@@ -307,7 +323,22 @@ export function requiredChecksCheck({ configured, observation } = {}) {
   });
 }
 
-function protectionCheck(entries) {
+/**
+ * Pick the reason by precedence AND the remedy that goes with it.
+ *
+ * These used to be chosen independently: the reason from `pickReason` across all
+ * unreadable branches, the remedy from whichever branch `Object.entries` put
+ * first. With `dev` timed out and `main` forbidden that rendered "insufficient
+ * GitHub permission" over the timeout remedy — the half the user acts on was the
+ * half the precedence machinery did not reach.
+ */
+function pickReasonAndRemedy(unreadable, read) {
+  const reason = pickReason(unreadable.map(([, b]) => read(b).reason).filter(Boolean));
+  const match = unreadable.find(([, b]) => read(b).reason === reason);
+  return { reason, remedy: (match ? read(match[1]).remedy : undefined) ?? remedyFor(reason) };
+}
+
+function protectionCheck(entries, absentNames = []) {
   const named = { name: CHECK_NAMES.C01, verifiedBy: 'api', severity: 'high' };
 
   const unprotected = entries.filter(([, b]) => b.protected.status === 'ok' && b.protected.value === false);
@@ -324,10 +355,14 @@ function protectionCheck(entries) {
   }
   if (disagreements.length > 0) {
     notes.push(`The two protection surfaces disagree: ${disagreements
-      .map((d) => `${d.branch}/${d.control} legacy=${d.legacy} ruleset=${d.ruleset}`).join('; ')}.`);
+      .map((d) => `${d.branch}/${d.control} legacy=${d.legacy} ruleset=${d.ruleset}`
+        + (d.rulesetId != null ? ` (ruleset ${d.rulesetId})` : '')).join('; ')}.`);
   }
   if (unreadable.length > 0) {
     notes.push(`Not verified for ${branchList(unreadable.map(([n]) => n))}.`);
+  }
+  if (absentNames.length > 0) {
+    notes.push(`Not present in this repository: ${branchList(absentNames)}.`);
   }
 
   if (unprotected.length > 0) {
@@ -340,12 +375,12 @@ function protectionCheck(entries) {
   }
 
   if (unreadable.length > 0) {
-    const reason = pickReason(unreadable.map(([, b]) => b.protected.reason).filter(Boolean));
+    const { reason, remedy } = pickReasonAndRemedy(unreadable, (b) => b.protected);
     return check({
       ...named,
       state: 'unavailable',
       reason,
-      remedy: unreadable[0][1].protected.remedy,
+      remedy,
       ...(notes.length > 0 ? { note: notes.join(' ') } : {}),
       details,
     });
@@ -359,12 +394,31 @@ function protectionCheck(entries) {
   });
 }
 
-function bypassCheck(entries) {
+function bypassCheck(allEntries) {
   const named = { name: CHECK_NAMES.C03, verifiedBy: 'api', severity: 'high' };
+  const details = Object.fromEntries(allEntries.map(([branch, b]) => [branch, b.bypass]));
+
+  // "Can an administrator bypass protection?" is only a question where protection
+  // exists. Scoring an unprotected branch as "no bypass found" printed a green
+  // tick beside a branch anyone can force-push — an empty evidence population
+  // rendered as a pass, which is the defect this whole check exists to prevent.
+  // Branches whose protection is unreadable stay in scope: their bypass state is
+  // unknown, not absent.
+  const entries = allEntries.filter(([, b]) => !(b.protected.status === 'ok' && b.protected.value === false));
 
   const open = entries.filter(([, b]) => b.bypass.status === 'ok' && b.bypass.value.present);
   const unreadable = entries.filter(([, b]) => b.bypass.status !== 'ok');
-  const details = Object.fromEntries(entries.map(([branch, b]) => [branch, b.bypass]));
+
+  if (entries.length === 0) {
+    return check({
+      ...named,
+      state: 'unavailable',
+      reason: LOCAL_REASONS.NOT_PROTECTED,
+      remedy: 'Protect the branch first; branch protection reports the gap',
+      note: 'Every governed branch is unprotected, so there is no protection to bypass.',
+      details,
+    });
+  }
 
   if (open.length > 0) {
     const described = open.map(([branch, b]) => `${branch} (${b.bypass.value.via
@@ -381,17 +435,17 @@ function bypassCheck(entries) {
   }
 
   if (unreadable.length > 0) {
-    const reason = pickReason(unreadable.map(([, b]) => b.bypass.reason).filter(Boolean));
-    return check({
-      ...named,
-      state: 'unavailable',
-      reason,
-      remedy: unreadable[0][1].bypass.remedy,
-      details,
-    });
+    const { reason, remedy } = pickReasonAndRemedy(unreadable, (b) => b.bypass);
+    return check({ ...named, state: 'unavailable', reason, remedy, details });
   }
 
-  return check({ ...named, state: 'pass', details });
+  const skipped = allEntries.length - entries.length;
+  return check({
+    ...named,
+    state: 'pass',
+    ...(skipped > 0 ? { note: `${skipped} unprotected branch(es) excluded — nothing there to bypass.` } : {}),
+    details,
+  });
 }
 
 /** Provenance survives into `--json`: which surface answered, and what it said. */

@@ -1,9 +1,15 @@
-import { describe, it, expect } from 'vitest';
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
+import { afterEach, beforeEach, describe, it, expect } from 'vitest';
 import {
   REASONS,
   classify,
   createBudget,
   remedyFor,
+  resolveRepo,
+  runGhApi,
+  runGhRepoView,
   validateBranch,
   validateRepo,
 } from '../cli/core/gh-runner.js';
@@ -120,5 +126,97 @@ describe('gh-runner — budget (NFR-01)', () => {
     const budget = createBudget(100, () => now);
     now = 5000;
     expect(budget.remainingMs()).toBe(0);
+  });
+});
+
+// ---------------------------------------------------------- the spawn surface
+//
+// `runGhApi` and `runGhRepoView` were the module's only untested exports, and
+// they carry its headline guarantees: the closed argv constructor, "raw stderr
+// NEVER leaves this module", the pre-spawn budget short-circuit, and the
+// JSON.parse failure path. A `gh` stub on PATH exercises all four for real.
+
+describe('the spawn surface', () => {
+  let binDir;
+  let originalPath;
+
+  const stub = (script) => {
+    fs.writeFileSync(path.join(binDir, 'gh'), `#!/bin/sh\n${script}\n`, { mode: 0o755 });
+  };
+
+  beforeEach(() => {
+    binDir = fs.mkdtempSync(path.join(os.tmpdir(), 'gh-stub-'));
+    originalPath = process.env.PATH;
+    process.env.PATH = `${binDir}${path.delimiter}${originalPath}`;
+  });
+
+  afterEach(() => {
+    process.env.PATH = originalPath;
+    fs.rmSync(binDir, { recursive: true, force: true });
+  });
+
+  it('builds a fixed GET argv and parses the body', () => {
+    stub('printf \'{"argv":"\'"$*"\'"}\'');
+    const res = runGhApi('repos/acme/widgets/branches/main');
+    expect(res.ok).toBe(true);
+    expect(res.json.argv).toBe('api --method GET repos/acme/widgets/branches/main');
+  });
+
+  it('never lets gh stderr — or a token in it — reach the caller', () => {
+    stub([
+      'echo "GH_TOKEN=ghp_SENTINELVALUE" >&2',
+      'echo "HTTP 403: Forbidden (https://ghe.internal.example/api/v3/repos/acme/secret-repo)" >&2',
+      'exit 1',
+    ].join('\n'));
+    const res = runGhApi('repos/acme/secret-repo/branches/main');
+    const serialised = JSON.stringify(res);
+    expect(res).toEqual({ ok: false, reason: REASONS.FORBIDDEN, remedy: remedyFor(REASONS.FORBIDDEN) });
+    for (const secret of ['ghp_SENTINELVALUE', 'secret-repo', 'ghe.internal.example']) {
+      expect(serialised).not.toContain(secret);
+    }
+  });
+
+  it('reports a rate limit as its own reason, not as a permission gap', () => {
+    stub('echo "HTTP 403: API rate limit exceeded" >&2; exit 1');
+    expect(runGhApi('repos/acme/widgets/branches/main').reason).toBe(REASONS.RATE_LIMITED);
+  });
+
+  it('returns unknown rather than throwing when the body is not JSON', () => {
+    stub('echo "not json at all"');
+    expect(runGhApi('repos/acme/widgets/branches/main')).toEqual({
+      ok: false, reason: REASONS.UNKNOWN, remedy: remedyFor(REASONS.UNKNOWN),
+    });
+  });
+
+  it('short-circuits an exhausted budget without spawning', () => {
+    // A spawnSync `timeout: 0` means NO timeout, so passing a remaining 0 down
+    // would hang forever. The guard must fire before the spawn.
+    stub('sleep 30');
+    const started = Date.now();
+    const res = runGhApi('repos/acme/widgets/branches/main', { budget: { remainingMs: () => 0 } });
+    expect(res).toEqual({ ok: false, reason: REASONS.TIMEOUT, remedy: remedyFor(REASONS.TIMEOUT) });
+    expect(Date.now() - started).toBeLessThan(2000);
+  });
+
+  it('reports gh-missing when the binary is not on PATH', () => {
+    process.env.PATH = binDir;
+    expect(runGhApi('repos/acme/widgets/branches/main').reason).toBe(REASONS.GH_MISSING);
+  });
+
+  it('resolves the repository through a fixed `repo view` argv', () => {
+    stub('echo "$*" >&2; echo acme/widgets');
+    expect(runGhRepoView()).toEqual({ ok: true, repo: 'acme/widgets' });
+  });
+
+  it('treats an empty `repo view` answer as no repository, not as a repo named ""', () => {
+    stub('exit 0');
+    expect(runGhRepoView()).toEqual({
+      ok: false, reason: REASONS.NO_REPO, remedy: remedyFor(REASONS.NO_REPO),
+    });
+  });
+
+  it('feeds resolveRepo the same guarantees end to end', () => {
+    stub('echo acme/widgets');
+    expect(resolveRepo({})).toEqual({ ok: true, repo: 'acme/widgets', source: 'gh' });
   });
 });

@@ -425,3 +425,63 @@ describe('unavailable is never counted as failed', () => {
     expect(lines.some((l) => l.includes('2 check(s) could not be verified'))).toBe(true);
   });
 });
+
+// ------------------------------------------------- regressions from /review
+
+describe('regressions found by adversarial review', () => {
+  it('does not print a green bypass tick for a branch nobody protects', () => {
+    const c03 = c03Of(report({
+      main: branch({ protected: okv(false), sources: { legacy: okv(false), rulesets: okv([]) } }),
+    }));
+    expect(c03).toMatchObject({ state: 'unavailable', passed: false, reason: LOCAL_REASONS.NOT_PROTECTED });
+  });
+
+  it('still evaluates bypass on the protected branches and says what it excluded', () => {
+    const c03 = c03Of(report({
+      main: branch(),
+      dev: branch({ protected: okv(false) }),
+    }));
+    expect(c03.state).toBe('pass');
+    expect(c03.note).toContain('1 unprotected branch(es) excluded');
+  });
+
+  it('keeps a branch whose protection is unreadable in bypass scope', () => {
+    const c03 = c03Of(report({
+      main: branch({ protected: unav(REASONS.FORBIDDEN), bypass: unav(REASONS.FORBIDDEN) }),
+    }));
+    expect(c03).toMatchObject({ state: 'unavailable', reason: REASONS.FORBIDDEN });
+  });
+
+  it('pairs the reason with its own remedy, not with the first branch it looked at', () => {
+    const c01 = c01Of(report({
+      dev: branch({ protected: unav(REASONS.TIMEOUT) }),
+      main: branch({ protected: unav(REASONS.FORBIDDEN) }),
+    }));
+    expect(c01.reason).toBe(REASONS.FORBIDDEN);
+    expect(c01.remedy).toBe(remedyFor(REASONS.FORBIDDEN));
+  });
+
+  it('excludes an absent governed branch and names it', () => {
+    const checks = buildRemoteChecks({
+      repo: 'acme/widgets',
+      branches: { main: branch(), dev: { absent: true, reason: REASONS.NOT_FOUND } },
+    });
+    const c01 = byName(checks, CHECK_NAMES.C01);
+    expect(c01.state).toBe('pass');
+    expect(c01.note).toContain('Not present in this repository: dev');
+  });
+
+  it('is unavailable, not failed, when no governed branch exists at all', () => {
+    const checks = buildRemoteChecks({
+      repo: 'acme/widgets',
+      branches: {
+        main: { absent: true, reason: REASONS.NOT_FOUND },
+        dev: { absent: true, reason: REASONS.NOT_FOUND },
+      },
+    });
+    for (const name of [CHECK_NAMES.C01, CHECK_NAMES.C03]) {
+      expect(byName(checks, name)).toMatchObject({ state: 'unavailable', reason: LOCAL_REASONS.BRANCH_ABSENT });
+    }
+    expect(summarise(checks).highFailed).toBe(0);
+  });
+});

@@ -56,13 +56,23 @@ const DUAL_CONTROLS = Object.freeze([
   { control: 'required_approving_review_count', legacy: (l) => l?.required_pull_request_reviews?.required_approving_review_count, ruleset: (p) => p?.required_approving_review_count },
 ]);
 
-function pullRequestParams(rulesets) {
+/**
+ * Every `pull_request` rule on every ACTIVE ruleset, tagged with its ruleset.
+ *
+ * Two bugs lived in the previous single-value version. It read non-enforcing
+ * rulesets, so a `disabled` ruleset could manufacture a disagreement the header
+ * of this file says contributes nothing; and it returned on the FIRST match, so
+ * with two active rulesets only the lowest id was ever compared.
+ */
+function pullRequestRules(rulesets) {
+  const out = [];
   for (const rs of rulesets) {
+    if (rs.enforcement !== 'active') continue;
     for (const rule of rs.rules ?? []) {
-      if (rule.type === 'pull_request') return rule.parameters ?? {};
+      if (rule.type === 'pull_request') out.push({ rulesetId: rs.id, params: rule.parameters ?? {} });
     }
   }
-  return undefined;
+  return out.sort((a, b) => (a.rulesetId ?? 0) - (b.rulesetId ?? 0));
 }
 
 /**
@@ -71,16 +81,16 @@ function pullRequestParams(rulesets) {
  */
 export function findDisagreements(legacy, rulesets) {
   if (!legacy || !rulesets?.length) return [];
-  const params = pullRequestParams(rulesets);
-  if (params === undefined) return [];
   const out = [];
-  for (const { control, legacy: fromLegacy, ruleset: fromRuleset } of DUAL_CONTROLS) {
-    const l = fromLegacy(legacy);
-    const r = fromRuleset(params);
-    if (l === undefined || r === undefined) continue;
-    if (l !== r) out.push({ control, legacy: l, ruleset: r });
+  for (const { rulesetId, params } of pullRequestRules(rulesets)) {
+    for (const { control, legacy: fromLegacy, ruleset: fromRuleset } of DUAL_CONTROLS) {
+      const l = fromLegacy(legacy);
+      const r = fromRuleset(params);
+      if (l === undefined || r === undefined) continue;
+      if (l !== r) out.push({ control, legacy: l, ruleset: r, rulesetId });
+    }
   }
-  return out.sort((a, b) => a.control.localeCompare(b.control));
+  return out.sort((a, b) => a.control.localeCompare(b.control) || ((a.rulesetId ?? 0) - (b.rulesetId ?? 0)));
 }
 
 /**
@@ -100,19 +110,24 @@ export function mergeBranch({ protectedFlag, legacy, rulesets }) {
   const legacyProtects = legacy.status === 'ok' && legacy.value != null;
   const legacyReadable = legacy.status === 'ok' || legacy.status === LEGACY_ABSENT;
   const rulesetProtects = activeRulesets.length > 0;
+  // A partial resolve supports a POSITIVE verdict — a ruleset we did read still
+  // protects — but never a negative one: the ruleset we could not read may be
+  // the one protecting the branch. Only the negative arm requires completeness.
+  const rulesetsComplete = rulesets.status === 'ok' && !rulesets.partialReason;
+
   if (legacyProtects || rulesetProtects) {
     isProtected = ok(true);
   } else if (protectedFlag.status === 'ok' && protectedFlag.value === true) {
     // The coarse `protected` boolean is true but neither detail surface explains
     // it: legacy detail is usually 401 without admin. Protected, provenance unknown.
     isProtected = ok(true);
-  } else if (protectedFlag.status === 'ok' && legacyReadable && rulesets.status === 'ok') {
+  } else if (protectedFlag.status === 'ok' && legacyReadable && rulesetsComplete) {
     isProtected = ok(false);
   } else {
     // Name the surface that actually failed rather than assuming a permission error.
     const reason = protectedFlag.status !== 'ok'
       ? protectedFlag.reason
-      : (!legacyReadable ? legacy.reason : rulesets.reason);
+      : (!legacyReadable ? legacy.reason : (rulesets.reason ?? rulesets.partialReason));
     isProtected = unavailable(reason ?? REASONS.UNKNOWN);
   }
 
@@ -148,7 +163,7 @@ export function mergeBranch({ protectedFlag, legacy, rulesets }) {
     bypass,
     disagreements: findDisagreements(
       legacy.status === 'ok' ? legacy.value : null,
-      rulesets.status === 'ok' ? rulesets.value : [],
+      activeRulesets,
     ),
   };
 }
@@ -253,7 +268,10 @@ function summariseActors(via) {
 async function resolveRulesets(rules, { repo, cwd, budget, run }) {
   const refs = new Map();
   for (const rule of rules) {
-    if (rule.ruleset_id == null) continue;
+    // The id is interpolated into a request path, and it comes from the API, not
+    // from us. gh-runner validates what WE build; an API-supplied value has to be
+    // proved numeric here or a hostile/proxied response could steer the path.
+    if (!Number.isSafeInteger(rule?.ruleset_id) || rule.ruleset_id < 0) continue;
     if (!refs.has(rule.ruleset_id)) {
       refs.set(rule.ruleset_id, { id: rule.ruleset_id, sourceType: rule.ruleset_source_type, source: rule.ruleset_source });
     }
@@ -307,16 +325,32 @@ export async function getProtection({ repo, branches, cwd, budget, run = runGhAp
   const out = { repo, branches: {} };
   for (const branch of [...branches].sort()) {
     const branchRes = run(`repos/${repo}/branches/${branch}`, { cwd, budget });
+
+    // The governed branch list is fixed (`main`, `dev`), and plenty of
+    // repositories have only one of them. A 404 on the coarse branch endpoint —
+    // after `gh repo view` already proved the repository is reachable — means
+    // the branch is not there, not that we lack permission. Marked absent and
+    // excluded, because otherwise every single-branch repository would report
+    // `unavailable` forever and `--require-remote` would exit 1 on a repository
+    // whose protection is perfect.
+    if (!branchRes.ok && branchRes.reason === REASONS.NOT_FOUND) {
+      out.branches[branch] = { absent: true, reason: REASONS.NOT_FOUND, remedy: branchRes.remedy };
+      continue;
+    }
+
     const protectedFlag = branchRes.ok
       ? ('protected' in (branchRes.json ?? {}) ? ok(branchRes.json.protected) : fieldAbsent())
       : { status: 'unavailable', reason: branchRes.reason, remedy: branchRes.remedy };
 
     const rulesRes = run(`repos/${repo}/rules/branches/${branch}`, { cwd, budget });
-    const rulesets = rulesRes.ok && Array.isArray(rulesRes.json)
-      ? await resolveRulesets(rulesRes.json, { repo, cwd, budget, run })
-      : rulesRes.ok
-        ? ok([])
-        : { status: 'unavailable', reason: rulesRes.reason, remedy: rulesRes.remedy };
+    // A 200 whose body is not the expected array is a body we did not understand,
+    // which is rule 3 again: reading it as "no rulesets" would let C-01 report a
+    // confident negative and C-03 a green pass off a response nobody parsed.
+    const rulesets = !rulesRes.ok
+      ? { status: 'unavailable', reason: rulesRes.reason, remedy: rulesRes.remedy }
+      : Array.isArray(rulesRes.json)
+        ? await resolveRulesets(rulesRes.json, { repo, cwd, budget, run })
+        : { status: 'unavailable', reason: REASONS.UNKNOWN, remedy: remedyFor(REASONS.UNKNOWN) };
 
     const legacyRes = run(`repos/${repo}/branches/${branch}/protection`, { cwd, budget });
     const legacy = legacyRes.ok

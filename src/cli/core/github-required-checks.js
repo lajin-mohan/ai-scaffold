@@ -40,9 +40,13 @@ export const NO_EVIDENCE = 'no-evidence';
 export const LOOKBACK = Object.freeze({
   maxPullRequests: 5,
   candidatePageSize: 20,
+  maxCandidatePages: 2,
   checkRunPageSize: 100,
   maxCheckRunPages: 3,
 });
+
+/** A 7-40 char hex sha. It reaches a request path and the API supplied it. */
+const SHA = /^[0-9a-f]{7,40}$/i;
 
 export const EVIDENCE_SOURCE = 'check runs and commit statuses on merged pull-request heads';
 
@@ -160,25 +164,48 @@ export async function observeContexts({ repo, branch, contexts, cwd, budget, run
     observed: [],
     unobserved: [],
     truncated: false,
+    windowTruncated: false,
     unreadableReasons: [],
   };
 
   if (contexts.length === 0) return ok(evidence);
 
-  const prPath = `repos/${repo}/pulls?state=closed&base=${encodeURIComponent(branch)}`
-    + `&per_page=${lookback.candidatePageSize}&sort=updated&direction=desc`;
-  const prRes = run(prPath, { cwd, budget });
-  if (!prRes.ok) return unavailable(prRes.reason);
-  if (!Array.isArray(prRes.json)) return unavailable(REASONS.UNKNOWN);
+  // The listing is of CLOSED pull requests, and closed-unmerged ones consume the
+  // page. One page of 20 can therefore yield a window of one stale merge while
+  // the output claims "the 5 most recent" — a confident verdict from a biased
+  // population. Pages are read until enough merges are found, the listing runs
+  // out, or the page budget is spent; only the last of those is inconclusive.
+  const candidates = [];
+  let listingComplete = false;
+  for (let page = 1; page <= lookback.maxCandidatePages; page += 1) {
+    const prPath = `repos/${repo}/pulls?state=closed&base=${encodeURIComponent(branch)}`
+      + `&per_page=${lookback.candidatePageSize}&sort=updated&direction=desc&page=${page}`;
+    const prRes = run(prPath, { cwd, budget });
+    if (!prRes.ok) {
+      if (page === 1) return unavailable(prRes.reason);
+      evidence.unreadableReasons.push(prRes.reason);
+      break;
+    }
+    if (!Array.isArray(prRes.json)) {
+      if (page === 1) return unavailable(REASONS.UNKNOWN);
+      evidence.unreadableReasons.push(REASONS.UNKNOWN);
+      break;
+    }
+    candidates.push(...prRes.json);
+    if (candidates.filter(isMergedPr).length >= lookback.maxPullRequests) { listingComplete = true; break; }
+    if (prRes.json.length < lookback.candidatePageSize) { listingComplete = true; break; }
+  }
+  if (!listingComplete) evidence.windowTruncated = true;
 
-  const merged = prRes.json
-    .filter((pr) => pr && pr.merged_at && pr.head && typeof pr.head.sha === 'string')
+  const merged = candidates
+    .filter(isMergedPr)
     // Newest merge first, then PR number, so the window never depends on how the
     // API happened to order two pull requests merged in the same second.
     .sort((a, b) => (b.merged_at.localeCompare(a.merged_at)) || ((b.number ?? 0) - (a.number ?? 0)))
     .slice(0, lookback.maxPullRequests);
 
   if (merged.length === 0) return unavailable(NO_EVIDENCE);
+  evidence.candidatesScanned = candidates.length;
 
   const outstanding = new Map(contexts.map((c) => [contextKey(c), c]));
 
@@ -202,6 +229,10 @@ export async function observeContexts({ repo, branch, contexts, cwd, budget, run
     });
   }
 
+  // Replace the intended window with the examined one. A claim about evidence
+  // has to describe the evidence, not the configuration that asked for it.
+  evidence.window = `${merged.length} most recent merged pull request(s) into ${branch}`
+    + ` (of ${candidates.length} closed pull request(s) scanned)`;
   evidence.observed.sort((a, b) => a.context.localeCompare(b.context));
   evidence.unobserved = sortContexts([...outstanding.values()]).map(({ context, appId }) => ({ context, appId }));
   evidence.unreadableReason = pickReason(evidence.unreadableReasons.filter(Boolean));
@@ -218,6 +249,10 @@ export async function observeContexts({ repo, branch, contexts, cwd, budget, run
  * an app-qualified one — claiming otherwise would assert an identity we did not
  * see.
  */
+function isMergedPr(pr) {
+  return Boolean(pr && pr.merged_at && pr.head && typeof pr.head.sha === 'string' && SHA.test(pr.head.sha));
+}
+
 function matches(ctx, seen) {
   const byCheckRun = seen.runs.some((r) => r.name === ctx.context
     && (ctx.appId == null || r.appId === ctx.appId));
@@ -229,6 +264,7 @@ function matches(ctx, seen) {
 function collectEvidence({ repo, sha, cwd, budget, run, lookback, evidence }) {
   const runs = [];
   let total = null;
+  let complete = false;
 
   for (let page = 1; page <= lookback.maxCheckRunPages; page += 1) {
     const res = run(
@@ -242,10 +278,15 @@ function collectEvidence({ repo, sha, cwd, budget, run, lookback, evidence }) {
     for (const r of body.check_runs) {
       runs.push({ name: r.name, status: r.status, conclusion: r.conclusion, appId: r.app?.id ?? null });
     }
-    if (body.check_runs.length < lookback.checkRunPageSize) break;
+    if (body.check_runs.length < lookback.checkRunPageSize) { complete = true; break; }
   }
   // A page-limited scan that stopped short must say so: an unseen context may be
   // on a page we never fetched, and that is not evidence of absence.
+  //
+  // `total_count` is the obvious signal but it is not guaranteed to be there.
+  // Falling out of the loop on a FULL last page means the page budget ran out,
+  // which is truncation whether or not the body ever told us the total.
+  if (!complete) evidence.truncated = true;
   if (total !== null && runs.length < total) evidence.truncated = true;
 
   const statusRes = run(`repos/${repo}/commits/${sha}/status?per_page=${lookback.checkRunPageSize}`, { cwd, budget });
