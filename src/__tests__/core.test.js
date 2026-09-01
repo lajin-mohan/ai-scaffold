@@ -7,6 +7,7 @@ import { spawnSync } from 'node:child_process';
 import { buildTokenReport } from '../cli/core/token-report.js';
 import { applyInteractiveDefaults, resolveWithDefaults, validateBootstrapValues } from '../cli/core/prompts.js';
 import { buildFilePlan } from '../cli/core/file-plan.js';
+import { buildCliReference } from '../cli/core/content-templates.js';
 import { MANAGED_PATHS, PROTECTED_PATHS, APP_SOURCE_PATHS } from '../cli/core/file-plan.js';
 import { detectConflicts } from '../cli/core/conflicts.js';
 import { buildDryRunPlan, emptyConflicts } from '../cli/core/dry-run-plan.js';
@@ -706,5 +707,46 @@ describe('scaffold self-marker', () => {
     const pkg = JSON.parse(readFileSync(new URL('../../package.json', import.meta.url), 'utf-8'));
     const marker = JSON.parse(readFileSync(new URL('../../.ai-scaffold.json', import.meta.url), 'utf-8'));
     expect(marker.version).toBe(pkg.version);
+  });
+});
+
+// ------------------------------------------------- item 26 distribution gap
+//
+// A feature is not shipped until adopters can find it. `docs/cli-reference.md`
+// lives in this repository and is NOT copied into generated projects, so the
+// doctor flags, the third state and the troubleshooting table reach adopters
+// only through this generated file. The smoke suite gates it end to end; these
+// are the fast guards.
+
+describe('generated CLI reference', () => {
+  const reference = buildCliReference();
+
+  it('documents both flags, the third state and how to act on it', () => {
+    for (const needle of [
+      '--require-remote',
+      '--repo owner/name',
+      '[UNAVAILABLE]',
+      'gh auth login',
+      'rate limit',
+      'no merged pull request',
+    ]) {
+      expect(reference).toContain(needle);
+    }
+  });
+
+  it('does not describe unavailable as a skip or a pass', () => {
+    expect(reference).toContain('not a skip and never a pass');
+    expect(reference).not.toMatch(/\[SKIP\]/);
+  });
+
+  it('is planned on create AND on init', async () => {
+    // On init the `.ai-scaffold/README.md` path is taken by the namespaced
+    // project README template, which is why this is its own file. Existing
+    // repositories are exactly the population with branch protection to check,
+    // so losing it on the init path would miss the audience that needs it.
+    for (const existingTarget of [false, true]) {
+      const plan = await buildFilePlan(templatePath('generic'), '/tmp/out', { existingTarget });
+      expect(plan.generate.map((f) => f.rel)).toContain('.ai-scaffold/cli-reference.md');
+    }
   });
 });

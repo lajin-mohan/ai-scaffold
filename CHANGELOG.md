@@ -83,6 +83,30 @@ This file is configured with `merge=union` in `.gitattributes` so parallel addit
   only commands reachable, both built from fixed argv inside `gh-runner`. No
   token is accepted, stored, read from disk or logged. No new runtime dependency.
 
+- **Adopters now receive the `doctor` guidance (item 26 closure).** The feature
+  shipped in the previous slice was documented only in this repository's
+  `docs/cli-reference.md` — which was not in the package allowlist, so
+  `README.md` linked to a file that no npm install contained, and generated
+  projects were never given it at all. Two fixes:
+
+  `docs/cli-reference.md` joins the allowlist, so the link resolves in the
+  tarball. And every installed project now gets a generated
+  `.ai-scaffold/cli-reference.md` covering `--require-remote`, `--repo`, the
+  three-state model, what `? [UNAVAILABLE]` means and why it is not a skip, and
+  a reason-to-remedy table for every unavailable condition — a missing or
+  unauthenticated `gh`, no GitHub remote, insufficient permission, an exhausted
+  rate limit, an empty lookback window, and a truncated scan.
+
+  It is generated rather than templated, which is what makes it identical across
+  all five profiles with no per-profile copy to drift. It is also its own file
+  rather than a section of `.ai-scaffold/README.md`, because on `init` that path
+  is taken by the namespaced project README template — and an existing
+  repository is exactly the case that has branch protection worth checking.
+
+  Three smoke gates keep it honest: the tarball contains the linked reference,
+  a generated project contains the flags and remedies, and an `init` install
+  contains them too. 112 → 115 gates.
+
 ### Fixed
 - **AI attribution removed from 22 unmerged commits across four branches.**
   `branching-rules.md:79` prohibits `Co-Authored-By` and any AI identity in

@@ -161,7 +161,16 @@ export async function buildFilePlan(sourceDir, targetDir, options = {}) {
 
   // Always-generate files: these have no template source; they are built
   // programmatically by copy.js generateFile().
-  const alwaysGenerate = ['.ai-scaffold.json', '.ai-scaffold/README.md', '.ai-scaffold/context.md', 'constitution.md'];
+  const alwaysGenerate = [
+    '.ai-scaffold.json',
+    '.ai-scaffold/README.md',
+    // Its own file rather than a section of the README above: on init that
+    // README path is taken by the namespaced project README template, and an
+    // existing repository is exactly the case with branch protection to check.
+    '.ai-scaffold/cli-reference.md',
+    '.ai-scaffold/context.md',
+    'constitution.md',
+  ];
 
   // Governance skeleton — generated (not copied) so fresh projects get a clean
   // starter, and so the shipped CLAUDE.md workflow references resolve. Shipped

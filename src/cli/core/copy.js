@@ -9,6 +9,7 @@ import {
   buildConstitution,
   buildContextFile,
   buildMemoryFile,
+  buildCliReference,
   buildScaffoldReadme,
   buildStarterChangelog,
   buildStarterLessons,
@@ -147,6 +148,8 @@ async function generateFile(file, values, dryRun) {
     await fs.writeFile(target, resolvePlaceholders(content, values));
   } else if (relPath === '.ai-scaffold/README.md') {
     await fs.writeFile(target, buildScaffoldReadme(values));
+  } else if (relPath === '.ai-scaffold/cli-reference.md') {
+    await fs.writeFile(target, buildCliReference(values));
   } else if (relPath === '.ai-scaffold/context.md') {
     await fs.writeFile(target, buildContextFile(values));
   } else if (relPath === '.ai-scaffold.json') {

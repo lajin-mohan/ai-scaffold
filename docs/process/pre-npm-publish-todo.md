@@ -120,6 +120,24 @@ unless a UI-heavy pilot provides evidence to raise it.
   for BRDs, ADRs, tasks, and handoffs: identity, status, phase, owner, approval,
   dependency, supersession, evidence, and requirement/test references. Preserve
   readable Markdown bodies and operational checklist restatement. *(P1, medium)*
+- **78. `init` overwrites the generated scaffold README with the namespaced
+  project README template.** Found 2026-09-01 while closing item 26's
+  distribution gap. `file-plan.js` lists `.ai-scaffold/README.md` in
+  `alwaysGenerate`, and `resolveGeneratedTargetRel` ALSO namespaces the
+  profile's `README.template.md` to `.ai-scaffold/README.md` when
+  `existingTarget` is true. In `copy.js:generateFile` the
+  `relPath.endsWith('README.md') && src` branch is tested first, so on `init`
+  the template copy wins and `buildScaffoldReadme` never runs. Every
+  init-installed project therefore has a `.ai-scaffold/README.md` that is a
+  generic project README — profile, lifecycle stage, data sensitivity,
+  compliance scope and the requirements link are all silently absent, and
+  `doctor` does not catch it because its scaffold-context check reads
+  `context.md`. Not fixed in item 26's closure slice: the fix is either a
+  rename (which moves a file adopters may already have edited) or a precedence
+  change in `generateFile`, and both deserve their own change. Item 26's CLI
+  reference was given its own path to route around this rather than inherit it.
+  **Size: S.** Sequence after item 25.
+
 - **77. Placeholder-substitution gaps in generated projects.** Audited 2026-08-27
   by generating real projects (`ais create --profile node --yes`, 159 files) and
   inspecting the output, not by reading the templates. **The mechanism is sound**
@@ -941,8 +959,9 @@ A release is ready only when **all** of these pass — the first two are automat
 - `npm run release:check` — `origin/main` is an ancestor of the promotion branch,
   and a `release/v*` branch changes only `package.json` / `package-lock.json` /
   `.ai-scaffold.json` / `CHANGELOG.md`.
-- `bash scripts/pre-publish-smoke.sh` — currently **105 gates** incl. the
-  packed-surface, generated-doc-link, and constitution checks.
+- `bash scripts/pre-publish-smoke.sh` — currently **115 gates** incl. the
+  packed-surface, generated-doc-link, constitution, and adopter-facing
+  CLI-reference checks.
 - `npm test`, `npm run lint`, `npm run typecheck`, `npm audit --audit-level=high`.
 - `gh pr view <id>` shows `mergeable` + required checks green.
 - **A release is not shipped until `npm view @lajin.m/ai-scaffold version` shows the
