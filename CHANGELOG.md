@@ -44,6 +44,44 @@ This file is configured with `merge=union` in `.gitattributes` so parallel addit
   18 unit tests, no `vi.mock` — the classifier is a pure function, so the
   fixtures are plain objects. Suite 92/92.
 
+- **`doctor` now reports effective governance, not configured intent (item 26,
+  Stage 5).** Four checks join the existing local ones: branch protection merged
+  across GitHub's two independent surfaces (legacy branch protection and
+  rulesets), required status checks verified as both *configured* and *observed
+  reporting*, administrator bypass, and whether `.git/hooks/pre-commit` is really
+  installed and executable rather than merely wired in `.claude/settings.json`.
+
+  **Three states, not two.** Every check carries `state` (`pass`/`fail`/
+  `unavailable`), `verifiedBy` (`api`/`filesystem`) and, when unavailable, a
+  `reason` and a remedy naming the one action that would make it available.
+  `passed === (state === 'pass')` holds by construction — every check leaves
+  `core/governance-checks.js` through a single constructor. `unavailable` renders
+  as `? [UNAVAILABLE] <name> — <condition>`, never as `[SKIP]`: nothing was
+  skipped, verification was attempted and produced no evidence.
+
+  **Why the third state earns its keep.** A repository can protect `main` by
+  ruleset and `dev` by legacy branch protection — observed live in this one — so
+  querying either surface alone reports a false "unprotected". `bypass_actors` is
+  *absent* from a ruleset body read without permission rather than empty, so
+  reading absence as "no bypass actors" would be a silent false pass. A check run
+  not found in a page-limited scan is not a check that never ran. Each of those
+  reports `unavailable` with its reason preserved.
+
+  Aggregates stay additive: `criticalFailed`/`highFailed`/`mediumFailed`/
+  `lowFailed` count `state === 'fail'`, which is exactly what `!passed` meant
+  before the third state existed, and `unavailableCount` is a new sibling.
+  `--require-remote` adds unavailable GitHub checks to the counts for CI where
+  `gh` is guaranteed — and only those, since a flag about remote enforcement
+  cannot speak to a local check that verified nothing.
+
+  `--repo owner/name` overrides repository detection, using the same source and
+  precedence as `scripts/setup-branch-protection.sh`; both outputs name the
+  repository checked, so a fork is never mistaken for upstream. Every `gh` call
+  runs with `cwd` set to the target directory, never the process cwd.
+
+  Read-only by construction: `gh api --method GET` and `gh repo view` are the
+  only commands reachable, both built from fixed argv inside `gh-runner`. No
+  token is accepted, stored, read from disk or logged. No new runtime dependency.
 
 ### Fixed
 - **AI attribution removed from 22 unmerged commits across four branches.**

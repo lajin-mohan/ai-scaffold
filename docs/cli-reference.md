@@ -116,11 +116,33 @@ settings overrides, managed files, meaningful setup values, wired hooks,
 verification commands, and git presence. Exits non-zero when a critical or
 high-severity check fails, so CI and scripts can gate on it.
 
-It also reports **effective** governance rather than configured intent: whether
-`main` and `dev` are actually protected (by legacy branch protection, a ruleset,
-or both), whether administrators can bypass that protection, and whether
-`.git/hooks/pre-commit` is really installed and executable. The hook check is
-local; the two GitHub checks use the `gh` CLI and are read-only.
+It also reports **effective** governance rather than configured intent:
+
+| Check | Question |
+|---|---|
+| Branch protection | Are `main` and `dev` actually protected — by legacy branch protection, a ruleset, or both? |
+| Required status checks | Is a check both *required* and *observed reporting*? |
+| Administrator bypass | Can an administrator override that protection? |
+| Pre-commit hook | Is `.git/hooks/pre-commit` really installed and executable — not merely wired in `.claude/settings.json`? |
+
+The hook check is local and needs no network. The three GitHub checks use the
+`gh` CLI and are read-only: the only commands they can issue are
+`gh api --method GET` and `gh repo view`.
+
+**The required-checks lookback.** A required check that never runs blocks every
+pull request; a check that runs but is not required gates nothing. Only the
+intersection is enforcement, so `doctor` reads both halves. Configuration comes
+from the two protection surfaces; evidence comes from **check runs and commit
+statuses on the heads of up to the 5 most recent merged pull requests** into the
+first governed branch, and the output names that window. Merged pull requests
+only — one closed without merging may have been abandoned before its checks ran,
+so its silence proves nothing.
+
+The check reports `unavailable` rather than guessing when the population is
+empty (no merged pull request in the window), when a protection surface could
+not be read and may require more, or when the check-run scan hit its page budget
+— a context may be on a page that was never fetched, and that is not evidence of
+absence.
 
 Run it after setup and after any manual change to scaffold-managed files.
 
