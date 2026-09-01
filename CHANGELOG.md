@@ -13,6 +13,76 @@ This file is configured with `merge=union` in `.gitattributes` so parallel addit
 
 ## [Unreleased]
 
+### Added
+- **`src/cli/core/gh-runner.js` — the subprocess boundary for item 26's remote
+  checks (Stage 5, slice 1).** Per ADR-004 it is a **closed constructor**, not an
+  argv passthrough: it takes an endpoint path and builds
+  `['api', '--method', 'GET', path]` itself. That is what makes BR-02's read-only
+  guarantee a property of the code — an `-X` check would not be enough, because
+  `gh api` switches to POST on any `-f`/`-F`/`--field`/`--input`, and a free-form
+  argv would leave `gh repo delete` reachable.
+
+  It owns the one interpretation nobody else should repeat: `gh` collapses 401,
+  403 and 404 onto exit 1, so every honest `unavailable` reason is derived here.
+  The `status === null` case is split rather than collapsed — `ENOENT` means the
+  binary is absent, `ETIMEDOUT`/`SIGTERM` means we killed it on the deadline, and
+  conflating them would have produced a "gh is not installed" message on a
+  timeout.
+
+  **Raw `gh` stderr never leaves the module.** It carries the endpoint path —
+  hence a private repository name — and the resolved host, hence a GitHub
+  Enterprise hostname, and `doctor --json` is echoed verbatim into CI logs by
+  `scripts/pre-publish-smoke.sh`. Stderr is matched to classify, then dropped;
+  user-facing text comes from a fixed reason-to-remedy table.
+
+  Path validation (NFR-02) rejects traversal segment-wise, leading hyphens
+  (option-injection shaped once a value becomes its own argv element), and the
+  case the architecture review found: a branch named `main#x` passes a
+  "non-empty, whitespace-free" rule and makes `gh api` fetch the **coarse**
+  endpoint while the caller believes it read the detailed one.
+
+  18 unit tests, no `vi.mock` — the classifier is a pure function, so the
+  fixtures are plain objects. Suite 92/92.
+
+- **`doctor` now reports effective governance, not configured intent (item 26,
+  Stage 5).** Four checks join the existing local ones: branch protection merged
+  across GitHub's two independent surfaces (legacy branch protection and
+  rulesets), required status checks verified as both *configured* and *observed
+  reporting*, administrator bypass, and whether `.git/hooks/pre-commit` is really
+  installed and executable rather than merely wired in `.claude/settings.json`.
+
+  **Three states, not two.** Every check carries `state` (`pass`/`fail`/
+  `unavailable`), `verifiedBy` (`api`/`filesystem`) and, when unavailable, a
+  `reason` and a remedy naming the one action that would make it available.
+  `passed === (state === 'pass')` holds by construction — every check leaves
+  `core/governance-checks.js` through a single constructor. `unavailable` renders
+  as `? [UNAVAILABLE] <name> — <condition>`, never as `[SKIP]`: nothing was
+  skipped, verification was attempted and produced no evidence.
+
+  **Why the third state earns its keep.** A repository can protect `main` by
+  ruleset and `dev` by legacy branch protection — observed live in this one — so
+  querying either surface alone reports a false "unprotected". `bypass_actors` is
+  *absent* from a ruleset body read without permission rather than empty, so
+  reading absence as "no bypass actors" would be a silent false pass. A check run
+  not found in a page-limited scan is not a check that never ran. Each of those
+  reports `unavailable` with its reason preserved.
+
+  Aggregates stay additive: `criticalFailed`/`highFailed`/`mediumFailed`/
+  `lowFailed` count `state === 'fail'`, which is exactly what `!passed` meant
+  before the third state existed, and `unavailableCount` is a new sibling.
+  `--require-remote` adds unavailable GitHub checks to the counts for CI where
+  `gh` is guaranteed — and only those, since a flag about remote enforcement
+  cannot speak to a local check that verified nothing.
+
+  `--repo owner/name` overrides repository detection, using the same source and
+  precedence as `scripts/setup-branch-protection.sh`; both outputs name the
+  repository checked, so a fork is never mistaken for upstream. Every `gh` call
+  runs with `cwd` set to the target directory, never the process cwd.
+
+  Read-only by construction: `gh api --method GET` and `gh repo view` are the
+  only commands reachable, both built from fixed argv inside `gh-runner`. No
+  token is accepted, stored, read from disk or logged. No new runtime dependency.
+
 ### Fixed
 - **AI attribution removed from 22 unmerged commits across four branches.**
   `branching-rules.md:79` prohibits `Co-Authored-By` and any AI identity in

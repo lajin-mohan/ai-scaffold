@@ -54,20 +54,33 @@ stops being a blocker on Stage 3 and becomes a confirmation of behaviour the des
 ## 2. Module breakdown
 
 ```
-src/cli/commands/doctor.js        existing — wires C-01..C-04 into runDiagnostics()
-src/cli/core/gh-runner.js         NEW — the subprocess boundary (ADR-004)
-src/cli/core/github-protection.js NEW — query, tier discovery, merge (ADR-005)
+src/cli/commands/doctor.js            existing — orchestrates, renders, aggregates, sets exit code
+src/cli/core/gh-runner.js             NEW — the subprocess boundary (ADR-004)
+src/cli/core/github-protection.js     NEW — query, tier discovery, protection merge (ADR-005)
+src/cli/core/github-required-checks.js NEW — C-02 configured-vs-observed evidence
+src/cli/core/governance-checks.js     NEW — reports → checks (state/severity/reason)
 ```
 
 | Module | Responsibility | Does not |
 |---|---|---|
-| `gh-runner` | Invoke `gh` via `spawnSync` array form; map process outcome to a typed result; enforce the shared wall-clock budget | Know about branches, rulesets or checks |
-| `github-protection` | Resolve the repo, probe tiers, fetch, merge two surfaces, emit a typed protection report | Spawn processes, format output, decide severity |
-| `doctor.js` | Turn the report into checks with `state`/`severity`/`reason`; render; aggregate; set exit code | Talk to GitHub |
+| `gh-runner` | Invoke `gh` via `spawnSync` array form; map process outcome to a typed result; enforce the shared wall-clock budget; resolve the repository | Know about branches, rulesets or checks |
+| `github-protection` | Probe tiers, fetch, merge the two protection surfaces, emit a typed protection report | Spawn processes, format output, decide severity |
+| `github-required-checks` | Collect configured contexts from both surfaces and observed check-run evidence over the lookback window | Decide severity, decide pass/fail |
+| `governance-checks` | Turn reports into checks with `state`/`severity`/`reason`/`verifiedBy`; C-04's filesystem evidence; the aggregates | Spawn processes, render, set the exit code |
+| `doctor.js` | Orchestrate, thread `cwd` and the budget, render, set exit code | Talk to GitHub, or decide what a check IS |
 
-The direction of dependency is one-way — `doctor.js` → `github-protection` → `gh-runner` — matching
-the existing `commands/` → `core/` split. `core/` today does filesystem I/O only; this introduces
-process and network into that layer, which is why the boundary is injected (ADR-004).
+**Amended 2026-08-31 during implementation.** The original table folded check construction into
+`doctor.js`. It moved to `core/governance-checks.js` for one reason: `passed === (state === 'pass')`
+(FR-25, AC-13) is an invariant over *every* check, and asserting it inside a command module means
+asserting it through a filesystem, a subprocess and a rendered line. As a `core/` module every check
+leaves through a single constructor, so the invariant holds by construction rather than by review,
+and the aggregates (FR-20) are testable against hand-built fixtures. No dependency direction
+changed — `commands/` → `core/` is exactly as before.
+
+The direction of dependency is one-way — `doctor.js` → `governance-checks` → `github-protection` /
+`github-required-checks` → `gh-runner` — matching the existing `commands/` → `core/` split. `core/`
+today does filesystem I/O only; this introduces process and network into that layer, which is why
+the boundary is injected (ADR-004).
 
 ---
 
@@ -131,13 +144,21 @@ behave the same way and will not announce itself.
 |---|---|---|---|---|
 | `pass` | `true` | `✓` | counted as success | — |
 | `fail` | `false` | `✗ [CRIT/HIGH/MED/LOW]` | counted | 1 if critical/high |
-| `unavailable` | `false` | `? [SKIP]` + reason | **excluded by default**; counted as failure under `--require-remote` | per FR-20 |
+| `unavailable` | `false` | `? [UNAVAILABLE]` + reason | **excluded by default**; counted as failure under `--require-remote` | per FR-20 |
 
 `passed === (state === 'pass')` (FR-25). The glyph constraint is not cosmetic:
 `scripts/pre-publish-smoke.sh:442,463` grep `✗ \[(CRIT|HIGH)\]` and require zero, and `:668` greps
 `"criticalFailed": 0`. **Generated projects have no remote, so every remote check is `unavailable`
-there — that path is guaranteed on every release.** `? [SKIP]` and the narrowed aggregates are what
-keep those gates green (FR-11, AC-18).
+there — that path is guaranteed on every release.** The distinct glyph and the narrowed aggregates
+are what keep those gates green (FR-11, AC-18).
+
+**Amended 2026-08-31 during implementation: the label is `[UNAVAILABLE]`, not `[SKIP]`.** "Skipped"
+reads as an intentional omission; `unavailable` means verification was attempted and could not
+produce evidence. FR-11 constrains only the glyph and the severity label, so this is a naming
+correction within the approved requirement, not a spec change. The rendered line is
+`? [UNAVAILABLE] Administrator bypass (GitHub) — insufficient GitHub permission`, with the remedy
+on the following line: the condition and the action are different halves of the same sentence and
+FR-13 wants both.
 
 **Severity, and the C-04 trap.** §4's safety argument — that release gates stay green because
 generated projects have no remote — covers only the three *remote* checks. **C-04 is local**: it
