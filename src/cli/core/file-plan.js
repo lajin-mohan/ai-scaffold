@@ -83,7 +83,14 @@ const ROOT_FILES = [
 const CREATE_ROOT_FILES_BY_PROFILE = {
   generic: ['.gitignore'],
   node: ['package.json', 'test/smoke.test.js'],
-  laravel: ['composer.json', 'package.json', 'phpunit.xml', 'tests/Unit/SmokeTest.php'],
+  // The laravel skeleton must land at project root, not under .ai-scaffold/.
+  // These paths are the second of two enumerations a new shipped file must
+  // enter (the first is package.json `files`); missing either ships nothing.
+  laravel: [
+    'composer.json', 'package.json', 'phpunit.xml',
+    'artisan', 'bootstrap/**', 'app/**', 'database/**',
+    'routes/**', 'public/**', 'storage/**', 'tests/**',
+  ],
   python: ['pyproject.toml', 'test_smoke.py'],
   golang: ['go.mod', 'main.go', 'main_test.go'],
 };
@@ -268,8 +275,12 @@ export async function buildFilePlan(sourceDir, targetDir, options = {}) {
       continue;
     }
 
-    // App source — never touch
-    if (matchesAny(relPath, APP_SOURCE_PATHS)) {
+    // App source — never touch. A profile's own declared root files are the
+    // exception: the laravel skeleton legitimately ships `app/` and
+    // `database/`, and APP_SOURCE_PATHS exists to protect an *existing*
+    // project's source on `init`, not to block a profile from shipping the
+    // application it is a profile of.
+    if (!isRootFile && matchesAny(relPath, APP_SOURCE_PATHS)) {
       plan.skipAppSource.push({ src: srcFile, rel: relPath });
       continue;
     }

@@ -6,5 +6,32 @@
         <testsuite name="unit">
             <directory>tests/Unit</directory>
         </testsuite>
+        <!-- Feature tests boot the application and exercise a real route.
+             Excluding them would leave `composer test` asserting only
+             assertTrue(true), which is the placeholder problem this profile
+             exists to avoid. -->
+        <testsuite name="feature">
+            <directory>tests/Feature</directory>
+        </testsuite>
     </testsuites>
+    <php>
+        <!-- Test-environment only. A generated project has no .env until the
+             adopter creates one, and the Feature test boots the full HTTP
+             stack, which requires an encryption key. This is a fixed, public,
+             throwaway key for the test suite; it is not a secret and must
+             never be reused for a running application, which uses
+             `php artisan key:generate` into its own .env. -->
+        <env name="APP_ENV" value="testing"/>
+        <env name="APP_KEY" value="base64:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="/>
+        <env name="DB_CONNECTION" value="sqlite"/>
+        <env name="DB_DATABASE" value=":memory:"/>
+        <!-- Array drivers keep the test suite independent of migrations and
+             external services, matching Laravel's own testing defaults.
+             Without these, session and cache reads hit an empty in-memory
+             database and the request fails with "no such table". -->
+        <env name="SESSION_DRIVER" value="array"/>
+        <env name="CACHE_STORE" value="array"/>
+        <env name="QUEUE_CONNECTION" value="sync"/>
+        <env name="MAIL_MAILER" value="array"/>
+    </php>
 </phpunit>
