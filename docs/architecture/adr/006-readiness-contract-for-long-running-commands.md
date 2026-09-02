@@ -1,7 +1,7 @@
 # ADR-006: Readiness contract for long-running profile commands
 
 **Date:** 2026-09-01
-**Status:** **Proposed** — pending independent architecture review
+**Status:** **Proposed — revision required.** Independent review 2026-09-01 raised BLOCK-2: the evidence cited as decisive does not support the probe target selected, because the spike's own remedy would return 200 in the broken state. The `200`-only status set is upheld; the probe target and rationale must be corrected to probe both the health route and the documented entry point.
 **Deciders:** Lajin M J (Technical Lead)
 **Consulted:** `docs/brd/65b-laravel-skeleton-spike.md` (observed data), BRD FR-22 / AC-02, HLD §5–§6
 

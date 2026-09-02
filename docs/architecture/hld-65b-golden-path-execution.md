@@ -2,7 +2,7 @@
 
 **Date:** 2026-09-01
 **Author:** Claude (Cowork session)
-**Status:** **Draft — pending independent architecture review**
+**Status:** **v1.0 — REVIEWED AND REJECTED.** Independent review 2026-09-01 returned ACCEPT WITH CHANGES with **8 BLOCK findings**; see `review-65b-golden-path-execution.md`. Do not implement from this version. §3 (placeholder rule, canonical source), §7 (output capture) and §9 (shell evaluation) are known-defective. Revision to v2.0 pending.
 **Source spec:** `docs/brd/65-golden-path-execution-brd.md` (v1.0, Q-01…Q-04 decided)
 **Evidence:** `docs/brd/65b-laravel-skeleton-spike.md` (spike run 2026-09-01)
 **Estimate:** `docs/estimates/65-golden-path-execution-estimate.md` (approved 12.0 days, MEDIUM–HIGH)
