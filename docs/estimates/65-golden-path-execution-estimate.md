@@ -2,10 +2,14 @@
 
 **Date:** 2026-09-01
 **Estimated By:** Claude (Cowork session), following `.claude/agents/estimator.md`
-**Reviewed By:** _pending — Tech Lead sign-off required before execution_
-**Confidence:** **MEDIUM** — the spike has not been run. The dependency cost that looked like the
+**Reviewed By:** Lajin M J — **approved 2026-09-01** at 5.6 / 12.0 / 21.3 days, PERT 12.0, MEDIUM confidence
+**Confidence:** **MEDIUM–HIGH** — spike run 2026-09-01 (`docs/brd/65b-laravel-skeleton-spike.md`). The dependency cost that looked like the
 main risk has been measured and is not one; the unmeasured item is the minimal Laravel file set.
-**Status:** **Draft for approval** at 5.6 / **12.0** / 21.2 days.
+**Status:** **Approved 2026-09-01** at 5.6 / **12.0** / 21.3 days. Approval is to proceed, **not an
+unconditional 12-day commitment**. Re-estimate after the Laravel skeleton spike if any of these hold:
+realistic effort moves by more than 20%; the skeleton needs substantially more framework structure;
+readiness testing needs profile-specific infrastructure; or packed-artifact execution exposes another
+unsupported command.
 **Source spec:** `docs/brd/65-golden-path-execution-brd.md` (Draft v1.0, Q-01…Q-04 decided 2026-09-01)
 
 > **Template adaptation.** `.claude/templates/estimation-template.md` assumes a web feature with
@@ -87,10 +91,37 @@ At 70% capacity (`definition-of-ready` sprint rule), 11.97 ÷ 0.7 ≈ **17.1 cal
 
 ---
 
+## Estimate reconfirmation — 2026-09-01, post-spike
+
+The spike ran and the four approval triggers were assessed:
+
+| Trigger | Outcome |
+|---|---|
+| Realistic effort moves >20% | **No — and pressure is downward.** `config/` proved entirely unnecessary (all 10 files deleted, golden path still green), and the skeleton is 31 files copied from a known-good source rather than authored |
+| Skeleton needs substantially more framework structure | **No.** It needs *less* than assumed: no `config/`, no `resources/`, no `app/Http`, no `app/Models`, no factories or seeders |
+| Readiness needs profile-specific infrastructure | **No.** HTTP probe plus a liveness check. No service, no container, no fixture |
+| Packed-artifact execution exposes another unsupported command | **Untested.** The spike ran against a reference app, not a project generated from the packed tarball |
+
+**Decision: hold 5.6 / 12.0 / 21.3. Not re-cut.**
+
+Two of the widest rows should land nearer optimistic. That saving is deliberately retained
+rather than banked, against the one trigger still untested — packed-artifact execution — which
+is precisely the class of surprise this project has repeatedly produced. Confidence moves
+MEDIUM → MEDIUM–HIGH; it is not HIGH while a named trigger remains unverified.
+
+Two risks the spike *raised* rather than lowered, both carried into the HLD:
+
+- **Process-tree cleanup verified on macOS only.** `artisan serve` spawns a child PHP process.
+  Linux and Windows are unverified and are now the largest portability risk in the item.
+- **Port collision is unproven.** The spike hardcoded 8123 on an idle machine, which says
+  nothing about parallel profiles on a busy CI runner.
+
+---
+
 ## Confidence and what would raise it
 
-**MEDIUM.** It is not HIGH because the spike has not been run: the minimal Laravel file set is
-unmeasured, and it drives the single largest line (1.0 / 2.0 / 4.0). It is not LOW because the
+**MEDIUM–HIGH after the spike.** The minimal Laravel file set is now measured at 31 files and
+drives the largest line (1.0 / 2.0 / 4.0) toward its optimistic end. It is not LOW because the
 BRD's decisions are settled, the failing commands are reproduced with evidence, and the
 dependency cost — the risk Stage 1 flagged loudest — has been measured away.
 
@@ -116,7 +147,7 @@ most of the spread sits in that one row.
 | Dependency | Status |
 |---|---|
 | BRD v1.0 with Q-01…Q-04 decided | Complete, 2026-09-01 |
-| Architecture pass — readiness definition, no-op rule, harness placement | **Not started; required before execution at size M** |
+| Architecture pass — HLD/ADR with **independent review**, required because this is release-gating test infrastructure | **Not started; hard gate before execution** |
 | Item 26 (`doctor` enforcement slice) | Complete on `dev`; no coupling |
 | Item 74 (effectiveness metrics) | Consumes this item's signal; does not block it |
 
@@ -126,4 +157,6 @@ most of the spread sits in that one row.
 
 | Version | Date | Author | Change |
 |---|---|---|---|
+| 1.2 | 2026-09-01 | Claude (Cowork) | Reconfirmed post-spike against all four triggers. Held at 12.0 days; confidence MEDIUM → MEDIUM–HIGH. Spike lowered the skeleton risk and raised two new ones: cross-platform process-tree cleanup, and port collision under parallel CI |
+| 1.1 | 2026-09-01 | Claude (Cowork) | Approved by Lajin M J with four named re-estimate triggers. Architecture pass upgraded to HLD/ADR + independent review |
 | 1.0 | 2026-09-01 | Claude (Cowork) | Initial estimate. Totals computed programmatically. Dependency cost measured (14s / 84 MB / 38 packages) and removed as a risk; readiness definition surfaced as the largest remaining unknown |

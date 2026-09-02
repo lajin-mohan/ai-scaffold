@@ -100,8 +100,9 @@ unless a UI-heavy pilot provides evidence to raise it.
    files and is **not** evidence for item 69/T5's count-based prune; and 4 of 20
    recorded lessons are false-done claims, a floor rather than a considered count
    while Q-04 stays Proposed.
-2. **Wave 1 — stop immediate failures:** items 26, 65 follow-up, and 66's
-   objectively checkable controls.
+2. **Wave 1 — stop immediate failures:** items 26 (**done**), **65b** —
+   packed-artifact golden-path execution, not 65a which is already done — and
+   66's objectively checkable controls.
 3. **Wave 2 — safe lifecycle:** item 25's ownership/update slices and item 34's
    shared-base/overlay model use one ownership contract.
 4. **Wave 3 — deterministic state:** item 73 schemas precede item 72's state
@@ -683,7 +684,7 @@ saving starts costing correctness.
   9 scripted bash-level test cases and 4 Vitest cases covering byte-identity,
   wiring, warn/block/override behaviour, and fail-open on a missing
   transcript.
-- **65. — ✅ DONE.** `scripts/pre-publish-smoke.sh` gained an explicitly
+- **65a. Profile smoke coverage — ✅ DONE.** `scripts/pre-publish-smoke.sh` gained an explicitly
   labeled "Gate 4b-2: Profile Smoke (laravel + generic)" section, following
   the same pattern already used for python/golang: `create`, a README
   real-commands check (laravel: `composer install`/`composer test`; generic:
@@ -700,6 +701,35 @@ saving starts costing correctness.
   **P0 follow-up:** replace README string/presence assertions with execution of
   every profile's documented install and first test/health commands in CI. A
   passing source suite cannot substitute for running the generated project.
+- **65b. Packed-artifact golden-path execution — 🟡 IN PROGRESS (Wave 1, P0).**
+  65a proved the gates run; it did not prove the generated projects work. The
+  smoke gate greps a generated README for `composer install` and `composer test`
+  — it greps for a command it never runs, and does not grep the two that are
+  broken. Stage 1 executed every documented command on all five profiles and
+  found: laravel's documented path dies at `php artisan migrate` (no `artisan`,
+  no `app/`, `bootstrap/`, `config/` or `database/`), and node's `lint`,
+  `typecheck`, `build` and `dev` are `echo` stubs that exit 0 — a gate running
+  them would see four passes and prove nothing.
+
+  Decisions (maintainer, 2026-09-01): laravel **remains Laravel** and must
+  become runnable (rename to `php` is a separate approval, never Laravel
+  branding over a non-Laravel project); placeholders **fail**, they are not
+  skipped; verification runs in normal CI on profile/package changes **and** in
+  the pre-publish packed gate, which is authoritative; both static and
+  execution layers are kept, reported separately. Success means executing
+  commands from a project generated **from the packed npm artifact** — never
+  from `templates/` or the working tree.
+
+  Artifacts: analysis and BRD v1.0 in `docs/brd/65-golden-path-execution-*.md`;
+  estimate `docs/estimates/65-golden-path-execution-estimate.md` **approved
+  2026-09-01** at 5.6 / 12.0 / 21.3 days (PERT 12.0, MEDIUM), with four named
+  re-estimate triggers. Next gates: Laravel skeleton spike → estimate
+  reconfirmation → HLD/ADR with **independent architecture review** (this is
+  release-gating test infrastructure) → `/kickoff` → implementation.
+
+  Blocks Wave 0's golden-path metric, which has no honest source until this
+  ships. *(M — see the approved estimate)*
+
 - **66. Plan-and-confirm has no deterministic backing — prompted rule only.**
   Found 2026-08-13 cross-checking current Claude Code docs
   (`code.claude.com/docs/en/best-practices`, `.../memory`) against this
