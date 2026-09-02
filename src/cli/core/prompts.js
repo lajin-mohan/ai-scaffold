@@ -339,11 +339,16 @@ function applyProfileDefaults(resolved, defaulted) {
       frontendStack: 'none',
       database: 'none',
       testCommand: 'npm test',
-      lintCommand: 'npm run lint',
-      typecheckCommand: 'npm run typecheck',
-      buildCommand: 'npm run build',
       installCommand: 'npm install',
-      devCommand: 'npm run dev',
+      // `none` rather than `npm run lint` etc: the profile ships no lint,
+      // typecheck, build or dev configuration, and the package.json scripts
+      // behind those were `echo` stubs that exited 0. A command that only
+      // occupies a manifest field is worse than an absent one — it makes a
+      // gate that runs it report four passes and prove nothing (FR-02/FR-05).
+      lintCommand: 'none',
+      typecheckCommand: 'none',
+      buildCommand: 'none',
+      devCommand: 'none',
     },
     python: {
       backendStack: 'Python',
@@ -369,6 +374,12 @@ function applyProfileDefaults(resolved, defaulted) {
 
   const profileDefaults = defaultsByProfile[resolved.profile] ?? {};
   for (const [key, value] of Object.entries(profileDefaults)) {
+    // NOTE: `none` is treated as absent here so profile presets still apply in
+    // non-interactive (--yes) mode, where the *prompt default* is also `none`
+    // and is indistinguishable from a user typing it. Making `none` sticky
+    // without first separating "user chose none" from "nobody answered" breaks
+    // install/test for every profile. Tracked as BLOCK-3 in
+    // docs/architecture/review-65b-golden-path-execution.md.
     if (resolved[key] === undefined || resolved[key] === 'none' || resolved[key] === '') {
       resolved[key] = value;
       if (!defaulted.includes(key)) {

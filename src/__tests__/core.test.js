@@ -106,9 +106,13 @@ describe('resolveWithDefaults', () => {
     expect(resolved.profile).toBe('node');
     expect(resolved.backendStack).toBe('Node.js');
     expect(resolved.testCommand).toBe('npm test');
-    expect(resolved.lintCommand).toBe('npm run lint');
-    expect(resolved.typecheckCommand).toBe('npm run typecheck');
-    expect(resolved.buildCommand).toBe('npm run build');
+    // `none`, not `npm run lint`: the profile ships no lint/typecheck/build
+    // configuration, and the scripts behind those were `echo` stubs exiting 0.
+    // Advertising a capability the profile does not implement is what FR-02/
+    // FR-05 forbid — a gate that runs them sees passes and proves nothing.
+    expect(resolved.lintCommand).toBe('none');
+    expect(resolved.typecheckCommand).toBe('none');
+    expect(resolved.buildCommand).toBe('none');
     expect(defaulted).toContain('backendStack');
   });
 
@@ -124,9 +128,13 @@ describe('resolveWithDefaults', () => {
 
     expect(resolved.profile).toBe('node');
     expect(resolved.testCommand).toBe('npm test');
-    expect(resolved.lintCommand).toBe('npm run lint');
-    expect(resolved.typecheckCommand).toBe('npm run typecheck');
-    expect(resolved.buildCommand).toBe('npm run build');
+    // `none`, not `npm run lint`: the profile ships no lint/typecheck/build
+    // configuration, and the scripts behind those were `echo` stubs exiting 0.
+    // Advertising a capability the profile does not implement is what FR-02/
+    // FR-05 forbid — a gate that runs them sees passes and proves nothing.
+    expect(resolved.lintCommand).toBe('none');
+    expect(resolved.typecheckCommand).toBe('none');
+    expect(resolved.buildCommand).toBe('none');
   });
 
   it('rejects invalid choice-valued flags', () => {
@@ -537,22 +545,34 @@ describe('python and golang profiles', () => {
 });
 
 describe('generated package.json scripts', () => {
-  // The pre-commit hook's Node block runs `npm run lint`, `npm run typecheck`,
-  // and `npm test` whenever a package.json is present. A profile that ships a
-  // package.json missing any of those — or with a `test` that can't run in a
-  // fresh scaffold (e.g. `php artisan test`) — fails a team member's first
-  // commit. This locks in that every package.json-bearing profile passes.
+  // The Node block used to run `npm run lint` / `typecheck` / `test`
+  // unconditionally whenever a package.json existed, so a profile missing any
+  // script failed a team member's first commit (fixed for laravel in v0.11.0).
+  // The hook now skips a script the project does not define, so the assertion
+  // is no longer "every script exists" but "the test script is safe to run in
+  // a fresh scaffold". Verified end-to-end: a generated node project commits
+  // cleanly with only a `test` script present.
   const here = path.dirname(fileURLToPath(import.meta.url));
   const profilesWithPackageJson = ['node', 'laravel'];
   for (const profile of profilesWithPackageJson) {
-    it(`${profile} package.json defines lint, typecheck, and a fresh-scaffold-safe test`, () => {
+    it(`${profile} package.json ships a fresh-scaffold-safe test script and no stubs`, () => {
       const pkg = JSON.parse(readFileSync(path.resolve(here, '../../templates', profile, 'package.json'), 'utf-8'));
-      expect(pkg.scripts).toHaveProperty('lint');
-      expect(pkg.scripts).toHaveProperty('typecheck');
-      expect(pkg.scripts).toHaveProperty('test');
+      // Only node uses npm as its test runner. laravel's package.json is the
+      // frontend manifest; its real test command is `composer test`, so
+      // requiring an npm `test` script there would force a stub back in.
+      if (profile === 'node') {
+        expect(pkg.scripts).toHaveProperty('test');
+      }
+      // No script may be a placeholder: an `echo`/`true`/no-op that exits 0
+      // reports success without doing the work (FR-02).
+      for (const [name, cmd] of Object.entries(pkg.scripts)) {
+        expect(cmd, `${profile} script "${name}" is a placeholder`).not.toMatch(/^\s*(echo|printf|true|:)\b/);
+      }
       // The Node block runs `npm test`; a fresh scaffold has no vendor/artisan,
       // so the test script must not require a full backend install to pass.
-      expect(pkg.scripts.test).not.toMatch(/artisan|phpunit|pytest|go test/i);
+      if (pkg.scripts.test) {
+        expect(pkg.scripts.test).not.toMatch(/artisan|phpunit|pytest|go test/i);
+      }
     });
   }
 });

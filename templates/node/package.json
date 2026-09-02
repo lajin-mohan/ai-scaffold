@@ -5,11 +5,7 @@
   "description": "{{PROJECT_DESCRIPTION}}",
   "type": "module",
   "scripts": {
-    "dev": "echo \"Configure your Node.js dev command\"",
-    "build": "echo \"Configure your Node.js build command\"",
-    "test": "node --test",
-    "lint": "echo \"Configure your Node.js lint command\"",
-    "typecheck": "echo \"Configure your Node.js typecheck command\""
+    "test": "node --test"
   },
   "license": "{{LICENSE}}"
 }
