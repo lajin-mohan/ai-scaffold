@@ -332,28 +332,45 @@ function applyProfileDefaults(resolved, defaulted) {
       testCommand: 'composer test',
       installCommand: 'composer install',
       devCommand: 'php artisan serve',
-      migrationCommand: 'php artisan migrate',
+      // --force: a freshly generated project has no .env, and Laravel treats a
+      // missing APP_ENV as production, so a bare `php artisan migrate` stops at
+      // "APPLICATION IN PRODUCTION" and cancels. Non-interactive by necessity —
+      // without it the documented command hangs on a prompt in CI and cancels
+      // for a user following the README.
+      migrationCommand: 'php artisan migrate --force',
     },
     node: {
       backendStack: 'Node.js',
       frontendStack: 'none',
       database: 'none',
       testCommand: 'npm test',
-      lintCommand: 'npm run lint',
-      typecheckCommand: 'npm run typecheck',
-      buildCommand: 'npm run build',
       installCommand: 'npm install',
-      devCommand: 'npm run dev',
+      // `none` rather than `npm run lint` etc: the profile ships no lint,
+      // typecheck, build or dev configuration, and the package.json scripts
+      // behind those were `echo` stubs that exited 0. A command that only
+      // occupies a manifest field is worse than an absent one — it makes a
+      // gate that runs it report four passes and prove nothing (FR-02/FR-05).
+      lintCommand: 'none',
+      typecheckCommand: 'none',
+      buildCommand: 'none',
+      devCommand: 'none',
     },
     python: {
       backendStack: 'Python',
       frontendStack: 'none',
       database: 'none',
-      testCommand: 'pytest',
-      lintCommand: 'ruff check .',
-      typecheckCommand: 'mypy .',
-      buildCommand: 'python -m compileall .',
-      installCommand: 'pip install -e ".[dev]"',
+      // Every command is venv-relative, and install creates the venv. The
+      // previous `pip install -e ".[dev]"` assumed the reader was already
+      // inside an activated virtualenv, which the README never said: on a
+      // system python it fails with "pip: command not found", and on a
+      // Homebrew/Debian python it fails PEP 668 with
+      // "externally-managed-environment". A self-contained command works on
+      // both and needs no instruction the documentation does not give.
+      installCommand: 'python3 -m venv .venv && .venv/bin/python -m pip install -e ".[dev]"',
+      testCommand: '.venv/bin/pytest',
+      lintCommand: '.venv/bin/ruff check .',
+      typecheckCommand: '.venv/bin/mypy .',
+      buildCommand: '.venv/bin/python -m compileall .',
     },
     golang: {
       backendStack: 'Go',
@@ -369,6 +386,12 @@ function applyProfileDefaults(resolved, defaulted) {
 
   const profileDefaults = defaultsByProfile[resolved.profile] ?? {};
   for (const [key, value] of Object.entries(profileDefaults)) {
+    // NOTE: `none` is treated as absent here so profile presets still apply in
+    // non-interactive (--yes) mode, where the *prompt default* is also `none`
+    // and is indistinguishable from a user typing it. Making `none` sticky
+    // without first separating "user chose none" from "nobody answered" breaks
+    // install/test for every profile. Tracked as BLOCK-3 in
+    // docs/architecture/review-65b-golden-path-execution.md.
     if (resolved[key] === undefined || resolved[key] === 'none' || resolved[key] === '') {
       resolved[key] = value;
       if (!defaulted.includes(key)) {

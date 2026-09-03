@@ -89,9 +89,15 @@ fi
 # ── Node / TypeScript ──────────────────────────────────────────
 if [ -f package.json ]; then
   if command -v npm &>/dev/null; then
-    run_check "ESLint" "npm run lint -- --max-warnings 0"
-    run_check "TypeScript" "npm run typecheck"
-    run_check "Unit Tests" "npm test"
+    # Only run a script the project actually defines. A profile that declares a
+    # capability as `none` ships no such script, and failing on its absence
+    # would block a fresh project's very first commit — the same defect fixed
+    # for laravel in v0.11.0. A missing script is "not applicable", not a
+    # failure, consistent with how missing tools are treated above.
+    has_script() { node -e "process.exit(require('./package.json').scripts?.['$1']?0:1)" 2>/dev/null; }
+    if has_script lint; then run_check "ESLint" "npm run lint -- --max-warnings 0"; else echo "(no lint script — skipping)"; fi
+    if has_script typecheck; then run_check "TypeScript" "npm run typecheck"; else echo "(no typecheck script — skipping)"; fi
+    if has_script test; then run_check "Unit Tests" "npm test"; else echo "(no test script — skipping)"; fi
   else
     echo "(npm not found — skipping Node checks)"
   fi

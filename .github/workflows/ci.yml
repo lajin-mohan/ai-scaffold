@@ -101,10 +101,55 @@ jobs:
       - name: Verify npm pack
         run: npm_config_cache=/tmp/ai-scaffold-npm-cache npm pack --dry-run --json
 
+  # Item 65b: generate a project from the PACKED artifact and run the commands
+  # its own manifest declares. Presence assertions cannot catch a typo'd
+  # dependency, a CVE-blocked version, or an install that refuses to run —
+  # laravel and python both shipped broken through a fully green 113-gate suite.
+  # Separate job so a toolchain-setup failure is never reported as a
+  # golden-path failure.
+  golden-path:
+    name: Golden-path execution
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          tools: composer
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.22'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run golden path (all profiles, from the packed tarball)
+        run: node scripts/golden-path.js
+
   ci-passed:
     name: CI passed
     runs-on: ubuntu-latest
-    needs: [cli-checks]
+    needs: [cli-checks, golden-path]
     if: always()
 
     steps:
@@ -112,6 +157,10 @@ jobs:
         run: |
           if [ "${{ needs.cli-checks.result }}" != "success" ]; then
             echo "FAILED - CLI package checks did not pass."
+            exit 1
+          fi
+          if [ "${{ needs.golden-path.result }}" != "success" ]; then
+            echo "FAILED - golden-path execution did not pass."
             exit 1
           fi
           echo "All required CI jobs passed."

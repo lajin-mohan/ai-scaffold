@@ -40,9 +40,10 @@ export function resolvePlaceholders(content, values) {
     '{{MIGRATE_COMMAND}}': commandOrNA(values.migrationCommand),
     '{{DEV_COMMAND}}': commandOrNA(values.devCommand),
     '{{BUILD_COMMAND}}': commandOrNA(values.buildCommand),
+    '{{TYPECHECK_COMMAND}}': commandOrNA(values.typecheckCommand),
     '{{TEST_COMMAND}}': commandOrNA(values.testCommand),
     '{{LINT_COMMAND}}': commandOrNA(values.lintCommand),
-    '{{SEED_COMMAND}}': 'N/A',
+    '{{SEED_COMMAND}}': commandOrNA(values.seedCommand),
     '{{CACHE_QUEUE}}': 'N/A',
     '{{AUTH_STRATEGY}}': 'N/A',
     '{{EMAIL_PROVIDER}}': 'N/A',
@@ -53,12 +54,19 @@ export function resolvePlaceholders(content, values) {
     '{{PM_TOOL}}': 'GitHub Projects',
     '{{LICENSE}}': 'UNLICENSED',
     '{{YEAR}}': new Date().getFullYear().toString(),
+    '{{UNSUPPORTED_CAPABILITIES}}': unsupportedCapabilityNote(values),
   };
 
   let result = content;
   for (const [token, value] of Object.entries(tokenMap)) {
     result = result.split(token).join(value);
   }
+  // Drop whole lines for capabilities declared `none` so no fenced command
+  // block ever contains a non-command.
+  result = result
+    .split('\n')
+    .filter((line) => !line.includes(OMIT_LINE))
+    .join('\n');
   return result;
 }
 
@@ -359,8 +367,38 @@ Queried by \`/lessons\`. Read at the start of every session before doing anythin
 `;
 }
 
+/**
+ * A capability declared `none` must not render as something a reader can paste
+ * into a terminal. Emitting `N/A` inside a fenced command block did exactly
+ * that, which ux/AC-04 forbids. Instead emit a sentinel; resolvePlaceholders
+ * deletes the whole line, and the capability is named in prose after the block.
+ */
+export const OMIT_LINE = '\u0000OMIT_COMMAND_LINE\u0000';
+
 export function commandOrNA(command) {
-  return command && command !== 'none' ? command : 'N/A';
+  return command && command !== 'none' ? command : OMIT_LINE;
+}
+
+const CAPABILITY_LABELS = {
+  devCommand: 'a dev/serve command',
+  buildCommand: 'a build step',
+  lintCommand: 'a lint step',
+  typecheckCommand: 'a typecheck step',
+  migrationCommand: 'database migrations',
+  testCommand: 'a test command',
+};
+
+/** Prose naming the capabilities this profile deliberately does not define. */
+export function unsupportedCapabilityNote(values) {
+  const missing = Object.entries(CAPABILITY_LABELS)
+    .filter(([key]) => !values[key] || values[key] === 'none')
+    .map(([, label]) => label);
+  if (missing.length === 0) return '';
+  const list =
+    missing.length === 1
+      ? missing[0]
+      : `${missing.slice(0, -1).join(', ')} and ${missing[missing.length - 1]}`;
+  return `\nThis project does not define ${list}. Add the command to your project's manifest when you introduce one.\n`;
 }
 
 export function formatCompliance(complianceScope) {
