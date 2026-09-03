@@ -332,7 +332,12 @@ function applyProfileDefaults(resolved, defaulted) {
       testCommand: 'composer test',
       installCommand: 'composer install',
       devCommand: 'php artisan serve',
-      migrationCommand: 'php artisan migrate',
+      // --force: a freshly generated project has no .env, and Laravel treats a
+      // missing APP_ENV as production, so a bare `php artisan migrate` stops at
+      // "APPLICATION IN PRODUCTION" and cancels. Non-interactive by necessity —
+      // without it the documented command hangs on a prompt in CI and cancels
+      // for a user following the README.
+      migrationCommand: 'php artisan migrate --force',
     },
     node: {
       backendStack: 'Node.js',
@@ -354,11 +359,18 @@ function applyProfileDefaults(resolved, defaulted) {
       backendStack: 'Python',
       frontendStack: 'none',
       database: 'none',
-      testCommand: 'pytest',
-      lintCommand: 'ruff check .',
-      typecheckCommand: 'mypy .',
-      buildCommand: 'python -m compileall .',
-      installCommand: 'pip install -e ".[dev]"',
+      // Every command is venv-relative, and install creates the venv. The
+      // previous `pip install -e ".[dev]"` assumed the reader was already
+      // inside an activated virtualenv, which the README never said: on a
+      // system python it fails with "pip: command not found", and on a
+      // Homebrew/Debian python it fails PEP 668 with
+      // "externally-managed-environment". A self-contained command works on
+      // both and needs no instruction the documentation does not give.
+      installCommand: 'python3 -m venv .venv && .venv/bin/python -m pip install -e ".[dev]"',
+      testCommand: '.venv/bin/pytest',
+      lintCommand: '.venv/bin/ruff check .',
+      typecheckCommand: '.venv/bin/mypy .',
+      buildCommand: '.venv/bin/python -m compileall .',
     },
     golang: {
       backendStack: 'Go',

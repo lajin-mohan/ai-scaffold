@@ -417,7 +417,10 @@ describe('python and golang profiles', () => {
   it('applies python defaults and resolves the go alias to golang', () => {
     const py = resolveWithDefaults({ profile: 'python' });
     expect(py.resolved.backendStack).toBe('Python');
-    expect(py.resolved.testCommand).toBe('pytest');
+    // venv-relative: the previous bare `pytest` assumed an already-activated
+    // virtualenv the README never told the reader to create, so the documented
+    // command failed on a clean machine.
+    expect(py.resolved.testCommand).toBe('.venv/bin/pytest');
 
     const go = resolveWithDefaults({ profile: 'go' });
     expect(go.resolved.profile).toBe('golang');
@@ -426,7 +429,12 @@ describe('python and golang profiles', () => {
 
   it('sets install/dev/migration command defaults per profile', () => {
     const py = resolveWithDefaults({ profile: 'python' }).resolved;
-    expect(py.installCommand).toBe('pip install -e ".[dev]"');
+    // Self-contained: creates the venv it then installs into. Bare `pip`
+    // fails "command not found" on a system python and PEP 668
+    // "externally-managed-environment" on Homebrew/Debian.
+    expect(py.installCommand).toBe(
+      'python3 -m venv .venv && .venv/bin/python -m pip install -e ".[dev]"',
+    );
     expect(py.devCommand).toBe('none');
     expect(py.migrationCommand).toBe('none');
 
@@ -436,7 +444,7 @@ describe('python and golang profiles', () => {
     const laravel = resolveWithDefaults({ profile: 'laravel' }).resolved;
     expect(laravel.installCommand).toBe('composer install');
     expect(laravel.devCommand).toBe('php artisan serve');
-    expect(laravel.migrationCommand).toBe('php artisan migrate');
+    expect(laravel.migrationCommand).toBe('php artisan migrate --force') // --force: no .env means Laravel sees production and cancels;
 
     // Generic has no defaults; install renders as N/A in the generated README.
     expect(resolveWithDefaults({ profile: 'generic' }).resolved.installCommand).toBe('none');
