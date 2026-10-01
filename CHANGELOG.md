@@ -14,6 +14,61 @@ This file is configured with `merge=union` in `.gitattributes` so parallel addit
 ## [Unreleased]
 
 ### Added
+- **Golden-path execution gate (`scripts/golden-path.js`, backlog item 65b).**
+  CI now generates a project **from the packed npm artifact** and runs the
+  commands that project's own `.ai-scaffold.json` declares — `install`,
+  `migration`, `test` — instead of grepping a generated README for text it
+  never executes. The previous gate greped the laravel README for
+  `composer install` and `composer test`: a command it never ran, while not
+  checking the two that were broken. Placeholder commands are resolved through
+  one level of script indirection (`npm run x` → `package.json` scripts,
+  `composer x` → `composer.json` scripts) so a stub that exits 0 fails instead
+  of passing. Wired as a required CI job and into the pre-publish gate.
+- **The `laravel` profile is a runnable Laravel application.** It previously
+  documented `composer install` → `php artisan migrate` → `composer test` and
+  shipped no application at all, so step 2 died with
+  `Could not open input file: artisan`. It now ships the minimal skeleton the
+  golden path needs — `artisan`, `bootstrap/`, `app/Providers/`,
+  `database/migrations/`, `routes/`, `public/index.php`, and the writable
+  `storage/` and `bootstrap/cache` trees — sized by spike at 31 files
+  (`config/` proved unnecessary on Laravel 12 defaults). Migrations run against
+  SQLite with no database service, and `composer test` runs a real HTTP test
+  rather than `assertTrue(true)`.
+
+### Fixed
+- **`php artisan migrate` cancelled instead of running.** A generated project
+  has no `.env`, and Laravel treats a missing `APP_ENV` as production, so the
+  documented command stopped at `APPLICATION IN PRODUCTION` and cancelled —
+  hanging on a prompt for a user and failing in CI. Now `--force`.
+- **The python profile's first documented command failed on a clean machine.**
+  `pip install -e ".[dev]"` assumed an already-activated virtualenv the README
+  never mentioned: `pip: command not found` on a system python, and PEP 668
+  `externally-managed-environment` on Homebrew or Debian. The profile's commands
+  are now venv-relative and `install` creates the venv.
+- **A generated project's first commit could be refused.** The pre-commit hook
+  ran `npm run lint` and `npm run typecheck` whenever a `package.json` existed,
+  so a profile that ships neither script failed the hook — the same defect
+  fixed for laravel in v0.11.0. Missing scripts are now skipped, consistent
+  with how missing tools are already treated.
+
+### Changed
+- **Profiles no longer advertise commands they do not implement.** The node
+  profile declared `npm run lint` / `typecheck` / `build` / `dev` whose
+  `package.json` scripts were `echo` stubs exiting 0, and laravel's five npm
+  scripts were all stubs. Those capabilities are now declared `none`, and
+  laravel's npm scripts are cleared — its real commands are composer-based.
+- **A capability declared `none` renders as prose, never as a command.**
+  `commandOrNA` previously emitted the literal `N/A` **inside a fenced bash
+  block**, so a generated laravel README showed `N/A    # Production build` as
+  though it were something to type. The line is now omitted and the unsupported
+  capabilities are named in prose after the block.
+- **`{{TYPECHECK_COMMAND}}` resolves.** It had no entry in `resolvePlaceholders`
+  at all, so it could never agree between a README and the manifest;
+  `{{SEED_COMMAND}}` was hardcoded to `N/A` with no manifest backing. The node
+  profile's README also hardcoded its commands rather than rendering them, so
+  agreement with the manifest was coincidence.
+
+### Added
 - **`src/cli/core/gh-runner.js` — the subprocess boundary for item 26's remote
   checks (Stage 5, slice 1).** Per ADR-004 it is a **closed constructor**, not an
   argv passthrough: it takes an endpoint path and builds
