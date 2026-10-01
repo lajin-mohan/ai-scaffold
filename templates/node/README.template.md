@@ -27,7 +27,7 @@
 
 ```bash
 # Install dependencies
-npm install
+{{INSTALL_COMMAND}}
 
 # Create a .env file if your project needs one
 # (the scaffold does not ship an .env.example into generated projects)
@@ -36,19 +36,19 @@ npm install
 {{MIGRATION_COMMAND}}
 
 # Start development
-npm run dev
+{{DEV_COMMAND}}
 ```
 
 ## Common Commands
 
 ```bash
-npm run build      # Production build
-npm test           # Run tests
-npm run lint       # Lint and typecheck
+{{BUILD_COMMAND}}      # Production build
+{{TEST_COMMAND}}           # Run tests
+{{LINT_COMMAND}}       # Lint
 {{MIGRATE_COMMAND}}    # Database migrations
 {{SEED_COMMAND}}       # Seed development data
 ```
-
+{{UNSUPPORTED_CAPABILITIES}}
 ## Project Structure
 
 ```text

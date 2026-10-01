@@ -726,6 +726,21 @@ fi
 
 # ── Gate 7: hook simulations ───────────────────────────────────────────
 echo ""
+# Gate 6b: golden-path execution (item 65b). The authoritative check — it
+# generates a project from the packed tarball and runs the commands that
+# project's own manifest declares, rather than grepping a README for text it
+# never executes. Toolchains missing locally are reported as such and skipped;
+# CI installs them, so CI is where this gate is binding.
+echo ">> Gate 6b: Golden-path Execution"
+if node scripts/golden-path.js --skip-missing-toolchain > /tmp/golden_path_out 2>&1; then
+  pass "golden path executes for every profile with a toolchain present"
+  grep -E "^  (tool|none)" /tmp/golden_path_out | sed 's/^/    /' || true
+else
+  fail "golden path failed — see output below"
+  sed 's/^/    /' /tmp/golden_path_out | tail -30
+fi
+echo
+
 echo ">> Gate 7: Hook Simulations"
 
 SECRET_ENV_OUT=$(printf '%s' '{"tool_name":"Read","tool_input":{"file_path":".env"}}' | bash .claude/hooks/pre-secret-guard.sh 2>&1)

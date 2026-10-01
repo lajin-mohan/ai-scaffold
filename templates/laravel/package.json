@@ -3,12 +3,6 @@
   "version": "0.1.0",
   "private": true,
   "description": "{{PROJECT_DESCRIPTION}}",
-  "scripts": {
-    "dev": "echo \"Configure your Laravel frontend/dev command\"",
-    "build": "echo \"Configure your Laravel asset build command\"",
-    "test": "echo \"Configure your Laravel frontend test command\"",
-    "lint": "echo \"Configure your Laravel lint command\"",
-    "typecheck": "echo \"Configure your Laravel typecheck command\""
-  },
+  "scripts": {},
   "license": "{{LICENSE}}"
 }

@@ -48,7 +48,7 @@
 {{MIGRATE_COMMAND}}  # Database migrations
 {{SEED_COMMAND}}     # Seed development data
 ```
-
+{{UNSUPPORTED_CAPABILITIES}}
 ## Project Structure
 
 ```text
