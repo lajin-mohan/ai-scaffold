@@ -13,6 +13,8 @@ This file is configured with `merge=union` in `.gitattributes` so parallel addit
 
 ## [Unreleased]
 
+## [0.15.0] - 2026-10-01
+
 ### Added
 - **Golden-path execution gate (`scripts/golden-path.js`, backlog item 65b).**
   CI now generates a project **from the packed npm artifact** and runs the
