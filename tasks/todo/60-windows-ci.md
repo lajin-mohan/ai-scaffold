@@ -122,3 +122,15 @@ Each finding was checked against the code before it was applied.
   overrides the runner's `core.autocrlf=true`.
 - **N7.** The path audit is confirmed complete; `token-report.js:53` is the
   only fix.
+
+## First Windows run — triage (2026-10-10)
+
+PR #145, run 37994597966. Ubuntu jobs passed; Windows: 218 tests passed, 10
+skipped, 1 failed; smoke 113/115. The toolchain step shows a real `jq`
+(Chocolatey) and Python 3.12 on the runner, so the audit's fail-open does not
+reproduce here (Q3 confirmed: it is item 81's to test).
+
+| Failure | Cause | Action |
+|---|---|---|
+| `tests/e2e.smoke.test.js` › doctor reports invalid stored context values | 9.6s on Windows vs vitest's 5s default; it spawns the CLI | Suite timeout set to 30s |
+| Smoke: governance guard warns on CLAUDE.md | Real Windows defect in the **root** `.claude/hooks/governance-file-guard.sh`: no WARN even with `jq`. Probable cause (unverified): `jq` on Windows prints CRLF, so the path misses `^CLAUDE\.md$` | Skipped on Windows with reason in code. Not fixed: root `.claude/` is out of scope (decision Q5), and the hook is replaced in Corrective item 83 (D8). Matches the known-issues row `v0.14.0-gov-guard` |
