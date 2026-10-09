@@ -1,7 +1,7 @@
 # Business Requirements Document
 **Project:** ai-scaffold
 **Feature:** Safe `ais update`: managed-file lifecycle (backlog item 25)
-**Version:** 1.0
+**Version:** 1.1 (v1.0 approved; the v1.1 ADR-002 alignment is pending re-confirmation)
 **Date:** 2026-10-09
 **Status:** **Approved v1.0, 2026-10-09.** The §9 defaults for Q-01 to Q-03
 are accepted as written.
@@ -61,10 +61,17 @@ byte-for-byte from `.ai-scaffold.json`.
 
 | ID | Class | Paths (default rule table) | Update behaviour |
 |---|---|---|---|
-| OC-01 | **user-data** | `.claude/memory/**`, `.claude/MEMORY.md`, `.claude/settings-overrides.json`, `.claude/settings.local.json`, `tasks/lessons.md` | Never read for update, never written |
+| OC-01 | **user-data** | `.claude/memory/**`, `.claude/MEMORY.md`, `.claude/settings-overrides.json`, `.claude/settings.local.json`, `.ai-scaffold/context.md`, `tasks/lessons.md` | Never read for update, never written |
 | OC-02 | **seeded** | `CHANGELOG.md`, `tasks/todo/.gitkeep`, `tasks/done/.gitkeep` | Written only when absent |
-| OC-03 | **managed** | `CLAUDE.md`, `AGENTS.md`, `constitution.md`, `.ai-scaffold/**` (except `.ai-scaffold/backups/**`, which is never classified), and everything else under `.claude/**` not listed above | Replaced if pristine; `.ais-new` if edited |
+| OC-03 | **managed** | `CLAUDE.md`, `AGENTS.md`, `constitution.md`, `.ai-scaffold/**` (except `context.md`, which is OC-01, and `backups/**`, which is never classified), and everything else under `.claude/**` not listed above | Replaced if pristine; `.ais-new` if edited |
 | OC-04 | **merged** | `.claude/settings.json` | Structured merge (FR-20 to FR-24) |
+
+These classes **refine ADR-002** (Accepted 2026-07-08); they do not replace it:
+- ADR-002's *scaffold-managed* category splits into **managed** and **merged**;
+- its *generated project context* category becomes **user-data**;
+- **seeded** covers starter files ADR-002 did not name;
+- its *optional pack* and *protected application* categories are unchanged and
+  out of scope here (packs are item 90).
 
 The class is recorded per file in `.ai-scaffold.json`. A path that matches no
 rule defaults to **managed** if it was written by the scaffold, and is otherwise
@@ -254,3 +261,4 @@ these defaults.
 | Version | Date | Change |
 |---|---|---|
 | 1.0 | 2026-10-09 | Initial draft from the analysis (D-Q1 to D-Q5) and the spike. Approved the same day by the maintainer; Q-01 to Q-03 defaults accepted |
+| 1.1 | 2026-10-09 | **Alignment with ADR-002, found during Stage 3 and pending re-confirmation.** `.ai-scaffold/context.md` moves from managed to **user-data**: ADR-002 classes it as generated project context, owned by the project after generation. The ownership table now states that it refines ADR-002. This change touches fewer files than v1.0 |
