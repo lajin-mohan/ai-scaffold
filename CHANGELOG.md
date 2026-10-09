@@ -13,6 +13,25 @@ This file is configured with `merge=union` in `.gitattributes` so parallel addit
 
 ## [Unreleased]
 
+### Security
+- **Generated projects now deny secret reads and ask before destructive
+  commands through Claude Code's native permission rules (backlog item 79a).**
+  The shipped `pre-secret-guard.sh` hook needs `jq` or a working `python3`. On
+  stock Windows, the Microsoft Store `python3` stub makes it exit 0, so reads of
+  `.env`, `config/.env.production` and `id_rsa` were not blocked. That was
+  verified against a project generated from the packed 0.15.0 tarball.
+  `.claude/settings.json` in all five profiles now carries:
+  - `permissions.deny` for `.env*` (with `.env.example`, `.env.sample` and
+    `.env.template` carved out), private keys, `*.pem`/`*.key`, Terraform state
+    and vars, cloud credential directories and `secrets/**`;
+  - `permissions.ask` for force-push, `git reset --hard`, `git clean`,
+    `git filter-branch` and recursive `rm`.
+
+  Additive only: no hook is removed or changed in this release. Existing
+  projects receive it by hand until `ais update` exists (item 25); the
+  paste-ready block and a 1-minute check are in
+  [`docs/setup/claude-permissions.md`](docs/setup/claude-permissions.md).
+
 ## [0.15.0] - 2026-10-01
 
 ### Added
