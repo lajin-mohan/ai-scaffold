@@ -13,6 +13,18 @@ This file is configured with `merge=union` in `.gitattributes` so parallel addit
 
 ## [Unreleased]
 
+### Changed
+- **CI now runs on Windows (backlog item 60).** A required `Windows checks`
+  job runs lint, typecheck and the pre-publish smoke gate, which includes the
+  full test suite, on `windows-latest`. Every Windows-only defect so far shipped
+  through an ubuntu-only CI: the `path.relative()` backslash bug (#94) and the
+  hooks' `jq`/`python3` fail-open found in the 2026-10-09 audit.
+  - `token-report` now prints POSIX paths on Windows.
+  - Two checks are skipped on Windows, each with its reason in the code: the
+    `gh` spawn-surface tests (an extensionless `sh` stub cannot be spawned
+    there) and smoke Gate 6b (golden path uses `shell: true`, which is
+    `cmd.exe` on Windows, so it would report a false PASS).
+
 ## [0.15.1] - 2026-10-09
 
 ### Security

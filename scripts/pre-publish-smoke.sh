@@ -732,7 +732,16 @@ echo ""
 # never executes. Toolchains missing locally are reported as such and skipped;
 # CI installs them, so CI is where this gate is binding.
 echo ">> Gate 6b: Golden-path Execution"
-if node scripts/golden-path.js --skip-missing-toolchain > /tmp/golden_path_out 2>&1; then
+# golden-path.js spawns with shell: true, which is cmd.exe on Windows, so every
+# `command -v` probe fails and --skip-missing-toolchain would turn that into a
+# false PASS. Ubuntu CI is where this gate is binding (item 60, Q2).
+case "$(uname -s)" in
+  MINGW*|MSYS*|CYGWIN*) GOLDEN_PATH_SUPPORTED=0 ;;
+  *) GOLDEN_PATH_SUPPORTED=1 ;;
+esac
+if [ "$GOLDEN_PATH_SUPPORTED" -eq 0 ]; then
+  echo "  - skipped: golden path is ubuntu-only (cmd.exe cannot run its probes)"
+elif node scripts/golden-path.js --skip-missing-toolchain > /tmp/golden_path_out 2>&1; then
   pass "golden path executes for every profile with a toolchain present"
   grep -E "^  (tool|none)" /tmp/golden_path_out | sed 's/^/    /' || true
 else

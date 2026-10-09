@@ -146,10 +146,51 @@ jobs:
       - name: Run golden path (all profiles, from the packed tarball)
         run: node scripts/golden-path.js
 
+  # Item 60: every Windows-only defect so far (the path.relative() backslash
+  # bug, the hooks' jq/python fail-open) shipped through a green ubuntu-only
+  # CI. Smoke Gate 1 runs `npm test`, so the suite is not run twice here.
+  # Golden path stays ubuntu-only; smoke Gate 6b skips it explicitly on Windows.
+  windows-checks:
+    name: Windows checks
+    runs-on: windows-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        shell: bash
+    permissions:
+      contents: read
+
+    steps:
+      - name: Show toolchain
+        run: |
+          which bash jq python3 || true
+          bash --version | head -1
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Pre-publish smoke (includes npm test)
+        run: bash scripts/pre-publish-smoke.sh
+
   ci-passed:
     name: CI passed
     runs-on: ubuntu-latest
-    needs: [cli-checks, golden-path]
+    needs: [cli-checks, golden-path, windows-checks]
     if: always()
 
     steps:
@@ -161,6 +202,10 @@ jobs:
           fi
           if [ "${{ needs.golden-path.result }}" != "success" ]; then
             echo "FAILED - golden-path execution did not pass."
+            exit 1
+          fi
+          if [ "${{ needs.windows-checks.result }}" != "success" ]; then
+            echo "FAILED - Windows checks did not pass."
             exit 1
           fi
           echo "All required CI jobs passed."
