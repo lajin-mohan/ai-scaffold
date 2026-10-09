@@ -512,6 +512,38 @@ describe('python and golang profiles', () => {
     expect(ci).toContain('go build ./...');
   });
 
+  describe('native permission rules (item 79a)', () => {
+    const settings = JSON.parse(readFileSync(templatePath('generic', '.claude/settings.json'), 'utf-8'));
+    const { deny = [], ask = [] } = settings.permissions;
+
+    it('denies reads of real secret files at any depth', () => {
+      for (const rule of ['Read(.env)', 'Read(.env.*)', 'Read(id_rsa*)', 'Read(*.pem)', 'Read(*.key)', 'Read(*.tfstate)', 'Read(secrets/**)', 'Read(.ssh/**)']) {
+        expect(deny).toContain(rule);
+      }
+    });
+
+    it('carves the safe env templates out after the rule they negate', () => {
+      // A `!` rule only carves out of rules listed before it in the same list.
+      const envIndex = deny.indexOf('Read(.env.*)');
+      for (const carveOut of ['Read(!.env.example)', 'Read(!.env.sample)', 'Read(!.env.template)']) {
+        expect(deny.indexOf(carveOut)).toBeGreaterThan(envIndex);
+      }
+    });
+
+    it('asks before history-rewriting git and recursive rm', () => {
+      for (const rule of ['Bash(git push *--force*)', 'Bash(git push -f*)', 'Bash(git push * +*)', 'Bash(git reset --hard*)', 'Bash(git clean *)', 'Bash(rm -r*)', 'Bash(rm -fr*)', 'Bash(rm * -r*)']) {
+        expect(ask).toContain(rule);
+      }
+    });
+
+    it('uses only rule shapes Claude Code honours', () => {
+      // Claude Code ignores field-scoped rules such as Bash(command:rm *).
+      for (const rule of [...deny, ...ask]) {
+        expect(rule).toMatch(/^(Read|Bash)\([^:]+\)$/);
+      }
+    });
+  });
+
   it('uses the gitleaks command supported by current gitleaks (git --staged), not the removed detect --staged', () => {
     const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
     const hooks = ['.claude/hooks/pre-commit', '.claude/hooks/pre-commit-secrets'];
