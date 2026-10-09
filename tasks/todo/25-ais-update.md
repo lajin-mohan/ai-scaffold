@@ -11,7 +11,7 @@ and the render round-trip spike passed. Next: the BRD.
 |---|---|---|
 | 1 — Analysis | `docs/brd/25-ais-update-analysis.md` | **Decided:** D-Q1…D-Q5 |
 | 1 — Spike | `docs/brd/25-render-roundtrip-spike.md` | **Passed:** 994 files, 0 mismatches after fix F1 |
-| 1 — BRD | `docs/brd/25-ais-update-brd.md` | **Approved v1.0**; v1.1 (`context.md` → user-data, aligning with ADR-002) awaits re-confirmation |
+| 1 — BRD | `docs/brd/25-ais-update-brd.md` | **Approved v1.1** (`context.md` → user-data, aligning with ADR-002; re-confirmed 2026-10-09) |
 | 2 — Estimate | `docs/estimates/25-ais-update-estimate.md` | **Draft:** 20.2 d PERT (O 11 / R 19.25 / P 33), P85 ≈ 21.4 d; awaiting sign-off |
 | 3 — HLD | `docs/architecture/hld-25-ais-update.md` | **Draft:** awaiting independent architecture review |
 | 3 — ADR | `docs/architecture/adr/007-update-classification-and-apply-semantics.md` | **Proposed:** refines ADR-002 |

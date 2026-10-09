@@ -1,9 +1,11 @@
 # Business Requirements Document
 **Project:** ai-scaffold
 **Feature:** Safe `ais update`: managed-file lifecycle (backlog item 25)
-**Version:** 1.1 (v1.0 approved; the v1.1 ADR-002 alignment is pending re-confirmation)
+**Version:** 1.1
 **Date:** 2026-10-09
-**Status:** **Approved v1.0, 2026-10-09.** The §9 defaults for Q-01 to Q-03
+**Status:** **Approved v1.1, 2026-10-09** (v1.0 approved the same day; the
+v1.1 ADR-002 alignment was re-confirmed by the maintainer). The §9 defaults for
+Q-01 to Q-03
 are accepted as written.
 **Size:** L (backlog). Stage 3 (HLD + ADR + independent architecture review) is
 required before implementation, and it is shared with item 34's ownership
@@ -261,4 +263,4 @@ these defaults.
 | Version | Date | Change |
 |---|---|---|
 | 1.0 | 2026-10-09 | Initial draft from the analysis (D-Q1 to D-Q5) and the spike. Approved the same day by the maintainer; Q-01 to Q-03 defaults accepted |
-| 1.1 | 2026-10-09 | **Alignment with ADR-002, found during Stage 3 and pending re-confirmation.** `.ai-scaffold/context.md` moves from managed to **user-data**: ADR-002 classes it as generated project context, owned by the project after generation. The ownership table now states that it refines ADR-002. This change touches fewer files than v1.0 |
+| 1.1 | 2026-10-09 | **Alignment with ADR-002, found during Stage 3; re-confirmed by the maintainer the same day.** The maintainer's governing principle: a generated project's memory and this repository's memory are separate, and neither may interfere with the other. `.ai-scaffold/context.md` moves from managed to **user-data**: ADR-002 classes it as generated project context, owned by the project after generation. The ownership table now states that it refines ADR-002. This change touches fewer files than v1.0 |
