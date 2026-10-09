@@ -2,8 +2,10 @@
 
 **Analyst:** Claude (Code session)
 **Date:** 2026-10-09
-**Status:** DRAFT. Five blocking decisions (Q1–Q5) are open, and no BRD is
-written until they are answered.
+**Status:** Decisions Q1–Q5 taken 2026-10-09 (maintainer accepted every
+recommendation). The render round-trip spike **passed**: 994 managed files
+across 6 projects re-render with 0 mismatches after one manifest fix (F1). See
+`docs/brd/25-render-roundtrip-spike.md`. Next: the BRD.
 **Confidence:** MEDIUM–HIGH. The detection mechanism already exists in the
 codebase. The open unknowns are policy decisions, not technical feasibility.
 **Scope:** the first lifecycle slice: ownership classes, dry-run/conflict
@@ -154,3 +156,36 @@ which files are whose, and what happens to `settings.json`.
 | Q3 | `settings.json` policy | Structured merge (scaffold-owned keys replaced, user allow entries kept) | Yes, for the Corrective phase |
 | Q4 | Minimum supported starting version | 0.8.6, the first published version that records `managedFiles` hashes; older installs get the all-conflict fallback | Yes |
 | Q5 | How should edited files that changed upstream be handled? | Keep the adopter's file, write `<file>.ais-new`, list it in the summary | Yes |
+
+### Decisions (maintainer, 2026-10-09)
+
+All five recommendations were accepted, with these details:
+
+- **D-Q1 — Running CLI's version only.** `--target-version` errors unless it
+  equals the CLI's own version, and the error names the
+  `npx @lajin.m/ai-scaffold@X update` form.
+- **D-Q2 — Four ownership classes, recorded per file in `.ai-scaffold.json`:**
+  - **user-data**, never touched: `.claude/memory/**`, `.claude/MEMORY.md`,
+    `.claude/settings-overrides.json`, `.claude/settings.local.json`,
+    `tasks/lessons.md`;
+  - **seeded**, written only when absent: `CHANGELOG.md`, `tasks/todo/`,
+    `tasks/done/`;
+  - **managed**, replaced if pristine and `.ais-new` if edited: `CLAUDE.md`,
+    `AGENTS.md`, `constitution.md`, and `.claude/` rules, commands, hooks,
+    skills, agents and templates;
+  - **merged**: `.claude/settings.json`.
+
+  Recording the class per file lets a later release move a file between classes
+  deliberately.
+- **D-Q3 — Structured `settings.json` merge.**
+  - Scaffold `deny`/`ask` rules are added; user-added rules stay.
+  - Scaffold hook entries are matched by script path, so they can be replaced
+    or removed (the Corrective phase removes some); user hooks stay.
+  - User `allow` entries are always kept. Scaffold `allow` entries are added,
+    never removed.
+- **D-Q4 — Minimum supported version is 0.8.6.** Older installs treat every
+  file as edited: nothing is overwritten, and everything is written as
+  `.ais-new`.
+- **D-Q5 — Keep the adopter's file and write `<file>.ais-new`.** The summary
+  lists every `.ais-new` file, and `ais doctor` warns while any remain.
+  Interactive per-file choice is deferred.

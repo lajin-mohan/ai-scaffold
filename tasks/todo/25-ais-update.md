@@ -2,16 +2,15 @@
 
 ## Status
 
-**Stage 1 (analysis) drafted 2026-10-09.** It is blocked on maintainer
-decisions Q1–Q5 in the analysis; then the render round-trip spike runs, then
-the BRD is written.
+**Stage 1 complete except the BRD (2026-10-09).** Decisions Q1–Q5 are taken,
+and the render round-trip spike passed. Next: the BRD.
 
 ## Artifacts
 
 | Stage | Artifact | State |
 |---|---|---|
-| 1 — Analysis | `docs/brd/25-ais-update-analysis.md` | **Draft:** Q1–Q5 open |
-| 1 — Spike | render round-trip (0.5 d) | Not started; runs after Q1–Q5 |
+| 1 — Analysis | `docs/brd/25-ais-update-analysis.md` | **Decided:** D-Q1…D-Q5 |
+| 1 — Spike | `docs/brd/25-render-roundtrip-spike.md` | **Passed:** 994 files, 0 mismatches after fix F1 |
 | 1 — BRD | `docs/brd/25-ais-update-brd.md` | Not started |
 | 2 — Estimate | `docs/estimates/25-ais-update-estimate.md` | Not started |
 
