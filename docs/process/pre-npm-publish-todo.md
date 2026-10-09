@@ -7,6 +7,20 @@ verification against npm/git, not kept as history.
 
 ## Current state (2026-08-21)
 
+- **2026-10-09 — v0.15.0 is published** (`npm view` verified). It closed item 26
+  (drift-aware `doctor`) and item 65b (packed-artifact golden path), which
+  completes Wave 1 except item 66. A repository-wide audit the same day, run
+  against a project generated from the packed tarball, found configured
+  enforcement that never runs:
+  - the secret guard blocks nothing on stock Windows;
+  - `pre-review` runs on every prompt and never blocks;
+  - `/compact` and `/loop` shadow the native commands;
+  - about 37k tokens of rules load on every session, while the token report
+    calls them "on reference".
+
+  That work is planned as the **Corrective phase (Phase 1b, items 79–89)**,
+  sequenced **after item 25**. Plan and decisions:
+  `tasks/todo/79-corrective-phase.md`.
 - **v0.14.0 is published** (`latest`, provenance), and `origin/dev` and
   `origin/main` are aligned at the release commit. The pilot handover review
   reset the roadmap around lifecycle, verifiable enforcement, executable
@@ -83,6 +97,7 @@ unless a UI-heavy pilot provides evidence to raise it.
 | 10 | P1 | Enforce recurring objective misses: changelog, branch/PR path, checkable approval evidence | 66 expanded | S–M | Stops repeated failures without pretending prose is enforcement |
 | 10b | P1 | Ruleset-aware branch protection on the write side | 75 (new) | M | The shipped script writes only the legacy surface; on ruleset-governed repos it configures something other than what governs. Sequence after 26 |
 | 11 | P2 | Agent-facing design manifest, token validation, and token-aware review | `tasks/todo/P2-agent-facing-design-manifest.md` | M–L | Makes existing design governance concise and mechanically reviewable |
+| 12 | **P0 (C0 now; C1–C4 after 25)** | **Corrective phase:** native security controls, remove per-prompt and native-shadowing components, stop auto-loading the process corpus, honest verification gates | 79–89 (new, 2026-10-09) | M | Enforcement that runs as configured on every platform, and about 37k fewer always-loaded tokens. Plan: `tasks/todo/79-corrective-phase.md` |
 
 ### Execution waves
 
@@ -100,11 +115,15 @@ unless a UI-heavy pilot provides evidence to raise it.
    files and is **not** evidence for item 69/T5's count-based prune; and 4 of 20
    recorded lessons are false-done claims, a floor rather than a considered count
    while Q-04 stays Proposed.
-2. **Wave 1 — stop immediate failures:** items 26 (**done**), **65b** —
-   packed-artifact golden-path execution, not 65a which is already done — and
-   66's objectively checkable controls.
+2. **Wave 1 — stop immediate failures:** items 26 (**done**, 0.15.0), **65b**
+   (**done**, 0.15.0), and 66's objectively checkable controls (open).
 3. **Wave 2 — safe lifecycle:** item 25's ownership/update slices and item 34's
    shared-base/overlay model use one ownership contract.
+   **Wave 2b — Corrective (items 79–89):** starts when item 25 ships, so its
+   removals reach adopters through `ais update`. Item 25 must therefore support
+   deleting managed files as a migration. If item 34 has landed by then, the
+   corrective edits go to the shared base once; otherwise they apply to all five
+   profiles.
 4. **Wave 3 — deterministic state:** item 73 schemas precede item 72's state
    engine; do not build another prose parser.
 5. **Wave 4 — reduce and prove:** item 69/T5, item 60, item 74 reporting, then
@@ -345,6 +364,10 @@ The delete-and-reinstall safeguard remains a fallback, not the update strategy.
   app-owned via `.ai-scaffold.json` hashes); preview the change set; apply with
   backup + rollback; version-pinned migrations. Converts the product from "a
   great starter kit" into "a governance platform a team stays current on."
+  **Dependency added 2026-10-09:** the Corrective phase (items 79–89) runs after
+  this item and deletes shipped files (hooks, commands, `roles/`). Item 25's
+  migration format must support **removing** managed files, not only
+  overwriting them, or adopters keep the defective hooks after updating.
   *(large)*
 - **26. Drift-aware `status` / `doctor`.** **P0 first slice:** query and report
   effective branch/ruleset coverage, required checks, administrator bypass,
@@ -365,6 +388,129 @@ The delete-and-reinstall safeguard remains a fallback, not the update strategy.
   and aligns with the governance/GDPR framing. *(medium)*
 - **27. Repair / uninstall dry-runs.** Complete the lifecycle verbs so `update`
   isn't the only mutating path; both preview before writing. *(medium)*
+
+## Phase 1b — Corrective (after item 25) · enforcement that actually runs
+
+Raised 2026-10-09 by a repository-wide audit. It checked current Claude Code
+documentation against a project generated from the packed 0.15.0 tarball, with
+the hooks probed under Git Bash on Windows. The phase fixes controls that are
+**configured but inert, or actively harmful**. It adds no new governance
+surface. Full evidence, decisions (D1–D5), acceptance criteria and open
+questions: `tasks/todo/79-corrective-phase.md`.
+
+**Decisions (maintainer, 2026-10-09):**
+- runs after item 25;
+- removals are deleted in the next minor, not deprecated;
+- the process corpus stops auto-loading now, with opt-in packs later;
+- security moves to native permission rules and the regex guard hooks are
+  deleted;
+- the deny/ask rules ship early as a patch, ahead of item 25 (slice C0);
+- `/review` is renamed `/ais-review`, because `/review` is the native
+  alias of `/code-review` and a project command never replaces an alias;
+- `pre-bash-quality-gate` is removed, console-log detection moves to lint, and
+  governance edits become an `ask` rule;
+- `/health` is kept without its self-graded sub-score.
+
+**C0 — Interim security patch (can start now)**
+- **79a. Ship #79's deny/ask rules early.** Additive only, so it needs no update
+  migration. Existing adopters get a paste-ready block in the release notes and
+  `SECURITY.md`. *(S)*
+
+Slices C1–C4 run in order after item 25. Each one ships to all five profiles and is verified against
+the packed tarball.
+
+**C1 — Broken enforcement**
+- **79. Native security controls replace the regex guards.**
+  - `permissions.deny` for secret reads, `permissions.ask` for destructive git
+    and `rm`, and sandbox guidance.
+  - Delete `pre-secret-guard.sh` and `pre-dangerous-bash-guard.sh`; drop
+    `Bash(composer*)` and `Read(**)`.
+  - Evidence: on Windows without `jq`, the Store `python3` stub makes the secret
+    guard exit 0 for `.env` and `id_rsa`. The bash guard misses
+    `git push origin main --force`, `rm -fr` and `curl | bash`, and blocks
+    `rm -rf node_modules`.
+  - *(S–M)*
+- **80. Remove the per-prompt `pre-review` hook.**
+  - `UserPromptSubmit` ignores matchers, so it fires on every prompt, and its
+    `exit 1` is non-blocking.
+  - The checks move to item 87, and the Stop-hook gate stays item 66.
+  - *(XS)*
+- **81. Make the remaining hooks portable.**
+  - Exec form with `${CLAUDE_PROJECT_DIR}`; no `jq` or `python3` dependency;
+    hooks that enforce policy fail closed.
+  - Pairs with item 60.
+  - *(S)*
+
+**C2 — Native collisions and dead weight**
+- **82. Remove the commands that shadow native ones** (`/compact`, `/loop`).
+  - Repoint about 16 referencing files per profile first.
+  - Rename `/review` to `/ais-review` and repoint every reference.
+  - *(S)*
+- **83. Remove dead components, repointing references first** (item 69's
+  ordering).
+  - The 4 UX aliases, `roles/`, unwired `jira-sync.py` and `notify-review.py`,
+    `token-budget-guard.sh` (it measures transcript size, then blocks Read and
+    Edit) and `pre-write-fact-check.sh`.
+  - Also `pre-bash-quality-gate.sh` (repeats the installed git pre-commit
+    hook); `post-write-console-warn.sh` becomes a lint rule;
+    `governance-file-guard.sh` becomes `permissions.ask` on governance edits.
+  - Remove `/health`'s self-graded "hallucination guard" sub-score.
+  - *(S)*
+
+**C3 — Context load**
+- **85. Make the token report measure what actually loads.**
+  - Rules without `paths:` count as always-loaded.
+  - Do this first so item 84 has a true before-number.
+  - *(XS)*
+- **84. Stop auto-loading the process corpus.**
+  - Path-scope or relocate the 16 unscoped rules, condense the core four, and
+    get `CLAUDE.md` to 200 lines or fewer.
+  - Supersedes T4. Packs are item 90.
+  - *(M)*
+- **86. Prompt-injection guidance and WebFetch domain limits.** Neither exists
+  today. *(XS)*
+
+**C4 — Verification and UX honesty**
+- **87. Single `verify` contract and honest UI gates.**
+  - One real `verify` script per profile, shared by the git hook, CI and the
+    agent.
+  - Playwright, mobile and theme DoD gates apply only when an E2E harness
+    exists; otherwise the agent records an explicit "not verified" disclosure.
+  - *(S)*
+- **88. Respect the project's design system.**
+  - Detect the project's own tokens first, with a neutral fallback.
+  - Remove "WorkOS Minimal" and other real-company names from shipped skills.
+  - *(S)*
+- **89. Honest Node support range.** `engines` says `>=16`, but CI tests one
+  version on ubuntu. *(XS)*
+
+**Exit criteria:**
+- The probe cases from the audit behave correctly in a tarball-generated project
+  on Windows with no `jq`.
+- No hook runs on every prompt.
+- No project command shadows a native one.
+- Always-loaded tokens are at or below the target set at estimate time
+  (proposed ≤5k).
+- `npm view` shows the release, which goes out through the Release Action with a
+  CHANGELOG `Removed` section naming each native replacement.
+
+**Follow-ups, not in this phase:**
+- **90. Opt-in packs** (`ais add process|ux|compliance|api`) on item 34's shared
+  base. Restores the full gated workflow as a choice, not a default. *(L)*
+- **91. E2E pack**: Playwright config, one smoke journey,
+  `@axe-core/playwright` and a 390px project, so item 87's UI gates can be
+  satisfied. *(M)*
+- **92. Pre-commit review.** Two layers after the corrections land:
+  - the git pre-commit hook as the automatic gate for every tool (lint,
+    typecheck, fast tests, gitleaks, and item 66's commit-identity check);
+  - `/ais-review --lite` as the judgement checklist (security and
+    quality), which already escalates to the full review for auth, data and
+    migration changes.
+
+  This repositions existing pieces; it adds no new command. *(S)*
+- **93. Deterministic `/health`.** Move the scoring into a script
+  (`ais health` or `npm run health`) so the same code gets the same score; the
+  command only runs the script and presents the result. *(M)*
 
 ## Phase 2 — Modern AI surface + repository knowledge
 
@@ -464,6 +610,12 @@ solve baseline prompt bloat. Ordered by token-saved-per-effort.
     **commands 47K / 34%** and **rules 39K / 29%** → T5 (prune) + T2 (dedup) are the
     real levers. Largest single files: `ai-coding-rules.md` (~6.1K),
     `design-system.md` (~5.6K), `what-next.md` (~4.5K).
+  - **Corrected 2026-10-09 — the "only 7K / 5%" premise was wrong.** Rules
+    without `paths:` frontmatter load at launch with the same priority as
+    `CLAUDE.md` (memory docs), and only the 8 `stacks/` overlays carry it. Real
+    always-loaded size in a generated project is about **37k tokens** (147.5 KB).
+    The report's "on reference" label for rules is the defect; it is fixed in
+    item 85, and T4 is superseded by item 84.
   - Maintainer tool (measures this repo). A user-facing `ais tokens` / `/health`
     view of a *generated* project's corpus is a later optional extension.
     *(done)*
@@ -531,7 +683,9 @@ solve baseline prompt bloat. Ordered by token-saved-per-effort.
   live**: adding a project-side `InstructionsLoaded` hook to confirm
   empirically that a Go session never actually loads `backend-python.md` —
   worth doing before calling T3 fully proven, not just correctly configured.
-- **T4. Lean `CLAUDE.md` + progressive disclosure.** `CLAUDE.md` → thin router
+- **T4. — superseded by item 84 (2026-10-09).** Its "low-value" ranking rested
+  on the T0 measurement error above. Original text kept for context.
+  **Lean `CLAUDE.md` + progressive disclosure.** `CLAUDE.md` → thin router
   (identity, stack, "read `constitution.md` first", pointers); detail loaded on
   demand. Extends the constitution's on-ramp and reduces what each subagent pulls.
   *(medium; caching absorbs part of the main-session benefit)*
@@ -701,7 +855,9 @@ saving starts costing correctness.
   **P0 follow-up:** replace README string/presence assertions with execution of
   every profile's documented install and first test/health commands in CI. A
   passing source suite cannot substitute for running the generated project.
-- **65b. Packed-artifact golden-path execution — 🟡 IN PROGRESS (Wave 1, P0).**
+- **65b. Packed-artifact golden-path execution — ✅ DONE (0.15.0, #137/#138).**
+  Shipped as `scripts/golden-path.js` plus the runnable Laravel skeleton; see
+  CHANGELOG 0.15.0. The text below is the decision record.
   65a proved the gates run; it did not prove the generated projects work. The
   smoke gate greps a generated README for `composer install` and `composer test`
   — it greps for a command it never runs, and does not grep the two that are
@@ -876,6 +1032,18 @@ saving starts costing correctness.
 
   **Nothing was deleted in this pass.** Deleting less than approved is the
   safe direction; the sequencing above must land first.
+
+  **Update 2026-10-09 — executed by the Corrective phase.** Item 83 performs
+  the repoint-then-delete sequence above for the 4 aliases. Item 82 removes
+  `/compact` and `/loop`: the commands docs confirm a project command
+  *replaces* the built-in or bundled one in local sessions, so these were
+  shadowing native behaviour, not running alongside it. Losing `/loop`'s
+  one-approval contract was accepted by the maintainer. The "keep" findings
+  for `/review` and `/health` were re-checked:
+  - `/review` stays, renamed `/ais-review`, because `/review` is the
+    native alias of `/code-review`;
+  - `/health` stays, because `/doctor prompt-audit` audits instructions, not
+    code; only its self-graded sub-score is removed.
 
 ## Reprioritised by value delivered (2026-08-13 — superseded)
 
