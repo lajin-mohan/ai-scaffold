@@ -286,6 +286,7 @@ Wired in `.claude/settings.json` and fired deterministically by Claude Code at t
 | `.claude/hooks/pre-bash-quality-gate.sh` | PreToolUse on Bash | Runs `.claude/hooks/pre-commit` inline before `git commit` / `git push` lands. Blocks the commit if pre-commit fails. Respects `--no-verify`. Enforces the "lint + typecheck pass before review" hard gate. |
 | `.claude/hooks/pre-commit` | git pre-commit | Branch name + stack detection + lint/typecheck/test + gitleaks. |
 | `.claude/hooks/pre-commit-secrets` | git pre-commit (extended) | Heuristic secret detection for common API key patterns. |
+| `.claude/hooks/commit-msg` | git commit-msg | Rejects commit messages carrying a `Co-Authored-By:` trailer (commit identity rule). Installed by `ais create`; `ais doctor` check C-05 verifies it. |
 
 All hooks fail open in template state (exit 0 with no checks run) so the scaffold itself stays CI-green before `/bootstrap` configures the stack. Disable any hook with `ECC_<HOOK>_DISABLED=1`. Hooks run via `bash .claude/hooks/<name>.sh`, so they fire without needing an executable bit.
 
@@ -410,7 +411,7 @@ Review `tasks/lessons.md` at the start of each session for this project. Ruthles
 
 ### Commit Identity (Non-Negotiable)
 
-**All commits must use the git owner's identity only.** Never add `Co-Authored-By`, AI attribution, or any third-party identity to commit messages. The git commit template enforces this — it has no Co-Authored-By block.
+**All commits must use the git owner's identity only.** Never add `Co-Authored-By`, AI attribution, or any third-party identity to commit messages. The `commit-msg` git hook enforces this: it rejects any commit message carrying a `Co-Authored-By:` trailer.
 
 If a commit template ever includes AI attribution, remove it immediately. This rule overrides any AI tool's default behavior.
 
