@@ -15,6 +15,7 @@ import {
   LOCAL_REASONS,
   buildRemoteChecks,
   checkGitHook,
+  checkCommitMsgHook,
   normalizeLocalCheck,
   reasonPhrase,
   summarise,
@@ -217,6 +218,9 @@ export async function runDiagnostics(target, options = {}) {
   // 11. C-04 — the hook actually on disk, independent of check 8's settings
   // signal (FR-05). Local, so it answers with no GitHub and no network.
   checks.push(await checkGitHook(target));
+
+  // 12. C-05 — the commit-msg hook that rejects AI attribution trailers.
+  checks.push(await checkCommitMsgHook(target));
 
   // C-01 and C-03. Every existing check above predates the three-state model and
   // is verified from the filesystem, so it normalises to pass/fail.

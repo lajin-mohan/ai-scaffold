@@ -1,14 +1,16 @@
 /**
  * governance-checks + doctor wiring.
  *
- * Every test here runs with no network and no subprocess: the pure builders take
- * synthetic reports, `resolveRepo` takes an injected runner, and the doctor
+ * Every test here runs with no network and never spawns `gh`: the pure builders
+ * take synthetic reports, `resolveRepo` takes an injected runner, and the doctor
  * integration tests use a target with no `.git`, which short-circuits before any
  * `gh` call. That is deliberate — a suite that reaches GitHub would be green or
- * red depending on the machine that ran it.
+ * red depending on the machine that ran it. The C-05 tests run local `git init`
+ * and `git config` only, because core.hooksPath is resolved by git itself.
  */
 import os from 'os';
 import path from 'path';
+import { spawnSync } from 'child_process';
 import fs from 'fs-extra';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { REASONS, remedyFor, resolveRepo } from '../cli/core/gh-runner.js';
@@ -16,6 +18,7 @@ import {
   CHECK_NAMES,
   LOCAL_REASONS,
   buildRemoteChecks,
+  checkCommitMsgHook,
   checkGitHook,
   countsAsFailure,
   normalizeLocalCheck,
@@ -178,6 +181,64 @@ describe('C-04 git pre-commit hook', () => {
     expect(await checkGitHook(tmp)).toMatchObject({
       state: 'unavailable', reason: LOCAL_REASONS.GIT_DIR_UNREADABLE,
     });
+  });
+});
+
+// ------------------------------------------------------------------ C-05
+
+describe('C-05 git commit-msg hook (item 66)', () => {
+  const gitInit = () => spawnSync('git', ['init', '-q'], { cwd: tmp });
+  const writeHook = async (dir, name) => {
+    await fs.ensureDir(dir);
+    await fs.writeFile(path.join(dir, name), '#!/bin/sh\n', { mode: 0o755 });
+  };
+
+  it('is unavailable when the target has no git repository', async () => {
+    expect(await checkCommitMsgHook(tmp)).toMatchObject({ state: 'unavailable', reason: LOCAL_REASONS.NO_GIT });
+  });
+
+  it('fails at high, with a remedy, when the hook is absent', async () => {
+    gitInit();
+    const c = await checkCommitMsgHook(tmp);
+    expect(c).toMatchObject({ name: CHECK_NAMES.C05, state: 'fail', severity: 'high' });
+    expect(c.remedy).toContain('.claude/hooks/commit-msg');
+  });
+
+  it('passes when the hook is in .git/hooks', async () => {
+    gitInit();
+    await writeHook(path.join(tmp, '.git', 'hooks'), 'commit-msg');
+    expect(await checkCommitMsgHook(tmp)).toMatchObject({ state: 'pass', passed: true });
+  });
+
+  // core.hooksPath makes git ignore .git/hooks: a hook there must not pass.
+  it('fails when core.hooksPath points elsewhere, even with a hook in .git/hooks', async () => {
+    gitInit();
+    await writeHook(path.join(tmp, '.git', 'hooks'), 'commit-msg');
+    spawnSync('git', ['config', 'core.hooksPath', '.claude/hooks'], { cwd: tmp });
+    const c = await checkCommitMsgHook(tmp);
+    expect(c.state).toBe('fail');
+    expect(c.message).toContain('.claude/hooks/commit-msg');
+  });
+
+  it('passes when the hook is in the core.hooksPath directory', async () => {
+    gitInit();
+    spawnSync('git', ['config', 'core.hooksPath', '.claude/hooks'], { cwd: tmp });
+    await writeHook(path.join(tmp, '.claude', 'hooks'), 'commit-msg');
+    expect(await checkCommitMsgHook(tmp)).toMatchObject({ state: 'pass' });
+  });
+
+  it('applies the same core.hooksPath rule to C-04', async () => {
+    gitInit();
+    await writeHook(path.join(tmp, '.git', 'hooks'), 'pre-commit');
+    spawnSync('git', ['config', 'core.hooksPath', '.claude/hooks'], { cwd: tmp });
+    expect((await checkGitHook(tmp)).state).toBe('fail');
+  });
+
+  it('keeps the C-04 name stable and adds C-05 alongside it in --json', async () => {
+    const d = await runDiagnostics(tmp, {});
+    const names = d.checks.map((c) => c.name);
+    expect(names).toContain(CHECK_NAMES.C04);
+    expect(names.indexOf(CHECK_NAMES.C05)).toBe(names.indexOf(CHECK_NAMES.C04) + 1);
   });
 });
 

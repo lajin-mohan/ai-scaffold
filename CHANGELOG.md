@@ -13,6 +13,31 @@ This file is configured with `merge=union` in `.gitattributes` so parallel addit
 
 ## [Unreleased]
 
+### Added
+- **Generated projects reject AI attribution trailers at commit time
+  (backlog item 66).** A new `.claude/hooks/commit-msg` ships in all five
+  profiles, and `ais create` installs it into `.git/hooks/` next to
+  `pre-commit`. It rejects any message carrying a `Co-Authored-By:` trailer,
+  for `-m`, `-F`, editor, `--amend` and merge commits. The message is cleaned
+  the way git cleans it (scissors, CRLF, `git stripspace` honouring
+  `core.commentChar`), so prose without a colon and comment lines pass. The
+  `~/.gitmessage` template could not cover `-m`/`-F`, and attribution
+  recurred on 22 commits.
+- **`ais doctor` check C-05 "Git commit-msg hook installed".**
+  - C-04 and C-05 now resolve the hooks directory through
+    `git rev-parse --git-path hooks`. Before, C-04 reported **pass** for a
+    hook in `.git/hooks` even when `core.hooksPath` (husky, corporate config)
+    made git ignore that directory.
+  - **Existing projects will see C-05 fail (HIGH)** until they copy
+    `.claude/hooks/commit-msg` into their hooks directory; the remedy text
+    says how.
+  - The `--json` change is additive: C-04's name is unchanged.
+- `ais create` warns when `core.hooksPath` is set, since the installed hooks
+  would not run.
+
+  Not yet covered: `ais init` (existing repositories) installs no git hooks;
+  it is tracked under item 66.
+
 ## [0.15.1] - 2026-10-09
 
 ### Security

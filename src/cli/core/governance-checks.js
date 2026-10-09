@@ -19,7 +19,9 @@
  */
 
 import path from 'path';
+import { spawnSync } from 'child_process';
 import fs from 'fs-extra';
+import { toPosixPath } from './paths.js';
 import { REASONS, remedyFor } from './gh-runner.js';
 import { FIELD_ABSENT, pickReason } from './github-protection.js';
 import { NO_EVIDENCE } from './github-required-checks.js';
@@ -67,6 +69,7 @@ export const CHECK_NAMES = Object.freeze({
   C02: 'Required status checks reporting (GitHub)',
   C03: 'Administrator bypass (GitHub)',
   C04: 'Git pre-commit hook installed (.git/hooks/pre-commit)',
+  C05: 'Git commit-msg hook installed (.git/hooks/commit-msg)',
 });
 
 /** The single constructor. FR-25 cannot be violated without going around it. */
@@ -105,20 +108,28 @@ export function normalizeLocalCheck(existing) {
   };
 }
 
-// ---------------------------------------------------------------- C-04 (local)
+// ---------------------------------------------------------- C-04, C-05 (local)
 
 /**
- * C-04. The real hook on disk, never `.claude/settings.json` (FR-04). Runs with
- * no GitHub and no network, which is why it is the one governance check a
- * generated project can answer for itself.
+ * C-04 and C-05. The real hook on disk, never `.claude/settings.json` (FR-04).
+ * They run with no GitHub and no network, which is why they are the governance
+ * checks a generated project can answer for itself.
  *
  * No `.git` is `unavailable`, not `fail`: nothing was verified, and `ais init`
  * into a bare directory legitimately has no repository yet. That distinction is
  * also what keeps `INIT_DIR` green in the release smoke gates.
  */
-export async function checkGitHook(target) {
+export function checkGitHook(target) {
+  return checkHookFile(target, 'pre-commit', CHECK_NAMES.C04);
+}
+
+export function checkCommitMsgHook(target) {
+  return checkHookFile(target, 'commit-msg', CHECK_NAMES.C05);
+}
+
+async function checkHookFile(target, hookName, checkName) {
   const gitPath = path.join(target, '.git');
-  const named = { name: CHECK_NAMES.C04, verifiedBy: 'filesystem', severity: 'high' };
+  const named = { name: checkName, verifiedBy: 'filesystem', severity: 'high' };
 
   let gitStat;
   try {
@@ -144,7 +155,8 @@ export async function checkGitHook(target) {
     });
   }
 
-  const hookPath = path.join(target, '.git', 'hooks', 'pre-commit');
+  const hookPath = path.join(resolveHooksDir(target), hookName);
+  const shown = toPosixPath(path.relative(target, hookPath));
   let hookStat;
   try {
     hookStat = await fs.stat(hookPath);
@@ -152,7 +164,8 @@ export async function checkGitHook(target) {
     return check({
       ...named,
       state: 'fail',
-      message: 'No .git/hooks/pre-commit — commit-time enforcement is not installed, whatever .claude/settings.json says.',
+      message: `No ${shown} — commit-time enforcement is not installed, whatever .claude/settings.json says.`,
+      remedy: `Copy .claude/hooks/${hookName} into the hooks directory git uses (git rev-parse --git-path hooks) and make it executable`,
     });
   }
 
@@ -165,8 +178,23 @@ export async function checkGitHook(target) {
     : check({
         ...named,
         state: 'fail',
-        message: '.git/hooks/pre-commit exists but is not executable — git will not run it.',
+        message: `${shown} exists but is not executable — git will not run it.`,
       });
+}
+
+// `core.hooksPath` (set by husky, corporate git config and similar) makes git
+// ignore .git/hooks entirely, so the directory git will actually use is asked
+// from git. GIT_CEILING_DIRECTORIES stops the lookup escaping into an enclosing
+// repository; any failure falls back to .git/hooks.
+function resolveHooksDir(target) {
+  const result = spawnSync('git', ['rev-parse', '--git-path', 'hooks'], {
+    cwd: target,
+    encoding: 'utf-8',
+    stdio: ['ignore', 'pipe', 'ignore'],
+    env: { ...process.env, GIT_CEILING_DIRECTORIES: path.dirname(path.resolve(target)) },
+  });
+  const resolved = result.status === 0 ? result.stdout.trim() : '';
+  return resolved ? path.resolve(target, resolved) : path.join(target, '.git', 'hooks');
 }
 
 // ------------------------------------------------------------- C-01, C-03
