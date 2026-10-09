@@ -13,6 +13,8 @@ This file is configured with `merge=union` in `.gitattributes` so parallel addit
 
 ## [Unreleased]
 
+## [0.15.1] - 2026-10-09
+
 ### Security
 - **Generated projects now deny secret reads and ask before destructive
   commands through Claude Code's native permission rules (backlog item 79a).**
