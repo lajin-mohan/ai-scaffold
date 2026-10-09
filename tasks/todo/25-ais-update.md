@@ -11,7 +11,7 @@ and the render round-trip spike passed. Next: the BRD.
 |---|---|---|
 | 1 — Analysis | `docs/brd/25-ais-update-analysis.md` | **Decided:** D-Q1…D-Q5 |
 | 1 — Spike | `docs/brd/25-render-roundtrip-spike.md` | **Passed:** 994 files, 0 mismatches after fix F1 |
-| 1 — BRD | `docs/brd/25-ais-update-brd.md` | Not started |
+| 1 — BRD | `docs/brd/25-ais-update-brd.md` | **Draft v1.0:** 33 FRs, 10 ACs; awaiting approval (Q-01 to Q-03 have defaults) |
 | 2 — Estimate | `docs/estimates/25-ais-update-estimate.md` | Not started |
 
 ## Key facts carried forward
