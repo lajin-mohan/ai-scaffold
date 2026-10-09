@@ -3,13 +3,13 @@
 **Feature:** Safe `ais update`: managed-file lifecycle (backlog item 25)
 **Version:** 1.0
 **Date:** 2026-10-09
-**Status:** **DRAFT. Pending maintainer approval.** Three minor questions are
-open in §9, each with a recommended default.
+**Status:** **Approved v1.0, 2026-10-09.** The §9 defaults for Q-01 to Q-03
+are accepted as written.
 **Size:** L (backlog). Stage 3 (HLD + ADR + independent architecture review) is
 required before implementation, and it is shared with item 34's ownership
 contract.
 **Author:** Claude (Code session)
-**Approved By:** —
+**Approved By:** Lajin M J (maintainer/owner), 2026-10-09
 
 > **Scope note.** This feature runs in **generated projects**. Nothing here is a
 > requirement on the `ai-scaffold` repository's own governance.
@@ -204,8 +204,8 @@ ignored.
 
 ## 9. Open Questions
 
-Minor policy questions, each with a recommended default. They do not block
-approval: approving the BRD as written accepts the defaults.
+**All resolved 2026-10-09:** the BRD was approved as written, which accepts
+these defaults.
 
 | ID | Question | Recommended default |
 |---|---|---|
@@ -253,4 +253,4 @@ approval: approving the BRD as written accepts the defaults.
 
 | Version | Date | Change |
 |---|---|---|
-| 1.0 | 2026-10-09 | Initial draft from the analysis (D-Q1 to D-Q5) and the spike |
+| 1.0 | 2026-10-09 | Initial draft from the analysis (D-Q1 to D-Q5) and the spike. Approved the same day by the maintainer; Q-01 to Q-03 defaults accepted |
