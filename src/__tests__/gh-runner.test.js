@@ -135,8 +135,10 @@ describe('gh-runner — budget (NFR-01)', () => {
 // they carry its headline guarantees: the closed argv constructor, "raw stderr
 // NEVER leaves this module", the pre-spawn budget short-circuit, and the
 // JSON.parse failure path. A `gh` stub on PATH exercises all four for real.
-
-describe('the spawn surface', () => {
+//
+// Skipped on Windows: spawnSync('gh') cannot execute an extensionless
+// `#!/bin/sh` stub there, and the runner's real gh.exe would answer instead.
+describe.skipIf(process.platform === 'win32')('the spawn surface', () => {
   let binDir;
   let originalPath;
 
