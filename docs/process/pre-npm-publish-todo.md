@@ -283,6 +283,32 @@ unless a UI-heavy pilot provides evidence to raise it.
   byte-identical to their `templates/generic/` equivalents. Without it, the next
   file copied up to root quietly recreates the problem.
 
+  **Decision 2026-10-09 (maintainer): two memories that never interfere.** This
+  repository's memory, used to develop ai-scaffold, and a generated project's
+  memory, owned by that project's team, are separate things. Neither may read,
+  copy or overwrite the other.
+  - **Root `.claude/memory/` becomes this repo's real development memory.**
+    Delete the template copies it does not use; fill `project-context.md` with
+    real ai-scaffold facts and no placeholders. Verified 2026-10-09: **6 of 7**
+    root memory files are byte-identical to `templates/node/.claude/memory/`.
+    Only `known-issues.md` and `audit-log.jsonl` hold real development content.
+  - **No copying in either direction** between root memory and
+    `templates/*/.claude/memory/`. Shipped memory files stay blank templates.
+  - **Guard both directions** in `scripts/pre-publish-smoke.sh`:
+    - (a) fail if a root memory file is byte-identical to its template
+      counterpart (the re-merge guard above, extended to memory);
+    - (b) fail if any `templates/*/.claude/memory/**` or
+      `MEMORY.template.md` contains development markers (backlog item
+      references, scaffold version numbers, maintainer identity).
+
+    (b) is new: (a) alone would not catch this repo's development notes being
+    shipped to adopters.
+  - **Already true, recorded for completeness:** the npm package ships no root
+    `.claude/` or `tasks/` (verified against the packed 0.15.0 tarball). Item
+    25's update never reads or writes a generated project's memory (BRD v1.1
+    OC-01 user-data class). No command copies project content back into this
+    repo.
+
   **Sequence before item 34.** Doing 76 first removes root from the equation, so
   34 designs base-plus-overlays for 5 uniform copies instead of 5 plus one
   special case. (This revises an earlier note that said either order worked.)
