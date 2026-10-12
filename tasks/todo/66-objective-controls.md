@@ -2,12 +2,21 @@
 
 ## Status
 
-**Plan v2 — 2026-10-10.** The architect review returned APPROVE WITH CHANGES
-(2 BLOCK, 4 WARN, 1 NIT); all are applied in the v2 section at the end. Q1 and
-Q2 are taken at the plan defaults: generated projects only, and `init` is a
-separate gap. The maintainer declined the decision prompt, and item 66 says
-the repo exception must not be assumed. Size S–M (backlog).
-Branch: `feature/66-commit-msg-hook`.
+**First slice DONE — merged 2026-10-12 as lajin-mohan/ai-scaffold#146.**
+- What shipped: the `commit-msg` hook in all five profiles, installed by
+  `create`, and `doctor` C-05. C-04 and C-05 now resolve `core.hooksPath`.
+- CI was green on Ubuntu and Windows; the hook tests passed 14/14 on both.
+- Ships in 0.16.0.
+
+The item stays open in `tasks/todo/` for its remaining slices, each still
+undecided or unbuilt:
+- (a) enforcement in this repository: the 2026-08-27 exception was not
+  granted;
+- (b) `ais init` hook wiring;
+- (c) the CHANGELOG-entry and approval-artifact controls.
+
+The plan v2 history follows. Q1 and Q2 were taken at the plan defaults
+because the maintainer declined the decision prompt.
 
 ## Why
 

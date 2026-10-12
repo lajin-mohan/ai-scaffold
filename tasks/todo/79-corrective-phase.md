@@ -2,10 +2,13 @@
 
 ## Status
 
-**Planned 2026-10-09. Not started. All open questions decided (D1–D9).**
-Slice C0 (interim security patch) can start now. Slices C1–C4 start when item
-25 (`ais update`) ships. Next gate: three-point estimate
-(`docs/estimates/corrective-phase-estimate.md`).
+**C0 shipped; C1–C4 waiting on item 25.** All open questions are decided
+(D1–D9).
+- **Slice C0 (item 79a) shipped in 0.15.1** (#141, 2026-10-09), verified from
+  the npm registry. Estimate: `docs/estimates/79a-interim-permission-rules-estimate.md`.
+- Slices C1–C4 start when item 25 (`ais update`) ships.
+- Next gate for C1–C4: a three-point estimate
+  (`docs/estimates/corrective-phase-estimate.md`).
 
 ## Why this phase exists
 
@@ -56,7 +59,7 @@ never actually runs. They are not style issues:
 
 ## Slices (in order)
 
-### C0 — Interim security patch (ships before item 25)
+### C0 — Interim security patch — ✅ SHIPPED in 0.15.1 (#141)
 
 **79a. Ship #79's permission rules early.** *(S)*
 - Add only the `permissions.deny` (secret reads) and `permissions.ask`

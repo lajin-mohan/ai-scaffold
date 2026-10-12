@@ -2,10 +2,15 @@
 
 ## Status
 
-**Plan v2 — 2026-10-10.** The architect review returned APPROVE WITH CHANGES
-(2 BLOCK, 2 WARN, 4 NIT); every finding is applied in the v2 section at the
-end. In implementation. Size M (backlog).
-Branch: `chore/60-windows-ci`.
+**DONE — merged 2026-10-12 as lajin-mohan/ai-scaffold#145.** The required
+`Windows checks` job is green: 6/6 test files and smoke 114/114 on
+`windows-latest`. Ships in 0.16.0. Plan v2 (after the architect review) and
+the first-run triage are recorded below.
+
+Follow-ups (not this item):
+- golden path on Windows (Q2);
+- the governance-guard CRLF defect (items 81/83);
+- the Node version matrix (item 89).
 
 ## Why now
 
