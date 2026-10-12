@@ -13,6 +13,26 @@ This file is configured with `merge=union` in `.gitattributes` so parallel addit
 
 ## [Unreleased]
 
+### Changed
+- **CI now runs on Windows (backlog item 60).** A required `Windows checks`
+  job runs lint, typecheck and the pre-publish smoke gate, which includes the
+  full test suite, on `windows-latest`. Every Windows-only defect so far shipped
+  through an ubuntu-only CI: the `path.relative()` backslash bug (#94) and the
+  hooks' `jq`/`python3` fail-open found in the 2026-10-09 audit.
+  - `token-report` now prints POSIX paths on Windows.
+  - Three checks are skipped on Windows, each with its reason in the code:
+    - the `gh` spawn-surface tests (an extensionless `sh` stub cannot be
+      spawned there);
+    - smoke Gate 6b (golden path uses `shell: true`, which is `cmd.exe` on
+      Windows, so it would report a false PASS);
+    - the governance-guard simulation. Its first Windows run found a real
+      defect: the guard emits no warning even with `jq` installed, probably
+      because `jq` prints CRLF there. It is not fixed here because the
+      Corrective phase replaces this hook with a native rule (items 81 and
+      83).
+  - The e2e suite's timeout is now 30 s: a single CLI-spawning test took
+    9.6 s on Windows.
+
 ## [0.15.1] - 2026-10-09
 
 ### Security

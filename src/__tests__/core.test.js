@@ -746,6 +746,12 @@ describe('buildTokenReport', () => {
     expect([...tokens].sort((a, b) => b - a)).toEqual(tokens);
   });
 
+  it('reports POSIX paths on every OS', () => {
+    for (const file of report.topFiles) {
+      expect(file.path).not.toContain('\\');
+    }
+  });
+
   it('measures the /review fan-out from the five reviewers in review.md', () => {
     // Must match the five reviewers /review actually fans out to — NOT critic.
     expect(report.reviewFanout.agents).toEqual([
