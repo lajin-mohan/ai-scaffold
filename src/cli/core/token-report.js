@@ -9,6 +9,7 @@
 
 import fs from 'fs';
 import path from 'path';
+import { toPosixPath } from './paths.js';
 
 // Rough industry heuristic for English prose/markdown. Not exact per model;
 // held constant so before/after comparisons stay honest.
@@ -50,7 +51,7 @@ function measureFiles(files, rootDir) {
   for (const file of files) {
     const size = fs.statSync(file).size;
     chars += size;
-    perFile.push({ path: path.relative(rootDir, file), tokens: estTokens(size) });
+    perFile.push({ path: toPosixPath(path.relative(rootDir, file)), tokens: estTokens(size) });
   }
   return { files: files.length, chars, tokens: estTokens(chars), perFile };
 }

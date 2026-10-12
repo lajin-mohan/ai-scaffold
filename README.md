@@ -228,6 +228,10 @@ prompt values, not `create`/`init` flags — see the per-profile table in
 
 Additional profiles such as Next.js, Java, .NET, and Flutter are planned after the CLI fundamentals are stable.
 
+**Tested on:** every pull request runs the CLI's test suite and the
+packed-artifact smoke gate on Ubuntu and Windows (Node 24). The golden-path
+execution of each profile's documented commands runs on Ubuntu.
+
 ## The Core 6 — Start Here
 
 You do not need all 35 commands on day one. Start with these six; everything else is

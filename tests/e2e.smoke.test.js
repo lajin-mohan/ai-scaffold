@@ -19,7 +19,9 @@ function runCli(args) {
   });
 }
 
-describe('CLI e2e smoke', () => {
+// These tests spawn the CLI as a subprocess, sometimes several times each. On
+// windows-latest a single one took 9.6s, so vitest's 5s default is too tight.
+describe('CLI e2e smoke', { timeout: 30_000 }, () => {
   let tmpDir;
 
   beforeAll(async () => {
