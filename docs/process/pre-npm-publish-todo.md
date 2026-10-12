@@ -537,6 +537,14 @@ the packed tarball.
 - **93. Deterministic `/health`.** Move the scoring into a script
   (`ais health` or `npm run health`) so the same code gets the same score; the
   command only runs the script and presents the result. *(M)*
+- **94. Spawn external tools only from `PATH` — security, P0, ships in 0.16.0.**
+  Found 2026-10-12 while verifying review-25 finding N7. On Windows, Node
+  searches the working directory before `PATH`, so `ais doctor` (0.15.0–0.15.1)
+  and `ais create` (0.8.3–0.15.1) could run a `gh.exe`/`git.exe` planted in a
+  project. Fixed by `src/cli/core/exec-path.js`, plus a Windows plant test with
+  a positive control and a source scan that fails on any bare-name spawn
+  (`tasks/todo/94-spawn-from-path.md`). The maintainer chose to ship it as
+  0.16.0 ahead of item 25 (option (a), 2026-10-12). *(S)*
 
 ## Phase 2 — Modern AI surface + repository knowledge
 
