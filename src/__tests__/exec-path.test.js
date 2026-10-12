@@ -108,13 +108,27 @@ describe.skipIf(!isWindows)('a planted gh.exe / git.exe never runs (item 94)', (
     expect(fs.existsSync(sentinel), 'plant did not run; the regression tests below would be vacuous').toBe(true);
   });
 
+  // PATH holds no gh here: the old code would then certainly have run the
+  // plant, and the real gh (which calls the network) is never reached.
+  const withoutGhOnPath = (fn) => {
+    const prevPath = process.env.PATH;
+    process.env.PATH = path.join(tmp, 'empty-bin');
+    try {
+      return fn();
+    } finally {
+      process.env.PATH = prevPath;
+    }
+  };
+
   it('runGhApi does not run it', () => {
-    runGhApi('repos/o/r', { cwd: plant });
+    const result = withoutGhOnPath(() => runGhApi('repos/o/r', { cwd: plant }));
+    expect(result).toMatchObject({ ok: false, reason: REASONS.GH_MISSING });
     expect(fs.existsSync(sentinel)).toBe(false);
   });
 
   it('runGhRepoView does not run it', () => {
-    runGhRepoView({ cwd: plant });
+    const result = withoutGhOnPath(() => runGhRepoView({ cwd: plant }));
+    expect(result).toMatchObject({ ok: false, reason: REASONS.GH_MISSING });
     expect(fs.existsSync(sentinel)).toBe(false);
   });
 
