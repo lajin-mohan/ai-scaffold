@@ -1,0 +1,33 @@
+#!/bin/sh
+# commit-msg — rejects AI attribution trailers (Co-Authored-By:).
+#
+# Commits use the human owner's identity only (branching-rules.md, "AI identity
+# prohibition"). A commit template cannot enforce that for `git commit -m` or
+# `-F`, and AI tools add the trailer by default, so it is checked here, for
+# every commit command and every tool.
+#
+# The message is cleaned the way git cleans it: the `git commit -v` diff below
+# the scissors line is cut, CR is stripped, and comment lines are removed by
+# `git stripspace`, which honours core.commentChar. Prose that wraps onto a line
+# starting "co-authored by" without a colon is not a trailer and passes.
+#
+# Bypass: `git commit --no-verify`, like every git hook. Branch protection and
+# CI are the server-side controls.
+
+msg_file="$1"
+[ -f "$msg_file" ] || exit 0
+
+cleaned=$(sed '/^. -\{24\} >8 -\{24\}$/,$d' "$msg_file" | tr -d '\r')
+stripped=$(printf '%s\n' "$cleaned" | git stripspace --strip-comments 2>/dev/null) || stripped="$cleaned"
+
+offending=$(printf '%s\n' "$stripped" | grep -inE '^[[:space:]]*co-authored-by[[:space:]]*:') || true
+
+if [ -n "$offending" ]; then
+  echo "BLOCK: commit message carries an AI attribution trailer." >&2
+  echo "$offending" | sed 's/^/       line /' >&2
+  echo "       Commits use the human owner's identity only (branching-rules.md)." >&2
+  echo "       Remove the trailer and commit again (git commit --amend for the last commit)." >&2
+  exit 1
+fi
+
+exit 0

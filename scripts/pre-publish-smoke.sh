@@ -101,6 +101,15 @@ else
   fail "npm package ships only ${SETTINGS_IN_PACK}/3 template .claude/settings.json (hooks would be inert)"
 fi
 
+# Item 66: the commit-msg hook that rejects AI attribution must ship for every
+# profile (2026-07-10 lesson: check the packed artifact, not the working tree).
+COMMIT_MSG_IN_PACK=$(grep -oE 'templates/[^/"]+/\.claude/hooks/commit-msg"' <<< "$PACK_OUTPUT" | sort -u | wc -l | tr -d ' ')
+if [ "$COMMIT_MSG_IN_PACK" -eq 5 ]; then
+  pass "npm package ships .claude/hooks/commit-msg for all 5 profiles"
+else
+  fail "npm package ships commit-msg for only ${COMMIT_MSG_IN_PACK}/5 profiles"
+fi
+
 # .gitignore ships as `gitignore` (no dot): npm pack HARD-EXCLUDES any file named
 # `.gitignore` from the tarball. Assert the renamed source ships and the dotted
 # name does NOT (a dotted match means the rename regressed → generated projects
@@ -211,6 +220,22 @@ if [ -x "$SMOKE_DIR/smoke-project/.git/hooks/pre-commit" ]; then
 else
   fail ".git/hooks/pre-commit missing or not executable after create"
 fi
+
+# Item 66: create also wires commit-msg, and the wired hook really rejects an
+# AI attribution trailer in the generated project.
+if [ -x "$SMOKE_DIR/smoke-project/.git/hooks/commit-msg" ]; then
+  pass "create wires .claude/hooks/commit-msg into .git/hooks (executable)"
+else
+  fail ".git/hooks/commit-msg missing or not executable after create"
+fi
+COMMIT_MSG_PROBE=$(mktemp)
+printf 'feat: probe\n\nCo-Authored-By: Bot <bot@example.invalid>\n' > "$COMMIT_MSG_PROBE"
+if (cd "$SMOKE_DIR/smoke-project" && sh .git/hooks/commit-msg "$COMMIT_MSG_PROBE") >/dev/null 2>&1; then
+  fail "generated commit-msg hook ACCEPTED a Co-Authored-By trailer"
+else
+  pass "generated commit-msg hook rejects a Co-Authored-By trailer"
+fi
+rm -f "$COMMIT_MSG_PROBE"
 
 # The wired hook must not block the initial scaffold commit itself — this is
 # the exact regression a naive "install before commit" ordering would cause.

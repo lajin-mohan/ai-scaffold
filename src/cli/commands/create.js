@@ -235,7 +235,7 @@ function initializeGitRepository(targetDir) {
   // .git/hooks/pre-commit on every commit including this one, and the hook now
   // refuses any commit made while dev or main is checked out — wiring it early
   // would block `create`'s own initial commit.
-  const hookWarning = installPreCommitHook(targetDir);
+  const hookWarning = installGitHooks(targetDir);
 
   const branchWarning =
     devBranch.status === 0
@@ -245,22 +245,35 @@ function initializeGitRepository(targetDir) {
   return { initialized: true, committed: true, warning: hookWarning ?? branchWarning };
 }
 
-// Copies the generated project's own .claude/hooks/pre-commit into .git/hooks/
-// so branch-name and lint gates apply to commits made outside Claude Code, not
-// only to commits the agent makes (pre-bash-quality-gate.sh covers only the
-// latter). Best-effort: a missing hook file or a chmod failure (e.g. some
-// Windows filesystems) degrades to a warning, never blocks project creation.
-function installPreCommitHook(targetDir) {
-  const source = path.join(targetDir, '.claude', 'hooks', 'pre-commit');
-  const dest = path.join(targetDir, '.git', 'hooks', 'pre-commit');
-  if (!fs.existsSync(source)) return undefined;
-  try {
-    fs.copySync(source, dest);
-    fs.chmodSync(dest, 0o755);
-    return undefined;
-  } catch (error) {
-    return `git initialized, but wiring the pre-commit hook failed (${error.message})`;
+// Git hooks copied from the generated project's own .claude/hooks/ into
+// .git/hooks/, so the gates apply to every commit, not only to commits the
+// agent makes. commit-msg rejects AI attribution trailers (item 66).
+const GIT_HOOKS = ['pre-commit', 'commit-msg'];
+
+// Best-effort: a missing hook file or a chmod failure (e.g. some Windows
+// filesystems) degrades to a warning naming the hook, never blocks creation.
+function installGitHooks(targetDir) {
+  const warnings = [];
+  for (const hook of GIT_HOOKS) {
+    const source = path.join(targetDir, '.claude', 'hooks', hook);
+    const dest = path.join(targetDir, '.git', 'hooks', hook);
+    if (!fs.existsSync(source)) continue;
+    try {
+      fs.copySync(source, dest);
+      fs.chmodSync(dest, 0o755);
+    } catch (error) {
+      warnings.push(`wiring the ${hook} hook failed (${error.message})`);
+    }
   }
+
+  // A global core.hooksPath (husky, corporate config) makes git ignore
+  // .git/hooks entirely, so the hooks above would never run.
+  const hooksPath = runGit(['config', '--get', 'core.hooksPath'], targetDir);
+  if (hooksPath.status === 0 && hooksPath.stdout.trim()) {
+    warnings.push(`core.hooksPath is set to ${hooksPath.stdout.trim()}, so git ignores .git/hooks; copy .claude/hooks/pre-commit and commit-msg into that directory`);
+  }
+
+  return warnings.length ? `git initialized, but ${warnings.join('; ')}` : undefined;
 }
 
 function runGit(args, cwd) {

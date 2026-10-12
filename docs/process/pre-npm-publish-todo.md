@@ -956,6 +956,22 @@ saving starts costing correctness.
   policy, branch/PR path, required checks, and approval artifacts where their
   semantics are explicit. Do not claim that a superficial marker proves human
   plan approval across Claude Code, Codex, and Cursor.
+
+  **First slice — commit-identity hook, 2026-10-10** (`tasks/todo/66-objective-controls.md`).
+  - **Shipped:** the generated-project `commit-msg` hook, installed by `create`,
+    and `doctor` check C-05. C-04 and C-05 now resolve `core.hooksPath`
+    through git.
+  - **Deliberately not done**, each still open:
+    - (a) **enforcement in this repository.** The 2026-08-27 exception was
+      not granted, so it is not assumed;
+    - (b) **`ais init` hook wiring.** `init` installs no git hooks at all, not
+      even `pre-commit`, and existing repositories need a design that will not
+      clobber existing `.git/hooks/*` or hook managers (husky, lefthook);
+    - (c) the CHANGELOG-entry and approval-artifact controls.
+  - **Correction recorded:** the plan review assumed generated projects ship
+    `scripts/install-hooks.sh`. They do not (`scripts/**` is excluded from the
+    default install), so remedies point to copying `.claude/hooks/*` into
+    `git rev-parse --git-path hooks`.
 - **67. `AGENTS.md` points non-Claude agents at a document written for
   Claude.** Found 2026-08-13, same cross-check, prompted by an explicit
   design constraint: this scaffold must work for Codex/Cursor/other agents,

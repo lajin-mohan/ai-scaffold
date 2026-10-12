@@ -558,7 +558,7 @@ Before using the template on any machine, run the git commit template setup:
 bash scripts/setup-git-template.sh
 ```
 
-This configures git to use a commit template that enforces human-only authorship — no `Co-Authored-By` lines will be added to any commits. You only need to run this once per machine.
+This configures git to use a commit template with no `Co-Authored-By` block. You only need to run this once per machine. The template only covers editor commits; the `commit-msg` hook that `ais create` installs is what rejects a `Co-Authored-By:` trailer on every commit, including `git commit -m` and `-F`.
 
 ### Project Setup
 
