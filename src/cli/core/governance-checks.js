@@ -22,6 +22,7 @@ import path from 'path';
 import { spawnSync } from 'child_process';
 import fs from 'fs-extra';
 import { toPosixPath } from './paths.js';
+import { resolveOnPath } from './exec-path.js';
 import { REASONS, remedyFor } from './gh-runner.js';
 import { FIELD_ABSENT, pickReason } from './github-protection.js';
 import { NO_EVIDENCE } from './github-required-checks.js';
@@ -187,11 +188,15 @@ async function checkHookFile(target, hookName, checkName) {
 // from git. GIT_CEILING_DIRECTORIES stops the lookup escaping into an enclosing
 // repository; any failure falls back to .git/hooks.
 function resolveHooksDir(target) {
-  const result = spawnSync('git', ['rev-parse', '--git-path', 'hooks'], {
+  const env = { ...process.env, GIT_CEILING_DIRECTORIES: path.dirname(path.resolve(target)) };
+  // Resolved from PATH, never from the project directory (item 94).
+  const git = resolveOnPath('git', { env });
+  if (!git) return path.join(target, '.git', 'hooks');
+  const result = spawnSync(git, ['rev-parse', '--git-path', 'hooks'], {
     cwd: target,
     encoding: 'utf-8',
     stdio: ['ignore', 'pipe', 'ignore'],
-    env: { ...process.env, GIT_CEILING_DIRECTORIES: path.dirname(path.resolve(target)) },
+    env,
   });
   const resolved = result.status === 0 ? result.stdout.trim() : '';
   return resolved ? path.resolve(target, resolved) : path.join(target, '.git', 'hooks');

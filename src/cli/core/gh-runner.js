@@ -22,6 +22,7 @@
  */
 
 import { spawnSync } from 'node:child_process';
+import { resolveOnPath } from './exec-path.js';
 
 /** Closed set of transport outcomes. Everything downstream degrades on these. */
 export const REASONS = Object.freeze({
@@ -138,15 +139,19 @@ export function runGhApi(endpointPath, { cwd, budget } = {}) {
     return { ok: false, reason: REASONS.TIMEOUT, remedy: remedyFor(REASONS.TIMEOUT) };
   }
 
-  const result = spawnSync('gh', ['api', '--method', 'GET', endpointPath], {
+  // Inherited deliberately: FR-16 wants generated projects to run
+  // `doctor --require-remote` in CI, where `gh` authenticates by env alone.
+  // ADR-004's claim is about CUSTODY — we never read, store or log it.
+  const env = { ...process.env, GH_NO_UPDATE_NOTIFIER: '1' };
+  const gh = resolveGh(env);
+  if (!gh) return { ok: false, reason: REASONS.GH_MISSING, remedy: remedyFor(REASONS.GH_MISSING) };
+
+  const result = spawnSync(gh, ['api', '--method', 'GET', endpointPath], {
     cwd,
     encoding: 'utf-8',
     // stdin ignored so `gh` can never prompt and stall the budget.
     stdio: ['ignore', 'pipe', 'pipe'],
-    // Inherited deliberately: FR-16 wants generated projects to run
-    // `doctor --require-remote` in CI, where `gh` authenticates by env alone.
-    // ADR-004's claim is about CUSTODY — we never read, store or log it.
-    env: { ...process.env, GH_NO_UPDATE_NOTIFIER: '1' },
+    env,
     ...(remaining !== undefined ? { timeout: remaining } : {}),
   });
 
@@ -193,11 +198,15 @@ export function runGhRepoView({ cwd, budget } = {}) {
     return { ok: false, reason: REASONS.TIMEOUT, remedy: remedyFor(REASONS.TIMEOUT) };
   }
 
-  const result = spawnSync('gh', ['repo', 'view', '--json', 'nameWithOwner', '-q', '.nameWithOwner'], {
+  const env = { ...process.env, GH_NO_UPDATE_NOTIFIER: '1' };
+  const gh = resolveGh(env);
+  if (!gh) return { ok: false, reason: REASONS.GH_MISSING, remedy: remedyFor(REASONS.GH_MISSING) };
+
+  const result = spawnSync(gh, ['repo', 'view', '--json', 'nameWithOwner', '-q', '.nameWithOwner'], {
     cwd,
     encoding: 'utf-8',
     stdio: ['ignore', 'pipe', 'pipe'],
-    env: { ...process.env, GH_NO_UPDATE_NOTIFIER: '1' },
+    env,
     ...(remaining !== undefined ? { timeout: remaining } : {}),
   });
 
@@ -235,4 +244,11 @@ export function resolveRepo({ repoOverride, cwd, budget, run = runGhRepoView } =
   const check = validateRepo(res.repo);
   if (!check.ok) return { ok: false, reason: REASONS.INVALID_REPO, remedy: check.message };
   return { ok: true, repo: check.value, source: 'gh' };
+}
+
+// The absolute path of `gh` on PATH, never a `gh.exe` in the project directory
+// (item 94). A file removed between this lookup and the spawn still lands on
+// classify()'s ENOENT branch, so the outcome is GH_MISSING either way.
+function resolveGh(env) {
+  return resolveOnPath('gh', { env });
 }

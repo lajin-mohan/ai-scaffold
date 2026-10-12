@@ -8,6 +8,7 @@ import fs from 'fs-extra';
 import chalk from 'chalk';
 import { spawnSync } from 'child_process';
 import { collectBootstrapValues, resolveWithDefaults } from '../core/prompts.js';
+import { resolveOnPath } from '../core/exec-path.js';
 import { buildFilePlan } from '../core/file-plan.js';
 import { detectConflicts, printConflictReport } from '../core/conflicts.js';
 import { copyFiles } from '../core/copy.js';
@@ -180,8 +181,9 @@ async function runCreate(projectName, options) {
 }
 
 function initializeGitRepository(targetDir) {
-  const gitAvailable = runGit(['--version'], process.cwd());
-  if (gitAvailable.status !== 0) {
+  // Probing with `git --version` in process.cwd() would run a git.exe planted
+  // in the folder `ais create` was started from (item 94).
+  if (!resolveOnPath('git')) {
     return { initialized: false, committed: false, warning: 'git not available; skipped initialization' };
   }
 
@@ -277,7 +279,9 @@ function installGitHooks(targetDir) {
 }
 
 function runGit(args, cwd) {
-  return spawnSync('git', args, {
+  const git = resolveOnPath('git');
+  if (!git) return { status: null, stdout: '', stderr: 'git not found on PATH' };
+  return spawnSync(git, args, {
     cwd,
     encoding: 'utf-8',
     stdio: ['ignore', 'pipe', 'pipe'],
