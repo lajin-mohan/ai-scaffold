@@ -13,6 +13,8 @@ This file is configured with `merge=union` in `.gitattributes` so parallel addit
 
 ## [Unreleased]
 
+## [0.16.0] - 2026-10-12
+
 ### Security
 - **External tools are now resolved through `PATH` only (backlog item 94).**
   On Windows, Node starts a program from the working directory before
