@@ -7,6 +7,8 @@ verification against npm/git, not kept as history.
 
 ## Current state (2026-08-21)
 
+- **2026-10-12 — Agreed work order (value per effort):** 60 → 66 → 25 → 76 → Corrective C1–C4 → 92 → 77/78 → 34 → 75 → 74B → 73/72. Items **60** and **66** (first slice) are merged. **Item 25** is in Stage 3 design revision: the architecture review returned REVISE, and the maintainer approved the B1/B5 spec amendments on 2026-10-12. **0.16.0** releases once item 25 is complete and tested; it also carries 60 and 66.
+
 - **2026-10-09 — v0.15.0 is published** (`npm view` verified). It closed item 26
   (drift-aware `doctor`) and item 65b (packed-artifact golden path), which
   completes Wave 1 except item 66. A repository-wide audit the same day, run
@@ -116,7 +118,7 @@ unless a UI-heavy pilot provides evidence to raise it.
    recorded lessons are false-done claims, a floor rather than a considered count
    while Q-04 stays Proposed.
 2. **Wave 1 — stop immediate failures:** items 26 (**done**, 0.15.0), **65b**
-   (**done**, 0.15.0), and 66's objectively checkable controls (open).
+   (**done**, 0.15.0), and 66's objectively checkable controls (first slice **done** 2026-10-12, #146; rest open).
 3. **Wave 2 — safe lifecycle:** item 25's ownership/update slices and item 34's
    shared-base/overlay model use one ownership contract.
    **Wave 2b — Corrective (items 79–89):** starts when item 25 ships, so its
@@ -437,7 +439,7 @@ questions: `tasks/todo/79-corrective-phase.md`.
   governance edits become an `ask` rule;
 - `/health` is kept without its self-graded sub-score.
 
-**C0 — Interim security patch (can start now)**
+**C0 — Interim security patch — ✅ SHIPPED in 0.15.1 (2026-10-09, #141), verified from the npm registry**
 - **79a. Ship #79's deny/ask rules early.** Additive only, so it needs no update
   migration. Existing adopters get a paste-ready block in the release notes and
   `SECURITY.md`. *(S)*
@@ -796,7 +798,8 @@ saving starts costing correctness.
   (`feature|fix|chore|docs|hotfix|release`). Fixed the regex and the header's
   human-readable pattern list in all five profile hooks + this repo's own
   copy (byte-identical). No more forced rename to `chore/` for doc-only work.
-- **60. No Windows CI runner — Windows-only bugs ship in every release.**
+- **60. — ✅ DONE (2026-10-12, #145; ships in 0.16.0).** A required `Windows checks` job runs lint, typecheck and the smoke gate (with the full test suite) on `windows-latest`. Its first run reproduced the governance-guard Windows defect (items 81/83). Record: `tasks/done/60-windows-ci.md`. Original finding:
+  **No Windows CI runner — Windows-only bugs ship in every release.**
   Found 2026-07-15 (PR #94): the `path.relative()` backslash bug meant
   `.claude/MEMORY.md` and `.claude/settings-overrides.json` were never
   generated on Windows for **any** profile, surfacing as two HIGH `ais doctor`
@@ -912,7 +915,8 @@ saving starts costing correctness.
   Blocks Wave 0's golden-path metric, which has no honest source until this
   ships. *(M — see the approved estimate)*
 
-- **66. Plan-and-confirm has no deterministic backing — prompted rule only.**
+- **66. 🟡 First slice DONE (2026-10-12, #146; ships in 0.16.0): the shipped `commit-msg` hook and `doctor` C-05.** Open: this repo’s own gate (exception not granted), `ais init` hook wiring, and the CHANGELOG/approval-artifact controls (`tasks/todo/66-objective-controls.md`). Original finding:
+  **Plan-and-confirm has no deterministic backing — prompted rule only.**
   Found 2026-08-13 cross-checking current Claude Code docs
   (`code.claude.com/docs/en/best-practices`, `.../memory`) against this
   project's own governance. Both docs state the same thing in different
