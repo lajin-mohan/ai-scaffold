@@ -13,6 +13,23 @@ This file is configured with `merge=union` in `.gitattributes` so parallel addit
 
 ## [Unreleased]
 
+### Security
+- **External tools are now resolved through `PATH` only (backlog item 94).**
+  On Windows, Node starts a program from the working directory before
+  searching `PATH`. So the CLI could run a `gh.exe` or `git.exe` placed in a
+  project or folder instead of the installed tool:
+  - `ais doctor` in 0.15.0–0.15.1, through its GitHub checks;
+  - `ais create` in 0.8.3–0.15.1, through its git availability probe, when
+    started from such a folder.
+
+  Every spawn now uses an absolute path found on `PATH`, and the working
+  directory, `.` and relative `PATH` entries are never searched. macOS and
+  Linux were not affected the same way. A test plants decoy binaries on
+  Windows CI and proves they never run, with a positive control, and a source
+  scan fails the build if any shipped code spawns a bare program name.
+  **Running `ais doctor` or `ais create` inside folders you do not trust on
+  Windows should wait for this release.**
+
 ### Added
 - **Generated projects reject AI attribution trailers at commit time
   (backlog item 66).** A new `.claude/hooks/commit-msg` ships in all five
