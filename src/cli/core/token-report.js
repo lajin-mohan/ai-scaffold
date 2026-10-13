@@ -60,6 +60,28 @@ function measureCategory(rootDir, dir) {
   return measureFiles(listMarkdown(path.join(rootDir, dir)), rootDir);
 }
 
+/**
+ * True when the file's leading front-matter block declares `paths:`. Claude
+ * Code loads a rule WITHOUT `paths:` at launch, with the same priority as
+ * CLAUDE.md, so only path-scoped rules are on demand (item 85).
+ */
+export function hasPathsFrontmatter(text) {
+  const lines = text.replace(/^\uFEFF/, '').split(/\r?\n/);
+  if (lines[0] !== '---') return false;
+  for (let i = 1; i < lines.length; i++) {
+    if (lines[i] === '---') return false;
+    if (/^paths\s*:/.test(lines[i])) return true;
+  }
+  return false;
+}
+
+function measureRules(rootDir) {
+  const files = listMarkdown(path.join(rootDir, '.claude/rules'));
+  const scoped = files.filter((f) => hasPathsFrontmatter(fs.readFileSync(f, 'utf8')));
+  const unscoped = files.filter((f) => !scoped.includes(f));
+  return { unscoped: measureFiles(unscoped, rootDir), scoped: measureFiles(scoped, rootDir) };
+}
+
 function measureAlwaysLoaded(rootDir) {
   const file = path.join(rootDir, 'CLAUDE.md');
   const chars = fs.existsSync(file) ? fs.statSync(file).size : 0;
@@ -85,9 +107,11 @@ function reviewFanoutCost(rootDir) {
  * wrapper is responsible for presentation.
  */
 export function buildTokenReport(rootDir = process.cwd()) {
+  const rules = measureRules(rootDir);
   const categories = [
-    { key: 'always', label: 'Always-loaded (CLAUDE.md)', loading: 'every session', ...measureAlwaysLoaded(rootDir) },
-    { key: 'rules', label: 'Rules (.claude/rules)', loading: 'on reference', ...measureCategory(rootDir, '.claude/rules') },
+    { key: 'always', label: 'CLAUDE.md', loading: 'every session', alwaysLoaded: true, ...measureAlwaysLoaded(rootDir) },
+    { key: 'rules-always', label: 'Rules, unscoped (.claude/rules)', loading: 'every session (no paths:)', alwaysLoaded: true, ...rules.unscoped },
+    { key: 'rules-scoped', label: 'Rules, paths:-scoped', loading: 'when a matching file is read', ...rules.scoped },
     { key: 'commands', label: 'Commands (.claude/commands)', loading: 'on invoke', ...measureCategory(rootDir, '.claude/commands') },
     { key: 'agents', label: 'Agents (.claude/agents)', loading: 'on invoke (own context)', ...measureCategory(rootDir, '.claude/agents') },
     { key: 'skills', label: 'Skills (.claude/skills)', loading: 'on invoke', ...measureCategory(rootDir, '.claude/skills') },
@@ -98,7 +122,10 @@ export function buildTokenReport(rootDir = process.cwd()) {
     tokens: categories.reduce((n, c) => n + c.tokens, 0),
   };
 
-  const onDemand = total.tokens - categories[0].tokens;
+  const alwaysLoaded = categories
+    .filter((c) => c.alwaysLoaded)
+    .reduce((n, c) => n + c.tokens, 0);
+  const onDemand = total.tokens - alwaysLoaded;
 
   const topFiles = categories
     .flatMap((c) => c.perFile ?? [])
@@ -109,7 +136,7 @@ export function buildTokenReport(rootDir = process.cwd()) {
     charsPerToken: CHARS_PER_TOKEN,
     categories: categories.map(({ perFile: _perFile, chars: _chars, ...rest }) => rest),
     total,
-    alwaysLoadedTokens: categories[0].tokens,
+    alwaysLoadedTokens: alwaysLoaded,
     onDemandTokens: onDemand,
     topFiles,
     reviewFanout: reviewFanoutCost(rootDir),
