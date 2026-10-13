@@ -7,7 +7,7 @@ import { spawnSync } from 'node:child_process';
 import { buildTokenReport, hasPathsFrontmatter } from '../cli/core/token-report.js';
 import { applyInteractiveDefaults, resolveWithDefaults, validateBootstrapValues } from '../cli/core/prompts.js';
 import { buildFilePlan } from '../cli/core/file-plan.js';
-import { buildCliReference } from '../cli/core/content-templates.js';
+import { buildCliReference, resolvePlaceholders } from '../cli/core/content-templates.js';
 import { MANAGED_PATHS, PROTECTED_PATHS, APP_SOURCE_PATHS } from '../cli/core/file-plan.js';
 import { detectConflicts } from '../cli/core/conflicts.js';
 import { buildDryRunPlan, emptyConflicts } from '../cli/core/dry-run-plan.js';
@@ -823,6 +823,34 @@ describe('generated CLI reference', () => {
     for (const existingTarget of [false, true]) {
       const plan = await buildFilePlan(templatePath('generic'), '/tmp/out', { existingTarget });
       expect(plan.generate.map((f) => f.rel)).toContain('.ai-scaffold/cli-reference.md');
+    }
+  });
+});
+
+describe('placeholder gaps (item 77)', () => {
+  const values = resolveWithDefaults({ projectName: 'acme-billing', profile: 'node', lifecycleStage: 'production' }).resolved;
+
+  it('fills CLAUDE.md Status from the lifecycle stage, matching the other generated files', () => {
+    expect(resolvePlaceholders('{{Active Development / MVP / Production}}', values)).toBe('Production');
+    expect(resolvePlaceholders('{{Active Development / MVP / Production}}', {})).toBe('Active Development');
+  });
+
+  it('leaves no unresolved Epic or Sprint placeholder in project-context.md', () => {
+    for (const profile of SUPPORTED_PROFILES) {
+      const template = readFileSync(templatePath(profile, '.claude/memory/project-context.md'), 'utf-8');
+      const rendered = resolvePlaceholders(template, values);
+      expect(rendered).toMatch(/^\*\*Epic:\*\* (?!\{\{).+$/m);
+      expect(rendered).toMatch(/^\*\*Sprint:\*\* 1$/m);
+    }
+  });
+
+  // what-next.md describes bootstrap placeholders. If it quoted a real token,
+  // substitution would replace it with the project's own value and the Stage 0
+  // check would misfire in every generated project (0.16.0 shipped exactly that).
+  it('ships what-next.md with nothing placeholder substitution would change', () => {
+    for (const profile of SUPPORTED_PROFILES) {
+      const text = readFileSync(templatePath(profile, '.claude/commands/what-next.md'), 'utf-8');
+      expect(resolvePlaceholders(text, values)).toBe(text);
     }
   });
 });

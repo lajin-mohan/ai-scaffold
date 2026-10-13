@@ -50,17 +50,20 @@ When token count ≥ `tokenBudget.warningThreshold` (from `settings.json`), appe
 
 A fresh copy of this scaffold has no project identity, no chosen stack, and no real artifacts. Until that's resolved, every later stage is meaningless.
 
-**Bootstrap detection signals — if ANY of these are true, the project is at Stage 0:**
+**First, check `.ai-scaffold.json`.** If it exists with `"bootstrapped": true`, the project was set up by `ais create` or `ais init` and **Stage 0 is complete**. Skip to the Phase-Level Pre-Check; do not evaluate the signals below.
+
+**Otherwise, the project is at Stage 0 if ANY of these are true:**
 
 | Signal | Where to check |
 |---|---|
-| `{{PROJECT_NAME}}` placeholder still present | `CLAUDE.md` Project Identity table |
-| `{{ONE_LINE_PURPOSE}}` placeholder still present | `CLAUDE.md` Project Identity table |
-| `{{BACKEND_STACK}}`, `{{FRONTEND_STACK}}`, `{{DATABASE}}` etc. still placeholders | `CLAUDE.md` Tech Stack table |
-| `{{IS_MULTI_TENANT}}` or `{{COMPLIANCE_SCOPE}}` not set to a concrete value | `CLAUDE.md` Project Identity table |
-| `{{CURRENT_EPIC}}` / `{{SPRINT_NUMBER}}` placeholders still present | `.claude/memory/project-context.md` |
+| A Project Identity row still holds an unresolved placeholder (text inside `{{…}}`) | `CLAUDE.md` Project Identity table |
+| A Tech Stack row still holds an unresolved placeholder | `CLAUDE.md` Tech Stack table |
+| Multi-tenancy or compliance scope is not set to a concrete value | `CLAUDE.md` Project Identity table |
+| The Epic line still holds an unresolved placeholder | `.claude/memory/project-context.md` |
 | Repository is not a git repo (no `.git/`) | Repo root |
 | `apps/` and `packages/` are empty (no real source) | Repo root |
+
+> These signals are described, not quoted: this file passes through placeholder substitution at `ais create`, so a literal placeholder written here would be replaced by the project's own values.
 
 If Stage 0 fires, output the **Stage 0 instruction** below and stop. Do not evaluate fast lanes or Stage 1+.
 

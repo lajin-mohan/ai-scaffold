@@ -6,8 +6,8 @@ Current state of the project. Update at the start of each epic or sprint.
 
 ## Current State
 
-**Epic:** {{CURRENT_EPIC}}
-**Sprint:** {{SPRINT_NUMBER}}
+**Epic:** {{EPIC_NAME}}
+**Sprint:** 1
 **Phase:** Analysis / Plan / Arch / UX / Execution / Review / QA / Deployment
 **Target Milestone:** YYYY-MM-DD
 
