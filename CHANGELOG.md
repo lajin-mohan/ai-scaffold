@@ -22,6 +22,29 @@ This file is configured with `merge=union` in `.gitattributes` so parallel addit
   `CLAUDE.md` and the unscoped rules. For this repository that is **34,465**
   estimated tokens, not the 2,426 it reported before. Maintainer tooling only;
   it does not ship to generated projects.
+- **`/what-next` no longer reports a fresh project as un-bootstrapped (backlog
+  item 77).** Placeholder substitution runs on every copied file, so the
+  shipped `what-next.md` had its own bootstrap-detection table rewritten with
+  the project's values (e.g. "`acme` placeholder still present"). Its Stage 0
+  check could then fire in every generated project. Now:
+  - Stage 0 is complete whenever `.ai-scaffold.json` says
+    `"bootstrapped": true`;
+  - the remaining signals are described rather than quoted, so substitution
+    cannot change them;
+  - `.claude/memory/project-context.md` fills its Epic line and starts at
+    Sprint 1 instead of shipping placeholders;
+  - a test fails if substitution would change `what-next.md`.
+- **`CLAUDE.md` Status now matches the chosen lifecycle stage.** It was
+  hard-coded to "Active Development", so `--lifecycle-stage production`
+  produced a `CLAUDE.md` that contradicted `.ai-scaffold/context.md` and
+  `settings-overrides.json`. The unused `{{RUNTIME}}` placeholder is removed.
+- **`ais doctor` explains a missing GitHub remote instead of reporting an
+  "unrecognised" CLI failure (backlog item 96).** In a project with no git
+  remote (or outside a repository), `gh repo view` exits 1 with
+  "no git remotes found". `doctor` now reports that as "no GitHub repository
+  configured for this directory", with the add-a-remote-or-`--repo` remedy.
+  In `--json`, only the `reason` value changes (`unknown` → `no-repo`).
+
 ### Changed
 - **New operating principles for AI agents (backlog item 95).** The shipped
   `ai-coding-rules.md` replaces its "Five Operating Principles" with six,
@@ -48,28 +71,6 @@ This file is configured with `merge=union` in `.gitattributes` so parallel addit
     critical paths.
   - **Two code examples that restated R3 and R9 are removed.** The file is
     23,834 bytes, against 22,728 before (+4.9%).
-- **`/what-next` no longer reports a fresh project as un-bootstrapped (backlog
-  item 77).** Placeholder substitution runs on every copied file, so the
-  shipped `what-next.md` had its own bootstrap-detection table rewritten with
-  the project's values (e.g. "`acme` placeholder still present"). Its Stage 0
-  check could then fire in every generated project. Now:
-  - Stage 0 is complete whenever `.ai-scaffold.json` says
-    `"bootstrapped": true`;
-  - the remaining signals are described rather than quoted, so substitution
-    cannot change them;
-  - `.claude/memory/project-context.md` fills its Epic line and starts at
-    Sprint 1 instead of shipping placeholders;
-  - a test fails if substitution would change `what-next.md`.
-- **`CLAUDE.md` Status now matches the chosen lifecycle stage.** It was
-  hard-coded to "Active Development", so `--lifecycle-stage production`
-  produced a `CLAUDE.md` that contradicted `.ai-scaffold/context.md` and
-  `settings-overrides.json`. The unused `{{RUNTIME}}` placeholder is removed.
-- **`ais doctor` explains a missing GitHub remote instead of reporting an
-  "unrecognised" CLI failure (backlog item 96).** In a project with no git
-  remote (or outside a repository), `gh repo view` exits 1 with
-  "no git remotes found". `doctor` now reports that as "no GitHub repository
-  configured for this directory", with the add-a-remote-or-`--repo` remedy.
-  In `--json`, only the `reason` value changes (`unknown` → `no-repo`).
 
 ## [0.16.0] - 2026-10-12
 
