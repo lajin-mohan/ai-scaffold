@@ -119,6 +119,9 @@ export function classify({ status, signal, errorCode, stderr = '' }) {
   if (s.includes('rate limit') || s.includes('secondary rate') || s.includes('abuse detection')) {
     return REASONS.RATE_LIMITED;
   }
+  // `gh repo view` in a project with no remote, or outside any repository
+  // (item 96). Both mean there is no GitHub repository to check, not a CLI fault.
+  if (s.includes('no git remotes found') || s.includes('not a git repository')) return REASONS.NO_REPO;
   if (s.includes('http 403') || s.includes('forbidden')) return REASONS.FORBIDDEN;
   if (s.includes('http 404') || s.includes('not found')) return REASONS.NOT_FOUND;
   return REASONS.UNKNOWN;
@@ -219,7 +222,8 @@ export function runGhRepoView({ cwd, budget } = {}) {
   if (reason) return { ok: false, reason, remedy: remedyFor(reason) };
 
   const repo = (result.stdout ?? '').trim();
-  // `gh repo view` exits 0 with empty stdout outside a repository with a remote.
+  // A successful run with empty output still means no repository (kept as a
+  // guard; with no remote, gh exits 1 and classify() returns NO_REPO).
   if (repo === '') return { ok: false, reason: REASONS.NO_REPO, remedy: remedyFor(REASONS.NO_REPO) };
   return { ok: true, repo };
 }

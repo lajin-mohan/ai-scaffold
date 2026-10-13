@@ -64,6 +64,12 @@ This file is configured with `merge=union` in `.gitattributes` so parallel addit
   hard-coded to "Active Development", so `--lifecycle-stage production`
   produced a `CLAUDE.md` that contradicted `.ai-scaffold/context.md` and
   `settings-overrides.json`. The unused `{{RUNTIME}}` placeholder is removed.
+- **`ais doctor` explains a missing GitHub remote instead of reporting an
+  "unrecognised" CLI failure (backlog item 96).** In a project with no git
+  remote (or outside a repository), `gh repo view` exits 1 with
+  "no git remotes found". `doctor` now reports that as "no GitHub repository
+  configured for this directory", with the add-a-remote-or-`--repo` remedy.
+  In `--json`, only the `reason` value changes (`unknown` → `no-repo`).
 
 ## [0.16.0] - 2026-10-12
 

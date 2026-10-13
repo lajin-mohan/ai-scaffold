@@ -557,6 +557,13 @@ the packed tarball.
     paraphrase the old five principles. They are excluded from the default
     install, so this is low impact.
   - *(S)*
+- **96. `doctor`: "no git remotes found" reads as no-repository (ships in
+  0.16.1).**
+  - Found while verifying item 94: every local project without a remote saw
+    "GitHub CLI failed for an unrecognised reason".
+  - `classify` now maps it, and gh's "not a git repository", to `NO_REPO`.
+  - Ticket: `tasks/todo/96-gh-no-remote.md`.
+  - *(XS)*
 - **94. Spawn external tools only from `PATH` — security, P0, ships in 0.16.0.**
   Found 2026-10-12 while verifying review-25 finding N7. On Windows, Node
   searches the working directory before `PATH`, so `ais doctor` (0.15.0–0.15.1)
