@@ -2,7 +2,9 @@
 
 ## Status
 
-**First slice DONE — merged 2026-10-12 as lajin-mohan/ai-scaffold#146.**
+**First slice DONE — merged 2026-10-12 as lajin-mohan/ai-scaffold#146 and
+released in 0.16.0.** Verified from the registry: all 5 profiles install the
+hook, reject a trailer, and report C-05 `pass`.
 - What shipped: the `commit-msg` hook in all five profiles, installed by
   `create`, and `doctor` C-05. C-04 and C-05 now resolve `core.hooksPath`.
 - CI was green on Ubuntu and Windows; the hook tests passed 14/14 on both.

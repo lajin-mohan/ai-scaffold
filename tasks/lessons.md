@@ -197,3 +197,38 @@ This file records patterns from mistakes and corrections. Claude reads this at t
   tool's presence and version differ between CI and dev machines** — a
   command that skips-when-absent locally can fail-when-present in CI. Verify
   tool-dependent commands against the version CI actually installs, and pin it.
+
+## 2026-10-12 — A background agent's commit was lost by a squash merge it raced (item 25)
+
+- **Mistake:** The independent architecture review of item 25 was committed by
+  a background agent to the PR branch of #143 *after* the maintainer had
+  already merged #143. The squash took the branch as it was at merge time, so
+  `docs/architecture/review-25-ais-update.md` never reached `dev`. Status
+  reports said it was "in #143". It was recovered from the orphaned commit
+  `958f1c0` three days later, only because a later step looked for the file.
+- **Why:** A PR branch was treated as a durable home for late additions. Once a
+  PR is merged, its branch is dead: later pushes land nowhere. Nothing checked
+  that the agent's push landed on a branch whose PR was still open.
+- **Rule:** Never send late work to an existing PR's branch without first
+  checking that the PR is still open (`gh pr view <n> --json state`). After a
+  delegated agent pushes, confirm that the file is on the PR's head **and**
+  the PR is unmerged before reporting where the file is. If the PR is merged,
+  the work goes in a new branch and PR.
+
+## 2026-10-12 — `git add docs/` committed and pushed the maintainer's untracked work (item 25)
+
+- **Mistake:** A commit on `docs/25-design-v2` used `git add docs/ tasks/`.
+  That swept in `docs/workshop/`, the maintainer's untracked workshop material
+  (slides, presenter notes, a prep email), which had been explicitly left
+  alone all session. It was pushed before anyone noticed. It was untracked
+  again in the next commit, but the files remain in the pushed branch history.
+- **Why:** A directory pathspec stages **every untracked file under it**. The
+  staged-file check that ran was filtered with
+  `grep -v "^??\| M .claude"`, which hid nothing relevant, but it ran *after*
+  `git commit` in the same command, so it could not stop the commit.
+- **Rule:**
+  - Stage explicit file paths only, never a directory, when the working tree
+    holds untracked files that aren't yours (`git status -s` shows `??`).
+  - Review `git diff --cached --name-only` **before** committing, as its own
+    step.
+  - An unexpected `A` (added) path in the staged list is a stop signal.

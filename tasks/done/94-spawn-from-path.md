@@ -2,9 +2,11 @@
 
 ## Status
 
-**Plan v2 — 2026-10-12.** The architect review returned APPROVE WITH CHANGES
-(2 BLOCK, 4 WARN, 5 NIT); all are applied in the v2 section at the end. In
-implementation. Size S. P0, security.
+**DONE — merged as lajin-mohan/ai-scaffold#148, released in 0.16.0
+(2026-10-12), verified from the npm registry.** On Windows CI the positive
+control fired, the plants never ran, and the source scan found 0 bare-name
+spawns. Running the decoy harness against the installed 0.16.0 package gave
+`gh-missing` in 3 ms with the plant not run. The plan v2 history follows.
 Branch: `fix/94-spawn-from-path`. Ships in **0.16.0**: the maintainer chose
 option (a) on 2026-10-12, which moves 0.16.0 ahead of item 25.
 
