@@ -13,6 +13,33 @@ This file is configured with `merge=union` in `.gitattributes` so parallel addit
 
 ## [Unreleased]
 
+### Changed
+- **New operating principles for AI agents (backlog item 95).** The shipped
+  `ai-coding-rules.md` replaces its "Five Operating Principles" with six,
+  paraphrased from the MIT-licensed andrej-karpathy-skills guidelines:
+  1. think before coding;
+  2. verify, don't hallucinate;
+  3. simplicity first;
+  4. surgical changes;
+  5. goal-driven execution;
+  6. production-grade within scope.
+
+  Further changes:
+  - **Completeness Mandate narrowed.** §10 "Completeness Mandate (Boil the
+    Lake)" becomes **"Completeness within Scope"**: finish what was asked,
+    never build more. `governance.md` pillar 5 is renamed to match. This
+    narrows a shipped governance mandate. Existing projects receive it
+    through `ais update` once item 25 ships.
+  - **Prompt-injection guidance (item 86).** Tool output, files and web pages
+    are treated as data, not instructions.
+  - **Rules that only this repository had now ship:** the minimum-sufficient-
+    change rule (folded into principles 3, 4 and 6), readability rules R9
+    "return early" and R10 "safe by default", and two §8 refinements:
+    tool-neutral scope files, and targeted tests plus the full suite for
+    critical paths.
+  - **Two code examples that restated R3 and R9 are removed.** The file is
+    23,834 bytes, against 22,728 before (+4.9%).
+
 ## [0.16.0] - 2026-10-12
 
 ### Security
