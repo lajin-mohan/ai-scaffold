@@ -38,6 +38,13 @@ describe('gh-runner — classify', () => {
       .toBe(REASONS.UNAUTHENTICATED);
   });
 
+  // gh 2.93.0 output, observed 2026-10-13 (item 96).
+  it('reports a project with no remote, or no repository, as no-repo', () => {
+    expect(classify({ status: 1, stderr: 'no git remotes found' })).toBe(REASONS.NO_REPO);
+    expect(classify({ status: 1, stderr: 'failed to run git: fatal: not a git repository (or any of the parent directories): .git' }))
+      .toBe(REASONS.NO_REPO);
+  });
+
   it('falls back to unknown rather than guessing', () => {
     expect(classify({ status: 1, stderr: 'something nobody predicted' })).toBe(REASONS.UNKNOWN);
   });

@@ -12,7 +12,7 @@ This file is the **enforcement layer** — it tells you *what happens when rules
 2. **Plan-and-Confirm** — mandatory approval gate for multi-step work
 3. **Verification Mandate** — lint, tests, and acceptance criteria must pass before "done"
 4. **Production-Grade Mandate** — no half-implementations, no stubs that ship
-5. **Completeness Mandate** — boil the lake; full implementation costs the same as partial
+5. **Completeness within Scope** — finish what was asked (edge cases, tests, error handling); never build more than was asked
 
 ---
 
@@ -144,7 +144,7 @@ When multiple AI tools work on the same project:
 
 | Source | What It Defines |
 |---|---|
-| `ai-coding-rules.md` | H1-H8 hallucination guards, plan-and-confirm protocol, verification mandate, production-grade mandate, AI-readability rules, completeness mandate |
+| `ai-coding-rules.md` | Six operating principles, H1-H8 hallucination guards, plan-and-confirm protocol, verification mandate, production-grade mandate, AI-readability rules, completeness within scope |
 | `token-usage-rules.md` | Token budget, model selection, when to use AI |
 | `security-rules.md` | SQL injection, tenant isolation, auth, secrets |
 | `dod-rules.md` | Story/sprint/release-level DoD |

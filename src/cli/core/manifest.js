@@ -7,6 +7,7 @@ import path from 'path';
 import fs from 'fs-extra';
 import { getVersion } from './version.js';
 import { toPosixPath } from './paths.js';
+import { lifecycleStageToStatus } from './content-templates.js';
 
 export function buildManifestData(values) {
   return {
@@ -130,17 +131,6 @@ export async function buildManagedFileRecords(targetDir, relPaths) {
 
 function hasCompliance(values, scope) {
   return Array.isArray(values.complianceScope) && values.complianceScope.includes(scope);
-}
-
-function lifecycleStageToStatus(stage) {
-  const labels = {
-    discovery: 'Discovery',
-    'active-development': 'Active Development',
-    production: 'Production',
-    maintenance: 'Maintenance',
-    'legacy-modernization': 'Legacy Modernization',
-  };
-  return labels[stage] ?? 'Active Development';
 }
 
 function today() {
