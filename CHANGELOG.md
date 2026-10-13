@@ -13,6 +13,16 @@ This file is configured with `merge=union` in `.gitattributes` so parallel addit
 
 ## [Unreleased]
 
+### Fixed
+- **`npm run token-report` now reports what actually loads every session
+  (backlog item 85).** It labelled all of `.claude/rules` "on reference",
+  but Claude Code loads every rule **without `paths:` front matter** at launch,
+  just like `CLAUDE.md`. The report now splits rules into unscoped
+  (always-loaded) and `paths:`-scoped, and always-loaded is the sum of
+  `CLAUDE.md` and the unscoped rules. For this repository that is **34,465**
+  estimated tokens, not the 2,426 it reported before. Maintainer tooling only;
+  it does not ship to generated projects.
+
 ## [0.16.0] - 2026-10-12
 
 ### Security

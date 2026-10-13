@@ -4,7 +4,7 @@ import path from 'node:path';
 import os from 'node:os';
 import { fileURLToPath } from 'node:url';
 import { spawnSync } from 'node:child_process';
-import { buildTokenReport } from '../cli/core/token-report.js';
+import { buildTokenReport, hasPathsFrontmatter } from '../cli/core/token-report.js';
 import { applyInteractiveDefaults, resolveWithDefaults, validateBootstrapValues } from '../cli/core/prompts.js';
 import { buildFilePlan } from '../cli/core/file-plan.js';
 import { buildCliReference } from '../cli/core/content-templates.js';
@@ -726,17 +726,27 @@ describe('buildTokenReport', () => {
 
   it('measures every corpus category with a positive total', () => {
     const keys = report.categories.map((c) => c.key);
-    expect(keys).toEqual(['always', 'rules', 'commands', 'agents', 'skills']);
+    expect(keys).toEqual(['always', 'rules-always', 'rules-scoped', 'commands', 'agents', 'skills']);
     expect(report.total.tokens).toBeGreaterThan(0);
     const sum = report.categories.reduce((n, c) => n + c.tokens, 0);
     expect(report.total.tokens).toBe(sum);
   });
 
-  it('splits always-loaded (CLAUDE.md) from on-demand', () => {
-    expect(report.alwaysLoadedTokens).toBeGreaterThan(0);
+  it('counts CLAUDE.md and every unscoped rule as always-loaded (item 85)', () => {
+    const always = report.categories.filter((c) => c.alwaysLoaded).map((c) => c.key);
+    expect(always).toEqual(['always', 'rules-always']);
+    const sum = report.categories.filter((c) => c.alwaysLoaded).reduce((n, c) => n + c.tokens, 0);
+    expect(report.alwaysLoadedTokens).toBe(sum);
     expect(report.onDemandTokens).toBe(report.total.tokens - report.alwaysLoadedTokens);
-    // The upfront/always-loaded slice is small vs on-demand — the premise of the workstream.
-    expect(report.alwaysLoadedTokens).toBeLessThan(report.onDemandTokens);
+  });
+
+  it('classifies rules by their leading front matter only', () => {
+    expect(hasPathsFrontmatter('---\npaths:\n  - "**/*.py"\n---\n# Rule\n')).toBe(true);
+    expect(hasPathsFrontmatter('---\r\npaths:\r\n  - "**/*.go"\r\n---\r\n# Rule\r\n')).toBe(true);
+    expect(hasPathsFrontmatter('﻿---\npaths: ["*.ts"]\n---\n')).toBe(true);
+    expect(hasPathsFrontmatter('# Rule\n\npaths: not front matter\n')).toBe(false);
+    expect(hasPathsFrontmatter('---\ndescription: x\n---\npaths: in the body\n')).toBe(false);
+    expect(hasPathsFrontmatter('')).toBe(false);
   });
 
   it('ranks the largest files descending and caps the list', () => {

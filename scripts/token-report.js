@@ -52,6 +52,7 @@ function main() {
       fmt(r.onDemandTokens) +
       chalk.gray(' (cached / loaded only when used)'),
   );
+  console.log(chalk.gray('  Always-loaded = CLAUDE.md + every rule without paths: front matter. CLAUDE.local.md is not counted.'));
   console.log(
     '  ' +
       chalk.bold(`/review fan-out floor: `) +
