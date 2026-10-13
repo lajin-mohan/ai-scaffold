@@ -131,10 +131,7 @@ On `confirm`, write in this order:
 
 5. **`README.md`**, **`.cursorrules`**, **`.github/copilot-instructions.md`** — replace identity placeholders (`{{PROJECT_NAME}}`, `{{ONE_LINE_PURPOSE}}`, `{{OWNER_EMAIL}}`) with values from settings-overrides.json.
 
-6. **`.claude/memory/project-context.md`** — replace runtime template tokens:
-   - `{{CURRENT_EPIC}}` → `[EPIC_NAME]`
-   - `{{SPRINT_NUMBER}}` → `[SPRINT_N]`
-   - `{{DATE}}` → `[DATE]`
+6. **`.claude/memory/project-context.md`** — `ais create` and `ais init` fill the Epic line from the project purpose and start the Sprint at `1`. If the Epic line still holds an unresolved placeholder, replace it with `[EPIC_NAME]`; replace `{{DATE}}` → `[DATE]`.
 
 7. **`.claude/agents/solution-analyst.md`**, **`.claude/agents/pm.md`** — replace runtime template tokens:
    - `{{FEATURE_NAME}}` → `[FEATURE_NAME]`

@@ -13,6 +13,24 @@ This file is configured with `merge=union` in `.gitattributes` so parallel addit
 
 ## [Unreleased]
 
+### Fixed
+- **`/what-next` no longer reports a fresh project as un-bootstrapped (backlog
+  item 77).** Placeholder substitution runs on every copied file, so the
+  shipped `what-next.md` had its own bootstrap-detection table rewritten with
+  the project's values (e.g. "`acme` placeholder still present"). Its Stage 0
+  check could then fire in every generated project. Now:
+  - Stage 0 is complete whenever `.ai-scaffold.json` says
+    `"bootstrapped": true`;
+  - the remaining signals are described rather than quoted, so substitution
+    cannot change them;
+  - `.claude/memory/project-context.md` fills its Epic line and starts at
+    Sprint 1 instead of shipping placeholders;
+  - a test fails if substitution would change `what-next.md`.
+- **`CLAUDE.md` Status now matches the chosen lifecycle stage.** It was
+  hard-coded to "Active Development", so `--lifecycle-stage production`
+  produced a `CLAUDE.md` that contradicted `.ai-scaffold/context.md` and
+  `settings-overrides.json`. The unused `{{RUNTIME}}` placeholder is removed.
+
 ## [0.16.0] - 2026-10-12
 
 ### Security

@@ -160,7 +160,15 @@ unless a UI-heavy pilot provides evidence to raise it.
   reference was given its own path to route around this rather than inherit it.
   **Size: S.** Sequence after item 25.
 
-- **77. Placeholder-substitution gaps in generated projects.** Audited 2026-08-27
+- **77. 🟡 D1, D2, D4 fixed for 0.16.1 (`tasks/todo/77-placeholder-gaps.md`).**
+  - The fix also covered a worse defect found in review: substitution rewrote
+    `what-next.md`'s own Stage 0 table in every generated project.
+  - **Open:** D3 (eight hardcoded `N/A` tech-stack rows, a product decision).
+  - **Open:** other files that *describe* project tokens rather than use them
+    (`bootstrap.md`; template-state only).
+
+  Original finding:
+  **Placeholder-substitution gaps in generated projects.** Audited 2026-08-27
   by generating real projects (`ais create --profile node --yes`, 159 files) and
   inspecting the output, not by reading the templates. **The mechanism is sound**
   — identity, stack, commands and every generated file (`MEMORY.md`,
