@@ -539,6 +539,16 @@ the packed tarball.
 - **93. Deterministic `/health`.** Move the scoring into a script
   (`ais health` or `npm run health`) so the same code gets the same score; the
   command only runs the script and presents the result. *(M)*
+- **95. Adopt the Karpathy-derived principles (ships in 0.16.1).**
+  - Six operating principles in `ai-coding-rules.md`, with "Boil the Lake"
+    narrowed to "Completeness within Scope" (maintainer, 2026-10-13).
+  - Fixes root-only drift: PR #110's scope discipline and R9/R10 never reached
+    adopters.
+  - Ticket: `tasks/todo/95-karpathy-principles.md`.
+  - **Follow-ups:** `.github/copilot-instructions.md` and `.cursorrules` still
+    paraphrase the old five principles. They are excluded from the default
+    install, so this is low impact.
+  - *(S)*
 - **94. Spawn external tools only from `PATH` — security, P0, ships in 0.16.0.**
   Found 2026-10-12 while verifying review-25 finding N7. On Windows, Node
   searches the working directory before `PATH`, so `ais doctor` (0.15.0–0.15.1)
