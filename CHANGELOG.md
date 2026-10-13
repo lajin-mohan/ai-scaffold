@@ -13,6 +13,8 @@ This file is configured with `merge=union` in `.gitattributes` so parallel addit
 
 ## [Unreleased]
 
+## [0.16.1] - 2026-10-13
+
 ### Fixed
 - **`npm run token-report` now reports what actually loads every session
   (backlog item 85).** It labelled all of `.claude/rules` "on reference",
