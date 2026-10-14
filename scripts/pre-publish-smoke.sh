@@ -213,6 +213,16 @@ else
   fail "generated settings do not wire starter safety hooks"
 fi
 
+# Item 77: a fresh project must not trip /what-next's bootstrap check. The
+# project-context Epic/Sprint lines resolve, and what-next.md is not rewritten
+# by placeholder substitution (0.16.0 shipped it with its own signals replaced).
+if ! grep -q "{{" <(grep -E '^\*\*(Epic|Sprint):\*\*' "$SMOKE_DIR/smoke-project/.claude/memory/project-context.md") \
+  && cmp -s "$SMOKE_DIR/smoke-project/.claude/commands/what-next.md" "templates/generic/.claude/commands/what-next.md"; then
+  pass "fresh project has resolved Epic/Sprint and an unmodified what-next.md"
+else
+  fail "fresh project still trips /what-next Stage 0 (unresolved Epic/Sprint or substituted what-next.md)"
+fi
+
 # Item 54: create wires .claude/hooks/pre-commit into .git/hooks/ so commits
 # made outside Claude Code are gated too, not only agent-driven commits.
 if [ -x "$SMOKE_DIR/smoke-project/.git/hooks/pre-commit" ]; then

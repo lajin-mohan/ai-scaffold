@@ -17,6 +17,18 @@ export function toComposerPackageName(projectName, vendor = 'app') {
   return `${vendor}/${slug || 'project'}`;
 }
 
+/** Human-readable status for a lifecycle stage; shared by CLAUDE.md and settings-overrides.json. */
+export function lifecycleStageToStatus(stage) {
+  const labels = {
+    discovery: 'Discovery',
+    'active-development': 'Active Development',
+    production: 'Production',
+    maintenance: 'Maintenance',
+    'legacy-modernization': 'Legacy Modernization',
+  };
+  return labels[stage] ?? 'Active Development';
+}
+
 export function resolvePlaceholders(content, values) {
   const tokenMap = {
     '{{PROJECT_NAME}}': values.projectName ?? '',
@@ -25,7 +37,7 @@ export function resolvePlaceholders(content, values) {
     '{{PROJECT_DESCRIPTION}}': values.purpose ?? '',
     '{{ONE_LINE_PURPOSE}}': values.purpose ?? '',
     '{{SaaS / Internal Tool / API / Platform}}': values.projectType ?? '',
-    '{{Active Development / MVP / Production}}': 'Active Development',
+    '{{Active Development / MVP / Production}}': lifecycleStageToStatus(values.lifecycleStage),
     '{{IS_MULTI_TENANT}}': String(values.multiTenant ?? false),
     '{{COMPLIANCE_SCOPE}}': formatCompliance(values.complianceScope),
     '{{OWNER_EMAIL}}': values.ownerEmail ?? '',
@@ -33,7 +45,6 @@ export function resolvePlaceholders(content, values) {
     '{{BACKEND_STACK}}': values.backendStack ?? 'N/A',
     '{{FRONTEND_STACK}}': values.frontendStack ?? 'none',
     '{{DATABASE}}': values.database ?? 'N/A',
-    '{{RUNTIME}}': values.backendStack ?? 'N/A',
     '{{REPO_URL}}': 'N/A',
     '{{INSTALL_COMMAND}}': commandOrNA(values.installCommand),
     '{{MIGRATION_COMMAND}}': commandOrNA(values.migrationCommand),

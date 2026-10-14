@@ -4,10 +4,10 @@ import path from 'node:path';
 import os from 'node:os';
 import { fileURLToPath } from 'node:url';
 import { spawnSync } from 'node:child_process';
-import { buildTokenReport } from '../cli/core/token-report.js';
+import { buildTokenReport, hasPathsFrontmatter } from '../cli/core/token-report.js';
 import { applyInteractiveDefaults, resolveWithDefaults, validateBootstrapValues } from '../cli/core/prompts.js';
 import { buildFilePlan } from '../cli/core/file-plan.js';
-import { buildCliReference } from '../cli/core/content-templates.js';
+import { buildCliReference, resolvePlaceholders } from '../cli/core/content-templates.js';
 import { MANAGED_PATHS, PROTECTED_PATHS, APP_SOURCE_PATHS } from '../cli/core/file-plan.js';
 import { detectConflicts } from '../cli/core/conflicts.js';
 import { buildDryRunPlan, emptyConflicts } from '../cli/core/dry-run-plan.js';
@@ -726,17 +726,27 @@ describe('buildTokenReport', () => {
 
   it('measures every corpus category with a positive total', () => {
     const keys = report.categories.map((c) => c.key);
-    expect(keys).toEqual(['always', 'rules', 'commands', 'agents', 'skills']);
+    expect(keys).toEqual(['always', 'rules-always', 'rules-scoped', 'commands', 'agents', 'skills']);
     expect(report.total.tokens).toBeGreaterThan(0);
     const sum = report.categories.reduce((n, c) => n + c.tokens, 0);
     expect(report.total.tokens).toBe(sum);
   });
 
-  it('splits always-loaded (CLAUDE.md) from on-demand', () => {
-    expect(report.alwaysLoadedTokens).toBeGreaterThan(0);
+  it('counts CLAUDE.md and every unscoped rule as always-loaded (item 85)', () => {
+    const always = report.categories.filter((c) => c.alwaysLoaded).map((c) => c.key);
+    expect(always).toEqual(['always', 'rules-always']);
+    const sum = report.categories.filter((c) => c.alwaysLoaded).reduce((n, c) => n + c.tokens, 0);
+    expect(report.alwaysLoadedTokens).toBe(sum);
     expect(report.onDemandTokens).toBe(report.total.tokens - report.alwaysLoadedTokens);
-    // The upfront/always-loaded slice is small vs on-demand — the premise of the workstream.
-    expect(report.alwaysLoadedTokens).toBeLessThan(report.onDemandTokens);
+  });
+
+  it('classifies rules by their leading front matter only', () => {
+    expect(hasPathsFrontmatter('---\npaths:\n  - "**/*.py"\n---\n# Rule\n')).toBe(true);
+    expect(hasPathsFrontmatter('---\r\npaths:\r\n  - "**/*.go"\r\n---\r\n# Rule\r\n')).toBe(true);
+    expect(hasPathsFrontmatter('﻿---\npaths: ["*.ts"]\n---\n')).toBe(true);
+    expect(hasPathsFrontmatter('# Rule\n\npaths: not front matter\n')).toBe(false);
+    expect(hasPathsFrontmatter('---\ndescription: x\n---\npaths: in the body\n')).toBe(false);
+    expect(hasPathsFrontmatter('')).toBe(false);
   });
 
   it('ranks the largest files descending and caps the list', () => {
@@ -813,6 +823,34 @@ describe('generated CLI reference', () => {
     for (const existingTarget of [false, true]) {
       const plan = await buildFilePlan(templatePath('generic'), '/tmp/out', { existingTarget });
       expect(plan.generate.map((f) => f.rel)).toContain('.ai-scaffold/cli-reference.md');
+    }
+  });
+});
+
+describe('placeholder gaps (item 77)', () => {
+  const values = resolveWithDefaults({ projectName: 'acme-billing', profile: 'node', lifecycleStage: 'production' }).resolved;
+
+  it('fills CLAUDE.md Status from the lifecycle stage, matching the other generated files', () => {
+    expect(resolvePlaceholders('{{Active Development / MVP / Production}}', values)).toBe('Production');
+    expect(resolvePlaceholders('{{Active Development / MVP / Production}}', {})).toBe('Active Development');
+  });
+
+  it('leaves no unresolved Epic or Sprint placeholder in project-context.md', () => {
+    for (const profile of SUPPORTED_PROFILES) {
+      const template = readFileSync(templatePath(profile, '.claude/memory/project-context.md'), 'utf-8');
+      const rendered = resolvePlaceholders(template, values);
+      expect(rendered).toMatch(/^\*\*Epic:\*\* (?!\{\{).+$/m);
+      expect(rendered).toMatch(/^\*\*Sprint:\*\* 1$/m);
+    }
+  });
+
+  // what-next.md describes bootstrap placeholders. If it quoted a real token,
+  // substitution would replace it with the project's own value and the Stage 0
+  // check would misfire in every generated project (0.16.0 shipped exactly that).
+  it('ships what-next.md with nothing placeholder substitution would change', () => {
+    for (const profile of SUPPORTED_PROFILES) {
+      const text = readFileSync(templatePath(profile, '.claude/commands/what-next.md'), 'utf-8');
+      expect(resolvePlaceholders(text, values)).toBe(text);
     }
   });
 });

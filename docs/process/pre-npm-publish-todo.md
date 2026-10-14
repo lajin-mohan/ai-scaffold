@@ -160,7 +160,15 @@ unless a UI-heavy pilot provides evidence to raise it.
   reference was given its own path to route around this rather than inherit it.
   **Size: S.** Sequence after item 25.
 
-- **77. Placeholder-substitution gaps in generated projects.** Audited 2026-08-27
+- **77. 🟡 D1, D2, D4 fixed for 0.16.1 (`tasks/todo/77-placeholder-gaps.md`).**
+  - The fix also covered a worse defect found in review: substitution rewrote
+    `what-next.md`'s own Stage 0 table in every generated project.
+  - **Open:** D3 (eight hardcoded `N/A` tech-stack rows, a product decision).
+  - **Open:** other files that *describe* project tokens rather than use them
+    (`bootstrap.md`; template-state only).
+
+  Original finding:
+  **Placeholder-substitution gaps in generated projects.** Audited 2026-08-27
   by generating real projects (`ais create --profile node --yes`, 159 files) and
   inspecting the output, not by reading the templates. **The mechanism is sound**
   — identity, stack, commands and every generated file (`MEMORY.md`,
@@ -539,6 +547,23 @@ the packed tarball.
 - **93. Deterministic `/health`.** Move the scoring into a script
   (`ais health` or `npm run health`) so the same code gets the same score; the
   command only runs the script and presents the result. *(M)*
+- **95. Adopt the Karpathy-derived principles (ships in 0.16.1).**
+  - Six operating principles in `ai-coding-rules.md`, with "Boil the Lake"
+    narrowed to "Completeness within Scope" (maintainer, 2026-10-13).
+  - Fixes root-only drift: PR #110's scope discipline and R9/R10 never reached
+    adopters.
+  - Ticket: `tasks/todo/95-karpathy-principles.md`.
+  - **Follow-ups:** `.github/copilot-instructions.md` and `.cursorrules` still
+    paraphrase the old five principles. They are excluded from the default
+    install, so this is low impact.
+  - *(S)*
+- **96. `doctor`: "no git remotes found" reads as no-repository (ships in
+  0.16.1).**
+  - Found while verifying item 94: every local project without a remote saw
+    "GitHub CLI failed for an unrecognised reason".
+  - `classify` now maps it, and gh's "not a git repository", to `NO_REPO`.
+  - Ticket: `tasks/todo/96-gh-no-remote.md`.
+  - *(XS)*
 - **94. Spawn external tools only from `PATH` — security, P0, ships in 0.16.0.**
   Found 2026-10-12 while verifying review-25 finding N7. On Windows, Node
   searches the working directory before `PATH`, so `ais doctor` (0.15.0–0.15.1)
