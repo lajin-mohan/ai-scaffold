@@ -1,9 +1,9 @@
 # Business Requirements Document
 **Project:** ai-scaffold
 **Feature:** Safe `ais update`: managed-file lifecycle (backlog item 25)
-**Version:** 1.1
+**Version:** 1.2
 **Date:** 2026-10-09
-**Status:** **Approved v1.1, 2026-10-09** (v1.0 approved the same day; the
+**Status:** **v1.2. Amendments B1 and B5 were approved by the maintainer on 2026-10-12.** The clarifications marked *(C)*, which implement review findings B2–B4 and W1–W6, are pending re-confirmation together with the revised HLD. Previously **Approved v1.1, 2026-10-09** (v1.0 approved the same day; the
 v1.1 ADR-002 alignment was re-confirmed by the maintainer). The §9 defaults for
 Q-01 to Q-03
 are accepted as written.
@@ -75,9 +75,9 @@ These classes **refine ADR-002** (Accepted 2026-07-08); they do not replace it:
 - its *optional pack* and *protected application* categories are unchanged and
   out of scope here (packs are item 90).
 
-The class is recorded per file in `.ai-scaffold.json`. A path that matches no
-rule defaults to **managed** if it was written by the scaffold, and is otherwise
-ignored.
+The class is recorded per file in `.ai-scaffold.json`.
+
+**Unowned paths (B1, approved 2026-10-12).** A path that matches no OC-01..OC-04 rule is **unowned**. `update` SHALL never write, replace or delete it, and SHALL report it as `skip-unowned`, even when the scaffold wrote it at install. Application files such as `README.md`, `.gitignore`, `package.json`, `composer.json`, `routes/**`, `database/migrations/**` and `public/**` are recorded in the manifest by `create`, but they belong to the project (ADR-002, category 4).
 
 ---
 
@@ -100,7 +100,7 @@ ignored.
 | ID | Requirement | Priority |
 |---|---|---|
 | FR-01 | `update` SHALL target the version of the running CLI (D-Q1). `--target-version` SHALL error unless it equals that version, and the error SHALL name the `npx @lajin.m/ai-scaffold@X update` form | Must Have |
-| FR-02 | `update` SHALL refuse downgrades. The existing refusal at `update.js:88` is kept | Must Have |
+| FR-02 | `update` SHALL refuse downgrades with exit code 1. *(C, W6)* The `--force` option SHALL be removed, because it bypasses the version checks and contradicts BR-01 | Must Have |
 | FR-03 | Installs from **0.8.6 or later** (manifest has `managedFiles`) SHALL use hash classification. Older installs SHALL treat every managed file as edited (D-Q4) and say so in the report | Must Have |
 | FR-04 | Updating to the installed version SHALL report "already at X", change nothing, and exit 0 | Must Have |
 
@@ -108,11 +108,11 @@ ignored.
 
 | ID | Requirement | Priority |
 |---|---|---|
-| FR-05 | Values for rendering SHALL come **only** from `.ai-scaffold.json`. No prompts | Must Have |
-| FR-06 | For each managed path in the new version's plan, the action SHALL be: **add** (absent locally and absent from the manifest), **replace** (local hash equals manifest hash and the new render differs), **unchanged** (new render equals local), **conflict** (local hash differs from the manifest), **user-deleted** (in the manifest, absent locally) | Must Have |
-| FR-07 | For each path in the manifest's `managedFiles` that is absent from the new plan, the action SHALL be **remove** if pristine and **orphan-kept** if edited | Must Have |
+| FR-05 | Values for rendering SHALL come **only** from `.ai-scaffold.json`. No prompts. *(C, W3)* A render input that a newer version introduced SHALL be filled by a migration with the same default `--yes` would use, and recorded in `defaultedValues`. Only a missing input that has no default is an error | Must Have |
+| FR-06 | For each managed path in the new version's plan, the action SHALL be: **add** (absent locally and absent from the manifest), **replace** (local hash equals manifest hash and the new render differs), **unchanged** (new render equals local), **conflict** (local hash differs from the manifest), **user-deleted** (in the manifest, absent locally). *(C, W1)* **unchanged** SHALL take precedence over every other action. A class is resolved before the action: **seeded** wins over **user-deleted** | Must Have |
+| FR-07 | For each **managed-class** path in the manifest's `managedFiles` that is absent from the new plan, the action SHALL be **remove** if pristine and **orphan-kept** if edited. Unowned paths are never removed (B1) | Must Have |
 | FR-08 | A path present locally but absent from the manifest that the new version wants to add SHALL be a **conflict**, never an overwrite | Must Have |
-| FR-09 | Pristine comparison SHALL hash content with CRLF normalised to LF (spike F3). Hashes written by update SHALL use the same normalisation | Must Have |
+| FR-09 | *(C, W2)* A file is pristine when its current content matches the recorded hash **either** raw **or** with CRLF normalised to LF (spike F3). Hashes written by update SHALL be raw, as `create` writes them | Must Have |
 | FR-10 | User-data paths (OC-01) SHALL appear in the plan as **skipped (user-data)** and SHALL NOT be read for content | Must Have |
 | FR-11 | Seeded paths (OC-02) SHALL be **add** when absent, otherwise **skipped (seeded)** | Must Have |
 
@@ -132,6 +132,7 @@ ignored.
 | FR-16 | `--apply` SHALL back up every file it will write or delete **before** the first write (backup location: Q-01) | Must Have |
 | FR-17 | Each write SHALL go to a temp file in the same directory, then be renamed over the target | Must Have |
 | FR-18 | On any write failure, `update` SHALL restore every file from the backup, remove files it added, report the failure, and exit 1 | Must Have |
+| FR-38 | *(C, B4)* The apply journal SHALL be written to the backup directory before the first write, with a completion marker written last. A run that finds a backup without the marker SHALL report the interrupted apply and its backup path, and SHALL NOT plan over it | Must Have |
 | FR-19 | For each **conflict**, `update` SHALL leave the adopter's file untouched and write the new render to `<file>.ais-new` (D-Q5) | Must Have |
 
 ### 5.5 `settings.json` merge (OC-04, decided D-Q3)
@@ -139,9 +140,12 @@ ignored.
 | ID | Requirement | Priority |
 |---|---|---|
 | FR-20 | Scaffold `permissions.deny` and `permissions.ask` rules missing locally SHALL be added; rules the adopter added SHALL be kept | Must Have |
-| FR-21 | Scaffold `permissions.allow` rules missing locally SHALL be added; no `allow` rule SHALL ever be removed | Must Have |
-| FR-22 | Scaffold hook entries SHALL be matched by the script path in their command. Changed entries SHALL be replaced; adopter hooks SHALL be kept | Must Have |
+| FR-21 | **(B5, approved 2026-10-12)** Scaffold `permissions.allow` rules SHALL be added only if they are **new since the recorded base** (FR-34). A base rule that is absent locally was removed by the adopter and SHALL NOT be re-added. No `allow` rule SHALL ever be removed | Must Have |
+| FR-22 | **(B5, approved 2026-10-12)** A scaffold hook entry SHALL be replaced only when the local entry **equals the recorded base**. An adopter-modified scaffold hook SHALL be reported, not replaced. Adopter hooks SHALL be kept. Entries are matched as in FR-36 | Must Have |
 | FR-23 | Each version MAY declare **retired** entries (hook commands, rules) in its migration. Retired entries SHALL be removed if present, and only those | Must Have |
+| FR-34 | **(B5)** `create` and every successful apply SHALL record the scaffold-contributed subset of `settings.json` (rules and hook entries) as `settingsBase` in the manifest | Must Have |
+| FR-35 | **(B5)** For a manifest with no `settingsBase`: if `settings.json` is hash-pristine, the local file IS the base; otherwise only `deny`/`ask` rules are added, and new `allow` rules are listed as suggestions in the report, not written | Must Have |
+| FR-36 | **(B5)** Hook entries SHALL be matched per inner hook by (event, matcher, script path), where the script path is parsed from the command after any leading `VAR=value` environment prefixes | Must Have |
 | FR-24 | The merge SHALL preserve every key it does not own, and SHALL write 2-space JSON. If the file is not valid JSON, it SHALL be a conflict (`.ais-new`), never rewritten | Must Have |
 
 ### 5.6 Migrations
@@ -149,7 +153,8 @@ ignored.
 | ID | Requirement | Priority |
 |---|---|---|
 | FR-25 | A migration SHALL be code keyed by the version that introduces it, run once when an update crosses that version, in ascending order | Must Have |
-| FR-26 | The first migration SHALL classify existing manifests (pre-ownership) by the OC rule table and write the class per file | Must Have |
+| FR-26 | The first migration SHALL classify existing manifests (pre-ownership) by the OC rule table and write the class per file. *(C, B2)* It SHALL also infer and record `install.mode`: `create` when `managedFiles` holds any profile root file or a root `.gitattributes`, otherwise `init` | Must Have |
+| FR-37 | *(C, B2)* `create` and `init` SHALL record `install.mode`, and `update` SHALL plan with that mode. Re-planning an `init` install as a `create` install is prohibited | Must Have |
 | FR-27 | Migrations SHALL be idempotent: running the same update twice produces no second change | Must Have |
 
 ### 5.7 Manifest fidelity and completion
@@ -158,14 +163,14 @@ ignored.
 |---|---|---|
 | FR-28 | The manifest SHALL store every render input losslessly. Spike F1: an empty `requirementsPath` is stored as `[]` and re-renders differently | Must Have |
 | FR-29 | A regression test SHALL assert the render round-trip (create, then re-render from the manifest alone, 0 mismatches) for every profile and for a fully non-default value set | Must Have |
-| FR-30 | After a successful apply, `update` SHALL refresh `version`, `updatedAt`, the hash and class of every managed file, and the record of applied migrations | Must Have |
+| FR-30 | After a successful apply, `update` SHALL refresh `version`, `updatedAt`, the class of every file and the record of applied migrations. *(C, B3)* The hash recorded is the hash of the **new render** for add, replace, unchanged, conflict and user-deleted (so a conflict stays a conflict, and a deleted file is not re-added). Removed files lose their record. User-data and seeded records are carried forward **without reading the file** | Must Have |
 | FR-31 | `ais doctor` SHALL warn while any `*.ais-new` file exists under managed paths | Should Have |
 
 ### 5.8 Repository safety
 
 | ID | Requirement | Priority |
 |---|---|---|
-| FR-32 | `--apply` SHALL refuse if any path it would write has uncommitted git changes, and name those paths, unless `--allow-dirty` is passed (Q-02) | Must Have |
+| FR-32 | `--apply` SHALL refuse if any path it would write **or delete** has uncommitted git changes, and name those paths, unless `--allow-dirty` is passed (Q-02). *(C, W4)* Untracked `.ais-new` files from a previous run are exempt. Paths are resolved relative to the project even when it is a subdirectory of a repository | Must Have |
 | FR-33 | `update` SHALL NOT create commits, branches or tags | Must Have |
 
 ---
@@ -191,6 +196,7 @@ ignored.
 | NFR-03 | No new runtime dependency unless the HLD justifies it against the few lines it replaces |
 | NFR-04 | Verified against the **packed tarball**, never the working tree (CLAUDE.md rule 1) |
 | NFR-05 | Output never prints file contents, so user-data cannot leak into logs |
+| NFR-06 | *(C, W5)* Every path from every source (templates, `managedFiles`, migrations) SHALL resolve inside the project. Absolute paths, `..`, anything under `.git/`, and symlinked ancestors are rejected |
 
 ---
 
@@ -208,6 +214,12 @@ ignored.
 | AC-08 | Uncommitted edits to a managed file | `--apply` | Refused and the path is named; nothing is written |
 | AC-09 | The same update run twice | second `--apply` | "Already at X", no changes |
 | AC-10 | A project created on Windows and cloned with `core.autocrlf=true` | `ais update` | Pristine files are classified as pristine (CRLF-normalised hashing) |
+| AC-11 | (B1) A `create`d laravel project, untouched, where the new version changes `README.template.md` and drops a route file | `--apply` | `README.md` and `routes/web.php` are byte-identical and reported `skip-unowned`; nothing outside the managed set is written or deleted |
+| AC-12 | (B5) An adopter removed a scaffold `allow` rule and prefixed a scaffold hook with `ECC_FACT_CHECK_STRICT=1` | `--apply` | The removed rule stays removed; the modified hook is reported, not replaced; new `deny`/`ask` rules are added |
+| AC-13 | (B5) A pre-`settingsBase` project with an edited `settings.json` | `ais update` | Only `deny`/`ask` additions are planned; new `allow` rules appear as suggestions |
+| AC-14 | (B2) A project installed with `ais init` into an existing repository | `--apply` | Nothing from the `create` skeleton is added; `.ai-scaffold/README.md` renders from its `init` source; pristine `CLAUDE.md`, `AGENTS.md` and `constitution.md` are **not removed** (round-2 review #1); a protected file `init` skipped is `skip-unowned` |
+| AC-15 | (B3) An adopter edit left as a conflict by update N | update N+1 | The edit is still untouched and still reported as a conflict |
+| AC-16 | (B4) The process is killed mid-apply | the next `ais update` | It reports the interrupted apply and the backup path, and does not plan over it |
 
 ---
 
@@ -263,4 +275,5 @@ these defaults.
 | Version | Date | Change |
 |---|---|---|
 | 1.0 | 2026-10-09 | Initial draft from the analysis (D-Q1 to D-Q5) and the spike. Approved the same day by the maintainer; Q-01 to Q-03 defaults accepted |
+| 1.2 | 2026-10-12 | Architecture review (REVISE) amendments. **B1** (unowned paths never touched) and **B5** (base-aware `settings.json` merge: FR-21, FR-22 and new FR-34 to FR-36) were **approved by the maintainer on 2026-10-12**. Clarifications *(C)* for B2 (FR-26, FR-37), B3 (FR-30), B4 (FR-38), W1 (FR-06), W2 (FR-09), W3 (FR-05), W4 (FR-32), W5 (NFR-06) and W6 (FR-02) are pending re-confirmation. New AC-11 to AC-16 |
 | 1.1 | 2026-10-09 | **Alignment with ADR-002, found during Stage 3; re-confirmed by the maintainer the same day.** The maintainer's governing principle: a generated project's memory and this repository's memory are separate, and neither may interfere with the other. `.ai-scaffold/context.md` moves from managed to **user-data**: ADR-002 classes it as generated project context, owned by the project after generation. The ownership table now states that it refines ADR-002. This change touches fewer files than v1.0 |
