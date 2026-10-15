@@ -12,6 +12,20 @@ This file records patterns from mistakes and corrections. Claude reads this at t
 
 <!-- Add lessons below as they are captured. Most recent at the top. -->
 
+## 2026-10-15 — "All review changes applied" was true of one document out of three
+
+- **Mistake:** After the item 25 round-2 review, the HLD was updated (hook key
+  (event, script), `unknown` install mode, recovery completion) but BRD FR-36,
+  FR-26, FR-38, AC-07, AC-16 and ADR-007 were not. Sign-off of all of them was
+  then requested as "all changes applied", and an FR-20 opt-out proposed only in
+  chat was presented as a design detail. An external review caught it.
+- **Why:** The fix was applied where the reviewer cited it; the documents that
+  restate the same requirement were not re-read before claiming completion.
+- **Rule:** Before asking for sign-off on a design set, grep every changed
+  decision across the BRD, HLD, ADR and estimate and confirm one definition.
+  Never present a chat proposal as an existing requirement; write it into the
+  spec first or label it as a proposal.
+
 ## 2026-10-13 — Roadmap order and release claims drifted across summaries
 
 - **Mistake:** The roadmap summary and item 25 made a release depend on update,

@@ -1,9 +1,9 @@
 # Business Requirements Document
 **Project:** ai-scaffold
 **Feature:** Safe `ais update`: managed-file lifecycle (backlog item 25)
-**Version:** 1.2
+**Version:** 1.3
 **Date:** 2026-10-09
-**Status:** **v1.2. Amendments B1 and B5 were approved by the maintainer on 2026-10-12.** The clarifications marked *(C)*, which implement review findings B2–B4 and W1–W6, are pending re-confirmation together with the revised HLD. Previously **Approved v1.1, 2026-10-09** (v1.0 approved the same day; the
+**Status:** **v1.3 (2026-10-15): consistency reconciliation with HLD v2.2 and ADR-007 revision 3, from the round-3 review; see the Change Log. Not yet re-approved: the maintainer authorised the documentation reconciliation only, not design sign-off or implementation.** v1.2: amendments B1 and B5 were approved by the maintainer on 2026-10-12.** The clarifications marked *(C)*, which implement review findings B2–B4 and W1–W6, are pending re-confirmation together with the revised HLD. Previously **Approved v1.1, 2026-10-09** (v1.0 approved the same day; the
 v1.1 ADR-002 alignment was re-confirmed by the maintainer). The §9 defaults for
 Q-01 to Q-03
 are accepted as written.
@@ -65,7 +65,7 @@ byte-for-byte from `.ai-scaffold.json`.
 |---|---|---|---|
 | OC-01 | **user-data** | `.claude/memory/**`, `.claude/MEMORY.md`, `.claude/settings-overrides.json`, `.claude/settings.local.json`, `.ai-scaffold/context.md`, `tasks/lessons.md` | Never read for update, never written |
 | OC-02 | **seeded** | `CHANGELOG.md`, `tasks/todo/.gitkeep`, `tasks/done/.gitkeep` | Written only when absent |
-| OC-03 | **managed** | `CLAUDE.md`, `AGENTS.md`, `constitution.md`, `.ai-scaffold/**` (except `context.md`, which is OC-01, and `backups/**`, which is never classified), and everything else under `.claude/**` not listed above | Replaced if pristine; `.ais-new` if edited |
+| OC-03 | **managed** | `CLAUDE.md`, `AGENTS.md`, `constitution.md`, `.ai-scaffold/**` (except `context.md`, which is OC-01, and `backups/**` and `update.lock`, which are never classified), and everything else under `.claude/**` not listed above | Replaced if pristine; `.ais-new` if edited |
 | OC-04 | **merged** | `.claude/settings.json` | Structured merge (FR-20 to FR-24) |
 
 These classes **refine ADR-002** (Accepted 2026-07-08); they do not replace it:
@@ -101,7 +101,7 @@ The class is recorded per file in `.ai-scaffold.json`.
 |---|---|---|
 | FR-01 | `update` SHALL target the version of the running CLI (D-Q1). `--target-version` SHALL error unless it equals that version, and the error SHALL name the `npx @lajin.m/ai-scaffold@X update` form | Must Have |
 | FR-02 | `update` SHALL refuse downgrades with exit code 1. *(C, W6)* The `--force` option SHALL be removed, because it bypasses the version checks and contradicts BR-01 | Must Have |
-| FR-03 | Installs from **0.8.6 or later** (manifest has `managedFiles`) SHALL use hash classification. Older installs SHALL treat every managed file as edited (D-Q4) and say so in the report | Must Have |
+| FR-03 | Installs from **0.8.6 or later** (manifest has `managedFiles`) SHALL use hash classification. Older installs SHALL treat every managed file as edited (D-Q4) unless its content already equals the new render, in which case it is unchanged; nothing is replaced or removed, and the report says so | Must Have |
 | FR-04 | Updating to the installed version SHALL report "already at X", change nothing, and exit 0 | Must Have |
 
 ### 5.2 Classification and plan
@@ -120,7 +120,7 @@ The class is recorded per file in `.ai-scaffold.json`.
 
 | ID | Requirement | Priority |
 |---|---|---|
-| FR-12 | Without `--apply`, `update` SHALL print the plan and change nothing. Dry-run is the default, and `--dry-run` is accepted as an explicit synonym | Must Have |
+| FR-12 | Without `--apply`, `update` SHALL print the plan and change nothing. Dry-run is the default, and `--dry-run` is accepted as an explicit synonym. *(v1.3)* This holds in every state, including an interrupted apply: preview never writes a marker, lock, backup, manifest or project file | Must Have |
 | FR-13 | The plan SHALL group files by action, with counts, and SHALL end with a single next-step line | Must Have |
 | FR-14 | `--json` SHALL emit the plan as JSON (schema documented in the HLD), mirroring `create --dry-run --json` conventions | Must Have |
 | FR-15 | Exit codes: 0 = no conflicts (or applied cleanly); 1 = error or failed apply; 2 = applied, or would apply, with conflicts present | Should Have |
@@ -132,20 +132,23 @@ The class is recorded per file in `.ai-scaffold.json`.
 | FR-16 | `--apply` SHALL back up every file it will write or delete **before** the first write (backup location: Q-01) | Must Have |
 | FR-17 | Each write SHALL go to a temp file in the same directory, then be renamed over the target | Must Have |
 | FR-18 | On any write failure, `update` SHALL restore every file from the backup, remove files it added, report the failure, and exit 1 | Must Have |
-| FR-38 | *(C, B4)* The apply journal SHALL be written to the backup directory before the first write, with a completion marker written last. A run that finds a backup without the marker SHALL report the interrupted apply and its backup path, and SHALL NOT plan over it | Must Have |
+| FR-38 | *(C, B4; v1.3)* The apply journal SHALL be written to the backup directory before the first write, with a completion marker written last. The journal SHALL record the expected final state: the hash of the new manifest and, for every path the apply writes or deletes, its expected hash or absence. A run that finds a backup without the marker SHALL report the interrupted apply and its backup path and SHALL NOT plan over it, with one exception: under `--apply`, if the manifest and **every** journaled path match the journal's expected final state, the apply is complete, and the run SHALL write the marker, report that it did, and continue. Any mismatch, or a preview run, reports and exits 1 without writing | Must Have |
+| FR-40 | *(v1.3)* `--apply` SHALL hold a per-project single-writer lock, created exclusively at `.ai-scaffold/update.lock` before the backup and removed when the run ends. If the lock exists, `--apply` SHALL exit 1 naming it, and SHALL NOT break it automatically; preview SHALL report it and continue read-only | Must Have |
+| FR-41 | *(v1.3)* Immediately before each write or delete, `--apply` SHALL re-check that the target still has the content (hash or absence) the plan classified. On any difference it SHALL stop, roll back, name the path and exit 1 | Must Have |
 | FR-19 | For each **conflict**, `update` SHALL leave the adopter's file untouched and write the new render to `<file>.ais-new` (D-Q5) | Must Have |
 
 ### 5.5 `settings.json` merge (OC-04, decided D-Q3)
 
 | ID | Requirement | Priority |
 |---|---|---|
-| FR-20 | Scaffold `permissions.deny` and `permissions.ask` rules missing locally SHALL be added; rules the adopter added SHALL be kept | Must Have |
+| FR-20 | *(v1.3)* Scaffold `permissions.deny` and `permissions.ask` rules missing locally SHALL be added, except a rule with a recorded exception (FR-39). The report SHALL list every such rule, in separate groups: **new** (not in the recorded base) and **restored** (in the base but absent locally, so removed locally). Without a base (FR-35) they are listed as **missing, no base**. Rules the adopter added SHALL be kept | Must Have |
 | FR-21 | **(B5, approved 2026-10-12)** Scaffold `permissions.allow` rules SHALL be added only if they are **new since the recorded base** (FR-34). A base rule that is absent locally was removed by the adopter and SHALL NOT be re-added. No `allow` rule SHALL ever be removed | Must Have |
 | FR-22 | **(B5, approved 2026-10-12)** A scaffold hook entry SHALL be replaced only when the local entry **equals the recorded base**. An adopter-modified scaffold hook SHALL be reported, not replaced. Adopter hooks SHALL be kept. Entries are matched as in FR-36 | Must Have |
 | FR-23 | Each version MAY declare **retired** entries (hook commands, rules) in its migration. Retired entries SHALL be removed if present, and only those | Must Have |
 | FR-34 | **(B5)** `create` and every successful apply SHALL record the scaffold-contributed subset of `settings.json` (rules and hook entries) as `settingsBase` in the manifest | Must Have |
 | FR-35 | **(B5)** For a manifest with no `settingsBase`: if `settings.json` is hash-pristine, the local file IS the base; otherwise only `deny`/`ask` rules are added, and new `allow` rules are listed as suggestions in the report, not written | Must Have |
-| FR-36 | **(B5)** Hook entries SHALL be matched per inner hook by (event, matcher, script path), where the script path is parsed from the command after any leading `VAR=value` environment prefixes | Must Have |
+| FR-36 | **(B5; key corrected in v1.3)** Hook entries SHALL be matched per inner hook by **(event, script path)**, where the script path is parsed from the command (HLD §5). The matcher is part of the compared entry, not the key, so a scaffold matcher change replaces the hook rather than duplicating it. If more than one local, base or scaffold entry has the same key, the match is ambiguous: every local entry with that key SHALL be kept unchanged and the key reported as a conflict | Must Have |
+| FR-39 | *(v1.3)* The adopter MAY keep a scaffold `deny`/`ask` rule removed by recording a **per-rule exception**: `--keep-removed "<rule>"` (repeatable) records it, and `--restore-removed "<rule>"` deletes it. Exceptions SHALL be stored in the manifest as `settingsExceptions` and written only by a successful `--apply`; a preview shows their effect without saving. Each exception names one exact rule string and persists across updates until removed, retired by a migration (FR-23), or no longer shipped by the scaffold. A flag naming a rule the scaffold does not ship SHALL be an error. Every run SHALL list the exceptions it honoured. Documentation and report text SHALL NOT describe these rules as a sandbox or a complete security boundary | Must Have |
 | FR-24 | The merge SHALL preserve every key it does not own, and SHALL write 2-space JSON. If the file is not valid JSON, it SHALL be a conflict (`.ais-new`), never rewritten | Must Have |
 
 ### 5.6 Migrations
@@ -153,8 +156,8 @@ The class is recorded per file in `.ai-scaffold.json`.
 | ID | Requirement | Priority |
 |---|---|---|
 | FR-25 | A migration SHALL be code keyed by the version that introduces it, run once when an update crosses that version, in ascending order | Must Have |
-| FR-26 | The first migration SHALL classify existing manifests (pre-ownership) by the OC rule table and write the class per file. *(C, B2)* It SHALL also infer and record `install.mode`: `create` when `managedFiles` holds any profile root file or a root `.gitattributes`, otherwise `init` | Must Have |
-| FR-37 | *(C, B2)* `create` and `init` SHALL record `install.mode`, and `update` SHALL plan with that mode. Re-planning an `init` install as a `create` install is prohibited | Must Have |
+| FR-26 | The first migration SHALL classify existing manifests (pre-ownership) by the OC rule table and write the class per file. *(C, B2)* It SHALL also infer and record `install.mode`: with `managedFiles`, `create` when it holds any profile root file or a root `.gitattributes`, otherwise `init`; *(v1.3)* without `managedFiles` (pre-0.8.6), `unknown`, which plans as `init` with disk-independent planning (HLD §3) | Must Have |
+| FR-37 | *(C, B2)* `create` and `init` SHALL record `install.mode`, and `update` SHALL plan with that mode (`unknown` plans as `init`, FR-26). Re-planning an `init` or `unknown` install as a `create` install is prohibited | Must Have |
 | FR-27 | Migrations SHALL be idempotent: running the same update twice produces no second change | Must Have |
 
 ### 5.7 Manifest fidelity and completion
@@ -210,7 +213,7 @@ The class is recorded per file in `.ai-scaffold.json`.
 | AC-04 | `settings.json` with an adopter `allow` rule and an adopter hook | `--apply` | The new deny/ask rules are present, the adopter rule and hook are kept, and no `allow` rule is removed |
 | AC-05 | A write failure injected after half the files | `--apply` | The project is byte-identical to before; exit 1; the backup location is reported |
 | AC-06 | Any project | `ais update` (no flags) | Nothing changes on disk; the plan is printed |
-| AC-07 | A 0.8.5 project (no hashes) | `ais update` | Every managed file is reported as conflict; nothing is overwritten on `--apply` |
+| AC-07 | A 0.8.5 project (no hashes) | `ais update`, then `--apply` | *(v1.3)* Each existing managed file whose content differs from the new render is a conflict; one already equal to it is unchanged; nothing is replaced or removed |
 | AC-08 | Uncommitted edits to a managed file | `--apply` | Refused and the path is named; nothing is written |
 | AC-09 | The same update run twice | second `--apply` | "Already at X", no changes |
 | AC-10 | A project created on Windows and cloned with `core.autocrlf=true` | `ais update` | Pristine files are classified as pristine (CRLF-normalised hashing) |
@@ -219,7 +222,12 @@ The class is recorded per file in `.ai-scaffold.json`.
 | AC-13 | (B5) A pre-`settingsBase` project with an edited `settings.json` | `ais update` | Only `deny`/`ask` additions are planned; new `allow` rules appear as suggestions |
 | AC-14 | (B2) A project installed with `ais init` into an existing repository | `--apply` | Nothing from the `create` skeleton is added; `.ai-scaffold/README.md` renders from its `init` source; pristine `CLAUDE.md`, `AGENTS.md` and `constitution.md` are **not removed** (round-2 review #1); a protected file `init` skipped is `skip-unowned` |
 | AC-15 | (B3) An adopter edit left as a conflict by update N | update N+1 | The edit is still untouched and still reported as a conflict |
-| AC-16 | (B4) The process is killed mid-apply | the next `ais update` | It reports the interrupted apply and the backup path, and does not plan over it |
+| AC-16 | (B4) The process is killed mid-apply | the next `ais update`, with and without `--apply` | It reports the interrupted apply and the backup path, does not plan over it, exits 1, and no file in the project or the backup changes |
+| AC-17 | (v1.3) The process is killed after the manifest rename but before the marker | `ais update` (preview), then `--apply` | Preview reports the interrupted apply and writes nothing; `--apply` verifies the journal's final state, writes the marker, reports it, and plans normally. If any journaled path changed in between, `--apply` exits 1 instead |
+| AC-18 | (v1.3) A second `ais update --apply` starts while the first holds the lock | the second run | It exits 1 naming the lock, and writes nothing |
+| AC-19 | (v1.3) A managed file is edited after planning and before its write | `--apply` | The apply stops, rolls back, names the file, and exits 1 |
+| AC-20 | (v1.3) A local scaffold hook whose matcher the new version changes; separately, two local hooks with the same event and script | `ais update` | The first is replaced (one entry, new matcher); the second is reported as an ambiguous conflict and both entries are unchanged |
+| AC-21 | (v1.3) The adopter removed a scaffold `deny` rule | `--apply`; then `--apply --keep-removed "<rule>"`; then a later update; then `--apply --restore-removed "<rule>"` | Restored and listed as restored; then kept absent and the exception saved; then still absent and listed as an honoured exception; then restored |
 
 ---
 
@@ -276,4 +284,5 @@ these defaults.
 |---|---|---|
 | 1.0 | 2026-10-09 | Initial draft from the analysis (D-Q1 to D-Q5) and the spike. Approved the same day by the maintainer; Q-01 to Q-03 defaults accepted |
 | 1.2 | 2026-10-12 | Architecture review (REVISE) amendments. **B1** (unowned paths never touched) and **B5** (base-aware `settings.json` merge: FR-21, FR-22 and new FR-34 to FR-36) were **approved by the maintainer on 2026-10-12**. Clarifications *(C)* for B2 (FR-26, FR-37), B3 (FR-30), B4 (FR-38), W1 (FR-06), W2 (FR-09), W3 (FR-05), W4 (FR-32), W5 (NFR-06) and W6 (FR-02) are pending re-confirmation. New AC-11 to AC-16 |
+| 1.3 | 2026-10-15 | Round-3 review reconciliation, documentation only (maintainer authorisation 2026-10-15; not design sign-off). Hook key (FR-36) aligned with HLD §5 as (event, script), with an ambiguity rule. Preview is read-only in every state (FR-12); recovery completes only under `--apply` after verifying the journal's expected final state (FR-38). Pre-0.8.6 handling aligned with the HLD (FR-03, FR-26, FR-37, AC-07). FR-20 restorations are visible and grouped; new FR-39 persisted per-rule exceptions. New FR-40 single-writer lock and FR-41 pre-write re-check. AC-16 tightened; new AC-17 to AC-21 |
 | 1.1 | 2026-10-09 | **Alignment with ADR-002, found during Stage 3; re-confirmed by the maintainer the same day.** The maintainer's governing principle: a generated project's memory and this repository's memory are separate, and neither may interfere with the other. `.ai-scaffold/context.md` moves from managed to **user-data**: ADR-002 classes it as generated project context, owned by the project after generation. The ownership table now states that it refines ADR-002. This change touches fewer files than v1.0 |
