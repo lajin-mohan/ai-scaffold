@@ -1,9 +1,10 @@
-# 85 — Token report counts unscoped rules as always-loaded
+# 85 — Token report counts unscoped rules as always-loaded (completed)
 
 ## Status
 
-**Plan v1 — 2026-10-13. Awaiting architect review.** Size XS. Ships in
-**0.16.1**, pulled forward from Corrective slice C3 because item 95 needs an
+**Shipped in 0.16.1 — 2026-10-13.** Implementation and the applied plan v2 review
+changes are recorded in CHANGELOG 0.16.1; npm version was verified. Size XS,
+pulled forward from Corrective slice C3 because item 95 needs an
 honest measuring stick. It is a maintainer tool (`npm run token-report`), not
 a CLI command, so there is no adopter contract.
 

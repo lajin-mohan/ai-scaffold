@@ -9,6 +9,8 @@ spawns. Running the decoy harness against the installed 0.16.0 package gave
 `gh-missing` in 3 ms with the plant not run. The plan v2 history follows.
 Branch: `fix/94-spawn-from-path`. Ships in **0.16.0**: the maintainer chose
 option (a) on 2026-10-12, which moves 0.16.0 ahead of item 25.
+Retained in 0.16.1; the maintainer re-ran the decoy check against the
+installed 0.16.1 package (2026-10-13).
 
 ## Finding (verified 2026-10-12 on Windows, Node 21.2)
 

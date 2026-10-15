@@ -2,7 +2,7 @@
 
 ## Status
 
-**Stage 3: design v2 written, awaiting the architect re-review (2026-10-12).**
+**Stage 3: design v2.1 merged; architect re-review complete (round 2 APPROVE WITH CHANGES, applied). Awaiting maintainer decisions.**
 - The independent review returned **REVISE** (5 BLOCK, 9 WARN, 7 NIT):
   `docs/architecture/review-25-ais-update.md`. It was recovered after a squash
   merge lost it (see the `tasks/lessons.md` entry of 2026-10-12).
@@ -12,8 +12,14 @@
   restores missing `deny`/`ask` rules) are flagged for maintainer
   re-confirmation.
 
-**Release plan:** 0.16.0 shipped item 94 (security), item 60 and item 66 first,
-by maintainer decision (a) on 2026-10-12. Item 25 now targets **0.17.0**.
+**Release:** 0.16.0 shipped item 94 (security), item 60 and item 66 first,
+by maintainer decision (a) on 2026-10-12. **Current target: 0.17.0**
+(maintainer clarification, 2026-10-13). Design v2.1 merged in
+lajin-mohan/ai-scaffold#149; four maintainer decisions are still pending
+(estimate sign-off, ADR-007 acceptance, BRD v1.2 *(C)* clarifications, FR-20).
+Merging the design does not resolve them or approve implementation. Execution
+priority and validation are in `docs/process/pre-npm-publish-todo.md`
+(2026-10-13 review).
 
 ## Artifacts
 
