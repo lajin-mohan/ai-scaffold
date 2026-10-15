@@ -306,3 +306,25 @@ the round-2 changes reached the HLD but not the BRD and ADR.
 
 The maintainer chose persisted per-rule exceptions for #3 and authorised this
 reconciliation as documentation only (2026-10-15).
+
+### Round 3b — slice 2 contract review (2026-10-15)
+
+An independent `architect` agent reviewed the three slice 2 contracts added
+for the maintainer's conditions (FR-09 bidirectional hashing, FR-42
+context-aware ownership, NFR-07 determinism). **Verdict: APPROVE WITH
+CHANGES**, no BLOCK. Applied:
+- **W1:** one injected clock, every stamp in UTC (`{{YEAR}}` was local time,
+  `installedAt` UTC; they disagree near New Year).
+- **W2:** all three clock call sites listed; the 0.16.1 comparison runs both
+  CLIs under a fixed-date preload.
+- **W3:** the manifest allowance is JSON paths (`$.install`, `$.version`),
+  compared as parsed JSON; sort order defined.
+- **W4:** the protected-managed set is computed from `PROTECTED_PATHS`; the
+  `unknown`-mode consequence is stated.
+- **W5:** FR-06 now says pristine/edited per FR-09.
+- **N1–N4:** one-pass normalisation and its unit cases; line-ending-only
+  changes are pristine by design; `installedAt` fallback chain persisted at
+  apply; the `hashLf`-absent guard kept.
+
+Out of scope, raised separately: `init` silently overwrites an existing
+`.claude/settings.json` (and other unprotected `.claude/**` files).

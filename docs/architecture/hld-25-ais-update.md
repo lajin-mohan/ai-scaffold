@@ -48,9 +48,9 @@ modules listed above it in this table.
 
 | Module | Responsibility | Pure? |
 |---|---|---|
-| `ownership.js` | OC rule table (BRD §3). `classifyPath(rel) → 'user-data' \| 'seeded' \| 'managed' \| 'merged' \| 'unowned' \| 'excluded'` (`excluded`: `.ai-scaffold.json`, `.ai-scaffold/backups/**`, `.ai-scaffold/update.lock`, N3) | Yes |
-| `hashing.js` | `hashRaw(buf)`, `hashLf(buf)`, `isPristine(buf, recorded)`: true if raw **or** LF matches (W2). `doctor` uses it too | Yes |
-| `render.js` | `renderPlannedFile(file, values) → Buffer`, **extracted from** `copy.js` `copySingle`/`generateFile`; `copy.js` writes what it returns | Reads template |
+| `ownership.js` | OC rule table (BRD §3), context-aware (FR-42). `classifyPath(rel, { installMode, recorded }) → 'user-data' \| 'seeded' \| 'managed' \| 'merged' \| 'unowned' \| 'excluded'` (`excluded`: `.ai-scaffold.json`, `.ai-scaffold/backups/**`, `.ai-scaffold/update.lock`, N3) | Yes |
+| `hashing.js` | `hashRaw(buf)`, `hashLf(buf)`, `recordFor(buf) → { hash, hashLf? }`, `isPristine(buf, record)` per the bidirectional contract below (FR-09). `doctor` adopts it in a later slice | Yes |
+| `render.js` | `renderPlannedFile(file, values, { now }) → Buffer`, **extracted from** `copy.js` `copySingle`/`generateFile`; `copy.js` writes what it returns. `now` is the injected clock (NFR-07) | Reads template |
 | `manifest-values.js` | `valuesFromManifest(manifest) → values`, the inverse of `buildManifestData`. It maps `requirements.paths: []` back to `''` (`prompts.js:302`), the read-side fix for spike F1 (N6) | Yes |
 | `settings-merge.js` | `mergeSettings({ local, scaffold, base, retired }) → { merged, changes, suggestions }` (§5) | Yes |
 | `update-plan.js` | `buildUpdatePlan({ target, manifest, templateDir, renders }) → UpdatePlan` (§4) | Reads only |
@@ -104,8 +104,38 @@ report or `--json`, apply, exit code.
   carried `--keep-removed` / `--restore-removed`. An exception whose rule the
   scaffold no longer ships, or a migration retires, is dropped at that apply
   and reported.
-- **Hashes are written raw**, as `create` does (`manifest.js:122-126`); the
-  LF form is only accepted on read (W2).
+- **Hashing contract (FR-09, bidirectional):** sha256 over raw bytes;
+  normalisation is CRLF → LF only, one non-overlapping pass (`\r\r\n` →
+  `\r\n`; lone CR untouched). A line-ending-only change is pristine by design.
+  When content has no CRLF, `hashLf` would equal `hash`, so it is omitted. Records keep `hash` (raw, as `create`
+  writes today at `manifest.js:123-127`) and add `hashLf` **only when the
+  content contains CRLF**, so manifests for today's LF-only templates are
+  unchanged.
+
+  | Recorded content | Current checkout | Matches via |
+  |---|---|---|
+  | LF | LF | raw = `hash` |
+  | LF | CRLF | normalised(C) = `hash` |
+  | CRLF | CRLF | raw = `hash` |
+  | CRLF | LF | normalised(C) = `hashLf` (new records only) |
+  | CRLF, legacy record without `hashLf` | LF | **no match → edited → never overwritten** (fails safe) |
+
+- **Clock (NFR-07):** one injected `now`, every stamp in **UTC**. The clock
+  call sites today:
+  - `content-templates.js:67` `{{YEAR}}` (local `getFullYear()` → becomes
+    `getUTCFullYear()`); it appears in `README.template.md`, which `init`
+    renders to the managed `.ai-scaffold/README.md`;
+  - `content-templates.js:303` MEMORY.md "Last updated" (user-data, never
+    re-rendered by update);
+  - `manifest.js:137` `today()` for `bootstrapCompletedAt`, `installedAt`,
+    `updatedAt`.
+
+  Install uses the real clock. **Update renders with the date in the
+  manifest's `installedAt`**, falling back to `bootstrapCompletedAt`, then
+  `updatedAt`, then today; the date chosen is persisted at apply so preview
+  and apply agree. Slice 2 implements the injection; slice 3 applies the rule.
+  The UTC switch changes `{{YEAR}}` only for installs made within the local
+  offset of New Year.
 
 ### UpdatePlan
 
@@ -129,7 +159,7 @@ interface UpdatePlan {
 
 ## 4. Classification (decision table)
 
-**`init` protected paths (round 2, #1):** in `init` mode, a `PROTECTED_PATHS` path (`file-plan.js:104-125`) with **no** `managedFiles` record means `init` skipped a file the adopter already had. It is `unowned`: never planned, never `.ais-new`. One **with** a record is classified normally. Without `ignoreDisk`, the files `init` itself wrote (`CLAUDE.md`, `AGENTS.md`, `constitution.md`) would drop out of the plan and §4 row 7 would delete them; that was reproduced in review.
+**Context-aware ownership (FR-42; round 2, #1):** ownership is computed from (path, install mode, recorded?) and never from the disk. In `init` and `unknown` modes, a path in `PROTECTED_PATHS` (`file-plan.js:104-126`) whose class is managed, **computed from that constant** (today `CLAUDE.md`, `AGENTS.md`, `constitution.md`), with **no** `managedFiles` record means `init` skipped a file the adopter already had. In `unknown` mode nothing is recorded, so those files are never updated; the slice 3 preview reports this. It is `unowned`: never planned, never `.ais-new`. One **with** a record is classified normally. User-data and seeded paths keep their class in every mode (they are never overwritten anyway). In `create` mode the table alone applies. Without `ignoreDisk`, the files `init` itself wrote (`CLAUDE.md`, `AGENTS.md`, `constitution.md`) would drop out of the plan and §4 row 7 would delete them; that was reproduced in review.
 
 The class is resolved first: `excluded` → drop from the plan entirely;
 `unowned` → `skip-unowned`; `user-data` → `skip-user-data` (record carried,
@@ -306,9 +336,10 @@ with one next-step line, for example: "Run `ais update --apply`" or "Resolve 3
 
 | Layer | What |
 |---|---|
-| Unit | `classifyPath`, including unowned profile root files; `isPristine` for raw, LF, CRLF checkout and CRLF template; **each row of §4**, including the recorded-after column; each row of §5, including ambiguous keys and exceptions; migration idempotence; containment rejects; journal verification (match, each kind of mismatch) |
+| Unit | `classifyPath` in each install mode, recorded and unrecorded, including unowned profile root files; `isPristine` for all five rows of the §3 hashing table plus lone CR, `\r\r\n` and BOM; **each row of §4**, including the recorded-after column; each row of §5, including ambiguous keys and exceptions; migration idempotence; containment rejects; journal verification (match, each kind of mismatch) |
 | Round-trip | Every profile × {`create`, `init`} plus a non-default value set: re-render from the manifest gives 0 mismatches (FR-29, extended for B2) |
-| Refactor guard | A project generated before and after the `render.js` extraction is byte-identical |
+| Refactor guard | A project generated before and after the `render.js` extraction is byte-identical, for all five profiles × {`create`, `init`} |
+| Determinism (NFR-07) | Fixed clock; byte-exact comparison over a sorted file list; a self-reproduction control first. Packed tarball vs published 0.16.1, both run as child processes under a fixed-date preload (`NODE_OPTIONS=--import <shim>`): identical sorted file set; every file byte-identical except `.ai-scaffold.json`, compared as parsed JSON where only `$.install` (new) and `$.version` (if the versions differ) may differ, and everything else, including the three dates and `managedFiles` order, deep-equals. `managedFiles[].hashLf` must be absent on both sides (guard: `.gitattributes` forces CRLF for `.ps1`/`.bat`/`.cmd`, none shipped today) |
 | E2E | AC-01 to AC-21. Update a **0.14.0 project from npm** with the packed tarball; `init` fixtures (AC-14); a second-update edit survives (AC-15); kill mid-apply and before the marker (AC-16, AC-17, via an injected fs layer, the ADR-004 pattern); a held lock (AC-18); an edit between plan and write (AC-19, via the fs layer); hook keying (AC-20); exceptions (AC-21). Every preview test asserts the project and backup directories are byte-identical before and after |
 | Platform | All of the above on Ubuntu and on **Windows CI** (item 60, now live); AC-10 CRLF runs for real on Windows |
 
@@ -316,5 +347,7 @@ with one next-step line, for example: "Run `ais update --apply`" or "Resolve 3
 
 - The **pack** class (ADR-002 category 3): item 90.
 - Three-way merge, interactive resolution, `--restore`: later slices.
+- How the slice 3 preview reports a legacy CRLF record that fails the LF
+  direction (it is a conflict; the wording is open).
 - The concrete retired-entry lists. Each Corrective release adds its own
   migration file; this HLD only fixes the format.

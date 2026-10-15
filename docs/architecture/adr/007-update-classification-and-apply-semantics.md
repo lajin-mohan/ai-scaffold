@@ -53,9 +53,15 @@ Facts the decision rests on:
 3. **Render in the original install mode (B2).** `install.mode` (`create` |
    `init`) is recorded, or inferred for older manifests, and planning uses it.
    An `init` install is never re-planned as a `create`.
-4. **A file is pristine if, and only if, its current content matches the
-   recorded hash, raw or LF-normalised.** Hashes are written raw. A file whose
-   content already equals the new render is `unchanged` before any other test.
+4. **A file is pristine if, and only if, its current content matches its
+   record in either line-ending direction** (FR-09): raw against `hash`,
+   CRLF-normalised against `hash`, or CRLF-normalised against `hashLf`, which
+   is recorded only for content containing CRLF. A legacy record that cannot
+   prove the CRLF-to-LF direction is treated as edited. A file whose content
+   already equals the new render is `unchanged` before any other test.
+   **Ownership is context-aware** (FR-42): path, install mode and manifest
+   record decide it, never the disk. **Rendering is deterministic** given the
+   values and an injected clock (NFR-07).
 5. **An edited file is never overwritten.** The new version is written to
    `<file>.ais-new`, and there is no override flag (`--force` is removed).
    **The hash recorded after apply is always the new render's (B3)**, never the
