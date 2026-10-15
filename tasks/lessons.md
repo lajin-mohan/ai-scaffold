@@ -12,6 +12,12 @@ This file records patterns from mistakes and corrections. Claude reads this at t
 
 <!-- Add lessons below as they are captured. Most recent at the top. -->
 
+## 2026-10-15 — `git add -A <dir>` swept up untracked user files again (second occurrence)
+
+- **Mistake:** Committing item 25 slice 2 design docs, `git add -A docs/` staged the maintainer's untracked `docs/workshop/` and a parallel edit to `docs/process/pre-npm-publish-todo.md`. Caught by `git diff --check` before the commit; nothing was committed or pushed. Same failure as the 2026-10-12 entry.
+- **Why:** The earlier lesson was recorded but the command shape that causes it was still used, and the working tree is shared with other sessions.
+- **Rule:** Never stage by directory or with `-A`/`.`. Stage the exact paths this change edited, then check `git diff --cached --name-only` against that list before every commit.
+
 ## 2026-10-15 — "All review changes applied" was true of one document out of three
 
 - **Mistake:** After the item 25 round-2 review, the HLD was updated (hook key
