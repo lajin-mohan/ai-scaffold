@@ -1,135 +1,194 @@
 # AI Scaffold — Backlog
 
-**Purpose:** Value-ordered roadmap for the road to **v1.0.0**. Shipped work lives
-in `CHANGELOG.md` (the permanent record); this file tracks what is **left** and
-why, grouped into phases by rating lever. Completed items are removed after
-verification against npm/git, not kept as history.
+## Authoritative priority review — 2026-10-13
 
-## Current state (2026-08-21)
+The maintainer requested this reorder following a repository and primary-source
+review. **This section supersedes every historical ordering, priority label and
+rating forecast below.** Existing ticket IDs remain stable. This changes the
+backlog, not shipped governance or approved implementation specifications. New
+work is proposed and requires the normal design/implementation gates.
 
-- **2026-10-12 — Agreed work order (value per effort):** 60 → 66 → 25 → 76 → Corrective C1–C4 → 92 → 77/78 → 34 → 75 → 74B → 73/72. Items **60** and **66** (first slice) are merged. **Item 25** is in Stage 3 design revision: the architecture review returned REVISE, and the maintainer approved the B1/B5 spec amendments on 2026-10-12. **0.16.0** releases once item 25 is complete and tested; it also carries 60 and 66.
+### Evidence and status boundaries
 
-- **2026-10-09 — v0.15.0 is published** (`npm view` verified). It closed item 26
-  (drift-aware `doctor`) and item 65b (packed-artifact golden path), which
-  completes Wave 1 except item 66. A repository-wide audit the same day, run
-  against a project generated from the packed tarball, found configured
-  enforcement that never runs:
-  - the secret guard blocks nothing on stock Windows;
-  - `pre-review` runs on every prompt and never blocks;
-  - `/compact` and `/loop` shadow the native commands;
-  - about 37k tokens of rules load on every session, while the token report
-    calls them "on reference".
+- The checkout advanced to 0.16.1 during this review (`e49847a`); npm version
+  and dist.integrity were verified on 2026-10-13. Tag/Release Action/provenance
+  and per-feature packed-output checks were not reverified in this doc task.
+- Item 94 is complete: the maintainer verified decoy probes against installed
+  npm 0.16.0 and 0.16.1, with a positive control in Windows CI. Preserve this
+  evidence; do not schedule verification already performed as new P0 work.
+- Item 25 is the top remaining P0, targeting **0.17.0**. The maintainer reports
+  four decisions pending in [PR #149](https://github.com/lajin-mohan/ai-scaffold/pull/149).
+  This reconciliation does not decide them or imply implementation approval.
+- Item 25 remains in design revision. `update.js` has no file-update engine.
+  Managed deletion and base-aware settings merge must precede adopter removals.
+- Items 60 and 66's first slice have recorded merge evidence. Windows CI and
+  Ubuntu packed-artifact golden paths exist; `init` hooks/rest of 66 remain open.
+- Items 77 D1/D2/D4, 85, 95/basic 86 guidance and 96 are implemented locally or
+  recorded as implemented and listed under CHANGELOG 0.16.1. Verify per-feature
+  distribution before closure; do not rebuild.
+  Item 77 D3 and item 86 network/domain protections remain open.
+- The maintainer reports full-suite CI green on Ubuntu and Windows for this
+  session's PRs. That is distinct from this review's local test-run limitation.
+- Review checks: lint and typecheck passed (37 JS files, 4 gitleaks configs).
+  Syntax checks passed when run with permission to spawn child processes.
+  Tests could not
+  start under local Node 21.2 (`node:util.styleText` missing); the syntax wrapper
+  initially hit child-process `EPERM`. These are not passing-suite claims.
 
-  That work is planned as the **Corrective phase (Phase 1b, items 79–89)**,
-  sequenced **after item 25**. Plan and decisions:
-  `tasks/todo/79-corrective-phase.md`.
-- **v0.14.0 is published** (`latest`, provenance), and `origin/dev` and
-  `origin/main` are aligned at the release commit. The pilot handover review
-  reset the roadmap around lifecycle, verifiable enforcement, executable
-  golden paths, and maintainability rather than adding governance surface.
-- **Release-process incident (2026-08-12, closed):** v0.12.0 was cut manually
-  via a `release/*` branch instead of the one-button `Release` Action, so
-  `main` sat ahead of `dev` for 9 days, untagged and unpublished, while npm
-  served 0.11.1. Root-caused to `branching-rules.md` documenting only the old
-  manual path. Fixed in #113 (sync recovery), #114 (docs + a CI version-drift
-  guard). **Lesson: the docs pointed at the superseded process — when a flow
-  is designed out, the docs describing it must go in the same change.**
-- **Security posture reviewed 2026-07-13:** 7 mainstream runtime deps, 0 npm-audit
-  findings at any level, OIDC trusted publishing (no long-lived token), CI runs
-  gitleaks + audit, no secret patterns in tracked code, tarball
-  carries no env/secret/local-settings files, generated projects ship hook
-  wiring + a `.gitignore` that ignores `.env`.
-  **Amended 2026-08-31 (item 26):** `spawnSync('git', [args])` is no longer the
-  only shell-out. `src/cli/core/gh-runner.js` adds `spawnSync('gh', [...])` for
-  `doctor`'s remote governance checks — array form, a closed constructor rather
-  than an argv passthrough, and read-only by construction (`gh api --method GET`
-  and `gh repo view` are the only two commands it can build). No token is
-  accepted, stored, read from disk or logged; authentication is `gh`'s. The
-  process environment is inherited deliberately so generated projects can run
-  `doctor --require-remote` in their own CI, and `gh` stderr never leaves the
-  runner because it carries repository and host names.
-- Post-release `main→dev` sync is automated but still semi-manual until item
-  47's repo settings land. Keep release metadata aligned during promotions so
-  `dev` never downgrades the published version on the next `dev→main` PR.
-- **2026-08-21 — item 25 (`ais update`) promoted to P0.** The earlier pilot
-  deferral is closed because adopted projects now need to receive fixes without
-  delete-and-reinstall. Item 56 remains a verified recovery safeguard while the
-  real update path is built. Also fixed a numbering collision: two unrelated
-  items each used
-  **51** and **52** (Phase 0's hook/pilot items vs. Phase 2's Graphify-pilot
-  items, merged from separate branches) — Phase 0's were renumbered 54/55.
+### Priority definitions
 
-### Honest category rating (SaaS-team adoption), post-0.9.0
+- **P0:** security/enforcement defects, safe updates, truthful verification and
+  support claims; exit before broad rollout.
+- **P1:** dependable team adoption, context, maintainability, cross-tool support,
+  measurable outcomes and minimal deterministic state.
+- **P2:** optional extensions with demonstrated task benefit.
+- **P3:** demand-led expansion; no automatic v1.0 requirement.
 
-| Category | Now | Target for v1.0 |
+### Execution order
+
+Rows are ordered within tiers. Independent additive fixes and measurement can
+start early; migration dependencies govern rollout to existing installations.
+
+| Order | Tier | Items | Outcome | Dependency / required validation |
+|---:|---|---|---|---|
+| 1 | P0 | 25; 15 transaction-evidence slice | Ownership-aware update for 0.17.0: preview, conflicts, deletion, base-aware settings merge and recovery | Resolve pending decisions/approved design first; packed prior-to-current upgrades for create AND init; unknown paths untouched, user data preserved, write failure/recovery and idempotence tested |
+| 2 | P0 | 79/81/86 security slice; **97 new** | Native permissions/isolation and adversarial control tests | Additive protections need not wait for 25. Windows/Linux allowed and blocked probes without optional parsers; shell access, injection, timeouts and missing controls covered |
+| 3 | P0 | 80/82/83/87/89; 79/81 removals; 88 core defaults | Remove inert/duplicate hooks and command collisions; one verify contract; honest runtime support; respect existing design system | 25 before adopter removals. All packed profiles execute checks; no per-prompt verification; failures/skips distinct; oldest/current supported runtime tested; imposed branding removed |
+| 4 | P1 | remaining 21/22 | Release documentation/workflow hygiene | Reconciled status is not open work; retain only remaining checks/input validation and use the Release Action contract |
+| 5 | P1 | 76 → 67; **98 new** | Maintainer/adopter separation and actual cross-tool conformance | Preserve root CLAUDE.md authority; test declared tool versions; root placeholders removed; unsupported commands/hooks explicit |
+| 6 | P1 | 85 → 84; 69/T2/T5; 95 | Accurate context measurement and concise default core | Verify existing 85/95 work; compare actual session loading and task quality before/after; required guidance retrievable; no disk-size-as-context assumption |
+| 7 | P1 | 77/78/96; remaining 66; 92; 16 | Reliable init/onboarding, composed hooks and diagnostics | Existing README/hooks/config/custom commands survive; missing skeleton installed; repeated init safe; hooksPath/worktrees covered; unavailable checks remain distinct |
+| 8 | P1 | 34; 68 | Shared base/stack overlays and reusable mechanical skill scripts | 25 ownership contract + 76 separation; all five packed outputs preserve intentional differences; shared-file drift checked; script invocation/location verified |
+| 9 | P1 | 74B/55; **99 new** | Representative task evaluations and repeatable adopter measurement | Define baseline/tasks early, compare after changes; report correctness/rework/review time/cost/nulls; no causal claim from two pilots |
+| 10 | P1 | 75; 70/71 remaining server controls; 19 minimal CI slice | Effective rulesets/check enforcement beyond bypassable local hooks | Doctor read-side evidence; sandbox repo proves denied direct push, failed required check and permitted release path; least-privilege bypass identity |
+| 11 | P1 | 73 → 72; 93; **100 new** | Minimal schemas, computed state/health and consistent roadmap | Begin with status/dependencies/blockers/next action; identical input yields identical state; cycles/missing evidence explicit; score weights/checks documented |
+| 12 | P1 | remaining 15; 27; 17; 28 | Local lifecycle audit, repair/uninstall previews and current CLI docs | After 25 ownership model; no telemetry by default; redacted records; preview writes nothing; user edits survive; help/docs agree |
+| 13 | P2 | 90; 19 optional pack; 91; design manifest/88 extension | Optional process/compliance/API/UX/E2E packs | 34 + 25 + 87; core 88 fixes stay P0. Reversible pack lifecycle; preserve existing tokens; execute E2E/accessibility when installed |
+| 14 | P2 | 51 → 52 → 53; T6 | Optional context provider after successful retrieval pilot | 99 task baseline; no accuracy regression; stale/missing index falls back; verify source; exclusions/privacy tested |
+| 15 | P2 | 48/49/50 | MCP/plugin distribution and capability maintenance | Declared versions, least privilege, credential redaction, unavailable-service behavior and safe lifecycle verified; no governance overwrite |
+| 16 | P3 | 30; 23; 31/32/33 beyond packs; 42/43 extensions | Additional stacks and specialist research/handoff/approval flows | Promote only for adopter demand and measurable benefit; no new profile without packed golden path and maintenance owner |
+
+**Approval boundary:** remaining item 66 validates objective approval evidence;
+AI assertions/transcript keywords are not human authorization. **Risk boundary:**
+extend 76/87 guidance for security, data loss, external effects and uncertainty,
+not just line/step counts. Existing approval rules remain until changed normally.
+
+### Delivery waves
+
+1. **P0-A:** row 1, safe updates as the top remaining P0. Independently safe
+   additive protections and probes in row 2 can proceed without blocking 25.
+2. **P0-B:** row 3, corrective migrations after update safety. No known blocking
+   control defect remains on a platform claimed as supported. A new-install
+   patch alone cannot remove hooks/commands from existing installations.
+3. **P1-A:** rows 4–8, release hygiene, governance/context/init reliability and shared templates.
+4. **P1-B:** rows 9–12, outcome proof, server controls, minimal state and lifecycle.
+   Evaluation design starts earlier; results follow implementation under test.
+5. **P2:** rows 13–15, each extension passes its own benefit gate.
+6. **P3:** row 16, demand-led; not an automatic v1.0 gate.
+
+### Validation required before tier closure
+
+- [ ] Lint, actual syntax/config checks and tests pass on a recorded runtime;
+  skipped/unavailable checks are disclosed rather than counted as success.
+- [ ] All five profiles generate from npm pack and execute documented first
+  commands; declare tested and unsupported platform/profile combinations.
+- [ ] Windows/Linux checks run; macOS is verified or marked unverified. Separate
+  consumer CLI support from maintainer/test-tool runtime requirements.
+- [ ] Cover create/init/repeated init/upgrades, dirty and user-edited fixtures,
+  non-default hooks paths and worktrees.
+- [ ] Security probes include allowed/blocked cases and positive controls;
+  shell-based access, injection, missing parsers, denied execution and timeouts
+  do not silently bypass claimed controls.
+- [ ] Update covers conflict, managed deletion, unknown ownership, base-aware
+  settings merge, traversal/symlink escape, interruption, recovery and no-op rerun.
+- [ ] Record artifact commit/version, tool/runtime, command, exit status and
+  relevant output; exclude credentials and personal data from evidence.
+- [ ] Exercise claimed AI-tool integrations in those tools; a pointer file alone
+  proves neither instruction loading nor enforcement parity.
+- [ ] Measure loaded/invoked/scoped context; optimization preserves required
+  security and verification guidance and does not worsen task correctness.
+- [ ] Pilot reports include failures, human corrections, review burden and
+  sample limits; missing observations stay null; code volume is not productivity.
+- [ ] Release Action/tag/package/npm version/provenance agree; CHANGELOG explains
+  removals, incompatibilities and existing-adopter migration steps.
+
+### Projected rating after validated implementation
+
+Cumulative expert forecasts, not benchmarks or promised scores. Baseline is the
+2026-10-13 checkout review, replacing the historic post-0.9.0 ratings.
+
+| Milestone | Overall forecast | Evidence needed |
 |---|---|---|
-| Governance content | 9 | 9 |
-| Tool reliability / engineering discipline | 8.5 | 9 |
-| Security & compliance fit | 8 | 8.5 |
-| Onboarding / day-one UX | 8 | 8.5 |
-| Claude / AI-tool integration | 7.5 | 9 |
-| Docs & discoverability | 7.5 | 9 |
-| **Update / lifecycle** | **4** | **8** |
-| **Token efficiency** | **5.5** | **7** |
-| **Existing-codebase context retrieval** | **5** | **8.5** |
-| **Overall** | **8.0** | **8.5+** |
+| Current | **6.5/10** | Strong principles/artifact CI; update/enforcement/context/tool gaps remain |
+| P0 complete | **7.5–8.0**, central **7.8/10** | Safe updates, working controls, honest verification/support |
+| P0 + P1 | **8.3–8.7**, central **8.5/10** | Maintainable multi-tool team adoption and repeatable pilot evidence |
+| P0 + P1 + value-validated P2 | **8.7–9.0**, central **8.9/10** | Extensions improve real tasks without accuracy/maintenance regressions |
+| Demand-justified P3 | **No automatic increase** | Sustained independent adopter evidence could justify **9.0+** |
 
-**Goal: every category ≥ 8.5 before v1.0.0.** Execution is dependency-aware:
-baseline first, immediate verification second, lifecycle and deduplication
-third, deterministic state fourth, then consolidation and proof.
+A v1.0 candidate requires P0/P1 exit evidence, explicit support/ownership policy
+and representative adopter validation. Graphify, MCP, marketplace and every pack
+are not prerequisites. Critical security/data-loss defects block broad adoption
+regardless of an average score.
 
-## Priority reset — verified operating system (2026-08-21)
+### Research basis (reviewed 2026-10-13)
 
-This supersedes the 2026-08-13 value-order table. Impact rank and execution
-order intentionally differ where one item needs another to be safe. The design
-system remains at rank 11 / P2; it does not outrank lifecycle and verification
-unless a UI-heavy pilot provides evidence to raise it.
+- [Claude memory](https://code.claude.com/docs/en/memory) and
+  [hooks](https://code.claude.com/docs/en/hooks): actual context-loading and
+  enforcement semantics, concise core and scoped guidance (76/79–87/97).
+- [OpenAI security](https://learn.chatgpt.com/docs/agent-approvals-security) and
+  [AGENTS.md](https://learn.chatgpt.com/docs/agent-configuration/agents-md):
+  native discovery, sandbox and approval boundaries (67/98).
+- [Anthropic effective agents](https://www.anthropic.com/engineering/building-effective-agents)
+  and [context engineering](https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents):
+  simple workflows and selective context; provider expansion follows evaluation.
+- [NIST SSDF](https://csrc.nist.gov/pubs/sp/800/218/final) and
+  [OWASP ASVS](https://owasp.org/projects/asvs): verifiable security objectives,
+  release integrity and applicable controls rather than universal architecture.
+- [DORA AI-assisted development](https://dora.dev/research/2025/dora-report/):
+  organizational/delivery outcomes inform 74B/99.
 
-| Rank | Priority | Improvement | Existing item | Effort | Value |
-|---:|---|---|---|---|---|
-| 1 | P0 | Safe `ais update`: ownership classes, migrations, dry-run, backup/rollback, compatibility policy | 25 | L | Improvements reach adopted projects without destroying project-owned work |
-| 2 | P1 | Deterministic state engine for lifecycle stage, blockers, coverage, and next action | 72 (new) | M–L | Agents and lifecycle commands report one computed state |
-| 3 | P0 | `ais doctor` verifies effective branch rules, required checks, and installed hooks | 26 expanded | **M** | Detects configured-but-inert governance. **Re-sized S → M 2026-08-27**: the enforcement slice estimates at 15.4 realistic days once the query module, five degradation paths, fixtures, `--json` compatibility and Stage 3 are priced |
-| 4 | P0 | Golden-path CI runs each profile's documented first commands | 65 follow-up | S–M | A profile cannot ship when its day-one workflow fails |
-| 5 | P0 | Replace profile copies with a shared base plus overlays | 34 | M–L | Removes the largest drift and maintenance multiplier |
-| 6 | P1 | Prune commands, agents, and skills using measured usage | 69 / T5 | M | Makes the scaffold learnable and lowers recurring token cost |
-| 7 | P1 | Structured front matter and schemas for BRDs, ADRs, tasks, and handoffs | 73 (new) | M | Enables deterministic state, traceability, and contradiction checks |
-| 8 | P1 | Effectiveness metrics and baseline | 74 (new) | M | Proves whether governance reduces rework, defects, bypasses, and false-done claims |
-| 9 | P1 | Windows CI and a published compatibility matrix | 60 | M | Converts platform-support claims into evidence |
-| 10 | P1 | Enforce recurring objective misses: changelog, branch/PR path, checkable approval evidence | 66 expanded | S–M | Stops repeated failures without pretending prose is enforcement |
-| 10b | P1 | Ruleset-aware branch protection on the write side | 75 (new) | M | The shipped script writes only the legacy surface; on ruleset-governed repos it configures something other than what governs. Sequence after 26 |
-| 11 | P2 | Agent-facing design manifest, token validation, and token-aware review | `tasks/todo/P2-agent-facing-design-manifest.md` | M–L | Makes existing design governance concise and mechanically reviewable |
-| 12 | **P0 (C0 now; C1–C4 after 25)** | **Corrective phase:** native security controls, remove per-prompt and native-shadowing components, stop auto-loading the process corpus, honest verification gates | 79–89 (new, 2026-10-09) | M | Enforcement that runs as configured on every platform, and about 37k fewer always-loaded tokens. Plan: `tasks/todo/79-corrective-phase.md` |
+Ordering and forecasts are this review's inference from sources and repository
+evidence. These sources do not rate AI Scaffold.
 
-### Execution waves
+**Context-cost boundary:** NIST SSDF, OWASP ASVS and DORA stay cited references
+in docs/ADRs. Do not copy their full guidance into always-loaded rules. Only
+concise, applicable project requirements belong in the core; details load on demand.
 
-1. **Wave 0 — baseline: ✅ CAPTURED 2026-08-27.** Snapshot #1 at
-   `docs/process/effectiveness-baseline-2026-08-27.md`; definitions at
-   `docs/process/effectiveness-metrics.md`. Four of eight metrics are null or
-   trend-only and are recorded as such, not as zero: golden-path success has no
-   honest source until item 65's execution follow-up ships (the smoke gate greps
-   READMEs rather than running the commands), upgrade conflicts need item 25,
-   bypass frequency needs item 26's GitHub query surface, and rework has no
-   pre-Wave-1 history. **Wave 1 is unblocked from this commit.** Headline
-   figures: 90.3% (28/31) of profile-touching commits edit 2+ of the 5 copies —
-   the tax item 34 removes; the corpus grew +1.59% in tokens over 45 days with
-   file, command and agent counts flat, so growth is accretion inside existing
-   files and is **not** evidence for item 69/T5's count-based prune; and 4 of 20
-   recorded lessons are false-done claims, a floor rather than a considered count
-   while Q-04 stays Proposed.
-2. **Wave 1 — stop immediate failures:** items 26 (**done**, 0.15.0), **65b**
-   (**done**, 0.15.0), and 66's objectively checkable controls (first slice **done** 2026-10-12, #146; rest open).
-3. **Wave 2 — safe lifecycle:** item 25's ownership/update slices and item 34's
-   shared-base/overlay model use one ownership contract.
-   **Wave 2b — Corrective (items 79–89):** starts when item 25 ships, so its
-   removals reach adopters through `ais update`. Item 25 must therefore support
-   deleting managed files as a migration. If item 34 has landed by then, the
-   corrective edits go to the shared base once; otherwise they apply to all five
-   profiles.
-4. **Wave 3 — deterministic state:** item 73 schemas precede item 72's state
-   engine; do not build another prose parser.
-5. **Wave 4 — reduce and prove:** item 69/T5, item 60, item 74 reporting, then
-   the P2 design manifest if pilot evidence supports it.
+### Maintainer follow-up A–E
+
+- **A + E (this reconciliation):** release/status cleanup and acceptance areas
+  attached to 67 (98), 81/87 (97) and 74B (99); completed entries archived at
+  [completed history](roadmap-completed-history-2026-10-13.md). CHANGELOG remains
+  the shipped record; partial/open scopes stay here.
+- **B (optional, proposed 0.16.2):** remove pre-review UserPromptSubmit wiring
+  for new projects; add best-effort ask rules for common shell secret reads with
+  explicit sandbox guidance. Requires a separate approved implementation.
+  Validate packed new installs, benign commands and prohibited probes; do not
+  describe Bash pattern rules as a security boundary or an existing-adopter fix.
+  Existing-project removals still need 25 (or explicit documented manual steps).
+- **C (planned with 84, or a separate small rules change):** proportional approval
+  for security/data/schema/irreversible actions and scope changes; already
+  authorized routine work does not require repeated approval. AI architecture
+  review is advisory; a human remains accountable for approval/merge. Test a
+  routine authorized task and a high-risk task; update conflicting rules together.
+- **D (76/84):** label architecture-specific security rules with applicability,
+  such as multi-tenancy, authentication design and framework-specific paths.
+  Validate both applicable and non-applicable fixtures without weakening
+  universal secret-handling, authorization and input-validation requirements.
+
+### Newly added work
+
+- **97 — Adversarial controls (P0):** `tasks/todo/97-adversarial-controls.md`.
+- **98 — Cross-tool conformance (P1):** `tasks/todo/98-cross-tool-conformance.md`.
+- **99 — Task evaluations (P1):** `tasks/todo/99-task-evaluations.md`.
+- **100 — Roadmap consistency (P1):** `tasks/todo/100-roadmap-consistency.md`.
+
+## Historical scope catalogue (scheduling superseded)
+
+The following sections retain item definitions and investigation/decision
+history. Their obsolete schedules and rating forecasts are not active plans;
+the table above governs execution. Closure still needs artifact evidence.
+
 
 ### New work definitions
 
@@ -328,7 +387,9 @@ unless a UI-heavy pilot provides evidence to raise it.
   `docs/process/effectiveness-metrics.md` needs a note so snapshot #2 does not
   read the drop as governance being pruned. *(P1, medium)*
 
-- **74. Scaffold-effectiveness baseline and metrics.** Record install and
+- **74. Scaffold-effectiveness baseline and metrics.** Acceptance extension:
+  item 99 feeds Phase B with fixed starting states, independent correctness
+  checks and reported failures. Scope: record install and
   golden-path success, upgrade conflicts, maintenance effort, bypass frequency,
   rework, escaped defects, and false completion claims. Capture the baseline
   before Wave 1 and publish metric definitions before interpreting improvement.
@@ -336,60 +397,25 @@ unless a UI-heavy pilot provides evidence to raise it.
 
 ---
 
-## Shipped (done — detail in CHANGELOG)
-
-Removed from the active backlog after verification against npm/git.
-
-| Ver | Delivered (old item #) |
-|---|---|
-| 0.8.1–0.8.7 | Trusted publishing + provenance, branch protection, CI security gates (npm audit + gitleaks), python/go profiles, `ais list`, `--dry-run --json` (14), `copy.js` refactor (13), `release:check` (20), `.gitignore` packaging fix (11b), automated `main→dev` sync |
-| 0.8.8 | Node profile real test (35); genericized shipped `.claude/` content (part of 37); sync tolerance (part of 47) |
-| 0.9.0 | **Project constitution (39)**; generated-output genericization finished — no author/org/license leaks (37); **Claude-feature modernization** (per-agent `model`, read-only reviewer `tools`, command `description` frontmatter, honest Agent-Skills list); tarball-based smoke gate that runs `doctor` per profile (36); README flow diagram + zero mermaid; GH Actions on Node 24 (45); worktree-safe `vitest` |
 
 ---
 
-## Phase 0 — Team handover (now, alongside the 0.9.1 cut)
+## Team handover — historical Phase 0 scope
 
 The CLI is being handed to a small team (2 pilot projects). These items directly
 de-risk that handover and were surfaced by the 0.9.1 readiness/security review.
 Item 25 is now P0. The completed safeguards below remain useful during its
 incremental delivery and as recovery controls after it ships.
 
-- **56. Safeguard the delete-and-reinstall workaround — ✅ DONE.** Before `ais
-  update` became P0, "delete the project and re-run `ais create`" was the
-  accepted interim path; it remains a recovery fallback. Shipped: a
-  "Before You Reinstall" README section naming the non-regenerable files
-  (`tasks/lessons.md`, `.claude/MEMORY.md`, `.ai-scaffold/context.md`,
-  `.claude/settings-overrides.json`, hand-edited `.claude/rules/*`), and `ais
-  export-context [dir]` — copies those paths to
-  `~/.ai-scaffold-backups/<project>-<timestamp>/` (**outside** the project, on
-  purpose: verified the backup survives the source project being deleted, the
-  exact scenario this exists for). `--out <path>` to override the destination.
-  Not drift detection (that's item 26, deferred with 25) — a fixed, definite
-  file list. 2 e2e tests + 3 smoke gates; ships via the existing `src/cli/`
-  package glob (no new dependency — plain `fs-extra` copy). *(done)*
-- **54 (was 51). Auto-wire the git `pre-commit` hook on `create` — ✅ DONE
-  (#85).** `create` copies `.claude/hooks/pre-commit` into `.git/hooks/`
-  (executable) right after the initial scaffold commit, so gates apply to
-  commits made *outside* Claude Code too; respects `--no-git`. Wiring it live
-  surfaced and fixed 3 previously-silent hook defects (branch regex rejected
-  `main`/`dev`/`master`; Node check called a nonexistent `test:unit` script;
-  Python check pointed at a nonexistent `tests/unit/` dir) across all 5
-  profiles + this repo's own copy. E2E test + 3 smoke gates. *(done)*
-- **28 (elevated). Per-command CLI reference — ✅ DONE.** `docs/cli-reference.md`
-  covers all 7 commands with every flag, generated from the CLI's actual
-  `--help` output (not memory), linked from the README Command Reference
-  section. *(done)*
 - **55 (was 52 — renumbered, collided with Phase 2 item 52). Pilot feedback
   loop.** Run the workshop, start the 2 pilots (1 new project, 1 existing),
   assign the five roles (owner / dev / QA / reviewer / scribe), and hold a
   20-min retro after the first real task. Pilot lessons re-prioritise Phase 1
   before major work starts. *(process, small)*
 
-## Phase 1 — Living system (lifecycle) · the #1 rating lever
+## Lifecycle — historical Phase 1 scope
 
-Moves **Update 4 → 8, Onboarding 8 → 8.5, Overall → ~8.3**. The 2026-07-14
-deferral is closed: two pilot projects now make lifecycle support a handover
+The 2026-07-14 deferral is closed: two pilot projects make lifecycle support a handover
 requirement. Implement in safe slices—ownership manifest, dry-run/conflict
 report, backup/rollback, one real version migration, then broader automation.
 The delete-and-reinstall safeguard remains a fallback, not the update strategy.
@@ -425,7 +451,11 @@ The delete-and-reinstall safeguard remains a fallback, not the update strategy.
 - **27. Repair / uninstall dry-runs.** Complete the lifecycle verbs so `update`
   isn't the only mutating path; both preview before writing. *(medium)*
 
-## Phase 1b — Corrective (after item 25) · enforcement that actually runs
+## Corrective phase — scope and original decisions
+
+The 2026-10-13 priority review above governs sequencing: independently safe
+additive protections and probes can precede 25; adopter removal migrations
+remain dependent on 25. Old decisions below are retained as history.
 
 Raised 2026-10-09 by a repository-wide audit. It checked current Claude Code
 documentation against a project generated from the packed 0.15.0 tarball, with
@@ -472,6 +502,8 @@ the packed tarball.
   - The checks move to item 87, and the Stop-hook gate stays item 66.
   - *(XS)*
 - **81. Make the remaining hooks portable.**
+  - Acceptance extension: item 97 supplies allowed/blocked, positive-control and
+    missing-dependency/timeout probes; share evidence with item 87.
   - Exec form with `${CLAUDE_PROJECT_DIR}`; no `jq` or `python3` dependency;
     hooks that enforce policy fail closed.
   - Pairs with item 60.
@@ -494,20 +526,19 @@ the packed tarball.
   - *(S)*
 
 **C3 — Context load**
-- **85. Make the token report measure what actually loads.**
-  - Rules without `paths:` count as always-loaded.
-  - Do this first so item 84 has a true before-number.
-  - *(XS)*
 - **84. Stop auto-loading the process corpus.**
   - Path-scope or relocate the 16 unscoped rules, condense the core four, and
     get `CLAUDE.md` to 200 lines or fewer.
   - Supersedes T4. Packs are item 90.
   - *(M)*
-- **86. Prompt-injection guidance and WebFetch domain limits.** Neither exists
-  today. *(XS)*
+- **86. Remaining WebFetch domain limits.** Basic prompt-injection guidance
+  shipped with item 95 in 0.16.1. Configure/document the remaining network/domain
+  controls and validate allowed, disallowed and unavailable cases. *(XS)*
 
 **C4 — Verification and UX honesty**
 - **87. Single `verify` contract and honest UI gates.**
+  - Acceptance extension: item 97 proves failure/skip and enforcement behavior;
+    an AI reviewer approval alone is not verification evidence.
   - One real `verify` script per profile, shared by the git hook, CI and the
     agent.
   - Playwright, mobile and theme DoD gates apply only when an E2E harness
@@ -564,22 +595,12 @@ the packed tarball.
   - `classify` now maps it, and gh's "not a git repository", to `NO_REPO`.
   - Ticket: `tasks/todo/96-gh-no-remote.md`.
   - *(XS)*
-- **94. Spawn external tools only from `PATH` — security, P0, ships in 0.16.0.**
-  Found 2026-10-12 while verifying review-25 finding N7. On Windows, Node
-  searches the working directory before `PATH`, so `ais doctor` (0.15.0–0.15.1)
-  and `ais create` (0.8.3–0.15.1) could run a `gh.exe`/`git.exe` planted in a
-  project. Fixed by `src/cli/core/exec-path.js`, plus a Windows plant test with
-  a positive control and a source scan that fails on any bare-name spawn
-  (`tasks/todo/94-spawn-from-path.md`). The maintainer chose to ship it as
-  0.16.0 ahead of item 25 (option (a), 2026-10-12). *(S)*
 
-## Phase 2 — Modern AI surface + repository knowledge
+## Optional integrations — historical Phase 2 scope
 
-Moves **Claude/AI integration 7.5 → 9, Existing-codebase context retrieval 5 →
-8.5, Overall → ~8.6.** This is where the newest leverage lives — connect the
-governance to real tools, make large-repo navigation selective instead of
-search-heavy, and distribute the operating system the Claude-native way.
-Together with Phase 1 this clears **8.5 overall** and is the v1.0 candidate line.
+These are optional P2 capabilities under the authoritative table. They are not
+v1.0 prerequisites or automatic rating increases; provider pilots precede
+productization. Cross-tool conformance is P1 and does not wait for these packs.
 
 - **51. Context-provider architecture + Graphify pilot (opt-in).** *highest
   large-existing-codebase value.* Add a provider abstraction where `filesystem`
@@ -627,10 +648,10 @@ Together with Phase 1 this clears **8.5 overall** and is the v1.0 candidate line
   routing, tool scopes, and prompts against the current Claude model line each
   release; record the review in the release checklist. *(small, recurring)*
 
-## Phase 3 — v1.0 completeness & polish
+## Lifecycle polish and expansion — historical Phase 3 scope
 
-Moves **Docs 7.5 → 9, Security 8 → 8.5, Tool reliability 8.5 → 9; closes the long
-tail. Overall → ~8.8.**
+Items here span P1 through P3. Follow the authoritative table: shared templates
+and onboarding precede optional integrations; new stacks require demand.
 
 - **28. Per-command CLI reference** (docs). *(medium)*
 - **38. Laravel first-class** — ship a minimal `composer.json` so the configured
@@ -662,31 +683,6 @@ solve baseline prompt bloat. Ordered by token-saved-per-effort.
 > cache). The top items target those — not the leaner-`CLAUDE.md` work, which
 > caching already absorbs.
 
-- **T0. Token measurement (enabler) — ✅ DONE (0.9.1).** `npm run token-report`
-  (`scripts/token-report.js` + unit-tested `src/cli/core/token-report.js`) measures
-  the scaffold's own corpus by category, always-loaded vs on-demand, top files, and
-  the `/review` fan-out floor. Run before/after every change below.
-  - **Baseline 2026-07-13: ~138K est-tokens** (chars/4). Always-loaded (`CLAUDE.md`)
-    only **7K / 5%** — confirms leaner-`CLAUDE.md` (T4) is low-value. The fat is
-    **commands 47K / 34%** and **rules 39K / 29%** → T5 (prune) + T2 (dedup) are the
-    real levers. Largest single files: `ai-coding-rules.md` (~6.1K),
-    `design-system.md` (~5.6K), `what-next.md` (~4.5K).
-  - **Corrected 2026-10-09 — the "only 7K / 5%" premise was wrong.** Rules
-    without `paths:` frontmatter load at launch with the same priority as
-    `CLAUDE.md` (memory docs), and only the 8 `stacks/` overlays carry it. Real
-    always-loaded size in a generated project is about **37k tokens** (147.5 KB).
-    The report's "on reference" label for rules is the defect; it is fixed in
-    item 85, and T4 is superseded by item 84.
-  - Maintainer tool (measures this repo). A user-facing `ais tokens` / `/health`
-    view of a *generated* project's corpus is a later optional extension.
-    *(done)*
-- **T1. Tiered / lite review — ✅ DONE (0.9.1).** `/review --lite` runs one
-  consolidated pass (no 5-subagent fan-out) for XS/S changes, with a **hard,
-  non-negotiable escalation** back to the full review when the diff touches
-  auth/tenant/payments/data/migrations/secrets/new-endpoint or is > S. Same
-  BLOCK/WARN/NIT report; security always surfaced. Removes the ~⅘ fan-out cost on
-  small work without trimming guardrails on risky work. Shipped in `review.md`
-  across all five profiles. *(done)*
 - **T2. Rules deduplication.** One canonical statement per concept,
   cross-referenced not restated (e.g. "parameterized queries" lives in 4 files
   today). Compounds across every subagent that loads rules. Content-preserving —
@@ -729,21 +725,6 @@ solve baseline prompt bloat. Ordered by token-saved-per-effort.
   largest visible duplication — turns out to be load-bearing. Remaining
   benefit is maintainability, not token efficiency. Recommend re-ranking
   below items 66/67 rather than executing as originally written.
-- **T3. — ✅ DONE.** All 8 `.claude/rules/stacks/*.md` overlays now carry
-  `paths:` frontmatter (extension + manifest-file globs per stack — e.g.
-  `backend-python.md` scopes to `**/*.py`, `**/pyproject.toml`,
-  `**/requirements*.txt`), so an overlay only enters context when Claude
-  actually reads a matching file, instead of loading unconditionally every
-  session regardless of profile. Every profile ships all 8 overlays
-  unconditionally (confirmed 2026-08-13 — even a `python`-profile project
-  carries `backend-java.md`, `backend-dotnet.md`, `backend-coldfusion.md`,
-  etc.), so this was broader than "a Go project carries React rules" — every
-  non-matching profile was carrying every other profile's rules, unscoped.
-  Verified: byte-identical across the 6 copies (main + 5 templates), same
-  pattern as every other cross-profile file in this repo. **Not yet verified
-  live**: adding a project-side `InstructionsLoaded` hook to confirm
-  empirically that a Go session never actually loads `backend-python.md` —
-  worth doing before calling T3 fully proven, not just correctly configured.
 - **T4. — superseded by item 84 (2026-10-09).** Its "low-value" ranking rested
   on the T0 measurement error above. Original text kept for context.
   **Lean `CLAUDE.md` + progressive disclosure.** `CLAUDE.md` → thin router
@@ -776,177 +757,9 @@ saving starts costing correctness.
 
 ## Hygiene track (parallel — not a phase gate)
 
-- **47. — ✅ DONE / superseded (one-button release flow).** The post-release
-  `main→dev` sync no longer exists to automate: the new fast-forward release
-  flow (`docs/setup/release-flow.md`, `.github/workflows/release.yml`) promotes
-  `dev → main` by fast-forward, so `main` is always an ancestor of `dev` and
-  there is nothing to sync. Removed `post-release-sync.yml` and
-  `scripts/sync-main-into-dev.sh`. Remaining human step is the one-time repo
-  setup in `release-flow.md` (a `RELEASE_PAT` secret + a branch-protection
-  bypass for that identity). *(superseded — the sync problem is designed out)*
-- **29. — ✅ DONE (2026-07-14).** Deleted the stray `v1.0` tag (local + remote,
-  explicit human confirmation obtained). `v1.0.0` was never published to npm —
-  nothing real was at risk. `git fetch --tags` is clean again. Confirmed
-  alongside a versioning decision: the next release stays on the `0.x` line
-  (e.g. `0.11.0`); `1.0.0` is not cut until the v1.0 completeness criteria in
-  "The 8.5+ path" are actually met, not implied by a leftover tag name.
-- **44. — ✅ DONE.** Removed stray cruft from all 5 profile template dirs.
-  Broader than originally scoped: `templates/*/apps/` turned out to be a
-  byte-identical duplicate of the repo's real, documented reference example
-  (root-level `apps/api/src/`, referenced from CLAUDE.md) — present in **all
-  five** profiles, not just golang/python, and confirmed excluded from every
-  copy plan (`apps/**` in `EXCLUDED_DEFAULT_PATTERNS`), so it never shipped.
-  `templates/*/.vscode/` (3 of 5 profiles) had zero documentation anywhere as
-  an intentional feature and was likewise excluded/unshipped. Root-level
-  `apps/` and `.vscode/` (this repo's own reference example and editor
-  config) are untouched. Verified: all 5 profiles still create cleanly with
-  0 CRIT/HIGH doctor failures after removal.
-- **46. — ✅ DONE (0.10.0 docs audit).** Fixed the repo's own
-  `.claude/skills/design-system/SKILL.md` → `DESIGN_TOKENS.md` links (4 occurrences
-  had a doubled `.claude/skills/` prefix); the file is now byte-identical to
-  the (already-correct) template copies.
 - **21.** Docs-honesty pass (stale version/claims). **22.** Publish-workflow input
   cleanup. **18.** Hooks-roadmap doc. **41.** Decide the fate of the example hooks
   (`jira-sync.py`, `notify-review.py`) — pack or remove.
-- **57. — ✅ DONE (bump + date on dev, via the one-button release flow).** The
-  `main→dev` `-s ours` sync discarded main's content, so the release-branch
-  version bump + CHANGELOG dating never reached `dev` — dev's `package.json`
-  and CHANGELOG drifted every release (hand-fixed three times: 0.10.0, 0.10.1,
-  0.10.2, plus the 0.9.0→0.10.2 catch-up in PR #102). Designed out: the new
-  release flow (`docs/setup/release-flow.md`) stamps the version and dates the
-  CHANGELOG **on `dev`** and then fast-forwards `main` to that commit, so both
-  branches always agree and there is no content to lose. `prepare-release.sh`
-  does the stamping; `release.yml` drives it. *(done — root cause removed, not
-  patched)*
-- **58. — ✅ DONE (Go-aware shared profile wiring).** Added `go.mod` detection
-  to the shared profile pre-commit hook and wired `go build ./...`,
-  `go vet ./...`, and `go test ./...` behind `command -v go`. The shared
-  Claude permissions, pre-review hook, `/start-task`, `/review`, and source CI
-  template are now stack-aware and byte-identical across all five profiles, so
-  generated Go projects no longer inherit Node-only verification prompts.
-  Covered by unit tests in `src/__tests__/core.test.js` and a pre-publish smoke
-  gate that runs the generated Go pre-commit hook.
-- **59. — ✅ DONE.** `pre-commit` hook branch-name regex now allows `docs/*`,
-  matching `branching-rules.md`'s documented set
-  (`feature|fix|chore|docs|hotfix|release`). Fixed the regex and the header's
-  human-readable pattern list in all five profile hooks + this repo's own
-  copy (byte-identical). No more forced rename to `chore/` for doc-only work.
-- **60. — ✅ DONE (2026-10-12, #145; ships in 0.16.0).** A required `Windows checks` job runs lint, typecheck and the smoke gate (with the full test suite) on `windows-latest`. Its first run reproduced the governance-guard Windows defect (items 81/83). Record: `tasks/done/60-windows-ci.md`. Original finding:
-  **No Windows CI runner — Windows-only bugs ship in every release.**
-  Found 2026-07-15 (PR #94): the `path.relative()` backslash bug meant
-  `.claude/MEMORY.md` and `.claude/settings-overrides.json` were never
-  generated on Windows for **any** profile, surfacing as two HIGH `ais doctor`
-  failures. It shipped in every release the CLI has ever cut, invisible to the
-  whole test suite, because every dev machine and CI runner is macOS/Linux —
-  the buggy path is never exercised on a forward-slash OS. This is the
-  highest-leverage prevention item on the list: the CLI's whole job is writing
-  files to a user's filesystem, and half the target audience is on Windows.
-  Fix: add a `windows-latest` job to the GitHub Actions matrix running at least
-  the `buildFilePlan`/create/init/doctor tests (ideally the full suite). Also
-  audit remaining `path.relative(`/`path.join(` sites that feed string
-  comparisons for the same class of bug (see 2026-07-15 lessons entry).
-  *(medium — CI matrix + a path-normalization audit pass)*
-- **61. — ✅ DONE (option a: init fills the skeleton in when absent).**
-  `init` now generates `tasks/lessons.md` and `CHANGELOG.md` at project root
-  exactly when they're genuinely absent — closing the dangling `CLAUDE.md`
-  reference — and leaves them completely untouched when a repo already has
-  its own (both added to `PROTECTED_PATHS` first, verified in both
-  directions: an existing `CHANGELOG.md` survives byte-for-byte; an absent
-  one gets created). One subtlety found during implementation:
-  `resolveGeneratedTargetRel` was routing generated files into the
-  `.ai-scaffold/` namespace on `init` by default — the naive fix would have
-  silently generated these at `.ai-scaffold/CHANGELOG.md` instead of project
-  root, where neither `doctor` nor a human would ever find them. Fixed by
-  treating the governance-skeleton paths as root-forced, like
-  `constitution.md`.
-- **62. — ✅ DONE (gitleaks `git --staged`).** The shipped `pre-commit` and
-  `pre-commit-secrets` hooks ran `gitleaks detect --staged --exit-code`, which
-  errors (`unknown flag: --staged`) on gitleaks v8.19+ — the `detect` scan form
-  was replaced by the `git` subcommand. Verified against a real install
-  (gitleaks 8.30.1): `gitleaks git --staged --exit-code 1` passes on a clean
-  staged tree and blocks a real (non-allowlisted) secret. Fixed both hooks
-  across all five profiles + the repo copies (byte-identical). Regression
-  coverage: a unit test asserts the hooks use `git --staged` and never
-  `detect --staged`, and a smoke gate (active when gitleaks is installed)
-  asserts the hook's gitleaks command runs cleanly rather than erroring on a
-  usage flag. Was pre-existing on every release and latent because dev machines
-  usually lack gitleaks while CI installs it (same environment-parity blind
-  spot as item 60). *(done)*
-- **63. — ✅ DONE (php→laravel alias + fail-fast profile validation).** Found
-  2026-07-19 (PR #107): `ais init --profile php` ran the entire ~18-question
-  interview, then crashed with a raw `Template profile not found` stack trace
-  — `php` wasn't aliased to `laravel` (the PHP profile) and nothing validated
-  the profile before prompting. Added `php`/`laravel8` → `laravel` aliases; both
-  `create` and `init` now validate the profile before any prompt, exiting
-  cleanly with the valid set + aliases on an unknown value. Same PR also scoped
-  the CI dependency-audit gate to `--omit=dev` (shipped CLI has 0
-  vulnerabilities; the full-tree audit was failing releases on dev-only tooling
-  advisories with no user-facing exposure — see `security-rules.md`). *(done)*
-- **64. — ✅ DONE.** New `.claude/hooks/token-budget-guard.sh`
-  (`PreToolUse`, same matcher as `governance-file-guard.sh`: `Read|Grep|Glob|
-  Edit|Write|MultiEdit`) estimates session tokens from the live transcript
-  file size (chars/4, matching `scripts/token-report.js`'s own
-  `CHARS_PER_TOKEN`) and makes the two thresholds `governance.md` already
-  documents actually real: 300K stays a WARN (suggests `/compact`, never
-  blocks), 500K now exits 2 and blocks the tool call — configurable via
-  `ECC_TOKEN_BUDGET_WARN_TOKENS`/`ECC_TOKEN_BUDGET_BLOCK_TOKENS`, escapable
-  via `ECC_TOKEN_BUDGET_WARN_ONLY=1` (same spirit as `git commit --no-verify`
-  — an override, not a bypass), and fully fail-open on any missing transcript
-  or parse error. Shipped identically in all 5 profile templates and wired
-  into all 6 `settings.json` copies. Verified live and unplanned: this exact
-  hook blocked a real `Read` call mid-session once this project's own
-  transcript passed 500K est-tokens — confirming both the detection and the
-  block path work against a real, not synthetic, transcript, in addition to
-  9 scripted bash-level test cases and 4 Vitest cases covering byte-identity,
-  wiring, warn/block/override behaviour, and fail-open on a missing
-  transcript.
-- **65a. Profile smoke coverage — ✅ DONE.** `scripts/pre-publish-smoke.sh` gained an explicitly
-  labeled "Gate 4b-2: Profile Smoke (laravel + generic)" section, following
-  the same pattern already used for python/golang: `create`, a README
-  real-commands check (laravel: `composer install`/`composer test`; generic:
-  README.md + constitution.md existence, since generic is stack-agnostic), a
-  `.gitignore`-renamed-correctly check, and a `doctor` CRIT/HIGH-clean check
-  — closing the gap where only 3 of 5 profiles had named smoke coverage.
-  Along the way, found and fixed 2 gates left stale by item 61's behaviour
-  change (both asserted `tasks/` and `CHANGELOG.md` must never exist after
-  `init`, which item 61 correctly makes false) — replaced with positive
-  assertions that both are generated when absent. Baseline was 107 gates;
-  the full suite is now 113/113 passing (all 5 profiles have named smoke
-  coverage; the aggregate pass rate is the trackable signal this item asked
-  for).
-  **P0 follow-up:** replace README string/presence assertions with execution of
-  every profile's documented install and first test/health commands in CI. A
-  passing source suite cannot substitute for running the generated project.
-- **65b. Packed-artifact golden-path execution — ✅ DONE (0.15.0, #137/#138).**
-  Shipped as `scripts/golden-path.js` plus the runnable Laravel skeleton; see
-  CHANGELOG 0.15.0. The text below is the decision record.
-  65a proved the gates run; it did not prove the generated projects work. The
-  smoke gate greps a generated README for `composer install` and `composer test`
-  — it greps for a command it never runs, and does not grep the two that are
-  broken. Stage 1 executed every documented command on all five profiles and
-  found: laravel's documented path dies at `php artisan migrate` (no `artisan`,
-  no `app/`, `bootstrap/`, `config/` or `database/`), and node's `lint`,
-  `typecheck`, `build` and `dev` are `echo` stubs that exit 0 — a gate running
-  them would see four passes and prove nothing.
-
-  Decisions (maintainer, 2026-09-01): laravel **remains Laravel** and must
-  become runnable (rename to `php` is a separate approval, never Laravel
-  branding over a non-Laravel project); placeholders **fail**, they are not
-  skipped; verification runs in normal CI on profile/package changes **and** in
-  the pre-publish packed gate, which is authoritative; both static and
-  execution layers are kept, reported separately. Success means executing
-  commands from a project generated **from the packed npm artifact** — never
-  from `templates/` or the working tree.
-
-  Artifacts: analysis and BRD v1.0 in `docs/brd/65-golden-path-execution-*.md`;
-  estimate `docs/estimates/65-golden-path-execution-estimate.md` **approved
-  2026-09-01** at 5.6 / 12.0 / 21.3 days (PERT 12.0, MEDIUM), with four named
-  re-estimate triggers. Next gates: Laravel skeleton spike → estimate
-  reconfirmation → HLD/ADR with **independent architecture review** (this is
-  release-gating test infrastructure) → `/kickoff` → implementation.
-
-  Blocks Wave 0's golden-path metric, which has no honest source until this
-  ships. *(M — see the approved estimate)*
 
 - **66. 🟡 First slice DONE (2026-10-12, #146; ships in 0.16.0): the shipped `commit-msg` hook and `doctor` C-05.** Open: this repo’s own gate (exception not granted), `ais init` hook wiring, and the CHANGELOG/approval-artifact controls (`tasks/todo/66-objective-controls.md`). Original finding:
   **Plan-and-confirm has no deterministic backing — prompted rule only.**
@@ -1010,7 +823,9 @@ saving starts costing correctness.
     default install), so remedies point to copying `.claude/hooks/*` into
     `git rev-parse --git-path hooks`.
 - **67. `AGENTS.md` points non-Claude agents at a document written for
-  Claude.** Found 2026-08-13, same cross-check, prompted by an explicit
+  Claude.** Acceptance extension: item 98 exercises discovery and runnable
+  verification in Codex, Cursor and Copilot and publishes the capability matrix.
+  Original finding (2026-08-13, same cross-check), prompted by an explicit
   design constraint: this scaffold must work for Codex/Cursor/other agents,
   not just Claude Code. `AGENTS.md` (56 lines) is a well-designed thin
   pointer — *"CLAUDE.md is the authority for every decision, convention, and
@@ -1174,13 +989,6 @@ strongly as it looks. Measurement beats convention.
   (`gh pr list --state merged --json author,mergedBy` makes self-merges
   visible after the fact). *(small once the identity question is decided)*
 
-- **71. — ✅ DONE (generated projects).** Shipped the linear flow: hook refuses
-  commits on `dev`/`main`, opt-in branch-flow CI, `release/*` removed, `hotfix/*`
-  kept as the documented exception with a required back-merge, and
-  `setup-branch-protection.sh` now ships (configurable) at
-  `.ai-scaffold/setup/`. `ais create` initialises `main` + `dev` so the flow is
-  true on day one. ai-scaffold itself deliberately unchanged — see item 70.
-  Original scope below.
 
 - **71 (original).** Enforce the linear `feature → dev → main` workflow end-to-end.**
   Requested 2026-08-14. Every change starts from `dev` on a
@@ -1215,32 +1023,21 @@ strongly as it looks. Measurement beats convention.
   *(medium — mostly a decision, then a small implementation)*
 
 
-## The 8.5+ path (honest)
+## Release checklist — current maintainer flow
 
-- **Wave 0/1 first** — establish metrics, verify live enforcement, and execute
-  each generated profile's documented golden path.
-- **Phase 1 is active P0 work.** It fixes the single worst category (Update 4 →
-  8) and lifts overall to ~8.3, but must ship through ownership-aware slices
-  rather than one generic migration framework.
-- **Phase 1 + Phase 2** clears **8.5 overall** and makes "modern AI capabilities"
-  real (context providers + MCP + plugin + skills). This is the **v1.0 candidate**
-  line.
-- **Phase 3** polishes to ~8.8–9 and closes the long tail for a confident **v1.0.0**.
+Use `docs/setup/release-flow.md` and `CLAUDE.md`: the Release Action stamps dev,
+fast-forwards main, then pushes the tag that triggers npm publishing. No release
+branch, promotion PR or post-release sync is part of this flow.
 
----
-
-## Release checklist (enforced, not aspirational)
-
-A release is ready only when **all** of these pass — the first two are automated:
-
-- `npm run release:check` — `origin/main` is an ancestor of the promotion branch,
-  and a `release/v*` branch changes only `package.json` / `package-lock.json` /
-  `.ai-scaffold.json` / `CHANGELOG.md`.
-- `bash scripts/pre-publish-smoke.sh` — currently **115 gates** incl. the
-  packed-surface, generated-doc-link, constitution, and adopter-facing
-  CLI-reference checks.
-- `npm test`, `npm run lint`, `npm run typecheck`, `npm audit --audit-level=high`.
-- `gh pr view <id>` shows `mergeable` + required checks green.
-- **A release is not shipped until `npm view @lajin.m/ai-scaffold version` shows the
-  new version** — merging the release PR to `main` is not publishing; the `v*` tag
-  push is the trigger. Failed publishes use a new patch tag, never a moved tag.
+- [ ] Normal PR review and effective required checks are green.
+- [ ] Release Action runs configured readiness/security gates, lint, typecheck,
+  tests and `bash scripts/pre-publish-smoke.sh`; packed golden paths pass for
+  supported profiles. Record results rather than stale gate counts.
+- [ ] Runtime audit passes (`npm audit --omit=dev --audit-level=high`); track
+  dev-tooling advisories separately under the security policy.
+- [ ] Packed changes, generated output and applicable upgrade/control probes
+  pass on the declared platform/runtime/tool matrix.
+- [ ] Version, dated CHANGELOG and migration notes agree; dry-run the Release
+  Action after release/protection configuration changes.
+- [ ] Tag identifies the exact promoted commit; Publish succeeds; npm version
+  and provenance match. Follow recovery policy; never move an existing tag.

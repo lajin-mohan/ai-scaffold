@@ -12,6 +12,19 @@ This file records patterns from mistakes and corrections. Claude reads this at t
 
 <!-- Add lessons below as they are captured. Most recent at the top. -->
 
+## 2026-10-13 — Roadmap order and release claims drifted across summaries
+
+- **Mistake:** The roadmap summary and item 25 made a release depend on update,
+  while item 94 recorded a later decision to ship its security fix first. Old
+  promotion-PR instructions and rating forecasts remained in the active backlog.
+- **Why:** Scheduling, status and release procedure were restated in several
+  documents; later decisions corrected one location without superseding the rest.
+- **Rule:** Keep one authoritative active priority/dependency table. Mark retained
+  decisions as historical, reconcile affected tickets in the same change and
+  link the maintainer release contract. Distinguish implemented, merged and
+  published evidence. Refresh the snapshot if a shared checkout advances during
+  review; never turn a local version heading into a publication claim.
+
 ## 2026-08-27 — A documented, already-corrected rule lost to a tool default; the "fix" that closed it never covered the path in use
 
 - **Mistake:** Every commit across four branches carried an AI-attribution trailer — 22 commits. This is the **second occurrence of an identical failure**: the `2026-05-10` entry in this file records the same mistake, the correction, and the resulting rule. `.claude/rules/branching-rules.md:79` prohibits it explicitly and line 314 lists it under prohibited actions. That rules file had been read in the same session. Caught only in human review.
