@@ -265,7 +265,8 @@ The merge never touches keys it does not own (`env`, `model`, …). After apply,
 
 ```
 update.js
- ├─ read manifest ─ version policy (FR-01, FR-02, FR-04)
+ ├─ read manifest (containment first, FR-43) ─ version policy (FR-01, FR-02, FR-04)
+ ├─ lock present? → status `locked`, exit 1; no backup or journal is read (FR-44)
  ├─ interrupted?  backup dir without `complete` marker:                         FR-38, r2#2, v2.2
  │     no --apply → report it (and whether it is verifiable) and exit 1. NO WRITES
  │     --apply → take the lock (below), then verify: the manifest hash and EVERY journaled
@@ -347,6 +348,70 @@ with one next-step line, for example: "Run `ais update --apply`" or "Resolve 3
 | Determinism (NFR-07) | Fixed clock; byte-exact comparison over a sorted file list; a self-reproduction control first. Packed tarball vs published 0.16.1, both run as child processes under a fixed-date preload (`NODE_OPTIONS=--import <shim>`): identical sorted file set; every file byte-identical except `.ai-scaffold.json`, compared as parsed JSON where only `$.install` (new) and `$.version` (if the versions differ) may differ, and everything else, including the three dates and `managedFiles` order, deep-equals. `managedFiles[].hashLf` must be absent on both sides (guard: `.gitattributes` forces CRLF for `.ps1`/`.bat`/`.cmd`, none shipped today) |
 | E2E | AC-01 to AC-21. Update a **0.14.0 project from npm** with the packed tarball; `init` fixtures (AC-14); a second-update edit survives (AC-15); kill mid-apply and before the marker (AC-16, AC-17, via an injected fs layer, the ADR-004 pattern); a held lock (AC-18); an edit between plan and write (AC-19, via the fs layer); hook keying (AC-20); exceptions (AC-21). Every preview test asserts the project and backup directories are byte-identical before and after |
 | Platform | All of the above on Ubuntu and on **Windows CI** (item 60, now live); AC-10 CRLF runs for real on Windows |
+
+## 10a. Preview contract (slice 3)
+
+Slice 3 ships `ais update` as a read-only preview. `--apply` exits 1 (FR-46).
+
+**Check order (FR-44):** manifest containment and parse → removed or
+unavailable flags → version policy → lock → interrupted transaction →
+same version → plan. The first failing step sets `status` and `exitCode`.
+
+**Containment (FR-43), new `containment.js`:**
+- `projectRoot = realpath(target)`.
+- For each path: reject absolute, drive-letter, `..`-escaping and empty
+  paths lexically (the `classifyPath` guard), then walk from the project root
+  to the leaf with `lstat`. Any existing segment that is a symbolic link or a
+  junction is rejected, and `realpath` of the deepest existing segment must
+  start with `projectRoot` + separator.
+- `.ai-scaffold.json` is checked before its first read. The backup and
+  journal directory is checked before any listing or read.
+- Classes are resolved before content reads; user-data gets an existence
+  check only. Rejected paths become `notices` and the run exits 1.
+
+**Settings base (FR-35):** `recorded` | `derived` | `unknown`. With
+`unknown`, missing `deny`/`ask` rules go to `missingNoBase`, new `allow`
+rules to `suggestions`, and a notice says deliberate removals cannot be
+determined. An unknown base is never an empty one.
+
+**JSON (FR-45):** its own envelope, not `buildDryRunPlan`'s, whose
+copy/generate counts would misdescribe update actions.
+
+```json
+{
+  "schema": "ais-update-preview/1",
+  "status": "planned",
+  "exitCode": 0,
+  "error": null,
+  "from": "0.16.1", "to": "0.17.0", "profile": "node",
+  "installMode": "create", "hashed": true,
+  "gitSafety": "not-assessed", "applyAvailable": false,
+  "entries": [{ "path": "CLAUDE.md", "class": "managed", "action": "replace", "reason": null }],
+  "counts": { "replace": 1 },
+  "settings": { "base": "recorded", "added": [], "restored": [], "missingNoBase": [], "exceptions": [],
+                "removed": [], "reported": [], "ambiguous": [], "suggestions": [] },
+  "migrations": ["0.17.0"],
+  "notices": []
+}
+```
+
+Every field is always present; a field that cannot be determined (for
+example after a corrupt manifest) is `null`. Exactly one document goes to
+stdout; logs go to stderr.
+
+**No write attempts (NFR-08):** preview modules take an injectable fs layer
+(the ADR-004 pattern). Tests run every fixture through a recording layer
+that fails on any write, create, delete, rename, directory or write-mode
+open call.
+
+**Packed-tarball CLI tests (NFR-08):** new `scripts/update-preview-smoke.js`
+packs the CLI, installs the tarball in a temp directory and runs the CLI
+cases. `pre-publish-smoke.sh` runs the working-tree CLI, so it is not used
+for this. CI runs the script in the Ubuntu CLI job and the Windows job.
+
+**Time reporting:** intervals between commits are calendar intervals
+(they include gaps and unrelated work). Focused effort is reported only if
+tracked separately; otherwise it is unknown.
 
 ## 10. What this HLD does not decide
 
