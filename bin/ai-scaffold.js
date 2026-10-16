@@ -34,7 +34,7 @@ cli.help((sections) => {
   ais status                              Show installed scaffold version and status
   ais doctor                              Diagnose scaffold installation health
   ais list                                List installed commands, agents, skills, rules
-  ais update                              Update scaffold metadata
+  ais update                              Preview a scaffold update (read-only)
   ais export-context                      Back up memory/lessons/settings before reinstalling
 
 Examples:
@@ -45,7 +45,7 @@ Examples:
   ais status
   ais doctor
   ais update
-  ais update --target-version 1.2.0
+  ais update --json
   ais export-context`,
   });
 });

@@ -76,7 +76,7 @@ Tutorials:
 - It is not a full application framework.
 - It does not generate production business logic for you.
 - It does not remove the need to configure real lint, typecheck, test, build, CI, secrets, or deployment commands.
-- `update` is not a full managed-file migration system yet; that is planned for Phase 3.
+- `update` previews what an update would change but does not apply it yet; applying is the next part of item 25.
 - It is not a magic prompt collection; it is an operating system for disciplined AI-assisted delivery.
 - It is not only for Claude. The root `AGENTS.md`, profile templates, and governance docs are intended to help Codex, Cursor, Copilot, and other coding assistants follow the same project rules.
 
@@ -398,16 +398,14 @@ ais doctor ./my-project --json
 
 ### Update An Installed Scaffold
 
-`update` exists in this MVP as a safe placeholder. Full managed-file migrations are planned for Phase 3. It reports installed metadata but does not mutate `.ai-scaffold.json` or apply file updates.
+`update` is a **read-only preview** in this version. It shows, file by file, what updating to the running CLI's version would change: which scaffold files would be replaced, added or removed, which of your edits would be kept as conflicts, and what would change in `.claude/settings.json`. It never writes anything. Applying an update is not available yet.
 
 ```bash
-npx @lajin.m/ai-scaffold update --dry-run
-npx @lajin.m/ai-scaffold update --target-version <version>
-ais update --dry-run
-ais update --target-version <version>
+npx @lajin.m/ai-scaffold@latest update        # preview against the latest CLI
+ais update --json                              # one JSON document on stdout
 ```
 
-Full safe file updates, diffs, and version-pinned migrations are planned for Phase 3. Until then, `update` exits without changing files when an actual version change would be required.
+Exit codes: `0` no planning conflicts (this does not mean applying is safe; git state is not checked yet), `2` conflicts present, `1` error, locked or interrupted. `--force` was removed in 0.17.0, and `--apply` exits 1 until applying is available.
 
 ### Before You Reinstall
 
@@ -442,7 +440,7 @@ Full per-command reference with every flag: [docs/cli-reference.md](docs/cli-ref
 | `list [dir]` | List installed commands, agents, skills, and rules | `npx @lajin.m/ai-scaffold list` |
 | `export-context [dir]` | Back up memory/lessons/settings before deleting and reinstalling | `npx @lajin.m/ai-scaffold export-context ./my-app` |
 | `doctor [dir]` | Diagnose missing, changed, or invalid scaffold files | `npx @lajin.m/ai-scaffold doctor --json` |
-| `update [dir]` | Update scaffold metadata in this MVP; full migrations are later | `npx @lajin.m/ai-scaffold update --dry-run` |
+| `update [dir]` | Preview what updating to this CLI version would change (read-only) | `npx @lajin.m/ai-scaffold update --json` |
 
 ## Local Development
 
