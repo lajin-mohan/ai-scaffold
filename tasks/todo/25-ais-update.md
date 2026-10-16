@@ -130,3 +130,27 @@ forecast for S5–S8 and review: about 6 focused days from the breakdown
 (settings merge 2.67, report and orchestration about 1.5, packed CLI
 tests 0.75, no-write tests and fixtures about 0.75, review about 0.5),
 not from measured speed.
+
+## Slice 3 (preview): implemented, review/merge pending, 2026-10-16
+
+| Step | Commit | Result |
+|---|---|---|
+| S5 settings merge preview | `053da15` | 28 tests; HLD §5 rows, unknown base never empty |
+| S6 preview command, report, docs | `3a21586` | 21 tests; FR-44 order, FR-45 document |
+| S7 packed-tarball CLI script in CI | `54da86f` | 17 checks; Ubuntu and Windows jobs |
+| S8 no write attempts | `c00999e` | 7 fixtures plus a positive control |
+| Review fixes | `798c5af` | Security: no critical/high; M1–M3, L1–L3 fixed. Backend: approved with warnings; all applied. 27 regression tests |
+
+**Acknowledged, not changed:**
+- Hard links pass containment (documented in FR-43, HLD §10a).
+- The `fstat` identity check narrows but cannot close a race with a
+  concurrent local process.
+- `cac` errors raised before any command runs (for example a malformed
+  argument list) still print plain text; every `update` option mistake
+  now reaches the preview and yields JSON.
+- The `removed` settings group stays empty until a release declares a
+  retired list.
+
+**Time:** calendar interval between the first and last slice 3 commits,
+2026-10-16 12:07Z to the final commit (commit timestamps; includes gaps
+and a usage-limit pause). Focused effort was not tracked and is unknown.
