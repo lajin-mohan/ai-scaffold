@@ -80,7 +80,7 @@ const ROOT_FILES = [
   'CLAUDE.md',
 ];
 
-const CREATE_ROOT_FILES_BY_PROFILE = {
+export const CREATE_ROOT_FILES_BY_PROFILE = {
   generic: ['.gitignore'],
   node: ['package.json', 'test/smoke.test.js'],
   // The laravel skeleton must land at project root, not under .ai-scaffold/.

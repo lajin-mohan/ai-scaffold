@@ -17,7 +17,7 @@ run any command via `npx @lajin.m/ai-scaffold <command>` without installing.
 | [`doctor`](#ais-doctor-target-dir) | Diagnose scaffold installation health |
 | [`list`](#ais-list-category-target-dir) | List installed commands, agents, skills, and rules |
 | [`export-context`](#ais-export-context-target-dir) | Back up memory/lessons/settings before a reinstall |
-| [`update`](#ais-update-target-dir) | Update scaffold metadata (placeholder — full migrations planned) |
+| [`update`](#ais-update-target-dir) | Preview what updating to this CLI version would change (read-only) |
 
 **Bare shortcuts:** `ais <name>` routes to `create <name>`; `ais .` routes to
 `init` in the current directory.
@@ -236,23 +236,30 @@ ais export-context ./my-project --out ~/backups/my-project
 
 ## `ais update [target-dir]`
 
-**Placeholder in the current release.** Reports installed metadata but does not
-apply file updates — full managed-file migrations (diff, preview, apply with
-backup/rollback, version-pinned) are planned. Until then, the supported upgrade
-path is `export-context` → delete → `create` (see "Before You Reinstall" in the
-README).
+**Read-only preview in the current release.** Shows what updating the project
+to this CLI's version would change and writes nothing. Applying is not
+available yet; until it is, the supported upgrade path is `export-context` →
+delete → `create` (see "Before You Reinstall" in the README).
 
 ```bash
 ais update
-ais update ./my-project --target-version 1.0.0
-ais update --dry-run
+ais update ./my-project --json
+npx @lajin.m/ai-scaffold@0.17.0 update   # preview against another version
 ```
 
 | Option | Meaning |
 |---|---|
-| `--target-version <version>` | Update to a specific version |
-| `--dry-run` | Show what would be updated without making changes |
-| `--force` | Force update even if already up to date |
+| `--json` | Print exactly one JSON document (`ais-update-preview/1`) to stdout, in every outcome |
+| `--target-version <version>` | Must equal this CLI's version; otherwise the error names the `npx …@<version> update` form |
+| `--keep-removed <rule>` | Show the effect of keeping a removed scaffold `deny`/`ask` rule removed (repeatable). Takes effect only during an update |
+| `--restore-removed <rule>` | Show the effect of restoring such a rule (repeatable) |
+| `--dry-run` | Accepted; update is always a preview in this version |
+| `--force` | **Removed in 0.17.0**; exits 1 |
+| `--apply` | Not available in this version; exits 1 |
+
+Exit codes: `0` no planning conflicts (not a statement that applying is safe;
+git state is not checked yet), `2` conflicts present, `1` error, lock held by
+another update, or an interrupted apply.
 
 ---
 

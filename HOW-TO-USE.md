@@ -297,8 +297,9 @@ There are two versions to understand:
 | `ais --version` | CLI version installed on your machine |
 | `ais status` | Scaffold version installed in the current project |
 
-`ais update` is currently a safe placeholder. It does not yet migrate managed
-files. Until full migrations land, update carefully:
+`ais update` is currently a read-only preview: it shows what an update would
+change and writes nothing. Applying is not available yet. Until it is, update
+carefully:
 
 ```bash
 ais doctor

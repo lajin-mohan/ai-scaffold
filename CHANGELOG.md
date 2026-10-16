@@ -27,6 +27,21 @@ This file is configured with `merge=union` in `.gitattributes` so parallel addit
   run** (item 25, BRD NFR-07). Previously `{{YEAR}}` used local time while
   manifest dates used UTC, so the two could disagree within a few hours of
   New Year. Output is otherwise unchanged.
+- **`ais update` is now a read-only preview** (item 25 slice 3). It shows,
+  file by file, what updating to the running CLI's version would change:
+  replacements, additions, removals, edits kept as conflicts, and the
+  `.claude/settings.json` merge (rule strings and hook keys only). It writes
+  nothing in any outcome, reads only paths that pass a containment check
+  (no symlinks or junctions), and reports a held update lock or an
+  interrupted apply instead of planning. `--json` prints exactly one
+  `ais-update-preview/1` document on stdout. Exit codes: `0` no planning
+  conflicts (git state is not assessed yet), `2` conflicts, `1` error,
+  locked or interrupted. Applying is not available yet; `--apply` exits 1.
+
+### Removed
+- **`ais update --force`** (item 25, BRD FR-02). It bypassed the version
+  checks. Passing it now fails with exit 1 and an explanation instead of
+  being ignored.
 
 ## [0.16.1] - 2026-10-13
 
