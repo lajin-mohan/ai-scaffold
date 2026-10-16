@@ -388,7 +388,7 @@ copy/generate counts would misdescribe update actions.
   "gitSafety": "not-assessed", "applyAvailable": false,
   "entries": [{ "path": "CLAUDE.md", "class": "managed", "action": "replace", "reason": null }],
   "counts": { "replace": 1 },
-  "settings": { "base": "recorded", "added": [], "restored": [], "missingNoBase": [], "exceptions": [],
+  "settings": { "base": "recorded", "added": [], "replaced": [], "restored": [], "missingNoBase": [], "exceptions": [],
                 "removed": [], "reported": [], "ambiguous": [], "suggestions": [] },
   "migrations": ["0.17.0"],
   "notices": []
