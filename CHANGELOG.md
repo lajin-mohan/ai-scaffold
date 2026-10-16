@@ -13,6 +13,21 @@ This file is configured with `merge=union` in `.gitattributes` so parallel addit
 
 ## [Unreleased]
 
+### Fixed
+- **`ais init` on Windows wrote the generic scaffold README to
+  `.ai-scaffold/README.md` instead of the project README.** `buildFilePlan`
+  joined that path with backslashes on Windows, so its duplicate check missed
+  it and the file was planned twice; the generic README was written second.
+  Plan paths are now always POSIX, matching Linux and macOS. Projects
+  created with `ais create` are unaffected. Found by the item 25 render
+  guard test.
+
+### Changed
+- **`{{YEAR}}` and every generated date now come from one UTC clock per
+  run** (item 25, BRD NFR-07). Previously `{{YEAR}}` used local time while
+  manifest dates used UTC, so the two could disagree within a few hours of
+  New Year. Output is otherwise unchanged.
+
 ## [0.16.1] - 2026-10-13
 
 ### Fixed

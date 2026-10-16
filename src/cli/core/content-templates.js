@@ -29,7 +29,12 @@ export function lifecycleStageToStatus(stage) {
   return labels[stage] ?? 'Active Development';
 }
 
-export function resolvePlaceholders(content, values) {
+/** UTC calendar date, YYYY-MM-DD. */
+export function isoDate(now) {
+  return now.toISOString().split('T')[0];
+}
+
+export function resolvePlaceholders(content, values, { now = new Date() } = {}) {
   const tokenMap = {
     '{{PROJECT_NAME}}': values.projectName ?? '',
     '{{COMPOSER_PACKAGE_NAME}}': toComposerPackageName(values.projectName),
@@ -64,7 +69,7 @@ export function resolvePlaceholders(content, values) {
     '{{CICD_PLATFORM}}': 'GitHub Actions',
     '{{PM_TOOL}}': 'GitHub Projects',
     '{{LICENSE}}': 'UNLICENSED',
-    '{{YEAR}}': new Date().getFullYear().toString(),
+    '{{YEAR}}': now.getUTCFullYear().toString(),
     '{{UNSUPPORTED_CAPABILITIES}}': unsupportedCapabilityNote(values),
   };
 
@@ -279,7 +284,7 @@ Generated during AI Scaffold setup. Keep this file factual and lightweight.
 `;
 }
 
-export function buildMemoryFile(values) {
+export function buildMemoryFile(values, { now = new Date() } = {}) {
   return `# Project Memory
 
 Living index for project memory and session compactions.
@@ -300,7 +305,7 @@ Living index for project memory and session compactions.
 | Requirements path | ${values.requirementsPath || 'none'} |
 | Current epic | ${values.purpose} |
 | Active AI role | not configured |
-| Last updated | ${new Date().toISOString().split('T')[0]} |
+| Last updated | ${isoDate(now)} |
 
 ---
 

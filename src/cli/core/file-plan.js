@@ -219,7 +219,10 @@ export async function buildFilePlan(sourceDir, targetDir, options = {}) {
     }
 
     const isRootFile = matchesAny(logicalRel, [...ROOT_FILES, ...profileRootFiles]);
-    const targetRel = isRootFile ? logicalRel : path.join('.ai-scaffold', logicalRel);
+    // Plan rels are always POSIX: the dedupe below and every consumer key on
+    // forward slashes. path.join here made Windows init plan .ai-scaffold/README.md
+    // twice, and the generic scaffold README overwrote the project one.
+    const targetRel = isRootFile ? logicalRel : path.posix.join('.ai-scaffold', logicalRel);
     const targetFile = path.join(targetDir, targetRel);
 
     // Check if this file maps to a generated output (e.g. .template.md → .md)
@@ -374,6 +377,6 @@ function resolveGeneratedTargetRel(generatedRel, existingTarget, forceRoot) {
   }
 
   return existingTarget
-    ? path.join('.ai-scaffold', generatedRel)
+    ? path.posix.join('.ai-scaffold', generatedRel)
     : generatedRel;
 }

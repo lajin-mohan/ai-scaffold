@@ -7,16 +7,17 @@ import path from 'path';
 import fs from 'fs-extra';
 import { getVersion } from './version.js';
 import { toPosixPath } from './paths.js';
-import { lifecycleStageToStatus } from './content-templates.js';
+import { isoDate, lifecycleStageToStatus } from './content-templates.js';
 
-export function buildManifestData(values) {
+export function buildManifestData(values, { now = new Date() } = {}) {
+  const today = isoDate(now);
   return {
     version: getVersion(),
     profile: values.profile,
     bootstrapped: true,
-    bootstrapCompletedAt: today(),
-    installedAt: today(),
-    updatedAt: today(),
+    bootstrapCompletedAt: today,
+    installedAt: today,
+    updatedAt: today,
     source: 'ai-scaffold',
     project: {
       slug: values.projectName,
@@ -131,8 +132,4 @@ export async function buildManagedFileRecords(targetDir, relPaths) {
 
 function hasCompliance(values, scope) {
   return Array.isArray(values.complianceScope) && values.complianceScope.includes(scope);
-}
-
-function today() {
-  return new Date().toISOString().split('T')[0];
 }
