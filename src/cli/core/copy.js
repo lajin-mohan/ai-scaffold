@@ -14,7 +14,7 @@ import { renderPlannedFile } from './render.js';
  *
  * @param {object} plan - File plan from buildFilePlan()
  * @param {object} bootstrapValues - Resolved bootstrap values for placeholder replacement
- * @param {object} opts - { dryRun: boolean, force: boolean, now?: Date }
+ * @param {object} opts - { dryRun: boolean, force: boolean, now?: Date, installMode?: 'create'|'init' }
  */
 export async function copyFiles(plan, bootstrapValues, opts = {}) {
   const { dryRun = false, force = false, yes = false } = opts;
@@ -26,6 +26,7 @@ export async function copyFiles(plan, bootstrapValues, opts = {}) {
   const values = bootstrapValues.resolved
     ? { ...bootstrapValues.resolved, defaulted: bootstrapValues.defaulted ?? [] }
     : { ...bootstrapValues, defaulted: bootstrapValues.defaulted ?? [] };
+  if (opts.installMode) values.installMode = opts.installMode;
 
   let copied = 0;
   let skipped = 0;

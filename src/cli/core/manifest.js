@@ -2,12 +2,12 @@
  * Manifest and settings data builders.
  */
 
-import crypto from 'crypto';
 import path from 'path';
 import fs from 'fs-extra';
 import { getVersion } from './version.js';
 import { toPosixPath } from './paths.js';
 import { isoDate, lifecycleStageToStatus } from './content-templates.js';
+import { recordFor } from './hashing.js';
 
 export function buildManifestData(values, { now = new Date() } = {}) {
   const today = isoDate(now);
@@ -19,6 +19,8 @@ export function buildManifestData(values, { now = new Date() } = {}) {
     installedAt: today,
     updatedAt: today,
     source: 'ai-scaffold',
+    // Recorded only when the caller states it; update plans with it (FR-37).
+    ...(values.installMode ? { install: { mode: values.installMode } } : {}),
     project: {
       slug: values.projectName,
       displayName: values.displayName,
@@ -121,11 +123,7 @@ export async function buildManagedFileRecords(targetDir, relPaths) {
     if (!(await fs.pathExists(fullPath))) {
       continue;
     }
-    const hash = crypto
-      .createHash('sha256')
-      .update(await fs.readFile(fullPath))
-      .digest('hex');
-    records.push({ path: relPath, hash: `sha256:${hash}` });
+    records.push({ path: relPath, ...recordFor(await fs.readFile(fullPath)) });
   }
   return records;
 }

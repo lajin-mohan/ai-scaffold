@@ -85,9 +85,10 @@ describe('render.js reproduces what copyFiles writes', { timeout: 60_000 }, () =
         if (existingTarget) await seedInitTarget(target);
         const bootstrap = bootstrapFor(profile);
         const plan = await buildFilePlan(templatePath(profile), target, { existingTarget });
-        await copyFiles(plan, bootstrap, { targetDir: target, yes: true, now: FIXED_NOW });
+        await copyFiles(plan, bootstrap, { targetDir: target, yes: true, now: FIXED_NOW, installMode: mode });
+        expect((await fs.readJson(path.join(target, '.ai-scaffold.json'))).install).toEqual({ mode });
 
-        const values = { ...bootstrap.resolved, defaulted: bootstrap.defaulted };
+        const values = { ...bootstrap.resolved, defaulted: bootstrap.defaulted, installMode: mode };
         const entries = writtenEntries(plan);
         expect(entries.length).toBeGreaterThan(20);
         for (const entry of entries) {

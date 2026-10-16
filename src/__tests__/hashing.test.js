@@ -90,14 +90,15 @@ describe('isPristine: edits and bad records', () => {
 });
 
 describe('compatibility with records written by create', () => {
-  it('hashRaw matches the hash buildManagedFileRecords stores', async () => {
+  it('hashRaw matches the raw hash buildManagedFileRecords stores, and new records prove both directions', async () => {
     const dir = await fs.mkdtemp(path.join(os.tmpdir(), 'ais-hashing-'));
     try {
       await fs.writeFile(path.join(dir, 'a.md'), CRLF_TEXT);
       const [record] = await buildManagedFileRecords(dir, ['a.md']);
       expect(record.hash).toBe(hashRaw(CRLF_TEXT));
-      expect(isPristine(LF_TEXT, record)).toBe(false);
       expect(isPristine(CRLF_TEXT, record)).toBe(true);
+      expect(isPristine(LF_TEXT, record)).toBe(true);
+      expect(isPristine(LF_TEXT, { path: record.path, hash: record.hash })).toBe(false);
     } finally {
       await fs.remove(dir);
     }
