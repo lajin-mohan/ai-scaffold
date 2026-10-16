@@ -271,7 +271,7 @@ resolved, and the rest are confirmed resolved (B1, B3, B5, W1–W9, N1–N7).
 | # | Severity | Finding | Resolution in HLD v2.1 |
 |---|---|---|---|
 | 1 | **BLOCK** | `buildFilePlan(existingTarget: true)` sends existing `PROTECTED_PATHS` files to `skipProtected` (`file-plan.js:230-240`, `:302-313`). After `init`, a re-plan drops `CLAUDE.md`, `AGENTS.md` and `constitution.md`, so §4 row 7 would **remove** them. Reproduced against a real `ais init` | New `ignoreDisk` planning option. In `init` mode, a protected path with no record is `unowned`. AC-14 asserts the three files survive |
-| 2 | WARN | A crash between the manifest rename and the `complete` marker leaves a finished apply reading as interrupted forever | `journal.to === manifest.version` writes the marker and continues; otherwise recovery steps are printed; unmarked backups are never pruned |
+| 2 | WARN | A crash between the manifest rename and the `complete` marker leaves a finished apply reading as interrupted forever | `journal.to === manifest.version` writes the marker and continues; otherwise recovery steps are printed; unmarked backups are never pruned. *Superseded by round 3 #2: verified completion under `--apply` only* |
 | 3 | WARN | Hook merge gaps: the matcher in the key duplicates hooks on a matcher change; no-op and kept-unretired rows missing; parsing normalisation; placement; canonical comparison | The key is (event, script); rows added; normalisation of `./`, quotes and `$CLAUDE_PROJECT_DIR`; unparsable means adopter-owned; same-group placement; canonical JSON |
 | 4 | WARN | Inferring `install.mode` without `managedFiles` (pre-0.8.6) always says `init` | Recorded as `unknown`, planned as `init` + `ignoreDisk`; harmless because no hashes means nothing is replaced or removed |
 | 5 | NIT | `settingsBase` example names a non-existent hook; recorded hash for merged/seeded unspecified; `.ais-new` lifecycle undefined | Example fixed (`pre-bash-quality-gate.sh`); hashes specified; lifecycle defined (overwrite on conflict, stale reported, never deleted) |
@@ -283,3 +283,48 @@ still added, because they are new since the base. This needs an FR-20 edit.
 
 **Estimate:** the reviewer judged 23.12 d plausible, with #1 adding 0.25 to
 0.5 d; re-cut to 23.42 d PERT.
+
+---
+
+## Round 3 — consistency review of BRD v1.2 / HLD v2.1 / ADR-007 rev 2 (2026-10-15)
+
+**Reviewer:** an external review supplied by the maintainer, after design v2.1
+merged in lajin-mohan/ai-scaffold#149. Each finding was checked against the
+documents before reconciling.
+**Verdict:** conditionally ready for the slice 2 plan; not ready for blanket
+design sign-off or apply implementation. The architecture direction stands;
+the round-2 changes reached the HLD but not the BRD and ADR.
+
+| # | Finding | Resolution (BRD v1.3, HLD v2.2, ADR-007 rev 3) |
+|---|---|---|
+| 1 | Hook key: HLD (event, script) vs BRD FR-36 / ADR (event, matcher, script) | (event, script) everywhere; a key held by more than one entry is ambiguous: local entries kept, conflict reported (FR-36, AC-20) |
+| 2 | Recovery wrote the `complete` marker before the `--apply` check, so preview could write; version equality is weak evidence of completion | Preview never writes in any state (FR-12). Only `--apply` completes, after verifying the manifest and every journaled path against the journal's expected final state (FR-38, AC-16, AC-17) |
+| 3 | The FR-20 opt-out existed only in chat | Restore by default and list restorations apart from new rules; persisted per-rule exceptions via `--keep-removed` / `--restore-removed`, stored as `settingsExceptions`; never described as a sandbox (FR-20, FR-39, AC-21) |
+| 4 | FR-26 inferred `init` without records where the HLD records `unknown`; AC-07 and FR-03 said all conflicts where row 1 gives `unchanged`; FR-38/AC-16 had no completion exception | Aligned with the HLD (FR-03, FR-26, FR-37, AC-07); FR-38 rewritten as in #2 |
+| 5 | Estimate: completed Stage 3 effort counted as forecast; the 85% figure assumes independent rows | Spent and remaining separated; units defined; 85% shown for independent and fully correlated rows; slice 2 checkpoint added. 26.79 d total, 25.17 remaining |
+| 6 | No protection against concurrent runs or a file changing between plan and write | Single-writer lock (FR-40, AC-18) and a re-check before each write or delete (FR-41, AC-19); the residual editor race is documented |
+
+The maintainer chose persisted per-rule exceptions for #3 and authorised this
+reconciliation as documentation only (2026-10-15).
+
+### Round 3b — slice 2 contract review (2026-10-15)
+
+An independent `architect` agent reviewed the three slice 2 contracts added
+for the maintainer's conditions (FR-09 bidirectional hashing, FR-42
+context-aware ownership, NFR-07 determinism). **Verdict: APPROVE WITH
+CHANGES**, no BLOCK. Applied:
+- **W1:** one injected clock, every stamp in UTC (`{{YEAR}}` was local time,
+  `installedAt` UTC; they disagree near New Year).
+- **W2:** all three clock call sites listed; the 0.16.1 comparison runs both
+  CLIs under a fixed-date preload.
+- **W3:** the manifest allowance is JSON paths (`$.install`, `$.version`),
+  compared as parsed JSON; sort order defined.
+- **W4:** the protected-managed set is computed from `PROTECTED_PATHS`; the
+  `unknown`-mode consequence is stated.
+- **W5:** FR-06 now says pristine/edited per FR-09.
+- **N1–N4:** one-pass normalisation and its unit cases; line-ending-only
+  changes are pristine by design; `installedAt` fallback chain persisted at
+  apply; the `hashLf`-absent guard kept.
+
+Out of scope, raised separately: `init` silently overwrites an existing
+`.claude/settings.json` (and other unprotected `.claude/**` files).

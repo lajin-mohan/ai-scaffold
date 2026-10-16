@@ -12,6 +12,26 @@ This file records patterns from mistakes and corrections. Claude reads this at t
 
 <!-- Add lessons below as they are captured. Most recent at the top. -->
 
+## 2026-10-15 — `git add -A <dir>` swept up untracked user files again (second occurrence)
+
+- **Mistake:** Committing item 25 slice 2 design docs, `git add -A docs/` staged the maintainer's untracked `docs/workshop/` and a parallel edit to `docs/process/pre-npm-publish-todo.md`. Caught by `git diff --check` before the commit; nothing was committed or pushed. Same failure as the 2026-10-12 entry.
+- **Why:** The earlier lesson was recorded but the command shape that causes it was still used, and the working tree is shared with other sessions.
+- **Rule:** Never stage by directory or with `-A`/`.`. Stage the exact paths this change edited, then check `git diff --cached --name-only` against that list before every commit.
+
+## 2026-10-15 — "All review changes applied" was true of one document out of three
+
+- **Mistake:** After the item 25 round-2 review, the HLD was updated (hook key
+  (event, script), `unknown` install mode, recovery completion) but BRD FR-36,
+  FR-26, FR-38, AC-07, AC-16 and ADR-007 were not. Sign-off of all of them was
+  then requested as "all changes applied", and an FR-20 opt-out proposed only in
+  chat was presented as a design detail. An external review caught it.
+- **Why:** The fix was applied where the reviewer cited it; the documents that
+  restate the same requirement were not re-read before claiming completion.
+- **Rule:** Before asking for sign-off on a design set, grep every changed
+  decision across the BRD, HLD, ADR and estimate and confirm one definition.
+  Never present a chat proposal as an existing requirement; write it into the
+  spec first or label it as a proposal.
+
 ## 2026-10-13 — Roadmap order and release claims drifted across summaries
 
 - **Mistake:** The roadmap summary and item 25 made a release depend on update,

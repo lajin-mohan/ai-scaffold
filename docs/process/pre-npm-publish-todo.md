@@ -16,9 +16,11 @@ work is proposed and requires the normal design/implementation gates.
 - Item 94 is complete: the maintainer verified decoy probes against installed
   npm 0.16.0 and 0.16.1, with a positive control in Windows CI. Preserve this
   evidence; do not schedule verification already performed as new P0 work.
-- Item 25 is the top remaining P0, targeting **0.17.0**. The maintainer reports
-  four decisions pending in [PR #149](https://github.com/lajin-mohan/ai-scaffold/pull/149).
-  This reconciliation does not decide them or imply implementation approval.
+- Item 25 is the top remaining P0, targeting **0.17.0**. Design v2.1 merged in
+  [PR #149](https://github.com/lajin-mohan/ai-scaffold/pull/149) and was
+  reconciled on 2026-10-15 (BRD v1.3, HLD v2.2, ADR-007 rev 3). FR-20 is decided
+  (persisted per-rule exceptions); estimate sign-off, ADR acceptance and the
+  BRD clarifications remain pending. No implementation approval is implied.
 - Item 25 remains in design revision. `update.js` has no file-update engine.
   Managed deletion and base-aware settings merge must precede adopter removals.
 - Items 60 and 66's first slice have recorded merge evidence. Windows CI and

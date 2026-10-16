@@ -1,9 +1,11 @@
 # ADR-007: Update classification and apply semantics
 
-**Date:** 2026-10-09 · **Revised:** 2026-10-12
-**Status:** **Proposed (revision 2).** Revised for the independent review
-(`docs/architecture/review-25-ais-update.md`, REVISE). Pending the architect
-re-review and maintainer acceptance.
+**Date:** 2026-10-09 · **Revised:** 2026-10-15
+**Status:** **Proposed (revision 3).** Revision 2 answered the independent
+review (`docs/architecture/review-25-ais-update.md`, REVISE; round 2 APPROVE
+WITH CHANGES). Revision 3 (2026-10-15) reconciles it with HLD v2.2 and BRD
+v1.3 after the round-3 review. Pending maintainer acceptance; the
+reconciliation was authorised as documentation only.
 **Deciders:** Lajin M J (Technical Lead)
 **Consulted:** ADR-002, `docs/brd/25-ais-update-brd.md`,
 `docs/brd/25-render-roundtrip-spike.md`, `docs/architecture/hld-25-ais-update.md`
@@ -51,9 +53,16 @@ Facts the decision rests on:
 3. **Render in the original install mode (B2).** `install.mode` (`create` |
    `init`) is recorded, or inferred for older manifests, and planning uses it.
    An `init` install is never re-planned as a `create`.
-4. **A file is pristine if, and only if, its current content matches the
-   recorded hash, raw or LF-normalised.** Hashes are written raw. A file whose
-   content already equals the new render is `unchanged` before any other test.
+4. **A file is pristine if, and only if, its current content matches its
+   record in either line-ending direction** (FR-09): raw against `hash`; or
+   CRLF-normalised against `hashLf` when the record has one (recorded only for
+   content containing CRLF); or, for a record without `hashLf`,
+   CRLF-normalised content that itself has no CRLF against `hash`. A legacy record that cannot
+   prove the CRLF-to-LF direction is treated as edited. A file whose content
+   already equals the new render is `unchanged` before any other test.
+   **Ownership is context-aware** (FR-42): path, install mode and manifest
+   record decide it, never the disk. **Rendering is deterministic** given the
+   values and an injected clock (NFR-07).
 5. **An edited file is never overwritten.** The new version is written to
    `<file>.ais-new`, and there is no override flag (`--force` is removed).
    **The hash recorded after apply is always the new render's (B3)**, never the
@@ -63,19 +72,28 @@ Facts the decision rests on:
    - The scaffold subset at the last install or apply is recorded as
      `settingsBase`.
    - New scaffold entries are added. Missing `deny`/`ask` rules are restored
-     (FR-20); an `allow` rule or hook the adopter removed is not re-added.
+     and listed (FR-20), unless the adopter recorded a persisted per-rule
+     exception (FR-39); an `allow` rule or hook the adopter removed is not
+     re-added.
    - A scaffold hook is replaced only if the local entry equals the base.
    - Only migration-declared retired entries are removed.
-   - Hooks are matched per inner hook by (event, matcher, script path).
-8. **Apply is transactional and crash-aware (B4).**
-   - Backup, then a journal persisted before the first write.
-   - Temp-and-rename for every write.
-   - Rollback on failure.
+   - Hooks are matched per inner hook by **(event, script path)**; the
+     matcher is compared, not keyed (FR-36). A key held by more than one
+     entry is ambiguous: local entries are kept and a conflict is reported.
+   - These rules are tool-level permissions, not a sandbox.
+8. **Apply is transactional, single-writer and crash-aware (B4, FR-38 to FR-41).**
+   - A per-project exclusive lock, never broken automatically.
+   - Backup, then a journal persisted before the first write, recording the
+     expected final state of every path and of the manifest.
+   - A re-check of each target immediately before it is written or deleted.
+   - Temp-and-rename for every write; rollback on failure.
    - Manifest last, then a completion marker.
 
    A run that finds an unmarked backup reports the interrupted apply instead of
-   planning over it.
-9. **Preview is the default.** Writing requires `--apply`.
+   planning over it. Only `--apply` may complete it, and only after verifying
+   that the manifest and every journaled path match the expected final state.
+9. **Preview is the default and never writes,** in any state, including an
+   interrupted apply. Writing requires `--apply`.
 
 ## Alternatives considered
 
@@ -100,9 +118,12 @@ Facts the decision rests on:
 - **Negative:** each release that retires `settings.json` entries must ship a
   migration file listing them. The maintainer has to remember this, so a
   release check should flag a removed hook script with no matching retirement.
-- **Negative:** the manifest grows by `install.mode` and `settingsBase`, and a
-  migration must infer both for existing installs. That is the price of not
-  guessing.
+- **Negative:** the manifest grows by `install.mode`, `settingsBase` and
+  `settingsExceptions`, and a migration must infer the first two for existing
+  installs. That is the price of not guessing.
+- **Negative:** the lock serialises `ais` processes only; the pre-write
+  re-check narrows, but cannot close, the race with an editor writing between
+  check and rename. Accepted and documented.
 - **Follow-up:** ADR-002's v0.7.x re-baselining requirement is met by the
   pre-0.8.6 all-conflict path: no hashes means nothing is replaced or removed.
 - **Follow-up:** ADR-002's consequence "`ais update` must not mutate versions
