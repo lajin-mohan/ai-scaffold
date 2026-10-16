@@ -30,6 +30,10 @@ describe('checkFlags', () => {
     expect(checkFlags({ keepRemoved: ['a', 'b'], restoreRemoved: 'c' })).toEqual({ keepRemoved: ['a', 'b'], restoreRemoved: ['c'] });
   });
 
+  it.each([[true], [['a', true]], [['']]])('rejects an exception flag without a rule: %j', (value) => {
+    expect(codeOf(() => checkFlags({ keepRemoved: value }))).toBe('INVALID_OPTION');
+  });
+
   it('rejects the same rule in both exception flags', () => {
     expect(codeOf(() => checkFlags({ keepRemoved: 'a', restoreRemoved: ['a'] }))).toBe('FLAG_CONFLICT');
   });

@@ -16,10 +16,13 @@ export class UpdateError extends Error {
   }
 }
 
-function toList(value) {
+function toList(value, flag) {
   if (value === undefined || value === null || value === false) return [];
   const list = Array.isArray(value) ? value : [value];
-  return list.map(String);
+  if (list.some((item) => typeof item !== 'string' || item.length === 0)) {
+    throw new UpdateError('INVALID_OPTION', `${flag} needs a rule, for example ${flag} "Read(.env.local)"`);
+  }
+  return list;
 }
 
 /**
@@ -35,8 +38,8 @@ export function checkFlags(options = {}) {
     throw new UpdateError('APPLY_UNAVAILABLE',
       'Applying an update is not available in this version. `ais update` shows a preview only.');
   }
-  const keepRemoved = toList(options.keepRemoved);
-  const restoreRemoved = toList(options.restoreRemoved);
+  const keepRemoved = toList(options.keepRemoved, '--keep-removed');
+  const restoreRemoved = toList(options.restoreRemoved, '--restore-removed');
   const both = keepRemoved.filter((rule) => restoreRemoved.includes(rule));
   if (both.length > 0) {
     throw new UpdateError('FLAG_CONFLICT', `A rule cannot be both kept removed and restored: ${both.join(', ')}`);
@@ -50,6 +53,9 @@ export function checkFlags(options = {}) {
  * @returns {{ from: string, to: string, current: boolean }}
  */
 export function checkVersions({ installed, cli, targetVersion }) {
+  if (targetVersion !== undefined && (typeof targetVersion !== 'string' || !semver.valid(targetVersion))) {
+    throw new UpdateError('INVALID_OPTION', '--target-version needs a version such as 1.2.3');
+  }
   if (!semver.valid(installed)) {
     throw new UpdateError('MANIFEST_INVALID', `The installed version in .ai-scaffold.json is not valid: ${installed}`);
   }

@@ -5,7 +5,6 @@
 
 import fs from 'fs';
 import { isSupportedProfile } from './paths.js';
-import { isPristine } from './hashing.js';
 import { resolveProjectRoot } from './containment.js';
 import { runMigrations } from './migrations/index.js';
 import { renderManagedSet } from './update-render.js';
@@ -13,17 +12,17 @@ import { buildUpdatePlan } from './update-plan.js';
 import { effectiveExceptions, previewSettingsMerge } from './settings-merge.js';
 import { checkExceptionsAtCurrent, checkFlags, checkVersions, UpdateError } from './update-policy.js';
 import { defaultIo, findInterrupted, isLocked } from './update-state.js';
+import { MANIFEST, readManifest, readSettings, SETTINGS } from './update-manifest.js';
 
 export const PREVIEW_SCHEMA = 'ais-update-preview/1';
-const MANIFEST = '.ai-scaffold.json';
-const SETTINGS = '.claude/settings.json';
 const KNOWN_OPTIONS = new Set(['--', 'targetVersion', 'dryRun', 'json', 'keepRemoved', 'restoreRemoved', 'force', 'apply']);
 
 const realFs = {
-  lstat: (p) => fs.promises.lstat(p),
+  lstat: (p, options) => fs.promises.lstat(p, options),
   realpath: (p) => fs.promises.realpath(p),
   readFile: (p, encoding) => fs.promises.readFile(p, encoding),
   readdir: (p, options) => fs.promises.readdir(p, options),
+  open: (p, flags) => fs.promises.open(p, flags),
 };
 
 /** Every documented field, null until known (FR-45). */
@@ -41,34 +40,6 @@ function checkOptionNames(options) {
   if (unknown.length > 0) throw new UpdateError('UNKNOWN_OPTION', `Unknown option: ${unknown.join(', ')}`);
 }
 
-async function readManifest(root, io) {
-  const found = await io.checkContained(root, MANIFEST);
-  if (!found.ok) throw new UpdateError('MANIFEST_UNSAFE', `Refusing to read ${MANIFEST}: ${found.reason}`);
-  if (!found.exists) throw new UpdateError('MANIFEST_MISSING', 'No scaffold installation found. Run `ais init` first.');
-  try {
-    const manifest = JSON.parse(await io.readFile(found.abs, 'utf-8'));
-    if (manifest && typeof manifest === 'object' && !Array.isArray(manifest)) return manifest;
-  } catch {
-    // Reported below as invalid.
-  }
-  throw new UpdateError('MANIFEST_INVALID', `${MANIFEST} is not a valid JSON object.`);
-}
-
-async function readSettings(root, manifest, io) {
-  const found = await io.checkContained(root, SETTINGS);
-  // A rejected path is reported by the planner; nothing is read or merged.
-  if (!found.ok) return { local: null, valid: false, pristine: null, rejected: true };
-  if (!found.exists) return { local: {}, valid: true, pristine: null };
-  const raw = await io.readFile(found.abs);
-  const record = (manifest.managedFiles ?? []).find((r) => r.path === SETTINGS);
-  const pristine = record ? isPristine(raw, record) : null;
-  try {
-    return { local: JSON.parse(raw.toString('utf-8')), valid: true, pristine };
-  } catch {
-    return { local: null, valid: false, pristine };
-  }
-}
-
 async function plan(doc, { root, manifest, versions, flags, io, today }) {
   const settingsFile = await readSettings(root, manifest, io);
   const migrated = runMigrations(manifest, { from: versions.from, to: versions.to, settingsPristine: settingsFile.pristine });
@@ -81,6 +52,9 @@ async function plan(doc, { root, manifest, versions, flags, io, today }) {
   doc.settings = settingsFile.rejected ? null : previewSettingsMerge({
     local: settingsFile.local, localValid: settingsFile.valid, scaffold, exceptions,
     baseState: migrated.settingsBase, recordedBase: migrated.manifest.settingsBase,
+    // No release retires settings entries yet (HLD §10); the first one to do
+    // so passes its migration's list here, which fills the `removed` group.
+    retired: {},
   });
   const entries = planned.entries.map(({ path, class: cls, action, reason }) => ({ path, class: cls, action, reason }));
   if (!settingsFile.valid && !settingsFile.rejected) {
@@ -115,7 +89,7 @@ async function runChecks(doc, { target, options, cliVersion, io, fsApi, today })
   });
   const manifest = await readManifest(root, io);
   doc.profile = typeof manifest.profile === 'string' ? manifest.profile : null;
-  doc.installMode = manifest.install?.mode ?? null;
+  doc.installMode = typeof manifest.install?.mode === 'string' ? manifest.install.mode : null;
   checkOptionNames(options);
   const flags = checkFlags(options);
   const versions = checkVersions({ installed: manifest.version, cli: cliVersion, targetVersion: options.targetVersion });

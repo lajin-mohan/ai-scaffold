@@ -1,5 +1,10 @@
 # AI Scaffold CLI Plan
 
+> **Historical plan.** Its `update --target-version <version>` examples are
+> superseded: `update` targets the running CLI's version, and another version
+> is previewed with `npx @lajin.m/ai-scaffold@<version> update` (item 25,
+> BRD FR-01; `docs/cli-reference.md`).
+
 ## Objective
 
 Turn this repository into a reusable CLI-distributed AI engineering scaffold that can:

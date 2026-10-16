@@ -71,8 +71,12 @@ export function migrateToSchema2(manifest, { settingsPristine }) {
   let classified = 0;
   for (const record of manifest.managedFiles ?? []) {
     if (record.class) continue;
-    record.class = classifyPath(record.path, { installMode, recorded: true });
-    classified++;
+    try {
+      record.class = classifyPath(record.path, { installMode, recorded: true });
+      classified++;
+    } catch {
+      // An unsafe path stays unclassified; the planner rejects it.
+    }
   }
   if (classified > 0) intents.push(`classified ${classified} recorded files`);
   fillDefaults(manifest, intents);

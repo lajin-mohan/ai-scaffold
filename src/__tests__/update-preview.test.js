@@ -106,8 +106,9 @@ describe('FR-44 check order', { timeout: 60_000 }, () => {
     fse.outputFileSync(path.join(target, '.ai-scaffold', 'backups', 'b1', 'journal.json'), '{}');
     const reads = [];
     const spyFs = {
-      lstat: (p) => fs.promises.lstat(p),
+      lstat: (p, o) => fs.promises.lstat(p, o),
       realpath: (p) => fs.promises.realpath(p),
+      open: (p, f) => { reads.push(p); return fs.promises.open(p, f); },
       readFile: (p, e) => { reads.push(p); return fs.promises.readFile(p, e); },
       readdir: (p, o) => { reads.push(p); return fs.promises.readdir(p, o); },
     };

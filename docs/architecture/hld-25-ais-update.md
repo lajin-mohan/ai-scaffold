@@ -367,7 +367,20 @@ same version → plan. The first failing step sets `status` and `exitCode`.
 - `.ai-scaffold.json` is checked before its first read. The backup and
   journal directory is checked before any listing or read.
 - Classes are resolved before content reads; user-data gets an existence
-  check only. Rejected paths become `notices` and the run exits 1.
+  check only. A stored `class` may only restrict (ranked excluded <
+  unowned = user-data < seeded < merged = managed), never unlock a read.
+- Lexical rejections also cover Windows aliases: `:` (NTFS streams), a
+  trailing dot or space, `~N` short names and reserved device names. Class
+  matching folds case on Windows and macOS.
+- `readContained` reads only regular files, under caps (manifest and
+  settings 5 MB, managed files 10 MB, 10,000 records), through an opened
+  handle whose `fstat` dev/ino must equal the path's `lstat`; a mismatch
+  is `changed`. This narrows, but cannot close, a race with a concurrent
+  local process; hard links pass and are accepted (git cannot create them,
+  and update only hashes what it reads).
+- Rejected paths become `rejected` entries or `PATH_UNSAFE`/`MANIFEST_UNSAFE`
+  errors and the run exits 1. A malformed manifest is `MANIFEST_INVALID`.
+- The human report escapes C0/C1 control characters; JSON is already safe.
 
 **Settings base (FR-35):** `recorded` | `derived` | `unknown`. With
 `unknown`, missing `deny`/`ask` rules go to `missingNoBase`, new `allow`

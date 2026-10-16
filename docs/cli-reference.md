@@ -17,7 +17,7 @@ run any command via `npx @lajin.m/ai-scaffold <command>` without installing.
 | [`doctor`](#ais-doctor-target-dir) | Diagnose scaffold installation health |
 | [`list`](#ais-list-category-target-dir) | List installed commands, agents, skills, and rules |
 | [`export-context`](#ais-export-context-target-dir) | Back up memory/lessons/settings before a reinstall |
-| [`update`](#ais-update-target-dir) | Update scaffold metadata (placeholder — full migrations planned) |
+| [`update`](#ais-update-target-dir) | Preview what updating to this CLI version would change (read-only) |
 
 **Bare shortcuts:** `ais <name>` routes to `create <name>`; `ais .` routes to
 `init` in the current directory.

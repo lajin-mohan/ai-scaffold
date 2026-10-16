@@ -100,6 +100,8 @@ check('human report says preview and never suggests --apply',
 expectJson('--force is removed', ['update', older, '--force'], { status: 1, docStatus: 'error', code: 'FLAG_REMOVED' });
 expectJson('--apply is unavailable', ['update', older, '--apply'], { status: 1, docStatus: 'error', code: 'APPLY_UNAVAILABLE' });
 expectJson('an unknown option still yields JSON', ['update', older, '--bogus'], { status: 1, docStatus: 'error', code: 'UNKNOWN_OPTION' });
+expectJson('a missing option value still yields JSON', ['update', older, '--target-version'],
+  { status: 1, docStatus: 'error', code: 'INVALID_OPTION' });
 expectJson('another --target-version fails', ['update', older, '--target-version', '9.9.9'],
   { status: 1, docStatus: 'error', code: 'TARGET_VERSION_MISMATCH' });
 

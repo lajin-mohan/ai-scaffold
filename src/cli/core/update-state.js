@@ -4,28 +4,34 @@
  * backup or journal is read, because another updater may be writing them.
  */
 
-import { checkContained } from './containment.js';
+import { checkContained, checkDirectory, readContained } from './containment.js';
 import { UpdateError } from './update-policy.js';
 
 export const LOCK_PATH = '.ai-scaffold/update.lock';
 export const BACKUPS_DIR = '.ai-scaffold/backups';
+export const MAX_JOURNAL_BYTES = 5 * 1024 * 1024;
 
-async function contained(root, rel, io) {
+function unsafe(result) {
+  return new UpdateError('PATH_UNSAFE', `Refusing to read ${result.rel}: ${result.reason}`);
+}
+
+async function exists(root, rel, io) {
   const result = await io.checkContained(root, rel);
-  if (!result.ok) throw new UpdateError('PATH_UNSAFE', `Refusing to read ${rel}: ${result.reason}`);
-  return result;
+  if (!result.ok) throw unsafe(result);
+  return result.exists;
 }
 
 /** @returns {Promise<boolean>} */
 export async function isLocked(root, io) {
-  return (await contained(root, LOCK_PATH, io)).exists;
+  return exists(root, LOCK_PATH, io);
 }
 
 async function journalState(root, dir, io) {
-  const journal = await contained(root, `${BACKUPS_DIR}/${dir}/journal.json`, io);
+  const journal = await io.readContained(root, `${BACKUPS_DIR}/${dir}/journal.json`, MAX_JOURNAL_BYTES);
+  if (!journal.ok) return 'malformed';
   if (!journal.exists) return 'missing';
   try {
-    const parsed = JSON.parse(await io.readFile(journal.abs, 'utf-8'));
+    const parsed = JSON.parse(journal.data.toString('utf-8'));
     return parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? 'readable' : 'malformed';
   } catch {
     return 'malformed';
@@ -37,7 +43,8 @@ async function journalState(root, dir, io) {
  * @returns {Promise<Array<{ backup: string, journal: 'readable'|'malformed'|'missing' }>>}
  */
 export async function findInterrupted(root, io) {
-  const backups = await contained(root, BACKUPS_DIR, io);
+  const backups = await io.checkDirectory(root, BACKUPS_DIR);
+  if (!backups.ok) throw unsafe(backups);
   if (!backups.exists) return [];
   const names = (await io.readdir(backups.abs, { withFileTypes: true }))
     .filter((entry) => entry.isDirectory())
@@ -45,8 +52,7 @@ export async function findInterrupted(root, io) {
     .sort();
   const interrupted = [];
   for (const name of names) {
-    const marker = await contained(root, `${BACKUPS_DIR}/${name}/complete`, io);
-    if (marker.exists) continue;
+    if (await exists(root, `${BACKUPS_DIR}/${name}/complete`, io)) continue;
     interrupted.push({ backup: `${BACKUPS_DIR}/${name}`, journal: await journalState(root, name, io) });
   }
   return interrupted;
@@ -55,7 +61,8 @@ export async function findInterrupted(root, io) {
 export function defaultIo(fsApi) {
   return {
     checkContained: (root, rel) => checkContained(root, rel, fsApi),
-    readFile: (abs, encoding) => fsApi.readFile(abs, encoding),
+    checkDirectory: (root, rel) => checkDirectory(root, rel, fsApi),
+    readContained: (root, rel, maxBytes) => readContained(root, rel, { maxBytes, fsApi }),
     readdir: (abs, options) => fsApi.readdir(abs, options),
   };
 }

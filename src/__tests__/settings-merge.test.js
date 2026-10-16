@@ -117,7 +117,7 @@ describe('hooks (FR-22, FR-36)', () => {
     const local = settings({ hooks: { PreToolUse: [hook(GUARD, 'Edit'), hook(GUARD, 'Write')] } });
     const scaffold = settings({ hooks: { PreToolUse: [hook(GUARD, 'Edit|MultiEdit')] } });
     const g = preview({ local, scaffold, base });
-    expect(g.ambiguous).toEqual(['PreToolUse .claude/hooks/guard.sh']);
+    expect(g.ambiguous).toEqual(['hook: PreToolUse .claude/hooks/guard.sh']);
     expect(g.replaced).toEqual([]);
   });
 

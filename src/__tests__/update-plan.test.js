@@ -11,7 +11,7 @@ import { copyFiles } from '../cli/core/copy.js';
 import { resolveWithDefaults } from '../cli/core/prompts.js';
 import { templatePath } from '../cli/core/paths.js';
 import { hashRaw, recordFor } from '../cli/core/hashing.js';
-import { checkContained, resolveProjectRoot } from '../cli/core/containment.js';
+import { checkContained, readContained, resolveProjectRoot } from '../cli/core/containment.js';
 import { runMigrations } from '../cli/core/migrations/index.js';
 import { renderClock, renderManagedSet } from '../cli/core/update-render.js';
 import { buildUpdatePlan, managedAction } from '../cli/core/update-plan.js';
@@ -85,10 +85,10 @@ describe('buildUpdatePlan on generated projects', { timeout: 60_000 }, () => {
     const raw = mutateManifest(await fs.readJson(path.join(target, '.ai-scaffold.json')));
     const reads = [];
     const reader = {
-      checkContained,
-      readFile: async (abs) => {
-        reads.push(path.relative(root, abs).split(path.sep).join('/'));
-        return fs.promises.readFile(abs);
+      checkContained: (r, rel) => checkContained(r, rel),
+      readContained: async (r, rel, maxBytes) => {
+        reads.push(rel);
+        return readContained(r, rel, { maxBytes });
       },
     };
     const { manifest } = runMigrations(raw, { from: raw.version, to: raw.version, settingsPristine: null });

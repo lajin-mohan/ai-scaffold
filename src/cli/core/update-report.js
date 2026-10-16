@@ -53,8 +53,20 @@ function nextStep(doc) {
     : `✓ No planning conflicts. ${tail}`;
 }
 
+// Paths, rule strings, profiles and backup names come from the project, so a
+// hostile one could carry terminal escape sequences. Show them escaped.
+const CONTROL_CHARS = /[\u0000-\u001f\u007f-\u009f]/g; // eslint-disable-line no-control-regex
+
+function escapeControls(line) {
+  return line.replace(CONTROL_CHARS, (char) => `\\x${char.charCodeAt(0).toString(16).padStart(2, '0')}`);
+}
+
 /** @returns {string} the report text */
 export function formatReport(doc) {
+  return buildLines(doc).map(escapeControls).join('\n');
+}
+
+function buildLines(doc) {
   const lines = [...header(doc), ''];
   if (doc.status === 'planned') {
     lines.push('Files:', ...entryLines(doc), ...settingsLines(doc.settings), '');
@@ -62,5 +74,5 @@ export function formatReport(doc) {
   for (const notice of doc.notices ?? []) lines.push(`Note: ${notice}`);
   if (doc.status === 'planned') lines.push('Note: git safety was not assessed (uncommitted changes are not checked yet).');
   lines.push('', nextStep(doc));
-  return lines.join('\n');
+  return lines;
 }

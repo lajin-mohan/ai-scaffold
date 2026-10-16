@@ -4,15 +4,20 @@
  * files are read only after the containment check (FR-43).
  */
 
-import fs from 'fs';
-import { checkContained } from './containment.js';
+import { checkContained, readContained } from './containment.js';
 import { hashRaw, isPristine } from './hashing.js';
 import { classifyPath } from './ownership.js';
 
+export const MAX_MANAGED_BYTES = 10 * 1024 * 1024;
+
 const defaultReader = {
-  checkContained,
-  readFile: (abs) => fs.promises.readFile(abs),
+  checkContained: (root, rel) => checkContained(root, rel),
+  readContained: (root, rel, maxBytes) => readContained(root, rel, { maxBytes }),
 };
+
+// Lower ranks are never read. A class stored in the manifest may only make a
+// path more restrictive than the table says, never unlock a read (FR-43).
+const RANK = { excluded: 0, unowned: 1, 'user-data': 1, seeded: 2, merged: 3, managed: 3 };
 
 const PROTECTED_MANAGED = ['AGENTS.md', 'CLAUDE.md', 'constitution.md'];
 
@@ -46,9 +51,20 @@ function conflictReason(current, record, render) {
   return legacyCrlf ? 'legacy-crlf-unprovable' : 'edited';
 }
 
+function resolveClass(rel, record, installMode) {
+  const derived = classifyPath(rel, { installMode, recorded: Boolean(record) });
+  const stored = record?.class;
+  return stored in RANK && RANK[stored] < RANK[derived] ? stored : derived;
+}
+
 async function planPath(rel, ctx) {
   const record = ctx.recorded.get(rel);
-  const cls = record?.class ?? classifyPath(rel, { installMode: ctx.installMode, recorded: Boolean(record) });
+  let cls;
+  try {
+    cls = resolveClass(rel, record, ctx.installMode);
+  } catch {
+    return entry(rel, null, 'rejected', 'carry', 'outside');
+  }
   if (cls === 'excluded') return null;
   if (cls === 'unowned') return entry(rel, cls, 'skip-unowned', 'carry');
   if (cls === 'user-data') return entry(rel, cls, 'skip-user-data', 'carry');
@@ -60,7 +76,12 @@ async function planPath(rel, ctx) {
     return entry(rel, cls, 'add', hashRaw(render));
   }
   if (cls === 'merged') return entry(rel, cls, 'merge', 'merged');
-  const current = contained.exists ? await ctx.reader.readFile(contained.abs) : null;
+  let current = null;
+  if (contained.exists) {
+    const read = await ctx.reader.readContained(ctx.root, rel, MAX_MANAGED_BYTES);
+    if (!read.ok) return entry(rel, cls, 'rejected', 'carry', read.reason);
+    current = read.data ?? null;
+  }
   const decision = managedAction({ current, record, render });
   return entry(rel, cls, decision.action, decision.recordAfter, decision.reason ?? null);
 }
@@ -79,7 +100,7 @@ function noticesFor({ installMode, hashed, recorded }) {
 
 /**
  * @param {{ root: string, manifest: object, renders: Map<string, Buffer>,
- *   reader?: { checkContained: Function, readFile: Function } }} input
+ *   reader?: { checkContained: Function, readContained: Function } }} input
  * @returns {Promise<{ entries: object[], counts: object, hashed: boolean,
  *   installMode: string, notices: string[] }>}
  */

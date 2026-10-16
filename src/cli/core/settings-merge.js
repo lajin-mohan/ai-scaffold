@@ -71,7 +71,7 @@ function mergeRules(groups, { local, scaffold, base, exceptions, retired }) {
 
 function mergeHook(groups, key, { local, base, ship, baseKnown }) {
   if (local.length > 1 || base.length > 1 || ship.length > 1) {
-    groups.ambiguous.push(key);
+    groups.ambiguous.push(`hook: ${key}`);
     return;
   }
   const [mine, was, next] = [local[0], base[0], ship[0]].map((h) => (h ? entryJson(h.entry) : null));
@@ -92,7 +92,8 @@ function mergeHook(groups, key, { local, base, ship, baseKnown }) {
 function mergeHooks(groups, { local, scaffold, base, retired }) {
   const mine = indexHooks(extractHooks(local));
   const ship = indexHooks(extractHooks(scaffold));
-  const was = indexHooks(base ? base.hooks.map((h) => ({ ...h, key: `${h.event} ${h.script}` })) : []);
+  const baseHooks = Array.isArray(base?.hooks) ? base.hooks : [];
+  const was = indexHooks(baseHooks.map((h) => ({ ...h, key: `${h.event} ${h.script}` })));
   for (const key of ship.keys()) {
     mergeHook(groups, key, { local: mine.get(key) ?? [], base: was.get(key) ?? [], ship: ship.get(key), baseKnown: Boolean(base) });
   }

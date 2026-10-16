@@ -11,6 +11,10 @@ import { PROTECTED_PATHS } from './file-plan.js';
 
 export const INSTALL_MODES = ['create', 'init', 'unknown'];
 
+// Windows and macOS file systems are case-insensitive by default, so
+// .claude/MEMORY/x and .claude/memory/x are the same file there (FR-43).
+const MATCH = { dot: true, nocase: process.platform === 'win32' || process.platform === 'darwin' };
+
 // Evaluated in order; the first matching class wins.
 const CLASS_RULES = [
   ['excluded', ['.ai-scaffold.json', '.ai-scaffold/backups/**', '.ai-scaffold/update.lock']],
@@ -25,9 +29,9 @@ const CLASS_RULES = [
   ['seeded', ['CHANGELOG.md', 'tasks/todo/.gitkeep', 'tasks/done/.gitkeep']],
   ['merged', ['.claude/settings.json']],
   ['managed', ['CLAUDE.md', 'AGENTS.md', 'constitution.md', '.ai-scaffold/**', '.claude/**']],
-].map(([cls, patterns]) => [cls, picomatch(patterns, { dot: true })]);
+].map(([cls, patterns]) => [cls, picomatch(patterns, MATCH)]);
 
-const isProtected = picomatch(PROTECTED_PATHS, { dot: true });
+const isProtected = picomatch(PROTECTED_PATHS, MATCH);
 
 function tableClass(rel) {
   const match = CLASS_RULES.find(([, matches]) => matches(rel));
