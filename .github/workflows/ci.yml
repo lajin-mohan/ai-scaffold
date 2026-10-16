@@ -98,6 +98,9 @@ jobs:
       - name: Pre-publish smoke
         run: bash scripts/pre-publish-smoke.sh
 
+      - name: Update preview from the packed tarball (item 25)
+        run: node scripts/update-preview-smoke.js
+
       - name: Verify npm pack
         run: npm_config_cache=/tmp/ai-scaffold-npm-cache npm pack --dry-run --json
 
@@ -186,6 +189,9 @@ jobs:
 
       - name: Pre-publish smoke (includes npm test)
         run: bash scripts/pre-publish-smoke.sh
+
+      - name: Update preview from the packed tarball (item 25)
+        run: node scripts/update-preview-smoke.js
 
   ci-passed:
     name: CI passed
