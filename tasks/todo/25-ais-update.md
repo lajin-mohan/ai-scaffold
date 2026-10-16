@@ -90,3 +90,43 @@ dates equal under the fixed clock.
 - Local test environment: three pre-existing failures on this machine (bash
   hook, planted-binary control, merge-commit timeout) pass in CI; slice 2
   added none.
+
+## Slice 3 (preview): checkpoint after migrations and the first planner, 2026-10-16
+
+**Authorised:** slice 3 only, about 10.5 focused working days (maintainer,
+2026-10-16). No apply, separate release or remaining-project budget.
+
+| Step | Commit | Result |
+|---|---|---|
+| S0 contracts: FR-43 safe reads, FR-44 check order (lock before journal), FR-45 JSON, FR-46, FR-02 `--force` error, FR-35 tri-state base, NFR-08 | `84317e3` | BRD v1.3, HLD §10a |
+| S1 `containment.js` | `15ffab5` | lexical, lstat walk (symlinks and junctions rejected), real-path check; 80 tests with ownership |
+| S2 `update-policy.js` | `11355c7` | 16 tests |
+| S3 migrations, schema-2 | `8f5b87e` | 17 tests |
+| S4 `update-render.js`, `update-plan.js` | `5af8a7b` | 23 tests on generated projects, with a read recorder |
+
+**Completed:** S0–S4. **Remaining:** S5 settings merge preview; S6 report,
+JSON envelope, `update.js` orchestration with lock and interrupted
+detection; S7 packed-tarball CLI script in CI; S8 no-write-attempt tests
+across fixtures; review and PR.
+
+**Scope changes and new uncertainties:**
+- The schema-2 migration triggers on `manifestSchema` below 2, not on a
+  version crossing (FR-26 wording): every existing install needs it, and
+  on `dev` the CLI version would never cross a 0.17.0 key. Later
+  migrations stay version-keyed (FR-25).
+- `pre-publish-smoke.sh` runs the working-tree CLI, not the tarball, so
+  the packed CLI tests need a new script (S7), as recorded in HLD §10a.
+- `create` does not yet record `manifestSchema`, classes or
+  `settingsBase`; the migration derives them. Recording them at install is
+  apply-slice work (FR-34).
+- The legacy-CRLF conflict reason is a heuristic (the template renders
+  CRLF and the checkout has none); the recorded content itself cannot be
+  recovered from a hash.
+
+**Time:** calendar interval between the first and last slice 3 commits,
+2026-10-16 12:07Z to 12:18Z (commit timestamps; includes any gaps).
+Focused effort was not tracked separately and is unknown. Remaining
+forecast for S5–S8 and review: about 6 focused days from the breakdown
+(settings merge 2.67, report and orchestration about 1.5, packed CLI
+tests 0.75, no-write tests and fixtures about 0.75, review about 0.5),
+not from measured speed.
