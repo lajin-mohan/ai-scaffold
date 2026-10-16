@@ -147,7 +147,11 @@ export const APP_SOURCE_PATHS = [
  * Discovers `*.template.*` files and maps them to generated output paths.
  */
 export async function buildFilePlan(sourceDir, targetDir, options = {}) {
-  const { existingTarget = false } = options;
+  const { existingTarget = false, ignoreDisk = false } = options;
+  // ignoreDisk: plan what this install mode writes, as if no target file
+  // existed, so `ais update` can re-plan an init install without the files
+  // init itself wrote dropping out (item 25, HLD §2).
+  const targetFileExists = ignoreDisk ? async () => false : (file) => fs.pathExists(file);
   const plan = {
     copy: [],
     generate: [],
@@ -219,7 +223,10 @@ export async function buildFilePlan(sourceDir, targetDir, options = {}) {
     }
 
     const isRootFile = matchesAny(logicalRel, [...ROOT_FILES, ...profileRootFiles]);
-    const targetRel = isRootFile ? logicalRel : path.join('.ai-scaffold', logicalRel);
+    // Plan rels are always POSIX: the dedupe below and every consumer key on
+    // forward slashes. path.join here made Windows init plan .ai-scaffold/README.md
+    // twice, and the generic scaffold README overwrote the project one.
+    const targetRel = isRootFile ? logicalRel : path.posix.join('.ai-scaffold', logicalRel);
     const targetFile = path.join(targetDir, targetRel);
 
     // Check if this file maps to a generated output (e.g. .template.md → .md)
@@ -228,7 +235,7 @@ export async function buildFilePlan(sourceDir, targetDir, options = {}) {
       const generatedRoot = generatedRel === 'README.md' && !existingTarget;
       const genTargetRel = resolveGeneratedTargetRel(generatedRel, existingTarget, generatedRoot);
       if (existingTarget && genTargetRel === generatedRel && matchesAny(generatedRel, PROTECTED_PATHS)) {
-        const targetExists = await fs.pathExists(path.join(targetDir, genTargetRel));
+        const targetExists = await targetFileExists(path.join(targetDir, genTargetRel));
         if (targetExists) {
           plan.skipProtected.push({
             src: srcFile,
@@ -257,7 +264,7 @@ export async function buildFilePlan(sourceDir, targetDir, options = {}) {
 
     // Protected files — never overwrite without confirmation
     if (existingTarget && matchesAny(relPath, PROTECTED_PATHS)) {
-      const targetExists = await fs.pathExists(targetFile);
+      const targetExists = await targetFileExists(targetFile);
       if (targetRel !== relPath || targetExists) {
         plan.skipProtected.push({
           src: srcFile,
@@ -300,7 +307,7 @@ export async function buildFilePlan(sourceDir, targetDir, options = {}) {
     const genTargetRel = resolveGeneratedTargetRel(genRel, existingTarget, false);
     const target = path.join(targetDir, genTargetRel);
     if (existingTarget && matchesAny(genRel, PROTECTED_PATHS)) {
-      const targetExists = await fs.pathExists(target);
+      const targetExists = await targetFileExists(target);
       if (targetExists) {
         plan.skipProtected.push({
           src: null,
@@ -374,6 +381,6 @@ function resolveGeneratedTargetRel(generatedRel, existingTarget, forceRoot) {
   }
 
   return existingTarget
-    ? path.join('.ai-scaffold', generatedRel)
+    ? path.posix.join('.ai-scaffold', generatedRel)
     : generatedRel;
 }

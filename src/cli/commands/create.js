@@ -155,7 +155,7 @@ async function runCreate(projectName, options) {
 
   // 5. Copy files
   console.log(chalk.gray('\nCopying files...'));
-  const result = await copyFiles(plan, bootstrap, { dryRun, force, targetDir });
+  const result = await copyFiles(plan, bootstrap, { dryRun, force, targetDir, installMode: 'create' });
 
   // 6. Initialize git for new projects unless explicitly disabled.
   const gitResult = !dryRun && shouldInitGit
