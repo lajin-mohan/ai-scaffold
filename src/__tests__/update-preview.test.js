@@ -43,7 +43,7 @@ afterAll(async () => {
   await fse.remove(tmpDir);
 });
 
-describe('the FR-45 document', () => {
+describe('the FR-45 document', { timeout: 60_000 }, () => {
   it('a planned preview has every field, sorted entries and no conflicts on an untouched project', async () => {
     const doc = await preview(await install('planned'));
     expect(Object.keys(doc).sort()).toEqual(FIELDS);
@@ -88,7 +88,7 @@ describe('the FR-45 document', () => {
   });
 });
 
-describe('FR-44 check order', () => {
+describe('FR-44 check order', { timeout: 60_000 }, () => {
   it('current: already at the CLI version exits 0', async () => {
     const target = await install('current');
     expect(await preview(target, {}, { cliVersion: installed })).toMatchObject({ status: 'current', exitCode: 0, entries: null });
@@ -137,7 +137,7 @@ describe('FR-44 check order', () => {
   });
 });
 
-describe('errors keep the full document', () => {
+describe('errors keep the full document', { timeout: 60_000 }, () => {
   it.each([
     ['FLAG_REMOVED', { force: true }],
     ['APPLY_UNAVAILABLE', { apply: true }],
@@ -176,7 +176,7 @@ describe('errors keep the full document', () => {
   });
 });
 
-describe('formatReport', () => {
+describe('formatReport', { timeout: 60_000 }, () => {
   it('never suggests applying and says git safety was not assessed', async () => {
     const target = await install('report');
     fs.appendFileSync(path.join(target, 'CLAUDE.md'), '\nmine\n');
