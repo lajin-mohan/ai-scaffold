@@ -54,9 +54,10 @@ Facts the decision rests on:
    `init`) is recorded, or inferred for older manifests, and planning uses it.
    An `init` install is never re-planned as a `create`.
 4. **A file is pristine if, and only if, its current content matches its
-   record in either line-ending direction** (FR-09): raw against `hash`,
-   CRLF-normalised against `hash`, or CRLF-normalised against `hashLf`, which
-   is recorded only for content containing CRLF. A legacy record that cannot
+   record in either line-ending direction** (FR-09): raw against `hash`; or
+   CRLF-normalised against `hashLf` when the record has one (recorded only for
+   content containing CRLF); or, for a record without `hashLf`,
+   CRLF-normalised content that itself has no CRLF against `hash`. A legacy record that cannot
    prove the CRLF-to-LF direction is treated as edited. A file whose content
    already equals the new render is `unchanged` before any other test.
    **Ownership is context-aware** (FR-42): path, install mode and manifest

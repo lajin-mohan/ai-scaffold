@@ -115,10 +115,15 @@ report or `--json`, apply, exit code.
   | Recorded content | Current checkout | Matches via |
   |---|---|---|
   | LF | LF | raw = `hash` |
-  | LF | CRLF | normalised(C) = `hash` |
+  | LF | CRLF | normalised(C) = `hash`, and normalised(C) has no CRLF |
   | CRLF | CRLF | raw = `hash` |
   | CRLF | LF | normalised(C) = `hashLf` (new records only) |
   | CRLF, legacy record without `hashLf` | LF | **no match → edited → never overwritten** (fails safe) |
+
+  A record with `hashLf` never compares normalised content against its raw
+  `hash`; a record without `hashLf` matches normalised content only when that
+  content has no CRLF. Otherwise `a\r\r\n` (normalised `a\r\n`) would match a
+  raw `a\r\n` record as pristine and the edit could be overwritten (round 4).
 
 - **Clock (NFR-07):** one injected `now`, every stamp in **UTC**. The clock
   call sites today:
