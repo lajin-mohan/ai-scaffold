@@ -2,7 +2,7 @@
 
 ## Status
 
-**Stage 3: design reconciled (BRD v1.3, HLD v2.2, ADR-007 rev 3, 2026-10-15) after the round-3 review. Awaiting maintainer sign-off; implementation not approved.** Round 3 found the round-2 changes had reached the HLD only; see `docs/architecture/review-25-ais-update.md` § Round 3. FR-20 is decided: restore by default with persisted per-rule exceptions (FR-39).
+**Slice 2 implemented; review/merge pending (lajin-mohan/ai-scaffold#157). Full design acceptance, remaining budget and release approval remain separate.** Design reconciled (BRD v1.3, HLD v2.2, ADR-007 rev 3, 2026-10-15) after the round-3 review; FR-09 corrected after the round-4 review (2026-10-16). Round 3 found the round-2 changes had reached the HLD only; see `docs/architecture/review-25-ais-update.md` § Round 3. FR-20 is decided: restore by default with persisted per-rule exceptions (FR-39).
 - The independent review returned **REVISE** (5 BLOCK, 9 WARN, 7 NIT):
   `docs/architecture/review-25-ais-update.md`. It was recovered after a squash
   merge lost it (see the `tasks/lessons.md` entry of 2026-10-12).
@@ -73,12 +73,17 @@ fix (5 files) and its manifest hash; manifests otherwise differ only in
 dates equal under the fixed clock.
 
 **Progress and forecast:**
-- Effort: slice 2 was completed across two AI-assisted sessions; focused
-  effort was not timed, so the checkpoint cannot be stated in ideal days with
-  precision. No row signals an overrun: scope grew only by the Windows `init`
-  fix (about 0.25 d) and the clock threading.
-- Remaining forecast, slices 3–5: about **20 d PERT** (25.17 d remaining
-  before slice 2, less the four foundation rows); no re-estimate trigger hit.
+- Effort: actual focused effort is unknown, so the effort-overrun trigger
+  could not be assessed. Scope grew by the Windows `init` fix, the clock
+  threading and the round-4 hashing correction.
+- Remaining forecast: approximately **20 focused working days** for slices
+  3–5, based on the remaining work breakdown, not on demonstrated delivery
+  speed. It is not an approved budget.
+- Round 4 (2026-10-16, maintainer-supplied review): `isPristine` accepted
+  `a\r\r\n` against a raw `a\r\n` record because normalised content was
+  compared with the raw hash. FR-09, the implementation and the regression
+  test were corrected together; the S1 test that accepted the behaviour was
+  replaced.
 - Carried to slice 3: apply the `installedAt` clock rule and fallback chain;
   report `unknown`-mode files that will never update (FR-42); report legacy
   CRLF records that cannot prove the LF direction.

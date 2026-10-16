@@ -73,8 +73,26 @@ describe('isPristine: edits and bad records', () => {
     expect(isPristine(edited.replace(/\n/g, '\r\n'), recordFor(CRLF_TEXT))).toBe(false);
   });
 
-  it('accepts a stray CR before CRLF as pristine (documented one-pass behaviour)', () => {
-    expect(isPristine('a\r\r\n', recordFor('a\r\n'))).toBe(true);
+  it('rejects an added CR before CRLF: a\\r\\r\\n is an edit of a\\r\\n (round-4 regression)', () => {
+    expect(isPristine('a\r\r\n', recordFor('a\r\n'))).toBe(false);
+    expect(isPristine('a\r\r\n', { hash: hashRaw('a\r\n') })).toBe(false);
+  });
+
+  it('a record without hashLf matches only CRLF-free normalised content', () => {
+    expect(isPristine('a\r\nb\r\n', recordFor('a\nb\n'))).toBe(true);
+    expect(isPristine('x\r\r\ny\n', { hash: hashRaw('x\r\ny\n') })).toBe(false);
+  });
+
+  it('a record with hashLf never matches normalised content against its raw hash', () => {
+    const record = recordFor('a\r\nb\n');
+    expect(isPristine('a\nb\n', record)).toBe(true);
+    expect(isPristine('a\r\r\nb\n', record)).toBe(false);
+  });
+
+  it('a recorded stray CR stays pristine only in forms that keep it', () => {
+    const record = recordFor('a\r\r\n');
+    expect(isPristine('a\r\r\n', record)).toBe(true);
+    expect(isPristine('a\r\n', record)).toBe(false);
   });
 
   it('is never pristine against a missing or malformed record', () => {

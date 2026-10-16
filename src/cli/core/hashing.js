@@ -50,14 +50,18 @@ export function recordFor(content) {
 }
 
 /**
- * True when `content` matches `record` in either line-ending direction:
- * raw against `hash`, normalised against `hash`, or normalised against
- * `hashLf`. A missing or malformed record is never pristine.
+ * True when `content` matches `record` in either line-ending direction
+ * (BRD FR-09): raw against `hash`; normalised against `hashLf` when the
+ * record has one; otherwise normalised content without CRLF against `hash`,
+ * since only CRLF-free content is recorded without `hashLf`. A missing or
+ * malformed record is never pristine.
  */
 export function isPristine(content, record) {
   if (!record || typeof record.hash !== 'string') return false;
-  if (hashRaw(content) === record.hash) return true;
-  const normalised = hashLf(content);
-  if (normalised === record.hash) return true;
-  return typeof record.hashLf === 'string' && normalised === record.hashLf;
+  const raw = toBuffer(content);
+  if (hashRaw(raw) === record.hash) return true;
+  const normalised = normalizeCrlf(raw);
+  if (typeof record.hashLf === 'string') return hashRaw(normalised) === record.hashLf;
+  // `a\r\r\n` normalises to `a\r\n`; it must not match a raw `a\r\n` record.
+  return !normalised.includes('\r\n') && hashRaw(normalised) === record.hash;
 }

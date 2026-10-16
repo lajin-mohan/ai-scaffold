@@ -12,6 +12,12 @@ This file records patterns from mistakes and corrections. Claude reads this at t
 
 <!-- Add lessons below as they are captured. Most recent at the top. -->
 
+## 2026-10-16 — A test enshrined an edge case that broke the safety invariant
+
+- **Mistake:** An architect review called `a\r\r\n` matching an `a\r\n` record "harmless", and slice 2 added a test asserting it was pristine. It is a content change: `ais update` could overwrite it. Every check passed because the test encoded the defect. Caught by a maintainer-supplied review.
+- **Why:** The edge case was judged against "is the difference small" instead of the invariant it touches ("an edited file is never overwritten").
+- **Rule:** Before accepting or testing any edge case as "by design", state the safety invariant it touches and check the case against it. If it relaxes that invariant, it is a defect, however small the difference.
+
 ## 2026-10-15 — `git add -A <dir>` swept up untracked user files again (second occurrence)
 
 - **Mistake:** Committing item 25 slice 2 design docs, `git add -A docs/` staged the maintainer's untracked `docs/workshop/` and a parallel edit to `docs/process/pre-npm-publish-todo.md`. Caught by `git diff --check` before the commit; nothing was committed or pushed. Same failure as the 2026-10-12 entry.
