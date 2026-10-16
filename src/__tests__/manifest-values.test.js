@@ -62,6 +62,10 @@ describe('valuesFromManifest inverts buildManifestData', () => {
     expect(valuesFromManifest({}).requirementsPath).toBe('');
   });
 
+  it('throws rather than silently dropping a second requirements path', () => {
+    expect(() => valuesFromManifest({ requirements: { paths: ['a.md', 'b.md'] } })).toThrow(TypeError);
+  });
+
   it('reads install.mode when present and leaves it undefined otherwise', () => {
     expect(valuesFromManifest({ install: { mode: 'init' } }).installMode).toBe('init');
     expect(valuesFromManifest({}).installMode).toBeUndefined();

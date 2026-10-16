@@ -40,10 +40,19 @@ describe('classifyPath: the OC table', () => {
     expect(classifyPath(rel, created)).toBe('unowned');
   });
 
-  it('normalises backslashes and a leading ./', () => {
+  it('normalises backslashes, a leading ./, doubled slashes and inner ..', () => {
     expect(classifyPath('.claude\\rules\\x.md', created)).toBe('managed');
     expect(classifyPath('./CLAUDE.md', created)).toBe('managed');
+    expect(classifyPath('.claude//memory/x.md', created)).toBe('user-data');
+    expect(classifyPath('.claude/rules/../memory/x.md', created)).toBe('user-data');
   });
+
+  it.each(['/etc/passwd', 'C:/Windows/x', 'C:\\Windows\\x', '../outside.md', 'a/../../outside.md', '..'])(
+    'throws for a path outside the project: %s',
+    (rel) => {
+      expect(() => classifyPath(rel, created)).toThrow(TypeError);
+    },
+  );
 });
 
 describe('classifyPath: install-mode context (FR-42)', () => {

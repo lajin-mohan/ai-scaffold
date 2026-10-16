@@ -5,6 +5,7 @@
  * records the path. It never depends on what is on disk.
  */
 
+import path from 'path';
 import picomatch from 'picomatch';
 import { PROTECTED_PATHS } from './file-plan.js';
 
@@ -28,8 +29,14 @@ const CLASS_RULES = [
 
 const isProtected = picomatch(PROTECTED_PATHS, { dot: true });
 
+// Paths come from the manifest or a file plan, which use canonical case, so
+// matching is case-sensitive. Anything that could escape the project throws.
 function normaliseRel(rel) {
-  return String(rel).replace(/\\/g, '/').replace(/^(\.\/)+/, '');
+  const posix = path.posix.normalize(String(rel).replace(/\\/g, '/'));
+  if (path.posix.isAbsolute(posix) || /^[A-Za-z]:/.test(posix) || posix === '..' || posix.startsWith('../')) {
+    throw new TypeError(`classifyPath: path must be relative and inside the project: ${rel}`);
+  }
+  return posix;
 }
 
 function tableClass(rel) {

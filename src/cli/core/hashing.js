@@ -27,6 +27,7 @@ export function hashRaw(content) {
  */
 export function normalizeCrlf(content) {
   const input = toBuffer(content);
+  if (!input.includes(CR)) return input;
   const out = Buffer.allocUnsafe(input.length);
   let length = 0;
   for (let i = 0; i < input.length; i++) {

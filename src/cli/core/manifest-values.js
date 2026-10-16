@@ -17,6 +17,10 @@ export function valuesFromManifest(manifest) {
   const requirements = manifest.requirements ?? {};
   const commands = manifest.commands ?? {};
   const paths = Array.isArray(requirements.paths) ? requirements.paths : [];
+  if (paths.length > 1) {
+    // create writes at most one path; more cannot be rendered faithfully.
+    throw new TypeError('valuesFromManifest: requirements.paths holds more than one path');
+  }
 
   return {
     profile: manifest.profile,
@@ -44,5 +48,9 @@ export function valuesFromManifest(manifest) {
     typecheckCommand: commands.typecheck,
     buildCommand: commands.build,
     defaulted: Array.isArray(manifest.defaultedValues) ? [...manifest.defaultedValues] : [],
+    // Not restored: seedCommand (read by resolvePlaceholders but never set by
+    // any command, so it always renders N/A). complianceScope defaults to [];
+    // only settings-overrides.json, which is user-data and never re-rendered,
+    // distinguishes [] from undefined.
   };
 }
