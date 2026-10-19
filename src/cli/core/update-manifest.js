@@ -69,12 +69,12 @@ export async function readManifest(root, io) {
 }
 
 /**
- * @returns {Promise<{ local: object|null, valid: boolean, pristine: boolean|null, rejected?: boolean }>}
- *   A rejected path is reported by the planner; nothing is merged.
+ * @returns {Promise<{ local: object|null, valid: boolean, pristine: boolean|null, rejected?: string }>}
+ *   `rejected` carries the reason; the preview reports it and merges nothing.
  */
 export async function readSettings(root, manifest, io) {
   const read = await io.readContained(root, SETTINGS, MAX_SETTINGS_BYTES);
-  if (!read.ok) return { local: null, valid: false, pristine: null, rejected: true };
+  if (!read.ok) return { local: null, valid: false, pristine: null, rejected: read.reason };
   if (!read.exists) return { local: {}, valid: true, pristine: null };
   const record = (manifest.managedFiles ?? []).find((r) => safeKey(r.path) === pathKey(SETTINGS));
   const pristine = record ? isPristine(read.data, record) : null;

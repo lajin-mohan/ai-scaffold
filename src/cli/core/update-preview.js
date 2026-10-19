@@ -57,9 +57,13 @@ async function plan(doc, { root, manifest, versions, flags, io, today }) {
     retired: {},
   });
   const entries = planned.entries.map(({ path, class: cls, action, reason }) => ({ path, class: cls, action, reason }));
-  if (!settingsFile.valid && !settingsFile.rejected) {
-    const settingsEntry = entries.find((e) => e.path === SETTINGS);
-    if (settingsEntry) Object.assign(settingsEntry, { action: 'conflict', reason: 'invalid-json' });
+  const settingsEntry = entries.find((e) => e.path === SETTINGS);
+  // The first read decides: a later read that succeeds must not turn a
+  // rejected settings target back into a merge.
+  if (settingsFile.rejected && settingsEntry) {
+    Object.assign(settingsEntry, { action: 'rejected', reason: settingsFile.rejected });
+  } else if (!settingsFile.valid && settingsEntry) {
+    Object.assign(settingsEntry, { action: 'conflict', reason: 'invalid-json' });
   }
   const notices = [...planned.notices];
   if (doc.settings?.base === 'unknown') notices.push('settings.json has no recorded base: deliberate removals cannot be determined.');

@@ -131,6 +131,32 @@ describe('a settings target that cannot be read is rejected, exit 1', { timeout:
   });
 });
 
+describe('a first-read settings rejection is never discarded', { timeout: 60_000 }, () => {
+  it('only the first read of settings.json changes identity: still rejected, exit 1', async () => {
+    const target = await install('settings-first-read');
+    editManifest(target, (m) => m);
+    let swappedOnce = false;
+    const firstReadOnly = {
+      lstat: async (p, o) => {
+        const stat = await fs.promises.lstat(p, o);
+        if (o?.bigint && p.endsWith('settings.json') && !swappedOnce) {
+          swappedOnce = true;
+          return { ...stat, ino: stat.ino + 1n };
+        }
+        return stat;
+      },
+      realpath: (p) => fs.promises.realpath(p),
+      readdir: (p, o) => fs.promises.readdir(p, o),
+      open: (p, f) => fs.promises.open(p, f),
+    };
+    const doc = await runPreview({ target, cliVersion: '99.0.0', today: NOW, fsApi: firstReadOnly });
+    expect(swappedOnce).toBe(true);
+    expect(doc.entries.find((e) => e.path === '.claude/settings.json')).toMatchObject({ action: 'rejected', reason: 'changed' });
+    expect(doc.settings).toBeNull();
+    expect(doc.exitCode).toBe(1);
+  });
+});
+
 describe('migration defaults are recorded in defaultedValues (FR-05)', () => {
   function manifestWithout(fields) {
     const { resolved } = resolveWithDefaults({ projectName: 'd', purpose: 'D', ownerEmail: 'd@example.com', profile: 'node' });
