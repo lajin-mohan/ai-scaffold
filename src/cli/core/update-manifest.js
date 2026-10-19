@@ -5,7 +5,7 @@
  */
 
 import { isPristine } from './hashing.js';
-import { INSTALL_MODES } from './ownership.js';
+import { INSTALL_MODES, pathKey } from './ownership.js';
 import { UpdateError } from './update-policy.js';
 
 export const MANIFEST = '.ai-scaffold.json';
@@ -46,6 +46,14 @@ export function validateManifest(manifest) {
   return manifest;
 }
 
+function safeKey(rel) {
+  try {
+    return pathKey(rel);
+  } catch {
+    return null;
+  }
+}
+
 /** FR-44 step 1: containment first, then a capped read, then shape checks. */
 export async function readManifest(root, io) {
   const read = await io.readContained(root, MANIFEST, MAX_MANIFEST_BYTES);
@@ -68,7 +76,7 @@ export async function readSettings(root, manifest, io) {
   const read = await io.readContained(root, SETTINGS, MAX_SETTINGS_BYTES);
   if (!read.ok) return { local: null, valid: false, pristine: null, rejected: true };
   if (!read.exists) return { local: {}, valid: true, pristine: null };
-  const record = (manifest.managedFiles ?? []).find((r) => r.path === SETTINGS);
+  const record = (manifest.managedFiles ?? []).find((r) => safeKey(r.path) === pathKey(SETTINGS));
   const pristine = record ? isPristine(read.data, record) : null;
   try {
     const local = JSON.parse(read.data.toString('utf-8'));

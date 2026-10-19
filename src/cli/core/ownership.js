@@ -11,9 +11,21 @@ import { PROTECTED_PATHS } from './file-plan.js';
 
 export const INSTALL_MODES = ['create', 'init', 'unknown'];
 
+const CASE_INSENSITIVE = process.platform === 'win32' || process.platform === 'darwin';
+
 // Windows and macOS file systems are case-insensitive by default, so
 // .claude/MEMORY/x and .claude/memory/x are the same file there (FR-43).
-const MATCH = { dot: true, nocase: process.platform === 'win32' || process.platform === 'darwin' };
+const MATCH = { dot: true, nocase: CASE_INSENSITIVE };
+
+/**
+ * The identity of a project path: normalised, and case-folded where the file
+ * system ignores case, so two spellings of one file compare equal. Throws
+ * for paths outside the project.
+ */
+export function pathKey(rel) {
+  const normalised = normaliseRel(rel);
+  return CASE_INSENSITIVE ? normalised.toLowerCase() : normalised;
+}
 
 // Evaluated in order; the first matching class wins.
 const CLASS_RULES = [

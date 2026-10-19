@@ -38,18 +38,28 @@ function inferInstallMode(manifest) {
   return manifest.managedFiles.some((record) => isRootFile(record.path)) ? 'create' : 'init';
 }
 
+// FR-05: every value the migration supplies is recorded in defaultedValues,
+// appended once in field order, like create records its own defaults.
+function recordDefault(manifest, valueKey) {
+  const list = Array.isArray(manifest.defaultedValues) ? manifest.defaultedValues : [];
+  if (!list.includes(valueKey)) list.push(valueKey);
+  manifest.defaultedValues = list;
+}
+
 function fillDefaults(manifest, intents) {
   for (const [section, key, defaultKey] of DEFAULT_FIELDS) {
     manifest[section] ??= {};
     if (manifest[section][key] === undefined) {
       const value = CREATE_DEFAULTS[defaultKey];
       manifest[section][key] = Array.isArray(value) ? [...value] : value;
+      recordDefault(manifest, defaultKey);
       intents.push(`defaulted ${section}.${key}`);
     }
   }
   manifest.requirements ??= {};
   if (manifest.requirements.paths === undefined) {
     manifest.requirements.paths = [];
+    recordDefault(manifest, 'requirementsPath');
     intents.push('defaulted requirements.paths');
   }
 }

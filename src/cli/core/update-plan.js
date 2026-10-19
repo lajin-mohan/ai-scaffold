@@ -6,7 +6,9 @@
 
 import { checkContained, readContained } from './containment.js';
 import { hashRaw, isPristine } from './hashing.js';
-import { classifyPath } from './ownership.js';
+import { classifyPath, pathKey } from './ownership.js';
+import { MAX_SETTINGS_BYTES } from './update-manifest.js';
+import { normaliseRel } from './containment.js';
 
 export const MAX_MANAGED_BYTES = 10 * 1024 * 1024;
 
@@ -57,8 +59,7 @@ function resolveClass(rel, record, installMode) {
   return stored in RANK && RANK[stored] < RANK[derived] ? stored : derived;
 }
 
-async function planPath(rel, ctx) {
-  const record = ctx.recorded.get(rel);
+async function planPath({ rel, record, render, duplicate }, ctx) {
   let cls;
   try {
     cls = resolveClass(rel, record, ctx.installMode);
@@ -66,16 +67,20 @@ async function planPath(rel, ctx) {
     return entry(rel, null, 'rejected', 'carry', 'outside');
   }
   if (cls === 'excluded') return null;
+  if (duplicate) return entry(rel, cls, 'rejected', 'carry', 'duplicate-record');
   if (cls === 'unowned') return entry(rel, cls, 'skip-unowned', 'carry');
   if (cls === 'user-data') return entry(rel, cls, 'skip-user-data', 'carry');
   const contained = await ctx.reader.checkContained(ctx.root, rel);
   if (!contained.ok) return entry(rel, cls, 'rejected', 'carry', contained.reason);
-  const render = ctx.renders.get(rel);
   if (cls === 'seeded') {
     if (contained.exists || !render) return entry(rel, cls, 'skip-seeded', 'carry');
     return entry(rel, cls, 'add', hashRaw(render));
   }
-  if (cls === 'merged') return entry(rel, cls, 'merge', 'merged');
+  if (cls === 'merged') {
+    if (!contained.exists) return entry(rel, cls, 'merge', 'merged');
+    const read = await ctx.reader.readContained(ctx.root, rel, MAX_SETTINGS_BYTES);
+    return read.ok ? entry(rel, cls, 'merge', 'merged') : entry(rel, cls, 'rejected', 'carry', read.reason);
+  }
   let current = null;
   if (contained.exists) {
     const read = await ctx.reader.readContained(ctx.root, rel, MAX_MANAGED_BYTES);
@@ -86,16 +91,53 @@ async function planPath(rel, ctx) {
   return entry(rel, cls, decision.action, decision.recordAfter, decision.reason ?? null);
 }
 
-function noticesFor({ installMode, hashed, recorded }) {
+function noticesFor({ installMode, hashed, keys }) {
   const notices = [];
   if (!hashed) {
     notices.push('No file hashes were recorded at install (before 0.8.6): nothing will be replaced or removed.');
   }
   if (installMode === 'unknown') {
-    const never = PROTECTED_MANAGED.filter((rel) => !recorded.has(rel));
+    const never = PROTECTED_MANAGED.filter((rel) => !keys.has(pathKey(rel)));
     if (never.length > 0) notices.push(`Install mode unknown: ${never.join(', ')} will never be updated.`);
   }
   return notices;
+}
+
+/**
+ * One item per file identity (FR-43): records and renders are matched by
+ * pathKey, so `./CLAUDE.md` and `CLAUDE.md` are one file. Two records for one
+ * file are a duplicate, rejected rather than resolved by choosing one; a
+ * record whose path cannot be normalised keeps its raw spelling and is
+ * rejected by planPath.
+ */
+function identify(records, renders) {
+  const byKey = new Map();
+  const item = (key, rel) => {
+    if (!byKey.has(key)) byKey.set(key, { rel, record: undefined, render: undefined, duplicate: false });
+    return byKey.get(key);
+  };
+  const recordKeys = new Set();
+  for (const record of records) {
+    let key;
+    let rel = record.path;
+    try {
+      rel = normaliseRel(record.path);
+      key = pathKey(rel);
+    } catch {
+      key = `\u0000${record.path}`;
+    }
+    const slot = item(key, rel);
+    if (slot.record) slot.duplicate = true;
+    else slot.record = record;
+    recordKeys.add(key);
+  }
+  for (const [rel, bytes] of renders) {
+    const slot = item(pathKey(rel), rel);
+    slot.rel = rel;
+    slot.render = bytes;
+  }
+  const items = [...byKey.values()].sort((a, b) => compareCodeUnits(a.rel, b.rel));
+  return { items, recordKeys };
 }
 
 /**
@@ -107,15 +149,14 @@ function noticesFor({ installMode, hashed, recorded }) {
 export async function buildUpdatePlan({ root, manifest, renders, reader = defaultReader }) {
   const installMode = manifest.install?.mode;
   const hashed = Array.isArray(manifest.managedFiles);
-  const recorded = new Map((manifest.managedFiles ?? []).map((record) => [record.path, record]));
-  const paths = [...new Set([...renders.keys(), ...recorded.keys()])].sort(compareCodeUnits);
-  const ctx = { root, installMode, recorded, renders, reader };
+  const { items, recordKeys } = identify(manifest.managedFiles ?? [], renders);
+  const ctx = { root, installMode, reader };
   const entries = [];
-  for (const rel of paths) {
-    const planned = await planPath(rel, ctx);
+  for (const item of items) {
+    const planned = await planPath(item, ctx);
     if (planned) entries.push(planned);
   }
   const counts = {};
   for (const { action } of entries) counts[action] = (counts[action] ?? 0) + 1;
-  return { entries, counts, hashed, installMode, notices: noticesFor({ installMode, hashed, recorded }) };
+  return { entries, counts, hashed, installMode, notices: noticesFor({ installMode, hashed, keys: recordKeys }) };
 }
