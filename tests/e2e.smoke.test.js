@@ -325,7 +325,7 @@ describe('CLI e2e smoke', { timeout: 30_000 }, () => {
     expect(await fs.readFile(path.join(targetDir, 'tasks', 'lessons.md'), 'utf-8')).toBe('# Real project lessons\n');
   });
 
-  it('update placeholder does not mutate installed metadata', async () => {
+  it('update preview does not mutate installed metadata', async () => {
     const targetDir = path.join(tmpDir, 'update-placeholder');
     const createResult = runCli([
       'create',
@@ -344,14 +344,19 @@ describe('CLI e2e smoke', { timeout: 30_000 }, () => {
     manifest.version = '0.7.1';
     await fs.writeJson(manifestPath, manifest, { spaces: 2 });
 
-    const dryRunResult = runCli(['update', targetDir, '--dry-run']);
-    expect(dryRunResult.status, dryRunResult.stderr || dryRunResult.stdout).toBe(0);
-    expect(await fs.readJson(manifestPath)).toMatchObject({ version: '0.7.1' });
+    const before = await fs.readFile(manifestPath, 'utf-8');
+    const previewResult = runCli(['update', targetDir, '--dry-run', '--json']);
+    expect([0, 2], previewResult.stderr || previewResult.stdout).toContain(previewResult.status);
+    expect(JSON.parse(previewResult.stdout)).toMatchObject({ schema: 'ais-update-preview/1', status: 'planned', from: '0.7.1' });
 
-    const updateResult = runCli(['update', targetDir, '--target-version', '0.8.0']);
-    expect(updateResult.status).toBe(1);
-    expect(updateResult.stderr).toContain('not implemented yet');
-    expect(await fs.readJson(manifestPath)).toMatchObject({ version: '0.7.1' });
+    const mismatch = runCli(['update', targetDir, '--target-version', '0.8.0']);
+    expect(mismatch.status).toBe(1);
+    expect(mismatch.stderr).toContain('npx @lajin.m/ai-scaffold@0.8.0 update');
+
+    const removed = runCli(['update', targetDir, '--force']);
+    expect(removed.status).toBe(1);
+    expect(removed.stderr).toContain('--force was removed');
+    expect(await fs.readFile(manifestPath, 'utf-8')).toBe(before);
   });
 
   it('doctor reports invalid stored context values', async () => {

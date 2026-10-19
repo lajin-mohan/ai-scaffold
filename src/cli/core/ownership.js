@@ -5,11 +5,27 @@
  * records the path. It never depends on what is on disk.
  */
 
-import path from 'path';
 import picomatch from 'picomatch';
+import { normaliseRel } from './containment.js';
 import { PROTECTED_PATHS } from './file-plan.js';
 
 export const INSTALL_MODES = ['create', 'init', 'unknown'];
+
+const CASE_INSENSITIVE = process.platform === 'win32' || process.platform === 'darwin';
+
+// Windows and macOS file systems are case-insensitive by default, so
+// .claude/MEMORY/x and .claude/memory/x are the same file there (FR-43).
+const MATCH = { dot: true, nocase: CASE_INSENSITIVE };
+
+/**
+ * The identity of a project path: normalised, and case-folded where the file
+ * system ignores case, so two spellings of one file compare equal. Throws
+ * for paths outside the project.
+ */
+export function pathKey(rel) {
+  const normalised = normaliseRel(rel);
+  return CASE_INSENSITIVE ? normalised.toLowerCase() : normalised;
+}
 
 // Evaluated in order; the first matching class wins.
 const CLASS_RULES = [
@@ -25,19 +41,9 @@ const CLASS_RULES = [
   ['seeded', ['CHANGELOG.md', 'tasks/todo/.gitkeep', 'tasks/done/.gitkeep']],
   ['merged', ['.claude/settings.json']],
   ['managed', ['CLAUDE.md', 'AGENTS.md', 'constitution.md', '.ai-scaffold/**', '.claude/**']],
-].map(([cls, patterns]) => [cls, picomatch(patterns, { dot: true })]);
+].map(([cls, patterns]) => [cls, picomatch(patterns, MATCH)]);
 
-const isProtected = picomatch(PROTECTED_PATHS, { dot: true });
-
-// Paths come from the manifest or a file plan, which use canonical case, so
-// matching is case-sensitive. Anything that could escape the project throws.
-function normaliseRel(rel) {
-  const posix = path.posix.normalize(String(rel).replace(/\\/g, '/'));
-  if (path.posix.isAbsolute(posix) || /^[A-Za-z]:/.test(posix) || posix === '..' || posix.startsWith('../')) {
-    throw new TypeError(`classifyPath: path must be relative and inside the project: ${rel}`);
-  }
-  return posix;
-}
+const isProtected = picomatch(PROTECTED_PATHS, MATCH);
 
 function tableClass(rel) {
   const match = CLASS_RULES.find(([, matches]) => matches(rel));

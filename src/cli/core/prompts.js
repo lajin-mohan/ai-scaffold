@@ -268,6 +268,27 @@ export function applyInteractiveDefaults(values = {}) {
   return normalized;
 }
 
+/** Values create uses when a flag is absent; migrations reuse them (item 25, W3). */
+export const CREATE_DEFAULTS = Object.freeze({
+  projectType: 'saas',
+  lifecycleStage: 'active-development',
+  frontendStack: 'none',
+  database: 'none',
+  multiTenant: false,
+  dataSensitivity: 'internal',
+  complianceScope: [],
+  requirementsSource: 'create-later',
+  requirementsPath: '',
+  testCommand: 'none',
+  lintCommand: 'none',
+  typecheckCommand: 'none',
+  buildCommand: 'none',
+  installCommand: 'none',
+  devCommand: 'none',
+  migrationCommand: 'none',
+  profile: 'generic',
+});
+
 /**
  * Merge command-line flags with defaults for --yes / non-interactive mode.
  * Any value not provided via flag gets a conservative default and is tracked as defaulted.
@@ -290,29 +311,9 @@ export function resolveWithDefaults(flags = {}) {
     defaulted.push('purpose');
   }
 
-  const defaults = {
-    projectType: 'saas',
-    lifecycleStage: 'active-development',
-    frontendStack: 'none',
-    database: 'none',
-    multiTenant: false,
-    dataSensitivity: 'internal',
-    complianceScope: [],
-    requirementsSource: 'create-later',
-    requirementsPath: '',
-    testCommand: 'none',
-    lintCommand: 'none',
-    typecheckCommand: 'none',
-    buildCommand: 'none',
-    installCommand: 'none',
-    devCommand: 'none',
-    migrationCommand: 'none',
-    profile: 'generic',
-  };
-
-  for (const [key, value] of Object.entries(defaults)) {
+  for (const [key, value] of Object.entries(CREATE_DEFAULTS)) {
     if (resolved[key] === undefined) {
-      resolved[key] = value;
+      resolved[key] = Array.isArray(value) ? [...value] : value;
       defaulted.push(key);
     }
   }
