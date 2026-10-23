@@ -20,11 +20,19 @@ const FIELDS = Object.keys(emptyDocument()).sort();
 let tmpDir;
 let installed;
 
-async function install(name, { mode = 'create' } = {}) {
+/** A 0.16.1-shaped manifest: no schema 2, classes or settingsBase. */
+function toLegacy(manifestPath) {
+  const { manifestSchema: _schema, settingsBase: _base, ...rest } = fse.readJsonSync(manifestPath);
+  rest.managedFiles = rest.managedFiles.map(({ class: _class, ...record }) => record);
+  fse.writeJsonSync(manifestPath, rest, { spaces: 2 });
+}
+
+async function install(name, { mode = 'create', legacy = true } = {}) {
   const target = path.join(tmpDir, name);
   const bootstrap = resolveWithDefaults({ projectName: name, purpose: 'Preview', ownerEmail: 'p@example.com', profile: 'node' });
   const plan = await buildFilePlan(templatePath('node'), target, { existingTarget: mode === 'init' });
   await copyFiles(plan, bootstrap, { targetDir: target, yes: true, now: NOW, installMode: mode });
+  if (legacy) toLegacy(path.join(target, '.ai-scaffold.json'));
   installed = (await fse.readJson(path.join(target, '.ai-scaffold.json'))).version;
   return target;
 }
@@ -50,11 +58,18 @@ describe('the FR-45 document', { timeout: 60_000 }, () => {
     expect(doc).toMatchObject({
       schema: 'ais-update-preview/1', status: 'planned', exitCode: 0, error: null,
       from: installed, to: NEXT, profile: 'node', installMode: 'create', hashed: true,
-      gitSafety: 'not-assessed', applyAvailable: false, migrations: ['schema-2'],
+      applyAvailable: true, migrations: ['schema-2'],
     });
     expect(doc.settings.base).toBe('derived');
     expect(doc.entries.every((e) => Object.keys(e).sort().join() === 'action,class,path,reason')).toBe(true);
     expect(JSON.stringify(doc)).not.toMatch(/"permissions"|"hooks"/);
+  });
+
+  it('a schema-2 install needs no migration and has a recorded settings base (FR-34)', async () => {
+    const doc = await preview(await install('fresh-schema-2', { legacy: false }));
+    expect(doc).toMatchObject({ status: 'planned', exitCode: 0, migrations: [] });
+    expect(doc.settings.base).toBe('recorded');
+    expect(doc.counts.conflict ?? 0).toBe(0);
   });
 
   it('an edited settings.json without a recorded base is unknown, never empty', async () => {
@@ -157,7 +172,6 @@ describe('FR-44 check order', { timeout: 60_000 }, () => {
 describe('errors keep the full document', { timeout: 60_000 }, () => {
   it.each([
     ['FLAG_REMOVED', { force: true }],
-    ['APPLY_UNAVAILABLE', { apply: true }],
     ['UNKNOWN_OPTION', { bogus: true }],
     ['TARGET_VERSION_MISMATCH', { targetVersion: '1.2.3' }],
     ['EXCEPTION_UNKNOWN_RULE', { keepRemoved: 'not-a-rule' }],
@@ -194,14 +208,14 @@ describe('errors keep the full document', { timeout: 60_000 }, () => {
 });
 
 describe('formatReport', { timeout: 60_000 }, () => {
-  it('never suggests applying and says git safety was not assessed', async () => {
+  it('points to --apply and states what git safety will need (FR-46 retired)', async () => {
     const target = await install('report');
     fs.appendFileSync(path.join(target, 'CLAUDE.md'), '\nmine\n');
     const text = formatReport(await preview(target));
     expect(text).toContain('conflict: 1');
-    expect(text).toContain('git safety was not assessed');
-    expect(text).toContain('applying is not available in this version');
-    expect(text).not.toMatch(/--apply|ais update --apply/);
+    expect(text).toContain('.ais-new');
+    expect(text).toContain('ais update --apply');
+    expect(text).toMatch(/git safety is checked when you apply|applying will need --allow-no-git/);
   });
 
   it('reports errors with their message', async () => {

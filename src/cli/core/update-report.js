@@ -1,7 +1,7 @@
 /**
- * Human-readable `ais update` preview report (item 25, HLD §8, FR-13).
- * Conflicts first, one count per group, and a next-step line that never
- * suggests applying while applying is unavailable (FR-46).
+ * Human-readable `ais update` report for preview and `--apply` (item 25,
+ * HLD §8, FR-13). Conflicts first, one count per group, a next-step line,
+ * and never any file contents.
  */
 
 const ACTION_ORDER = [
@@ -10,10 +10,19 @@ const ACTION_ORDER = [
 ];
 const SETTINGS_GROUPS = ['added', 'replaced', 'restored', 'missingNoBase', 'exceptions', 'removed', 'reported', 'ambiguous', 'suggestions'];
 const LISTED = new Set(['rejected', 'conflict', 'replace', 'add', 'remove', 'orphan-kept']);
+const PLANNED = new Set(['planned', 'applied', 'rolled-back', 'rollback-incomplete']);
+const GIT_SAFETY = {
+  'not-assessed': 'git safety is checked when you apply',
+  'no-repository': 'no git repository: applying will need --allow-no-git',
+  clean: 'no uncommitted changes in the files the update changed',
+  'dirty-allowed': 'applied over uncommitted changes (--allow-dirty)',
+  'acknowledged-no-repository': 'applied without a git repository (--allow-no-git)',
+};
 
 function header(doc) {
+  const applying = doc.schema?.startsWith('ais-update-apply');
   return [
-    'AI Scaffold update preview',
+    applying ? 'AI Scaffold update' : 'AI Scaffold update preview',
     `  Installed: ${doc.from ?? 'unknown'}  →  this CLI: ${doc.to ?? 'unknown'}`,
     `  Profile: ${doc.profile ?? 'unknown'}  Install mode: ${doc.installMode ?? 'unknown'}`,
   ];
@@ -22,7 +31,7 @@ function header(doc) {
 function entryLines(doc) {
   const lines = [];
   for (const action of ACTION_ORDER) {
-    const group = doc.entries.filter((entry) => entry.action === action);
+    const group = (doc.entries ?? []).filter((entry) => entry.action === action);
     if (group.length === 0) continue;
     lines.push(`  ${action}: ${group.length}`);
     if (!LISTED.has(action)) continue;
@@ -40,17 +49,31 @@ function settingsLines(settings) {
   return lines;
 }
 
+function rollbackLines(doc) {
+  if (!Array.isArray(doc.rollback)) return [];
+  const unsettled = doc.rollback.filter((s) => !['restored', 'untouched', 'removed'].includes(s.state));
+  return unsettled.map((s) => `  restore by hand: ${s.rel} (${s.state}${s.reason ? `, ${s.reason}` : ''})`);
+}
+
 function nextStep(doc) {
   if (doc.status === 'error') return `✗ ${doc.error.message}`;
-  if (doc.status === 'locked') return '✗ Another update is in progress. Run the preview again when it has finished.';
-  if (doc.status === 'interrupted') return '✗ A previous apply did not finish. Restore from the backup listed above, or move the backup aside, before previewing again.';
-  if (doc.status === 'current') return `✓ Already at ${doc.to}. No files would change.`;
+  if (doc.status === 'locked') return '✗ Another update is in progress. Run again when it has finished.';
+  if (doc.status === 'interrupted') {
+    return doc.error ? `✗ ${doc.error.message}` : '✗ A previous apply did not finish. Run `ais update --apply` to complete or abandon it where that is safe.';
+  }
+  if (doc.status === 'current') return `✓ Already at ${doc.to}. No files changed.`;
+  if (doc.status === 'rolled-back') return `✗ ${doc.error.message} Every change was rolled back; backup: ${doc.backup}.`;
+  if (doc.status === 'rollback-incomplete') return `✗ ${doc.error.message} Restore the paths above from ${doc.backup}.`;
+  if (doc.status === 'applied') {
+    return doc.exitCode === 2
+      ? `! Applied, with files that need your merge (.ais-new). Backup: ${doc.backup}.`
+      : `✓ Applied. Backup: ${doc.backup}.`;
+  }
   if (doc.exitCode === 1) return '✗ Some paths are unsafe to read (links or outside the project). Fix them and preview again.';
   const conflicts = doc.counts.conflict ?? 0;
-  const tail = 'This is a preview: applying is not available in this version.';
   return conflicts > 0
-    ? `! ${conflicts} file(s) differ from what the scaffold installed and would be kept as they are. ${tail}`
-    : `✓ No planning conflicts. ${tail}`;
+    ? `! ${conflicts} file(s) differ from what the scaffold installed: applying keeps them and writes the new version beside them as .ais-new. Run \`ais update --apply\`.`
+    : '✓ No planning conflicts. Run `ais update --apply` to apply.';
 }
 
 // Paths, rule strings, profiles and backup names come from the project, so a
@@ -68,11 +91,11 @@ export function formatReport(doc) {
 
 function buildLines(doc) {
   const lines = [...header(doc), ''];
-  if (doc.status === 'planned') {
-    lines.push('Files:', ...entryLines(doc), ...settingsLines(doc.settings), '');
+  if (PLANNED.has(doc.status) && doc.entries) {
+    lines.push('Files:', ...entryLines(doc), ...settingsLines(doc.settings), ...rollbackLines(doc), '');
   }
   for (const notice of doc.notices ?? []) lines.push(`Note: ${notice}`);
-  if (doc.status === 'planned') lines.push('Note: git safety was not assessed (uncommitted changes are not checked yet).');
+  if (PLANNED.has(doc.status)) lines.push(`Note: ${GIT_SAFETY[doc.gitSafety] ?? doc.gitSafety}.`);
   lines.push('', nextStep(doc));
   return lines;
 }

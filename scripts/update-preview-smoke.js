@@ -5,9 +5,10 @@
  * pre-publish-smoke.sh runs the working-tree CLI, so it cannot prove what
  * adopters receive. This script packs the CLI, installs the tarball in a
  * scratch directory and exercises the preview's CLI contract: one JSON
- * document on stdout, exit codes, removed and unavailable flags, exception
- * flags at the installed version, invalid manifests, locks and malformed
- * journals. CI runs it on Ubuntu and Windows.
+ * document on stdout, exit codes, removed flags, exception flags at the
+ * installed version, invalid manifests, locks and malformed journals, and
+ * one `--apply` outside git (FR-46 retired in slice 4). CI runs it on
+ * Ubuntu and Windows.
  */
 
 import { spawnSync } from 'node:child_process';
@@ -71,10 +72,10 @@ function setManifest(dir, change) {
   fs.writeFileSync(file, JSON.stringify(change(manifest), null, 2));
 }
 
-function expectJson(name, args, { status, docStatus, code }) {
+function expectJson(name, args, { status, docStatus, code, schema = 'ais-update-preview/1' }) {
   const { status: actual, doc, stdout } = aisJson(...args);
   const ok = doc !== null && actual === status && doc.status === docStatus
-    && doc.schema === 'ais-update-preview/1' && (code === undefined || doc.error?.code === code);
+    && doc.schema === schema && (code === undefined || doc.error?.code === code);
   check(name, ok, `exit ${actual}, stdout: ${stdout.slice(0, 200)}`);
   return doc;
 }
@@ -94,11 +95,10 @@ check('planned document has sorted entries and the schema-2 migration',
 fs.appendFileSync(path.join(older, 'CLAUDE.md'), '\nlocal edit\n');
 expectJson('an edited managed file: exit 2', ['update', older], { status: 2, docStatus: 'planned' });
 const human = ais('update', older);
-check('human report says preview and never suggests --apply',
-  human.status === 2 && human.stdout.includes('applying is not available') && !human.stdout.includes('--apply'));
+check('human report points to --apply and the .ais-new sidecar',
+  human.status === 2 && human.stdout.includes('ais update --apply') && human.stdout.includes('.ais-new'));
 
 expectJson('--force is removed', ['update', older, '--force'], { status: 1, docStatus: 'error', code: 'FLAG_REMOVED' });
-expectJson('--apply is unavailable', ['update', older, '--apply'], { status: 1, docStatus: 'error', code: 'APPLY_UNAVAILABLE' });
 expectJson('an unknown option still yields JSON', ['update', older, '--bogus'], { status: 1, docStatus: 'error', code: 'UNKNOWN_OPTION' });
 expectJson('a missing option value still yields JSON', ['update', older, '--target-version'],
   { status: 1, docStatus: 'error', code: 'INVALID_OPTION' });
@@ -112,6 +112,22 @@ check('the notice names the malformed journal', interrupted?.notices?.[0]?.inclu
 fs.writeFileSync(path.join(older, '.ai-scaffold', 'update.lock'), '1');
 expectJson('a lock wins over the journal', ['update', older], { status: 1, docStatus: 'locked' });
 check('preview left .ai-scaffold.json byte-identical', fs.readFileSync(path.join(older, '.ai-scaffold.json')).equals(manifestBytes));
+
+const applied = project('applied');
+setManifest(applied, (m) => ({ ...m, version: '0.1.0' }));
+fs.appendFileSync(path.join(applied, 'AGENTS.md'), '\nlocal edit\n');
+expectJson('--apply outside git needs --allow-no-git', ['update', applied, '--apply'],
+  { status: 1, docStatus: 'error', code: 'GIT_UNAVAILABLE', schema: 'ais-update-apply/1' });
+const done = expectJson('--apply --allow-no-git applies, exit 2 for the sidecar', ['update', applied, '--apply', '--allow-no-git'],
+  { status: 2, docStatus: 'applied', schema: 'ais-update-apply/1' });
+check('apply kept the edit, wrote AGENTS.md.ais-new and a completed backup',
+  fs.readFileSync(path.join(applied, 'AGENTS.md'), 'utf-8').includes('local edit')
+  && fs.existsSync(path.join(applied, 'AGENTS.md.ais-new'))
+  && done !== null && fs.existsSync(path.join(applied, ...done.backup.split('/'), 'complete')));
+const manifestAfter = JSON.parse(fs.readFileSync(path.join(applied, '.ai-scaffold.json'), 'utf-8'));
+check('the manifest records this CLI version and schema 2', manifestAfter.version === cliVersion && manifestAfter.manifestSchema === 2);
+expectJson('a second --apply is current', ['update', applied, '--apply', '--allow-no-git'],
+  { status: 0, docStatus: 'current', schema: 'ais-update-apply/1' });
 
 const broken = project('broken');
 fs.writeFileSync(path.join(broken, '.ai-scaffold.json'), '{');

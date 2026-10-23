@@ -4,8 +4,53 @@
  * and empty journaled directories are ever removed.
  */
 
+import fs from 'fs';
+import { checkContained, checkDirectory } from './containment.js';
 import { UpdateError } from './update-policy.js';
+import { BACKUPS_DIR, TERMINAL_MARKERS } from './update-state.js';
 import { createExclusive, nativeFs, removeEmptyDirectory, removeFile } from './write-ops.js';
+
+export const KEEP_BACKUPS = 5;
+
+async function isTerminalBackup(root, backup, fsApi) {
+  for (const marker of TERMINAL_MARKERS) {
+    const checked = await checkContained(root, `${backup}/${marker}`, fsApi);
+    if (checked.ok && checked.exists) return true;
+  }
+  return false;
+}
+
+/**
+ * Keep the last KEEP_BACKUPS terminal backups (HLD §10b). Only contained,
+ * marked backup directories are removed; an unmarked one is never pruned.
+ * Failures are returned, not thrown: pruning never undoes an apply.
+ * @returns {Promise<{ removed: string[], failed: string[] }>}
+ */
+export async function pruneBackups(root, { fsApi = nativeFs, keep = KEEP_BACKUPS } = {}) {
+  const outcome = { removed: [], failed: [] };
+  const backups = await checkDirectory(root, BACKUPS_DIR, fsApi);
+  if (!backups.ok || !backups.exists) return outcome;
+  const names = (await fs.promises.readdir(backups.abs, { withFileTypes: true }))
+    .filter((entry) => entry.isDirectory() && !entry.isSymbolicLink())
+    .map((entry) => entry.name)
+    .sort();
+  const terminal = [];
+  for (const name of names) {
+    if (await isTerminalBackup(root, `${BACKUPS_DIR}/${name}`, fsApi)) terminal.push(`${BACKUPS_DIR}/${name}`);
+  }
+  for (const backup of terminal.slice(0, Math.max(0, terminal.length - keep))) {
+    const checked = await checkDirectory(root, backup, fsApi);
+    try {
+      if (!checked.ok) throw new Error(checked.reason);
+      // fs.rm removes links found inside the backup without following them.
+      await fs.promises.rm(checked.abs, { recursive: true });
+      outcome.removed.push(backup);
+    } catch {
+      outcome.failed.push(backup);
+    }
+  }
+  return outcome;
+}
 
 async function removeJournaledTemporaries(root, journal, fsApi) {
   for (const entry of journal.entries) {

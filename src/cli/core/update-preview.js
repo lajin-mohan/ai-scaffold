@@ -6,17 +6,16 @@
 import fs from 'fs';
 import { isSupportedProfile } from './paths.js';
 import { resolveProjectRoot } from './containment.js';
-import { runMigrations } from './migrations/index.js';
-import { renderManagedSet } from './update-render.js';
-import { buildUpdatePlan } from './update-plan.js';
-import { effectiveExceptions, previewSettingsMerge } from './settings-merge.js';
 import { checkExceptionsAtCurrent, checkFlags, checkVersions, UpdateError } from './update-policy.js';
 import { defaultIo, findInterrupted, interruptedNotice, isLocked } from './update-state.js';
 import { describeLock } from './update-lock.js';
-import { MANIFEST, readManifest, readSettings, SETTINGS } from './update-manifest.js';
+import { MANIFEST, readManifest } from './update-manifest.js';
+import { readGitState } from './git-state.js';
+import {
+  checkOptionNames, computePlan, countActions, lockNotice, planExitCode, publicEntries,
+} from './update-pipeline.js';
 
 export const PREVIEW_SCHEMA = 'ais-update-preview/1';
-const KNOWN_OPTIONS = new Set(['--', 'targetVersion', 'dryRun', 'json', 'keepRemoved', 'restoreRemoved', 'force', 'apply']);
 
 const realFs = {
   lstat: (p, options) => fs.promises.lstat(p, options),
@@ -31,71 +30,25 @@ export function emptyDocument() {
   return {
     schema: PREVIEW_SCHEMA, status: 'error', exitCode: 1, error: null,
     from: null, to: null, profile: null, installMode: null, hashed: null,
-    gitSafety: 'not-assessed', applyAvailable: false,
+    gitSafety: 'not-assessed', applyAvailable: true,
     entries: null, counts: null, settings: null, migrations: null, notices: null, lock: null,
   };
 }
 
-// FR-52: who holds the lock and whether it looks stale; never removed for you.
-function lockNotice(lock) {
-  if (!lock || lock.pid === null) {
-    return 'Another update holds .ai-scaffold/update.lock (owner unknown). If no update is running, delete that file and run again.';
-  }
-  const age = lock.ageSeconds === null ? 'unknown age' : `${lock.ageSeconds}s old`;
-  return `Another update holds .ai-scaffold/update.lock: pid ${lock.pid} on ${lock.host}, ${age}, process ${lock.liveness}. `
-    + 'If no update is running, delete that file and run again.';
-}
-
-function checkOptionNames(options) {
-  const unknown = Object.keys(options).filter((key) => !KNOWN_OPTIONS.has(key));
-  if (unknown.length > 0) throw new UpdateError('UNKNOWN_OPTION', `Unknown option: ${unknown.join(', ')}`);
-}
-
-async function plan(doc, { root, manifest, versions, flags, io, today }) {
-  const settingsFile = await readSettings(root, manifest, io);
-  const migrated = runMigrations(manifest, { from: versions.from, to: versions.to, settingsPristine: settingsFile.pristine });
-  const { renders } = await renderManagedSet(migrated.manifest, root, { today });
-  const planned = await buildUpdatePlan({ root, manifest: migrated.manifest, renders, reader: io });
-  const scaffold = JSON.parse(renders.get(SETTINGS)?.toString('utf-8') ?? '{}');
-  const { exceptions, dropped } = effectiveExceptions({
-    recorded: migrated.manifest.settingsExceptions, ...flags, scaffold,
-  });
-  doc.settings = settingsFile.rejected ? null : previewSettingsMerge({
-    local: settingsFile.local, localValid: settingsFile.valid, scaffold, exceptions,
-    baseState: migrated.settingsBase, recordedBase: migrated.manifest.settingsBase,
-    // No release retires settings entries yet (HLD §10); the first one to do
-    // so passes its migration's list here, which fills the `removed` group.
-    retired: {},
-  });
-  const entries = planned.entries.map(({ path, class: cls, action, reason }) => ({ path, class: cls, action, reason }));
-  const settingsEntry = entries.find((e) => e.path === SETTINGS);
-  // The first read decides: a later read that succeeds must not turn a
-  // rejected settings target back into a merge.
-  if (settingsFile.rejected && settingsEntry) {
-    Object.assign(settingsEntry, { action: 'rejected', reason: settingsFile.rejected });
-  } else if (!settingsFile.valid && settingsEntry) {
-    Object.assign(settingsEntry, { action: 'conflict', reason: 'invalid-json' });
-  }
-  const notices = [...planned.notices];
-  if (doc.settings?.base === 'unknown') notices.push('settings.json has no recorded base: deliberate removals cannot be determined.');
-  if (dropped.length > 0) notices.push(`Exceptions for rules no longer shipped are dropped: ${dropped.join(', ')}`);
+async function plan(doc, context) {
+  const computed = await computePlan(context);
+  const entries = publicEntries(computed.entries);
+  doc.settings = computed.decided?.groups ?? null;
   Object.assign(doc, {
-    installMode: planned.installMode, hashed: planned.hashed, entries,
-    counts: countActions(entries), migrations: migrated.applied, notices,
+    installMode: computed.installMode, hashed: computed.hashed, entries,
+    counts: countActions(entries), migrations: computed.migrated.applied, notices: computed.notices,
   });
-  return statusFor(doc);
+  return { status: 'planned', exitCode: planExitCode(doc.counts, doc.settings) };
 }
 
-function countActions(entries) {
-  const counts = {};
-  for (const { action } of entries) counts[action] = (counts[action] ?? 0) + 1;
-  return Object.fromEntries(Object.entries(counts).sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0)));
-}
-
-function statusFor(doc) {
-  if (doc.counts.rejected) return { status: 'planned', exitCode: 1 };
-  const conflicts = (doc.counts.conflict ?? 0) + (doc.settings?.ambiguous.length ?? 0);
-  return { status: 'planned', exitCode: conflicts > 0 ? 2 : 0 };
+// Preview only reports whether git safety could be assessed; apply checks it.
+function previewGitSafety(root) {
+  return readGitState(root).state === 'unavailable' ? 'no-repository' : 'not-assessed';
 }
 
 async function runChecks(doc, { target, options, cliVersion, io, fsApi, today }) {
@@ -117,14 +70,12 @@ async function runChecks(doc, { target, options, cliVersion, io, fsApi, today })
     return { status: 'locked', exitCode: 1, notices: [lockNotice(doc.lock)] };
   }
   const interrupted = await findInterrupted(root, io);
-  if (interrupted.length > 0) {
-    const notices = interrupted.map(interruptedNotice);
-    return { status: 'interrupted', exitCode: 1, notices };
-  }
+  if (interrupted.length > 0) return { status: 'interrupted', exitCode: 1, notices: interrupted.map(interruptedNotice) };
   if (versions.current) {
     checkExceptionsAtCurrent(flags);
     return { status: 'current', exitCode: 0, notices: [`Already at ${versions.to}.`] };
   }
+  doc.gitSafety = previewGitSafety(root);
   return plan(doc, { root, manifest, versions, flags, io, today });
 }
 

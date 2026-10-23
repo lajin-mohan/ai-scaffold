@@ -159,7 +159,7 @@ describe('buildUpdatePlan on generated projects', { timeout: 60_000 }, () => {
     const target = await install('legacy');
     await fs.appendFile(path.join(target, 'CLAUDE.md'), '\nedit\n');
     const { plan } = await preview(target, (m) => {
-      const { managedFiles: _managedFiles, install: _install, ...rest } = m;
+      const { managedFiles: _managedFiles, install: _install, manifestSchema: _schema, settingsBase: _base, ...rest } = m;
       return rest;
     });
     expect(plan.hashed).toBe(false);
