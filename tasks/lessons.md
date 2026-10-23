@@ -12,6 +12,12 @@ This file records patterns from mistakes and corrections. Claude reads this at t
 
 <!-- Add lessons below as they are captured. Most recent at the top. -->
 
+## 2026-10-23 — Backticks in a double-quoted shell string executed a Markdown file
+
+- **Mistake:** A `node -e "…"` edit carried Markdown with backticks inside a double-quoted bash string. Bash treated `` `docs/cli-reference.md` `` as command substitution and executed that file as a shell script, up to a syntax error on line 69. Lines before it included `` `npm install -g …` `` and `ais create …`. Nothing ran in practice (no `ais` on PATH, no global install, worktree clean), but the ticket text was silently corrupted and committed. Earlier shell-quoting slips in this work only garbled text; this one could have executed commands.
+- **Why:** Scripted edits were passed inline through the shell for speed, and the content contained shell metacharacters.
+- **Rule:** Never pass file content containing backticks, `$` or quotes through a shell string. Use the Edit/Write tools, or write the script to a file with the Write tool and run it. After any scripted edit, read the diff before committing.
+
 ## 2026-10-16 — A test enshrined an edge case that broke the safety invariant
 
 - **Mistake:** An architect review called `a\r\r\n` matching an `a\r\n` record "harmless", and slice 2 added a test asserting it was pristine. It is a content change: `ais update` could overwrite it. Every check passed because the test encoded the defect. Caught by a maintainer-supplied review.
