@@ -2,9 +2,11 @@
 
 ## Status
 
-**Implemented 2026-10-13 (plan v2); PR open.** Size S. Ships in
-**0.16.1**, before item 25 (maintainer, 2026-10-13). Also carries **item 86**
-(prompt-injection guidance).
+**Done — shipped in 0.16.1** (lajin-mohan/ai-scaffold#154, `release: v0.16.1`;
+`npm view @lajin.m/ai-scaffold version` showed 0.16.1 on 2026-10-23). It also
+carried the basic item 86 guidance; item 86's WebFetch domain limits remain
+open under item 79. The `.cursorrules` / Copilot follow-up (W5) is recorded in
+the backlog, not here.
 
 ## Why
 

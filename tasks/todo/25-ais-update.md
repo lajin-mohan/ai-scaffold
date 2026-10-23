@@ -2,7 +2,7 @@
 
 ## Status
 
-**Slice 2 implemented; review/merge pending (lajin-mohan/ai-scaffold#157). Full design acceptance, remaining budget and release approval remain separate.** Design reconciled (BRD v1.3, HLD v2.2, ADR-007 rev 3, 2026-10-15; merged in lajin-mohan/ai-scaffold#156) after the round-3 review; FR-09 corrected after the round-4 review (2026-10-16). Round 3 found the round-2 changes had reached the HLD only; see `docs/architecture/review-25-ais-update.md` § Round 3. FR-20 is decided: restore by default with persisted per-rule exceptions (FR-39).
+**Slices 1–3 merged** (design #149 and #156; foundations #157; read-only preview #158). **Slice 4 (apply) in progress** on draft lajin-mohan/ai-scaffold#159, authorised 2026-10-19 (about 10.5 focused days, provisional). **Slice 5 (acceptance) and the 0.17.0 release are not approved.** Published: 0.16.1. Full design acceptance and the remaining budget remain separate decisions. Design reconciled (BRD v1.3, HLD v2.2, ADR-007 rev 3, 2026-10-15; merged in lajin-mohan/ai-scaffold#156) after the round-3 review; FR-09 corrected after the round-4 review (2026-10-16). Round 3 found the round-2 changes had reached the HLD only; see `docs/architecture/review-25-ais-update.md` § Round 3. FR-20 is decided: restore by default with persisted per-rule exceptions (FR-39).
 - The independent review returned **REVISE** (5 BLOCK, 9 WARN, 7 NIT):
   `docs/architecture/review-25-ais-update.md`. It was recovered after a squash
   merge lost it (see the `tasks/lessons.md` entry of 2026-10-12).
