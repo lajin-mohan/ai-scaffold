@@ -154,3 +154,35 @@ not from measured speed.
 **Time:** calendar interval between the first and last slice 3 commits,
 2026-10-16 12:07Z to the final commit (commit timestamps; includes gaps
 and a usage-limit pause). Focused effort was not tracked and is unknown.
+
+## Slice 4 (apply): early fault-tested checkpoint, 2026-10-23
+
+**Authorised:** slice 4, about 10.5 focused days, provisional (maintainer,
+2026-10-19). No slice 5 or release.
+
+| Step | Commit | Result |
+|---|---|---|
+| S0 contracts (FR-47–FR-52, NFR-09, HLD §10b) | `aee2a5e`, `4375e95` | Architect review round 5: APPROVE WITH CHANGES (2 BLOCK, 11 WARN), all applied |
+| S1 `write-ops.js` | `694887f` | 17 tests |
+| S2 `update-apply.js`, `update-lock.js` | `cad6e61` | 14 tests: injected failure at every write step restores exact pre-run bytes; concurrent and post-write edits preserved and reported; backup mismatch abandons; write-scope recorder |
+| S2 genuine crash tests | `b90babd` | 10 tests: real SIGKILL at 8 stages and during rollback; every journaled path wholly pre-run or final; nothing outside the write set changed; lock left in place; control run completes |
+
+**Evidence boundary:** local Windows only so far; draft PR
+lajin-mohan/ai-scaffold#159 runs the same tests on Ubuntu and Windows CI.
+The crash tests use the working-tree source; packed-tarball crash cases
+are S7.
+
+**Remaining:** S3 recovery classification and lock reporting; S4 git
+safety; S5 settings write, manifest refresh, exceptions; S6 CLI wiring,
+apply JSON, doctor, create/init `settingsBase`; S7 acceptance and packed
+apply/crash cases; S8 docs, reviews, PR.
+
+**Scope changes:** the lock refuses a directory without `.ai-scaffold/`
+(`MANIFEST_MISSING`) instead of creating one, since the lock now precedes
+the manifest read. Crash-test drivers must resolve the native real path,
+as the CLI does.
+
+**Time:** calendar interval between the S1 and last S2 commits,
+2026-10-23 09:48Z to 09:55Z (commit timestamps, includes gaps). Focused
+effort was not tracked and is unknown. Remaining forecast: about 7.5
+focused days from the breakdown, not from measured speed.
