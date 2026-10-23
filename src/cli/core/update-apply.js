@@ -7,10 +7,10 @@
 
 import crypto from 'crypto';
 import diagnosticsChannel from 'diagnostics_channel';
-import { readContained } from './containment.js';
+import { checkContained, readContained } from './containment.js';
 import { hashRaw } from './hashing.js';
 import {
-  createDirectory, createExclusive, nativeFs, removeEmptyDirectory, removeFile,
+  createDirectory, createExclusive, nativeFs, permissionBits, removeEmptyDirectory, removeFile,
   ROLLBACK_RETRY_BUDGET_MS, WriteError, writeFileAtomic,
 } from './write-ops.js';
 
@@ -28,15 +28,27 @@ function backupRel(backupDir, rel) {
   return `${backupDir}/files/${rel}`;
 }
 
-function journalFor({ runId, backupDir, ops, dirs, meta }) {
+/** Pre-run permission bits of each existing target (read-only). */
+async function preModes(root, ops, fsApi) {
+  const modes = [];
+  for (const op of ops) {
+    const checked = op.pre === null ? null : await checkContained(root, op.rel, fsApi);
+    modes.push(checked?.ok && checked.exists ? permissionBits(checked.stat) : null);
+  }
+  return modes;
+}
+
+function journalFor({ runId, backupDir, ops, dirs, meta, modes }) {
   return {
     schema: JOURNAL_SCHEMA,
     runId,
     backupDir,
     meta: meta ?? null,
     dirs,
-    entries: ops.map(({ rel, action, pre, final }, index) => ({
+    entries: ops.map(({ rel, action, pre, final, mode }, index) => ({
       rel, action, pre, final,
+      preMode: modes[index],
+      mode: mode ?? modes[index],
       tmp: `${rel}.ais-tmp-${runId}-${index}`,
       rollbackTmp: `${rel}.ais-tmp-${runId}-${index}r`,
     })),
@@ -81,7 +93,7 @@ async function applyEntry(root, entry, data, fsApi) {
     throw new WriteError('CONCURRENT_EDIT', `${entry.rel} changed after planning; nothing more was written`, entry.rel);
   }
   if (entry.action === 'remove') await removeFile(root, entry.rel, { fsApi });
-  else await writeFileAtomic(root, entry.rel, data, { tmpRel: entry.tmp, fsApi });
+  else await writeFileAtomic(root, entry.rel, data, { tmpRel: entry.tmp, fsApi, mode: entry.mode ?? undefined });
 }
 
 async function rollbackEntry(root, backupDir, entry, fsApi) {
@@ -94,12 +106,44 @@ async function rollbackEntry(root, backupDir, entry, fsApi) {
   }
   const saved = await readContained(root, backupRel(backupDir, entry.rel), { maxBytes: MAX_APPLY_BYTES, fsApi });
   if (!saved.ok || !saved.exists || hashRaw(saved.data) !== entry.pre) return 'backup-missing';
-  await writeFileAtomic(root, entry.rel, saved.data, { tmpRel: entry.rollbackTmp, fsApi, budgetMs: ROLLBACK_RETRY_BUDGET_MS });
+  await writeFileAtomic(root, entry.rel, saved.data, {
+    tmpRel: entry.rollbackTmp, fsApi, budgetMs: ROLLBACK_RETRY_BUDGET_MS, mode: entry.preMode ?? undefined,
+  });
   return 'restored';
 }
 
-/** FR-48: reverse order, only paths still holding this run's bytes. */
-export async function rollback(root, journal, fsApi = nativeFs) {
+async function removeTemporaries(root, journal, fsApi, states) {
+  for (const entry of journal.entries) {
+    for (const tmp of [entry.tmp, entry.rollbackTmp]) {
+      try {
+        if (await removeFile(root, tmp, { fsApi, budgetMs: ROLLBACK_RETRY_BUDGET_MS })) states.push({ rel: tmp, state: 'removed' });
+      } catch (error) {
+        states.push({ rel: tmp, state: 'failed', reason: error.code ?? 'ERROR' });
+      }
+    }
+  }
+}
+
+async function removeDirectories(root, dirs, fsApi, states) {
+  for (const dir of [...dirs].reverse()) {
+    try {
+      const outcome = await removeEmptyDirectory(root, dir, fsApi);
+      if (outcome === 'not-empty') states.push({ rel: dir, state: 'not-removed' });
+    } catch (error) {
+      states.push({ rel: dir, state: 'failed', reason: error.code ?? 'ERROR' });
+    }
+  }
+}
+
+const SETTLED = new Set(['restored', 'untouched', 'removed']);
+
+/**
+ * FR-48: reverse order, only paths still holding this run's bytes, then the
+ * journal-named temporary files, then the directories this run created
+ * (`createdDirs`; recovery passes the journal's list). Complete only when
+ * every path settled and no temporary file or created directory remains.
+ */
+export async function rollback(root, journal, fsApi = nativeFs, createdDirs = journal.dirs) {
   const states = [];
   for (const [index, entry] of [...journal.entries.entries()].reverse()) {
     emit('rollback-step', { index });
@@ -109,14 +153,9 @@ export async function rollback(root, journal, fsApi = nativeFs) {
       states.push({ rel: entry.rel, state: 'failed', reason: error.code ?? 'ERROR' });
     }
   }
-  for (const dir of [...journal.dirs].reverse()) {
-    try {
-      await removeEmptyDirectory(root, dir, fsApi);
-    } catch (error) {
-      states.push({ rel: dir, state: 'failed', reason: error.code ?? 'ERROR' });
-    }
-  }
-  const complete = states.every((s) => s.state === 'restored' || s.state === 'untouched');
+  await removeTemporaries(root, journal, fsApi, states);
+  await removeDirectories(root, createdDirs, fsApi, states);
+  const complete = states.every((s) => SETTLED.has(s.state));
   const marker = complete ? 'rolled-back' : 'rollback.json';
   await createExclusive(root, `${journal.backupDir}/${marker}`, complete ? '' : `${JSON.stringify(states, null, 2)}\n`, fsApi);
   return { complete, states: states.sort((a, b) => (a.rel < b.rel ? -1 : a.rel > b.rel ? 1 : 0)) };
@@ -132,9 +171,10 @@ export async function rollback(root, journal, fsApi = nativeFs) {
  */
 export async function applyTransaction({ root, ops, dirs = [], meta, fsApi = nativeFs, now = new Date() }) {
   const runId = crypto.randomBytes(6).toString('hex');
+  const modes = await preModes(root, ops, fsApi);
   const backupDir = await createBackupDirectory(root, runId, now, fsApi);
   emit('backup-dir-created');
-  const journal = journalFor({ runId, backupDir, ops, dirs, meta });
+  const journal = journalFor({ runId, backupDir, ops, dirs, meta, modes });
   const journalBytes = `${JSON.stringify(journal, null, 2)}\n`;
   await writeFileAtomic(root, `${backupDir}/journal.json`, journalBytes, { tmpRel: `${backupDir}/journal.json.tmp`, fsApi });
   emit('journal-written');
@@ -148,9 +188,10 @@ export async function applyTransaction({ root, ops, dirs = [], meta, fsApi = nat
     await createExclusive(root, `${backupDir}/abandoned`, '', fsApi);
     throw error;
   }
+  const createdDirs = [];
   try {
     for (const dir of dirs) {
-      await createDirectory(root, dir, fsApi);
+      if (await createDirectory(root, dir, fsApi)) createdDirs.push(dir);
       emit('dir-created', { dir });
     }
     for (const [index, entry] of journal.entries.entries()) {
@@ -158,7 +199,7 @@ export async function applyTransaction({ root, ops, dirs = [], meta, fsApi = nat
       emit('write-done', { index, last: index === journal.entries.length - 1 });
     }
   } catch (error) {
-    const result = await rollback(root, journal, fsApi);
+    const result = await rollback(root, journal, fsApi, createdDirs);
     const status = result.complete ? 'rolled-back' : 'rollback-incomplete';
     const code = result.complete ? (error.code ?? 'ERROR') : 'ROLLBACK_INCOMPLETE';
     return { status, backupDir, error: { code, message: error.message }, rollback: result.states };

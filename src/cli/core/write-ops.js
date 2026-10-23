@@ -105,35 +105,49 @@ export async function createDirectory(root, rel, fsApi = nativeFs) {
   return true;
 }
 
-/** Remove a directory this run created, only if it is empty. */
+/**
+ * Remove a directory this run created, only if it is empty.
+ * @returns {Promise<'removed'|'absent'|'not-empty'>}
+ */
 export async function removeEmptyDirectory(root, rel, fsApi = nativeFs) {
   const checked = await contained(root, rel, fsApi);
-  if (!checked.exists || !checked.stat.isDirectory()) return false;
+  if (!checked.exists) return 'absent';
+  if (!checked.stat.isDirectory()) return 'not-empty';
   try {
     await fsApi.rmdir(checked.abs);
-    return true;
+    return 'removed';
   } catch (error) {
-    if (error.code === 'ENOTEMPTY' || error.code === 'EEXIST') return false;
+    if (error.code === 'ENOTEMPTY' || error.code === 'EEXIST') return 'not-empty';
     throw error;
   }
 }
 
-async function writeExclusive(abs, data, fsApi) {
+async function writeExclusive(abs, data, fsApi, mode) {
   const handle = await fsApi.open(abs, 'wx');
   try {
     await handle.writeFile(data);
+    // Replacing a file must keep its permissions: Git skips hooks that lose
+    // their executable bit (review of #159).
+    if (mode !== undefined) await handle.chmod(mode);
     await handle.sync();
   } finally {
     await handle.close();
   }
 }
 
+/** The permission bits of an existing file, for preserving them. */
+export function permissionBits(stat) {
+  return stat.mode & 0o7777;
+}
+
 /**
  * Write `data` to `rel` through `tmpRel`: both contained, the temporary file
  * created exclusively and flushed, then renamed over the target. The target
- * must be absent or a regular file.
+ * must be absent or a regular file. `mode` defaults to the existing target's
+ * permission bits. A failed write removes its temporary file; if that cleanup
+ * fails too, the error carries `cleanupFailed` with the temporary path.
  */
-export async function writeFileAtomic(root, rel, data, { tmpRel, fsApi = nativeFs, budgetMs } = {}) {
+export async function writeFileAtomic(root, rel, data, { tmpRel, fsApi = nativeFs, budgetMs, mode } = {}) {
   const target = await contained(root, rel, fsApi);
   if (target.exists && !target.stat.isFile()) throw new WriteError('PATH_UNSAFE', `Not a regular file: ${rel}`, rel);
   const temp = await contained(root, tmpRel, fsApi);
@@ -141,11 +155,16 @@ export async function writeFileAtomic(root, rel, data, { tmpRel, fsApi = nativeF
   if (path.dirname(temp.abs) !== path.dirname(target.abs)) {
     throw new WriteError('PLAN_COLLISION', `Temporary path is not beside its target: ${tmpRel}`, tmpRel);
   }
-  await writeExclusive(temp.abs, data, fsApi);
+  const bits = mode ?? (target.exists ? permissionBits(target.stat) : undefined);
   try {
+    await writeExclusive(temp.abs, data, fsApi, bits);
     await withRetry(() => fsApi.rename(temp.abs, target.abs), { budgetMs });
   } catch (error) {
-    await fsApi.unlink(temp.abs).catch(() => {});
+    try {
+      await fsApi.unlink(temp.abs);
+    } catch (cleanup) {
+      if (cleanup.code !== 'ENOENT') error.cleanupFailed = tmpRel;
+    }
     throw error;
   }
 }

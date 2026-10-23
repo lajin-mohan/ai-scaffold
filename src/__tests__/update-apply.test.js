@@ -195,6 +195,85 @@ describe('applyTransaction', { timeout: 60_000 }, () => {
   });
 });
 
+describe('review of #159: permissions and failed-write residue', { timeout: 60_000 }, () => {
+  it.runIf(process.platform !== 'win32')('replacing an executable keeps its mode; rollback restores it', async () => {
+    const root = await project();
+    const hook = path.join(root, '.claude', 'rules', 'a.md');
+    fs.chmodSync(hook, 0o755);
+    const applied = await applyTransaction({ root, ...plan() });
+    expect(applied.status).toBe('applied');
+    expect(fs.statSync(hook).mode & 0o777).toBe(0o755);
+
+    const again = await project();
+    const againHook = path.join(again, '.claude', 'rules', 'a.md');
+    fs.chmodSync(againHook, 0o750);
+    let writes = 0;
+    const faulty = {
+      ...nativeFs,
+      rename: async (from, to) => {
+        if (!to.includes(`${path.sep}backups${path.sep}`) && ++writes === 2) throw Object.assign(new Error('x'), { code: 'EIO' });
+        return nativeFs.rename(from, to);
+      },
+    };
+    const rolled = await applyTransaction({ root: again, ...plan(), fsApi: faulty });
+    expect(rolled.status).toBe('rolled-back');
+    expect(fs.statSync(againHook).mode & 0o777).toBe(0o750);
+  });
+
+  it.runIf(process.platform !== 'win32')('an added file takes the mode the operation asks for', async () => {
+    const root = await project();
+    const { ops, dirs } = plan();
+    ops[1] = { ...ops[1], mode: 0o755 };
+    await applyTransaction({ root, ops, dirs });
+    expect(fs.statSync(path.join(root, '.claude', 'new', 'b.md')).mode & 0o777).toBe(0o755);
+  });
+
+  function partialWriteFs(failOn, { unlinkFails = false } = {}) {
+    return {
+      ...nativeFs,
+      open: async (p, flags) => {
+        const handle = await nativeFs.open(p, flags);
+        if (!p.includes(failOn) || !p.includes('.ais-tmp')) return handle;
+        return new Proxy(handle, {
+          get(target, prop) {
+            if (prop === 'writeFile') {
+              return async (data) => {
+                await target.writeFile(Buffer.from(data).subarray(0, 3));
+                throw Object.assign(new Error('disk full'), { code: 'ENOSPC' });
+              };
+            }
+            const value = target[prop];
+            return typeof value === 'function' ? value.bind(target) : value;
+          },
+        });
+      },
+      unlink: async (p) => {
+        if (unlinkFails && p.includes('.ais-tmp')) throw Object.assign(new Error('locked'), { code: 'EBUSY' });
+        return nativeFs.unlink(p);
+      },
+    };
+  }
+
+  it('a partial write (ENOSPC) leaves no temporary file or created directory behind', async () => {
+    const root = await project();
+    const before = snapshot(root);
+    const result = await applyTransaction({ root, ...plan(), fsApi: partialWriteFs('b.md') });
+    expect(result).toMatchObject({ status: 'rolled-back', error: { code: 'ENOSPC' } });
+    expect(snapshot(root)).toEqual(before);
+    expect(fs.existsSync(path.join(root, '.claude', 'new'))).toBe(false);
+  });
+
+  it('when cleanup itself fails, rollback is reported incomplete with the leftover paths', async () => {
+    const root = await project();
+    const result = await applyTransaction({ root, ...plan(), fsApi: partialWriteFs('b.md', { unlinkFails: true }) });
+    expect(result).toMatchObject({ status: 'rollback-incomplete', error: { code: 'ROLLBACK_INCOMPLETE' } });
+    const leftovers = result.rollback.filter((s) => s.state !== 'restored' && s.state !== 'untouched');
+    expect(leftovers.map((s) => s.rel)).toEqual(expect.arrayContaining(['.claude/new']));
+    expect(leftovers.some((s) => s.rel.includes('.ais-tmp'))).toBe(true);
+    expect(fs.existsSync(path.join(backupDirOf(root, result), 'rolled-back'))).toBe(false);
+  });
+});
+
 describe('the update lock (FR-40, FR-52)', () => {
   it('refuses a directory that is not a scaffold installation', async () => {
     const bare = await resolveProjectRoot(fse.mkdtempSync(path.join(tmpDir, 'bare-')));

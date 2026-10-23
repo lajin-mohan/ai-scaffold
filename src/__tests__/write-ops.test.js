@@ -96,10 +96,11 @@ describe('directories', () => {
     expect(await createDirectory(root, 'n1/n2')).toBe(true);
     expect(await createDirectory(root, 'n1')).toBe(false);
     fse.outputFileSync(path.join(root, 'n1', 'n2', 'keep.md'), 'k');
-    expect(await removeEmptyDirectory(root, 'n1/n2')).toBe(false);
+    expect(await removeEmptyDirectory(root, 'n1/n2')).toBe('not-empty');
     fs.rmSync(path.join(root, 'n1', 'n2', 'keep.md'));
-    expect(await removeEmptyDirectory(root, 'n1/n2')).toBe(true);
-    expect(await removeEmptyDirectory(root, 'n1')).toBe(true);
+    expect(await removeEmptyDirectory(root, 'n1/n2')).toBe('removed');
+    expect(await removeEmptyDirectory(root, 'n1')).toBe('removed');
+    expect(await removeEmptyDirectory(root, 'n1')).toBe('absent');
   });
 });
 
