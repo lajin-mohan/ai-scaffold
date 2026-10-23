@@ -11,7 +11,8 @@ import { renderManagedSet } from './update-render.js';
 import { buildUpdatePlan } from './update-plan.js';
 import { effectiveExceptions, previewSettingsMerge } from './settings-merge.js';
 import { checkExceptionsAtCurrent, checkFlags, checkVersions, UpdateError } from './update-policy.js';
-import { defaultIo, findInterrupted, isLocked } from './update-state.js';
+import { defaultIo, findInterrupted, interruptedNotice, isLocked } from './update-state.js';
+import { describeLock } from './update-lock.js';
 import { MANIFEST, readManifest, readSettings, SETTINGS } from './update-manifest.js';
 
 export const PREVIEW_SCHEMA = 'ais-update-preview/1';
@@ -31,8 +32,18 @@ export function emptyDocument() {
     schema: PREVIEW_SCHEMA, status: 'error', exitCode: 1, error: null,
     from: null, to: null, profile: null, installMode: null, hashed: null,
     gitSafety: 'not-assessed', applyAvailable: false,
-    entries: null, counts: null, settings: null, migrations: null, notices: null,
+    entries: null, counts: null, settings: null, migrations: null, notices: null, lock: null,
   };
+}
+
+// FR-52: who holds the lock and whether it looks stale; never removed for you.
+function lockNotice(lock) {
+  if (!lock || lock.pid === null) {
+    return 'Another update holds .ai-scaffold/update.lock (owner unknown). If no update is running, delete that file and run again.';
+  }
+  const age = lock.ageSeconds === null ? 'unknown age' : `${lock.ageSeconds}s old`;
+  return `Another update holds .ai-scaffold/update.lock: pid ${lock.pid} on ${lock.host}, ${age}, process ${lock.liveness}. `
+    + 'If no update is running, delete that file and run again.';
 }
 
 function checkOptionNames(options) {
@@ -102,11 +113,12 @@ async function runChecks(doc, { target, options, cliVersion, io, fsApi, today })
     throw new UpdateError('MANIFEST_INVALID', `Unsupported profile in ${MANIFEST}: ${manifest.profile}`);
   }
   if (await isLocked(root, io)) {
-    return { status: 'locked', exitCode: 1, notices: ['Another update holds .ai-scaffold/update.lock; no plan was computed.'] };
+    doc.lock = await describeLock(root, { fsApi, now: today });
+    return { status: 'locked', exitCode: 1, notices: [lockNotice(doc.lock)] };
   }
   const interrupted = await findInterrupted(root, io);
   if (interrupted.length > 0) {
-    const notices = interrupted.map((i) => `Interrupted apply: ${i.backup} (journal ${i.journal}).`);
+    const notices = interrupted.map(interruptedNotice);
     return { status: 'interrupted', exitCode: 1, notices };
   }
   if (versions.current) {

@@ -118,17 +118,33 @@ describe('FR-44 check order', { timeout: 60_000 }, () => {
   });
 
   it.each([
-    ['readable', '{"to":"x"}'],
+    ['malformed', '{"to":"x"}'],
     ['malformed', '{ broken'],
-    ['missing', null],
-  ])('an unmarked backup is interrupted (journal %s)', async (journal, content) => {
-    const target = await install(`interrupted-${journal}`);
+    ['no-journal', null],
+    ['all-pre-run', JSON.stringify({ entries: [], dirs: [] })],
+  ])('an unmarked backup is interrupted (%s)', async (journal, content) => {
+    const target = await install(`interrupted-${journal}-${content === null ? 'none' : content.length}`);
     const dir = path.join(target, '.ai-scaffold', 'backups', '2026-10-16T00-00-00Z');
     fse.ensureDirSync(dir);
     if (content !== null) fs.writeFileSync(path.join(dir, 'journal.json'), content);
     const doc = await preview(target);
     expect(doc).toMatchObject({ status: 'interrupted', exitCode: 1, entries: null });
-    expect(doc.notices[0]).toContain(`journal ${journal}`);
+    expect(doc.notices[0]).toContain(`(${journal})`);
+  });
+
+  it.each(['rolled-back', 'abandoned'])('a %s backup is terminal, not an interruption', async (marker) => {
+    const target = await install(`terminal-${marker}`);
+    fse.outputFileSync(path.join(target, '.ai-scaffold', 'backups', 'b1', marker), '');
+    expect((await preview(target)).status).toBe('planned');
+  });
+
+  it('a held lock is reported with pid, host, age and liveness (FR-52)', async () => {
+    const target = await install('lock-report');
+    fse.outputFileSync(path.join(target, '.ai-scaffold', 'update.lock'),
+      JSON.stringify({ pid: process.pid, host: os.hostname(), startedAt: '2026-10-15T11:59:00.000Z', token: 't' }));
+    const doc = await preview(target);
+    expect(doc.lock).toMatchObject({ pid: process.pid, ageSeconds: 60, liveness: 'running' });
+    expect(doc.notices[0]).toContain('delete that file');
   });
 
   it('a completed backup is not an interruption', async () => {

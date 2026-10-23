@@ -108,7 +108,7 @@ expectJson('another --target-version fails', ['update', older, '--target-version
 fs.mkdirSync(path.join(older, '.ai-scaffold', 'backups', 'b1'), { recursive: true });
 fs.writeFileSync(path.join(older, '.ai-scaffold', 'backups', 'b1', 'journal.json'), '{ broken');
 const interrupted = expectJson('a malformed journal is an interrupted apply', ['update', older], { status: 1, docStatus: 'interrupted' });
-check('the notice names the malformed journal', interrupted?.notices?.[0]?.includes('journal malformed'));
+check('the notice names the malformed journal', interrupted?.notices?.[0]?.includes('(malformed)'));
 fs.writeFileSync(path.join(older, '.ai-scaffold', 'update.lock'), '1');
 expectJson('a lock wins over the journal', ['update', older], { status: 1, docStatus: 'locked' });
 check('preview left .ai-scaffold.json byte-identical', fs.readFileSync(path.join(older, '.ai-scaffold.json')).equals(manifestBytes));
