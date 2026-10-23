@@ -16,19 +16,17 @@ work is proposed and requires the normal design/implementation gates.
 - Item 94 is complete: the maintainer verified decoy probes against installed
   npm 0.16.0 and 0.16.1, with a positive control in Windows CI. Preserve this
   evidence; do not schedule verification already performed as new P0 work.
-- Item 25 is the top remaining P0, targeting **0.17.0**. Design v2.1 merged in
-  [PR #149](https://github.com/lajin-mohan/ai-scaffold/pull/149) and was
-  reconciled on 2026-10-15 (BRD v1.3, HLD v2.2, ADR-007 rev 3). FR-20 is decided
-  (persisted per-rule exceptions); estimate sign-off, ADR acceptance and the
-  BRD clarifications remain pending. No implementation approval is implied.
-- Item 25 remains in design revision. `update.js` has no file-update engine.
-  Managed deletion and base-aware settings merge must precede adopter removals.
+- Item 25 is the top remaining P0, targeting **0.17.0**. *(Status 2026-10-23.)*
+  Slices 1–3 are merged: design (#149, #156), foundations (#157) and the
+  read-only `ais update` preview (#158). Slice 4 (`--apply`) is in progress on
+  draft #159. Slice 5 (acceptance) and the release are not approved. Managed
+  deletion and the base-aware settings merge ship with slice 4 and must precede
+  adopter removals.
 - Items 60 and 66's first slice have recorded merge evidence. Windows CI and
   Ubuntu packed-artifact golden paths exist; `init` hooks/rest of 66 remain open.
-- Items 77 D1/D2/D4, 85, 95/basic 86 guidance and 96 are implemented locally or
-  recorded as implemented and listed under CHANGELOG 0.16.1. Verify per-feature
-  distribution before closure; do not rebuild.
-  Item 77 D3 and item 86 network/domain protections remain open.
+- Items 77 D1/D2/D4, 85, 95 (with basic 86 guidance) and 96 **shipped in
+  0.16.1** (#154; registry showed 0.16.1 on 2026-10-23); 85, 95 and 96 are in
+  `tasks/done/`. Item 77 D3 and item 86 network/domain protections remain open.
 - The maintainer reports full-suite CI green on Ubuntu and Windows for this
   session's PRs. That is distinct from this review's local test-run limitation.
 - Review checks: lint and typecheck passed (37 JS files, 4 gitleaks configs).
