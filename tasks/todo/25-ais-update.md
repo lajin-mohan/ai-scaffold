@@ -189,3 +189,37 @@ as the CLI does.
 2026-10-23 09:48Z to 09:55Z (commit timestamps, includes gaps). Focused
 effort was not tracked and is unknown. Remaining forecast: about 7.5
 focused days from the breakdown, not from measured speed.
+
+## Approvals and acceptance criteria for the remaining work, 2026-10-23
+
+**Maintainer approvals (2026-10-23):** acceptance criteria below approved as
+the definition of done; **slice 5 approved**, provisional budget about 5
+focused days, delivered in the same PR (lajin-mohan/ai-scaffold#159);
+autonomy terms approved: push to feature branches, open and update PRs, run
+review agents and fix findings; never merge, release, tag, force-push,
+delete branches or change settings; stop on a requirement change, a
+high/critical security design decision, a CI failure unresolved after 3
+attempts, or anything destructive. The 0.17.0 release is not approved.
+
+| ID | Criterion |
+|---|---|
+| 4.1 | Not a git work tree or no `git` → `--apply` exits 1 `GIT_UNAVAILABLE`; `--allow-no-git` proceeds with `gitSafety: "acknowledged-no-repository"` |
+| 4.2 | Uncommitted changes in any planned write/delete path → refuse naming them; `--allow-dirty` proceeds (`dirty-allowed`); untracked `.ais-new` exempt; renames and repo-subdirectory projects handled |
+| 4.3 | `git` only via the PATH resolver (item 94), fixed arguments |
+| 5.1 | Merged `settings.json` equals the preview decisions (added, replaced, restored, removed; exceptions honoured); unowned keys and order kept; 2-space JSON; no silent widening; invalid JSON → `.ais-new`, never rewritten |
+| 5.2 | Manifest after apply: version, `updatedAt`, classes, recorded hashes (B3), `manifestSchema: 2`, `appliedMigrations`, `settingsBase`; `settingsExceptions` saved only on success |
+| 5.3 | A second apply reports already current and changes nothing (AC-09) |
+| 6.1 | Lock first; exit 0/2/1; one `ais-update-apply/1` JSON document; backup path reported; no file contents printed |
+| 6.2 | Conflicts write `.ais-new`; a differing existing sidecar → `SIDECAR_EXISTS`; an identical one is left |
+| 6.3 | `doctor` warns while `.ais-new` files exist (FR-31) and uses `hashing.js` |
+| 6.4 | `create`/`init` record `manifestSchema: 2`, classes, `settingsBase`; a fresh project previews `current`; packed vs published 0.16.1 differs only in documented manifest fields |
+| 7.1 | BRD AC-02/03/04/05/06/08/09/12/13/15/16/17/18/19/20/21 automated on generated projects |
+| 7.2 | Packed-tarball smoke covers apply and real-SIGKILL cases on Ubuntu and Windows CI |
+| 7.3 | A full CLI apply under the write-scope recorder writes only inside the journaled set |
+| 8.1 | README, `docs/cli-reference.md`, `HOW-TO-USE.md`, CHANGELOG updated; every claim checked against the packed CLI |
+| 8.2 | Backend and security reviews end with no BLOCK open |
+| 8.3 | #159 ready for review, CI green on Ubuntu and Windows, ticket updated |
+| 5A | Real installs from npm 0.8.5, 0.14.0, 0.16.1 (`create`: node, laravel, python; plus `init`) previewed and applied with the packed tarball: untouched managed files equal a fresh `create`; application files untouched; user-data byte-identical; 0.8.5 replaces and removes nothing (AC-01, AC-07, AC-11, AC-14) |
+| 5B | A Windows clone with `autocrlf=true` classifies as pristine (AC-10) |
+| 5C | A CI job runs 5A and 5B on Ubuntu and Windows |
+| 5D | Evidence report recorded in this ticket |
