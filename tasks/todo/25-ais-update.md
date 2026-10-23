@@ -175,7 +175,10 @@ are S7.
 **Remaining:** S3 recovery classification and lock reporting; S4 git
 safety; S5 settings write, manifest refresh, exceptions; S6 CLI wiring,
 apply JSON, doctor, create/init `settingsBase`; S7 acceptance and packed
-apply/crash cases; S8 docs, reviews, PR.
+apply/crash cases; S8 docs, reviews, PR. **S8 includes a fact re-check of
+README.md and related docs** (, ,
+CHANGELOG,  sections): every claim checked against the packed CLI
+and updated (maintainer request, 2026-10-23).
 
 **Scope changes:** the lock refuses a directory without `.ai-scaffold/`
 (`MANIFEST_MISSING`) instead of creating one, since the lock now precedes
