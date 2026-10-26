@@ -220,6 +220,15 @@ describe('formatReport', { timeout: 60_000 }, () => {
     expect(text).toMatch(/git safety is checked when you apply|applying will need --allow-no-git/);
   });
 
+  it('escapes bidi and zero-width characters in project text, so a path cannot be shown reversed (#159 review N1)', () => {
+    const doc = { ...emptyDocument(), status: 'planned', exitCode: 2, counts: { conflict: 1 }, notices: [],
+      entries: [{ path: 'evil\u202etxt.md', class: 'managed', action: 'conflict', reason: 'edited\u200b' }] };
+    const text = formatReport(doc);
+    expect(text).not.toMatch(/[\u200b-\u200f\u202a-\u202e\u2066-\u2069]/);
+    expect(text).toContain('evil\\u202etxt.md');
+    expect(text).toContain('edited\\u200b');
+  });
+
   it('reports errors with their message', async () => {
     const text = formatReport(await preview(await install('report-err'), { force: true }));
     expect(text).toContain('--force was removed in 0.17.0');

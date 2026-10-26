@@ -77,11 +77,15 @@ function nextStep(doc) {
 }
 
 // Paths, rule strings, profiles and backup names come from the project, so a
-// hostile one could carry terminal escape sequences. Show them escaped.
-const CONTROL_CHARS = /[\u0000-\u001f\u007f-\u009f]/g; // eslint-disable-line no-control-regex
+// hostile one could carry terminal escape sequences, or bidi and zero-width
+// characters that make a path display as another. Show them escaped.
+const CONTROL_CHARS = /[\u0000-\u001f\u007f-\u009f\u200b-\u200f\u202a-\u202e\u2066-\u2069]/g; // eslint-disable-line no-control-regex
 
 function escapeControls(line) {
-  return line.replace(CONTROL_CHARS, (char) => `\\x${char.charCodeAt(0).toString(16).padStart(2, '0')}`);
+  return line.replace(CONTROL_CHARS, (char) => {
+    const code = char.charCodeAt(0);
+    return code > 0xff ? `\\u${code.toString(16).padStart(4, '0')}` : `\\x${code.toString(16).padStart(2, '0')}`;
+  });
 }
 
 /** @returns {string} the report text */
