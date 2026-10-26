@@ -75,6 +75,17 @@ describe.runIf(GIT)('checkGitSafety (FR-32, FR-47)', { timeout: 60_000 }, () => 
     expect(checkGitSafety({ root, writePaths: ['CLAUDE.md'], allowDirty: true })).toBe('dirty-allowed');
   });
 
+  it('a dirty path that is unsafe to write never matches a planned path and never aborts (#159 review)', () => {
+    const { root } = repo();
+    const state = {
+      state: 'repository',
+      dirty: ['Report~1.docx', 'aux.c', 'logs/2024-01-01T10:00.log', 'trailing. ', '../outside'].map((rel) => ({ rel, untracked: true })),
+    };
+    expect(checkGitSafety({ root, writePaths: ['CLAUDE.md'], state })).toBe('clean');
+    state.dirty.push({ rel: 'CLAUDE.md', untracked: false });
+    expect(() => checkGitSafety({ root, writePaths: ['CLAUDE.md'], state })).toThrow(/CLAUDE\.md/);
+  });
+
   it('changes outside the planned paths do not block', () => {
     const { root } = repo();
     fs.appendFileSync(path.join(root, 'README.md'), 'adopter edit\n');

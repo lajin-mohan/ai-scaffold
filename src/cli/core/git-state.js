@@ -55,6 +55,17 @@ export function readGitState(root, { env = process.env, platform = process.platf
   return { state: 'repository', dirty };
 }
 
+// Planned paths are always normalisable, so a dirty path that is not (a
+// reserved or aliasing name, `..`) can never match one: it is skipped, not
+// allowed to abort the apply.
+function dirtyKey(rel) {
+  try {
+    return identityKey(rel);
+  } catch {
+    return null;
+  }
+}
+
 /**
  * FR-32 and FR-47. `writePaths` are every path the apply writes or deletes,
  * sidecars included. Untracked `.ais-new` files from earlier runs are exempt.
@@ -70,7 +81,7 @@ export function checkGitSafety({ root, writePaths, allowDirty = false, allowNoGi
   const planned = new Set(writePaths.map(identityKey));
   const conflicts = git.dirty
     .filter((d) => !(d.untracked && d.rel.endsWith('.ais-new')))
-    .filter((d) => planned.has(identityKey(d.rel)))
+    .filter((d) => planned.has(dirtyKey(d.rel)))
     .map((d) => d.rel)
     .sort();
   if (conflicts.length === 0) return 'clean';
