@@ -8,7 +8,9 @@ import { migrateToSchema2, settingsBaseState } from './schema-2.js';
 
 /**
  * Version-keyed migrations, ascending. Each runs once when an update crosses
- * its version: `{ version, run(manifest) → string[] intents }`. None yet.
+ * its version: `{ version, run(manifest) → string[] intents, retired? }`,
+ * where `retired: { rules?: string[], hooks?: string[] }` names settings
+ * entries that version stops shipping (FR-21, AC-03). None yet.
  */
 export const VERSION_MIGRATIONS = [];
 
@@ -17,13 +19,15 @@ export const VERSION_MIGRATIONS = [];
  * @param {{ from: string, to: string, settingsPristine: boolean|null,
  *   migrations?: Array<{ version: string, run: Function }> }} options
  * @returns {{ manifest: object, applied: string[], intents: string[],
- *   settingsBase: 'recorded'|'derived'|'unknown' }}
+ *   settingsBase: 'recorded'|'derived'|'unknown',
+ *   retired: { rules: string[], hooks: string[] } }}
  */
 export function runMigrations(manifest, { from, to, settingsPristine, migrations = VERSION_MIGRATIONS }) {
   // The manifest is parsed JSON, so a JSON round trip is a faithful deep copy.
   const next = JSON.parse(JSON.stringify(manifest));
   const applied = [];
   const intents = [];
+  const retired = { rules: [], hooks: [] };
   let settingsBase = settingsBaseState(next, settingsPristine);
 
   if ((next.manifestSchema ?? 1) < 2) {
@@ -39,8 +43,10 @@ export function runMigrations(manifest, { from, to, settingsPristine, migrations
     .sort((a, b) => semver.compare(a.version, b.version));
   for (const migration of crossed) {
     intents.push(...migration.run(next));
+    retired.rules.push(...(migration.retired?.rules ?? []));
+    retired.hooks.push(...(migration.retired?.hooks ?? []));
     next.appliedMigrations = [...(next.appliedMigrations ?? []), migration.version];
     applied.push(migration.version);
   }
-  return { manifest: next, applied, intents, settingsBase };
+  return { manifest: next, applied, intents, settingsBase, retired };
 }

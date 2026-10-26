@@ -98,7 +98,7 @@ jobs:
       - name: Pre-publish smoke
         run: bash scripts/pre-publish-smoke.sh
 
-      - name: Update preview from the packed tarball (item 25)
+      - name: Update preview, apply and SIGKILL recovery from the packed tarball (item 25)
         run: node scripts/update-preview-smoke.js
 
       - name: Verify npm pack
@@ -190,7 +190,7 @@ jobs:
       - name: Pre-publish smoke (includes npm test)
         run: bash scripts/pre-publish-smoke.sh
 
-      - name: Update preview from the packed tarball (item 25)
+      - name: Update preview, apply and SIGKILL recovery from the packed tarball (item 25)
         run: node scripts/update-preview-smoke.js
 
   ci-passed:

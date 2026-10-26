@@ -17,7 +17,7 @@ import { templatePath } from '../cli/core/paths.js';
 const PROFILES = ['generic', 'node', 'python', 'laravel', 'golang'];
 const FIXED_NOW = new Date(Date.UTC(2026, 9, 15, 12, 0, 0));
 // Keys copyFiles adds to the manifest after rendering it.
-const POST_RENDER_KEYS = ['managedFiles', 'defaultedValues'];
+const POST_RENDER_KEYS = ['managedFiles', 'defaultedValues', 'manifestSchema', 'settingsBase'];
 
 function bootstrapFor(profile) {
   return resolveWithDefaults({

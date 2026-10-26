@@ -6,8 +6,8 @@
 import path from 'path';
 import fs from 'fs-extra';
 import chalk from 'chalk';
-import crypto from 'crypto';
 import { validateManifestContext } from '../core/prompts.js';
+import { isPristine } from '../core/hashing.js';
 import { createBudget, resolveRepo } from '../core/gh-runner.js';
 import { getProtection } from '../core/github-protection.js';
 import { configuredContexts, observeContexts } from '../core/github-required-checks.js';
@@ -139,7 +139,7 @@ export async function runDiagnostics(target, options = {}) {
 
   const integrity = manifestData
     ? await findManagedFileIssues(target, manifestData)
-    : { modified: [], missing: [] };
+    : { modified: [], missing: [], sidecars: [] };
 
   checks.push({
     name: 'Managed files present',
@@ -153,6 +153,16 @@ export async function runDiagnostics(target, options = {}) {
     passed: integrity.modified.length === 0,
     severity: 'medium',
     message: integrity.modified.length > 0 ? `Modified: ${integrity.modified.slice(0, 10).join(', ')}` : undefined,
+  });
+
+  // FR-31: an update left the new version beside an edited file to merge.
+  checks.push({
+    name: 'No unmerged update files (.ais-new)',
+    passed: integrity.sidecars.length === 0,
+    severity: 'medium',
+    message: integrity.sidecars.length > 0
+      ? `Merge, then delete: ${integrity.sidecars.slice(0, 10).join(', ')}`
+      : undefined,
   });
 
   // 6. Check required managed files. Longer docs/tasks are optional packs.
@@ -364,27 +374,26 @@ async function findInvalidContextFields(manifestData, settingsFile) {
 async function findManagedFileIssues(target, manifestData) {
   const modified = [];
   const missing = [];
+  const sidecars = [];
 
   if (!Array.isArray(manifestData.managedFiles)) {
-    return { modified, missing };
+    return { modified, missing, sidecars };
   }
 
   for (const file of manifestData.managedFiles) {
     const fullPath = path.join(target, file.path);
+    if (await fs.pathExists(`${fullPath}.ais-new`)) sidecars.push(`${file.path}.ais-new`);
     if (!(await fs.pathExists(fullPath))) {
       missing.push(file.path);
       continue;
     }
-    const hash = crypto
-      .createHash('sha256')
-      .update(await fs.readFile(fullPath))
-      .digest('hex');
-    if (file.hash !== `sha256:${hash}`) {
+    // FR-09: a line-ending-only difference is not a modification.
+    if (!isPristine(await fs.readFile(fullPath), file)) {
       modified.push(file.path);
     }
   }
 
-  return { modified, missing };
+  return { modified, missing, sidecars };
 }
 
 async function checkHooksWired(target) {

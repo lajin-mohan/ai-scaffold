@@ -34,7 +34,7 @@ cli.help((sections) => {
   ais status                              Show installed scaffold version and status
   ais doctor                              Diagnose scaffold installation health
   ais list                                List installed commands, agents, skills, rules
-  ais update                              Preview a scaffold update (read-only)
+  ais update                              Preview a scaffold update; --apply applies it
   ais export-context                      Back up memory/lessons/settings before reinstalling
 
 Examples:

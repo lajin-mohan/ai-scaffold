@@ -2,7 +2,7 @@
 
 ## Status
 
-**Slice 2 implemented; review/merge pending (lajin-mohan/ai-scaffold#157). Full design acceptance, remaining budget and release approval remain separate.** Design reconciled (BRD v1.3, HLD v2.2, ADR-007 rev 3, 2026-10-15; merged in lajin-mohan/ai-scaffold#156) after the round-3 review; FR-09 corrected after the round-4 review (2026-10-16). Round 3 found the round-2 changes had reached the HLD only; see `docs/architecture/review-25-ais-update.md` § Round 3. FR-20 is decided: restore by default with persisted per-rule exceptions (FR-39).
+**Slices 1–3 merged (#149, #156, #157, #158). Slice 4 (apply): S0–S6 implemented on draft PR lajin-mohan/ai-scaffold#159; two P1 review findings on `e0ab979` fixed (2026-10-26); S7 and S8 remain. Full design acceptance and release approval remain separate.** Design reconciled (BRD v1.3, HLD v2.2, ADR-007 rev 3, 2026-10-15; merged in lajin-mohan/ai-scaffold#156) after the round-3 review; FR-09 corrected after the round-4 review (2026-10-16). Round 3 found the round-2 changes had reached the HLD only; see `docs/architecture/review-25-ais-update.md` § Round 3. FR-20 is decided: restore by default with persisted per-rule exceptions (FR-39).
 - The independent review returned **REVISE** (5 BLOCK, 9 WARN, 7 NIT):
   `docs/architecture/review-25-ais-update.md`. It was recovered after a squash
   merge lost it (see the `tasks/lessons.md` entry of 2026-10-12).
@@ -154,3 +154,208 @@ not from measured speed.
 **Time:** calendar interval between the first and last slice 3 commits,
 2026-10-16 12:07Z to the final commit (commit timestamps; includes gaps
 and a usage-limit pause). Focused effort was not tracked and is unknown.
+
+## Slice 4 (apply): early fault-tested checkpoint, 2026-10-23
+
+**Authorised:** slice 4, about 10.5 focused days, provisional (maintainer,
+2026-10-19). No slice 5 or release.
+
+| Step | Commit | Result |
+|---|---|---|
+| S0 contracts (FR-47–FR-52, NFR-09, HLD §10b) | `aee2a5e`, `4375e95` | Architect review round 5: APPROVE WITH CHANGES (2 BLOCK, 11 WARN), all applied |
+| S1 `write-ops.js` | `694887f` | 17 tests |
+| S2 `update-apply.js`, `update-lock.js` | `cad6e61` | 14 tests: injected failure at every write step restores exact pre-run bytes; concurrent and post-write edits preserved and reported; backup mismatch abandons; write-scope recorder |
+| S2 genuine crash tests | `b90babd` | 10 tests: real SIGKILL at 8 stages and during rollback; every journaled path wholly pre-run or final; nothing outside the write set changed; lock left in place; control run completes |
+
+**Evidence boundary:** local Windows only so far; draft PR
+lajin-mohan/ai-scaffold#159 runs the same tests on Ubuntu and Windows CI.
+The crash tests use the working-tree source; packed-tarball crash cases
+are S7.
+
+**Remaining:** S3 recovery classification and lock reporting; S4 git
+safety; S5 settings write, manifest refresh, exceptions; S6 CLI wiring,
+apply JSON, doctor, create/init `settingsBase`; S7 acceptance and packed
+apply/crash cases; S8 docs, reviews, PR. **S8 includes a fact re-check of
+README.md and related docs** (`docs/cli-reference.md`, `HOW-TO-USE.md`,
+CHANGELOG, the `update` sections): every claim checked against the packed CLI
+and updated (maintainer request, 2026-10-23).
+
+**Scope changes:** the lock refuses a directory without `.ai-scaffold/`
+(`MANIFEST_MISSING`) instead of creating one, since the lock now precedes
+the manifest read. Crash-test drivers must resolve the native real path,
+as the CLI does.
+
+**Time:** calendar interval between the S1 and last S2 commits,
+2026-10-23 09:48Z to 09:55Z (commit timestamps, includes gaps). Focused
+effort was not tracked and is unknown. Remaining forecast: about 7.5
+focused days from the breakdown, not from measured speed.
+
+## Approvals and acceptance criteria for the remaining work, 2026-10-23
+
+**Maintainer approvals (2026-10-23):** acceptance criteria below approved as
+the definition of done; **slice 5 approved**, provisional budget about 5
+focused days, delivered in the same PR (lajin-mohan/ai-scaffold#159);
+autonomy terms approved: push to feature branches, open and update PRs, run
+review agents and fix findings; never merge, release, tag, force-push,
+delete branches or change settings; stop on a requirement change, a
+high/critical security design decision, a CI failure unresolved after 3
+attempts, or anything destructive. The 0.17.0 release is not approved.
+
+| ID | Criterion |
+|---|---|
+| 4.1 | Not a git work tree or no `git` → `--apply` exits 1 `GIT_UNAVAILABLE`; `--allow-no-git` proceeds with `gitSafety: "acknowledged-no-repository"` |
+| 4.2 | Uncommitted changes in any planned write/delete path → refuse naming them; `--allow-dirty` proceeds (`dirty-allowed`); untracked `.ais-new` exempt; renames and repo-subdirectory projects handled |
+| 4.3 | `git` only via the PATH resolver (item 94), fixed arguments |
+| 5.1 | Merged `settings.json` equals the preview decisions (added, replaced, restored, removed; exceptions honoured); unowned keys and order kept; 2-space JSON; no silent widening; invalid JSON → `.ais-new`, never rewritten |
+| 5.2 | Manifest after apply: version, `updatedAt`, classes, recorded hashes (B3), `manifestSchema: 2`, `appliedMigrations`, `settingsBase`; `settingsExceptions` saved only on success |
+| 5.3 | A second apply reports already current and changes nothing (AC-09) |
+| 6.1 | Lock first; exit 0/2/1; one `ais-update-apply/1` JSON document; backup path reported; no file contents printed |
+| 6.2 | Conflicts write `.ais-new`; a differing existing sidecar → `SIDECAR_EXISTS`; an identical one is left |
+| 6.3 | `doctor` warns while `.ais-new` files exist (FR-31) and uses `hashing.js` |
+| 6.4 | `create`/`init` record `manifestSchema: 2`, classes, `settingsBase`; a fresh project previews `current`; packed vs published 0.16.1 differs only in documented manifest fields |
+| 7.1 | BRD AC-02/03/04/05/06/08/09/12/13/15/16/17/18/19/20/21 automated on generated projects |
+| 7.2 | Packed-tarball smoke covers apply and real-SIGKILL cases on Ubuntu and Windows CI |
+| 7.3 | A full CLI apply under the write-scope recorder writes only inside the journaled set |
+| 8.1 | README, `docs/cli-reference.md`, `HOW-TO-USE.md`, CHANGELOG updated; every claim checked against the packed CLI |
+| 8.2 | Backend and security reviews end with no BLOCK open |
+| 8.3 | #159 ready for review, CI green on Ubuntu and Windows, ticket updated |
+| 5A | Real installs from npm 0.8.5, 0.14.0, 0.16.1 (`create`: node, laravel, python; plus `init`) previewed and applied with the packed tarball: untouched managed files equal a fresh `create`; application files untouched; user-data byte-identical; 0.8.5 replaces and removes nothing (AC-01, AC-07, AC-11, AC-14) |
+| 5B | A Windows clone with `autocrlf=true` classifies as pristine (AC-10) |
+| 5C | A CI job runs 5A and 5B on Ubuntu and Windows |
+| 5D | Evidence report recorded in this ticket |
+
+## Slice 4 (apply): S3–S6 checkpoint and #159 review, 2026-10-26
+
+| Step | Commit | Result |
+|---|---|---|
+| S3 recovery classification, lock reporting | `796e76a` | `no-journal` / `all-pre-run` abandoned, `all-final` completed, others refused `INTERRUPTED_APPLY`; lock pid, host, age, liveness |
+| S4 git safety | `60dec64` | 9 tests (criteria 4.1–4.3) |
+| S5 settings write, manifest after apply | `a3806e7` | 15 settings tests; B3 manifest rule |
+| S6 CLI wiring | `e0ab979` | `--apply`, `--allow-dirty`, `--allow-no-git`; FR-46 retired; 8 apply integration tests; doctor `.ais-new` warning and `hashing.js` (6.3); create/init schema 2 (6.4) |
+| Packed smoke fixture | `88dcd78` | Older install modelled as pre-schema-2; smoke covers apply on the packed CLI |
+
+**Review of `e0ab979` (maintainer, 2026-10-26): two P1, both reproduced and fixed.**
+
+| Finding | Fix | Evidence |
+|---|---|---|
+| Recovery deleted any path a journal named as a temporary (crafted `tmp: "README.md"` → README deleted), before git safety | `02830ea`: journal accepted only in the exact apply shape (schema, run id matching its backup directory, contained paths, derived temporary names, directories that are ancestors of journaled paths); recovery derives names itself | 8 tests incl. the reviewer repro; all 7 crafted-journal tests fail against the old code |
+| Apply re-read `pre` after planning, so an edit between planning and writing was overwritten (managed files and settings) | `6073c2f`: the planner records the hash or absence it decided on; settings and manifest carry the bytes they were read from; operations use those, so the transaction refuses later changes | 4 tests (pristine file, settings, an add over a new file, the manifest); each fails against the old code |
+
+Lesson recorded in `tasks/lessons.md` (2026-10-26).
+
+**Criterion 6.4 evidence (local Windows, packed tarball vs npm 0.16.1).**
+Same project names, clock pinned to 2026-10-15T12:00Z through an `--import`
+preload, `create` for node, python and laravel, and `init` for node into an
+existing app.
+
+- `create`: only `.ai-scaffold.json` differs. Its differences are
+  `install.mode`, `manifestSchema`, `settingsBase` and a `class` on every
+  record. All paths and hashes are identical.
+- `init`: the same manifest fields, plus `.ai-scaffold/README.md`. That
+  file now holds the project README: the slice 2 Windows fix recorded in
+  `CHANGELOG.md` (0.16.1 planned the path twice, and the generic README
+  overwrote it).
+- No unexplained difference.
+
+**Verification at `6073c2f`:**
+
+- lint and typecheck pass;
+- full suite 675 passed, 13 skipped, plus the 3 known machine-specific
+  failures (they fail on base `3f3d2ee` too);
+- packed smoke passes, including apply;
+- CI on Ubuntu and Windows was pending at the time of writing.
+
+**Slice 5:** the 2026-10-23 approval above stands (about 5 focused days,
+criteria 5A–5D). **Destination changed (maintainer, 2026-10-26): its own PR,
+branched from updated `dev` after #159 squash-merges**, not #159, so slice 4's
+safety implementation and acceptance evidence stay reviewable on their own.
+Not started.
+
+**Added to S7 (maintainer, 2026-10-26):** a `settings.json` classified
+`unowned` stays untouched. The earlier review reproduced apply restoring a
+deny rule while reporting `skip-unowned`. Fixed: the merge is decided only
+when the planner's settings entry is `merge`. A regression test fails
+against the old code.
+
+**Before #159 is marked ready:** re-review both P1 fixes (`02830ea`,
+`6073c2f`).
+
+## Slice 4: S7 and S8.1 checkpoint, 2026-10-26
+
+| Criterion | Commit | Evidence |
+|---|---|---|
+| Unowned `settings.json` untouched (added to S7) | `a35d852` | Regression test; fails against the old code (file rewritten, deny rule restored) |
+| 7.1 BRD AC-02/03/04/05/06/08/09/12/13/15/16/17/18/19/20/21 | `2a102fb` | `src/__tests__/update-acceptance.test.js`, 17 tests on generated node projects in real git repositories; AC-16/17 SIGKILL the real CLI |
+| 7.2 packed smoke covers apply and real SIGKILL | `d544aa4` | `scripts/update-preview-smoke.js` loads a crash hook into the packed CLI; CI green on Ubuntu and Windows at `ac2b98a` |
+| 7.3 full CLI apply writes only inside the journaled set | `ac2b98a` | `src/__tests__/update-write-scope.test.js`: fsApi recorder plus whole-tree diff over replace, add into a new directory, remove, sidecar and settings merge; a planted stray write fails it |
+| 8.1 docs checked against the packed CLI | `e31751c`, `d3a238c` | README, HOW-TO-USE, CLI reference, CHANGELOG; CLI help banner; 25 claims checked against a freshly packed tarball, all hold |
+
+**Found by 7.1 and fixed (`6e21d5f`):** an FR-41 refusal ended
+`rollback-incomplete` because rollback inspected the refused path, which
+holds the adopter's edit and never this run's bytes. FR-48 requires a
+complete rollback with `CONCURRENT_EDIT`. Rollback now settles entries the
+run did not attempt or did not write; a test that enshrined the old outcome
+was corrected. HLD §10b updated.
+
+**Also:**
+- A version migration can declare retired settings rules and hooks
+  (needed for AC-03).
+- The packed smoke's doctor gate read JSON through `echo | grep -q` under
+  `pipefail`, which raced on Ubuntu; it now uses a here-string (`a7f8228`).
+- **AC-16 note:** a killed apply leaves its lock, and the lock wins over the
+  journal (FR-44), so the first later run reports the stale lock
+  (`not-running`); the interrupted apply is reported once the lock is
+  deleted. Nothing changes on disk at any step.
+
+## Slice 4: S8.2 reviews, 2026-10-26 — final fix verification pending
+
+**Backend and security reviews: no BLOCK.** Both P1 fixes (`02830ea`,
+`6073c2f`) hold on re-review. Every WARN is fixed, one commit each with a
+regression test; each reproducible one fails against the unfixed code.
+
+| Finding | Commit |
+|---|---|
+| Unsafe dirty path aborted every apply (both reviews) | `299bd2f` |
+| `core.fsmonitor` from the project's `.git/config` ran on `git status` (security W5) | `247248a` |
+| Crafted journal could remove an empty adopter directory (security W1) | `fa04159` |
+| Planted backup directories pushed real backups out (security W2) | `762f5e7` |
+| Backups not git-ignored, contrary to BRD Q-01 (security W3) | `ef21377` |
+| Crash-left `update.lock` committable (maintainer request) | `72f7dc7` |
+| `settings.json` of unexpected shape crashed the merge (backend) | `881e8fd` |
+| Missing tests: remove and late sidecar after planning (backend) | `4f3bdda` |
+| Recovery message listed no paths for two states (backend) | `3cf351f` |
+| `--apply=foo` ran an apply (maintainer request) | `40cb0e5` |
+| Bidi and zero-width characters could spoof a path in the report (security N1) | `9da9c85` |
+
+**Accepted and documented (maintainer, 2026-10-26):** backup retention as
+HLD §10b specifies; the re-check-to-rename gap and power loss without a
+directory fsync. Other NITs are escalated only if they show aliasing,
+spoofing or unsafe behaviour.
+
+**Evidence at `72f7dc7`:**
+- full suite 717 passed, 13 skipped, plus the 3 known environment failures;
+- packed update smoke passes;
+- the pre-publish smoke fails the same 5 environment gates on `dev` as on
+  this branch (no `jq`, local Go), and passes in CI;
+- the packed CLI writes and records `.ai-scaffold/.gitignore` for `create`
+  and `init`.
+
+**Fix verification (2026-10-26):** both reviewers re-checked their fixes.
+- **Backend: APPROVE**, every WARN closed. Remaining NITs: `pruneBackups`
+  calls `fs` directly rather than the injected `fsApi`, and `runUpdate`
+  defaults to `process.argv`.
+- **Security: APPROVE**, W1–W5 and N1 closed. The re-check found that W5
+  was only partly fixed: a filter driver in the project's git config still
+  ran during `git status`. The maintainer chose to neutralise drivers, done
+  in `9085f30`. The reviewer confirmed it and checked textconv, the pager,
+  hooks, the `ident` and `working-tree-encoding` attributes, `includeIf` and
+  submodules: none runs a command during this call.
+- **Accepted leftovers:**
+  - an empty directory in a scaffold namespace can be removed by a crafted
+    journal;
+  - planted backups can push out older real backups, within retention;
+  - a Git LFS file may read as modified;
+  - N2–N4.
+
+**8.3:** #159 is marked ready once CI passes on the final commit (the code
+of `9085f30` plus `dev`'s documentation-only commits merged in).
