@@ -93,7 +93,8 @@ report or `--json`, apply, exit code.
   - **Inference (round 2, #4):** with `managedFiles`, a profile root file or a
     root `.gitattributes` among the records means `create` (true from 0.8.3,
     commit 09d3918); otherwise `init`.
-  - **Without `managedFiles`** (pre-0.8.6) the mode is recorded as
+  - **Without `managedFiles`** (no published version writes such a manifest;
+    corrected 2026-10-26 from "pre-0.8.6") the mode is recorded as
     `unknown`. It plans as `init` with `ignoreDisk`, the narrower set. That is
     harmless, because such installs have no hashes, so nothing is replaced or
     removed anyway (§4).
@@ -151,7 +152,7 @@ type Action = 'add' | 'replace' | 'unchanged' | 'conflict' | 'user-deleted'
 interface PlanEntry { path: string; class: Class; action: Action; recordAfter: Hash | 'drop' | 'carry'; reason?: string }
 interface UpdatePlan {
   from: string; to: string; profile: string; installMode: 'create' | 'init'
-  hashed: boolean               // false before 0.8.6 (FR-03)
+  hashed: boolean               // false when the manifest has no managedFiles (FR-03)
   entries: PlanEntry[]; migrations: string[]
   settings?: { added: string[]; restored: string[]; missingNoBase: string[]; exceptions: string[]
               removed: string[]; reported: string[]; ambiguous: string[]; suggestions: string[] }
@@ -185,7 +186,8 @@ current file and N = new render:
 | 9 | no | yes | no | — | `drop-record` | drop |
 
 - **pristine(C, R)** is `hashRaw(C) = R` or `hashLf(C) = R`.
-- **Pre-0.8.6** (no `managedFiles`): every R is absent. Rows 1, 5 and 6 still
+- **No `managedFiles`** (no published version writes this; every install
+  from 0.7.0 records hashes): every R is absent. Rows 1, 5 and 6 still
   apply, so a file already equal to N is `unchanged` and every other existing
   file is a `conflict`. **Nothing is ever replaced or removed**, which is what
   AC-07 asserts (W1).

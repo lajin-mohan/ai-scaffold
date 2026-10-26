@@ -23,8 +23,10 @@ Corrective phase (items 79–89) can ship fixes, including **deletions**, to
 adopted projects.
 
 Facts the decision rests on:
-- Every install since **0.8.6** records a raw sha256 per written file,
-  verified against the published npm tarballs.
+- Every install since the first CLI release, **0.7.0**, records a raw
+  sha256 per written file. *(Corrected 2026-10-26 from "since 0.8.6": slice 5
+  installed 0.7.0, 0.8.0, 0.8.2, 0.8.3 and 0.8.5 from npm and every one
+  records a hash for every managed file.)*
 - Every managed file re-renders byte-for-byte from `.ai-scaffold.json` alone
   (spike: 994 files, 0 mismatches after fix F1).
 - Adopters edit governance files, especially `settings.json`, and some clone on
@@ -124,8 +126,12 @@ Facts the decision rests on:
 - **Negative:** the lock serialises `ais` processes only; the pre-write
   re-check narrows, but cannot close, the race with an editor writing between
   check and rename. Accepted and documented.
-- **Follow-up:** ADR-002's v0.7.x re-baselining requirement is met by the
-  pre-0.8.6 all-conflict path: no hashes means nothing is replaced or removed.
+- **Follow-up (open, 2026-10-26):** this entry said ADR-002's v0.7.x
+  re-baselining requirement was met by a "pre-0.8.6 all-conflict path". It
+  is not: v0.7.x installs record hashes, so they take hash classification
+  and pristine files are replaced. Whether that satisfies ADR-002 is a
+  maintainer decision, raised in the slice 5 PR. The no-hashes path still
+  exists for a manifest without `managedFiles`.
 - **Follow-up:** ADR-002's consequence "`ais update` must not mutate versions
   until file migration and re-baselining exist" is satisfied by this decision
   together with FR-25/FR-26 (migrations and manifest re-classification).
