@@ -463,8 +463,14 @@ is released in `finally` after its token is checked.
 **Rollback (FR-48):** reverse journal order with journaled rollback
 temporary names; restore or remove only what still holds this run's bytes;
 remove journaled directories only when empty; continue past failures.
-Complete → `rolled-back` marker, exit 1 with the failure code. Incomplete →
-`rollback.json`, no marker, `ROLLBACK_INCOMPLETE`, exit 1.
+Entries after the failing one are `not-attempted`; the failing entry is
+`not-written` unless it holds this run's final bytes (a write lands by one
+atomic rename). Both are settled, so an FR-41 refusal, whose path holds the
+adopter's edit and never this run's bytes, ends in a complete rollback with
+`CONCURRENT_EDIT`. A path this run did write and someone changed afterwards
+is a rollback conflict. Complete → `rolled-back` marker, exit 1 with the
+failure code. Incomplete → `rollback.json`, no marker,
+`ROLLBACK_INCOMPLETE`, exit 1.
 
 **Recovery (FR-38):** no journal → nothing changed, remove the directory;
 all pre-run → `abandoned`; all final → verify and `complete`; mixed →
