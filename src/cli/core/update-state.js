@@ -6,6 +6,8 @@
 
 import { checkContained, checkDirectory, normaliseRel, readContained } from './containment.js';
 import { hashRaw } from './hashing.js';
+import { classifyPath } from './ownership.js';
+import { MANIFEST } from './update-manifest.js';
 import { UpdateError } from './update-policy.js';
 
 export const LOCK_PATH = '.ai-scaffold/update.lock';
@@ -15,6 +17,8 @@ export const MAX_RECOVERY_BYTES = 20 * 1024 * 1024;
 export const TERMINAL_MARKERS = ['complete', 'rolled-back', 'abandoned'];
 export const JOURNAL_SCHEMA = 'ais-update-journal/1';
 const RUN_ID = /^[0-9a-f]{12}$/;
+// update-apply-ops.js (SIDECAR_SUFFIX) imports this module, so not from there.
+const SIDECAR = '.ais-new';
 
 /** The temporary file an apply writes for journal entry `index`. */
 export function temporaryName(rel, runId, index) {
@@ -51,8 +55,23 @@ function isSafeRel(rel) {
 // git safety runs, so a journal is trusted only in the exact shape an apply
 // writes: temporary names derived from path, run and index, and directories
 // that are ancestors of journaled paths.
+// An apply writes only scaffold-owned files, their sidecars and the
+// manifest. The class match ignores case where the file system does, so it
+// also refuses the backups directory spelled in another case.
+const WRITABLE_CLASSES = new Set(['managed', 'seeded', 'merged']);
+
+function isApplyTarget(rel) {
+  if (rel === MANIFEST) return true;
+  const owner = rel.endsWith(SIDECAR) ? rel.slice(0, -SIDECAR.length) : rel;
+  try {
+    return WRITABLE_CLASSES.has(classifyPath(owner, { installMode: 'create', recorded: true }));
+  } catch {
+    return false;
+  }
+}
+
 function validEntry(entry, index, runId) {
-  if (!entry || !isSafeRel(entry.rel) || !isHash(entry.pre) || !isHash(entry.final)) return false;
+  if (!entry || !isSafeRel(entry.rel) || !isApplyTarget(entry.rel) || !isHash(entry.pre) || !isHash(entry.final)) return false;
   const tmp = temporaryName(entry.rel, runId, index);
   return entry.tmp === tmp && entry.rollbackTmp === `${tmp}r`;
 }

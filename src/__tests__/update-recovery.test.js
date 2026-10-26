@@ -162,11 +162,25 @@ describe('a crafted journal never steers recovery deletions (P1, #159 review)', 
     ['a journal for another backup directory', { backupDir: '.ai-scaffold/backups/other' }, {}],
     ['a run id that is not the apply format', { runId: 'README' }, {}],
     ['a missing schema', { schema: undefined }, {}],
+    ['an entry outside the scaffold namespaces, steering an empty adopter directory', { dirs: ['docs/empty'] },
+      { rel: 'docs/empty/x', tmp: `docs/empty/x.ais-tmp-${RUN}-0`, rollbackTmp: `docs/empty/x.ais-tmp-${RUN}-0r` }],
   ])('%s is malformed', async (_name, overrides, entryOverrides) => {
     const root = await project();
     journal(root, overrides, entryOverrides);
     await expectRefused(root);
   });
+
+  // Only a bypass where the file system ignores case: elsewhere BACKUPS is
+  // a different directory.
+  it.runIf(process.platform === 'win32' || process.platform === 'darwin')(
+    'an entry under the backups directory spelled in another case is malformed',
+    async () => {
+      const root = await project();
+      const rel = '.ai-scaffold/BACKUPS/x';
+      journal(root, {}, { rel, tmp: `${rel}.ais-tmp-${RUN}-0`, rollbackTmp: `${rel}.ais-tmp-${RUN}-0r` });
+      await expectRefused(root);
+    },
+  );
 
   it('a journal in the exact apply shape is abandoned, removing only its own temporaries', async () => {
     const root = await project();
