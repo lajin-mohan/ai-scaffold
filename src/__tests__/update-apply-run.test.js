@@ -325,4 +325,28 @@ describe('apply writes only over the state the plan decided on (P1, #159 review)
     expect(fs.readFileSync(at(target, '.ai-scaffold.json'), 'utf-8')).toBe(edited);
     expect(fs.readFileSync(at(target, 'CLAUDE.md'), 'utf-8')).toBe('older\n');
   });
+
+  it('a file planned for removal and edited after planning is kept (backend review)', async () => {
+    const target = await install({ repo: false });
+    fse.outputFileSync(at(target, '.claude/rules/retired.md'), 'retired rule\n');
+    editManifest(target, (m) => ({ ...m, managedFiles: [...m.managedFiles, { path: '.claude/rules/retired.md', hash: hashRaw('retired rule\n') }] }));
+    const plan = await planned(target);
+    expect(plan.computed.entries.find((e) => e.path === '.claude/rules/retired.md').action).toBe('remove');
+    fs.writeFileSync(at(target, '.claude/rules/retired.md'), 'kept by the adopter\n');
+    const result = await buildThenApply(plan);
+    expect(result.status).not.toBe('applied');
+    expect(fs.readFileSync(at(target, '.claude/rules/retired.md'), 'utf-8')).toBe('kept by the adopter\n');
+  });
+
+  it('a sidecar that appears after the operations are built is not overwritten (backend review)', async () => {
+    const target = await install({ repo: false });
+    fs.appendFileSync(at(target, 'AGENTS.md'), '\nadopter edit\n');
+    const plan = await planned(target);
+    const { ops, dirs } = await buildApplyOps({ ...plan, now: NOW });
+    expect(ops.some((op) => op.rel === 'AGENTS.md.ais-new')).toBe(true);
+    fs.writeFileSync(at(target, 'AGENTS.md.ais-new'), 'the adopter got here first\n');
+    const result = await applyTransaction({ root: plan.root, ops, dirs, now: NOW });
+    expect(result).toMatchObject({ status: 'rolled-back', error: { code: 'CONCURRENT_EDIT' } });
+    expect(fs.readFileSync(at(target, 'AGENTS.md.ais-new'), 'utf-8')).toBe('the adopter got here first\n');
+  });
 });
