@@ -86,6 +86,21 @@ describe.runIf(GIT)('checkGitSafety (FR-32, FR-47)', { timeout: 60_000 }, () => 
     expect(() => checkGitSafety({ root, writePaths: ['CLAUDE.md'], state })).toThrow(/CLAUDE\.md/);
   });
 
+  it('a core.fsmonitor command in the project repository never runs (#159 review)', () => {
+    const { root } = repo();
+    const marker = path.join(root, 'fsmonitor-ran');
+    const hook = path.join(root, 'fsmonitor.sh');
+    fs.writeFileSync(hook, `#!/bin/sh\ntouch "${marker.split(path.sep).join('/')}"\n`, { mode: 0o755 });
+    git(root, 'config', 'core.fsmonitor', hook.split(path.sep).join('/'));
+    git(root, 'add', '-A');
+    git(root, 'commit', '-q', '-m', 'hook');
+    // Plain git in the setup above runs the hook (the positive control).
+    expect(fs.existsSync(marker)).toBe(true);
+    fs.rmSync(marker);
+    expect(readGitState(root).state).toBe('repository');
+    expect(fs.existsSync(marker)).toBe(false);
+  });
+
   it('changes outside the planned paths do not block', () => {
     const { root } = repo();
     fs.appendFileSync(path.join(root, 'README.md'), 'adopter edit\n');

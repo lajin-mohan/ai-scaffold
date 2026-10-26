@@ -1,7 +1,8 @@
 /**
  * Git safety for `ais update --apply` (item 25, BRD FR-32, FR-33, FR-47).
- * Read-only: runs `git rev-parse` and `git status` only, never a command that
- * changes the repository.
+ * Runs `git rev-parse` and `git status` only, with optional locks off so the
+ * index is not refreshed, and with `core.fsmonitor` off so a command
+ * configured in the project's own repository never runs.
  */
 
 import { spawnSync } from 'child_process';
@@ -10,11 +11,13 @@ import { UpdateError } from './update-policy.js';
 import { identityKey } from './write-ops.js';
 
 const GIT_TIMEOUT_MS = 30_000;
+// The project may arrive with a hostile .git/config (#159 review).
+const SAFE_GIT_OPTIONS = ['-c', 'core.fsmonitor=false', '--no-optional-locks'];
 
 function runGit(git, root, args, env) {
   // Resolved from PATH, never from the project directory (item 94); array
   // form, no shell, fixed arguments.
-  return spawnSync(git, ['-C', root, ...args], { env, encoding: 'utf-8', timeout: GIT_TIMEOUT_MS, windowsHide: true });
+  return spawnSync(git, [...SAFE_GIT_OPTIONS, '-C', root, ...args], { env, encoding: 'utf-8', timeout: GIT_TIMEOUT_MS, windowsHide: true });
 }
 
 /** Split `git status --porcelain=v1 -z` output into { code, path } records. */
