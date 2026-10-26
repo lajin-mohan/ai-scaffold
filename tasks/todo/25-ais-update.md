@@ -307,5 +307,39 @@ was corrected. HLD §10b updated.
   (`not-running`); the interrupted apply is reported once the lock is
   deleted. Nothing changes on disk at any step.
 
-**Remaining:** 8.2 (backend and security reviews, including the P1
-re-review), 8.3 (ready for review).
+## Slice 4: S8.2 reviews, 2026-10-26 — final fix verification pending
+
+**Backend and security reviews: no BLOCK.** Both P1 fixes (`02830ea`,
+`6073c2f`) hold on re-review. Every WARN is fixed, one commit each with a
+regression test; each reproducible one fails against the unfixed code.
+
+| Finding | Commit |
+|---|---|
+| Unsafe dirty path aborted every apply (both reviews) | `299bd2f` |
+| `core.fsmonitor` from the project's `.git/config` ran on `git status` (security W5) | `247248a` |
+| Crafted journal could remove an empty adopter directory (security W1) | `fa04159` |
+| Planted backup directories pushed real backups out (security W2) | `762f5e7` |
+| Backups not git-ignored, contrary to BRD Q-01 (security W3) | `ef21377` |
+| Crash-left `update.lock` committable (maintainer request) | `72f7dc7` |
+| `settings.json` of unexpected shape crashed the merge (backend) | `881e8fd` |
+| Missing tests: remove and late sidecar after planning (backend) | `4f3bdda` |
+| Recovery message listed no paths for two states (backend) | `3cf351f` |
+| `--apply=foo` ran an apply (maintainer request) | `40cb0e5` |
+| Bidi and zero-width characters could spoof a path in the report (security N1) | `9da9c85` |
+
+**Accepted and documented (maintainer, 2026-10-26):** backup retention as
+HLD §10b specifies; the re-check-to-rename gap and power loss without a
+directory fsync. Other NITs are escalated only if they show aliasing,
+spoofing or unsafe behaviour.
+
+**Evidence at `72f7dc7`:**
+- full suite 717 passed, 13 skipped, plus the 3 known environment failures;
+- packed update smoke passes;
+- the pre-publish smoke fails the same 5 environment gates on `dev` as on
+  this branch (no `jq`, local Go), and passes in CI;
+- the packed CLI writes and records `.ai-scaffold/.gitignore` for `create`
+  and `init`.
+
+**Before 8.3 (ready for review):** both reviewers confirm their fixes, and
+CI passes at the final code commit. Their fix re-check stopped at the
+session limit and resumes after it resets.
