@@ -55,7 +55,7 @@ start early; migration dependencies govern rollout to existing installations.
 |---:|---|---|---|---|
 | 1 | P0 | 25; 15 transaction-evidence slice | Ownership-aware update for 0.17.0: preview, conflicts, deletion, base-aware settings merge and recovery | Resolve pending decisions/approved design first; packed prior-to-current upgrades for create AND init; unknown paths untouched, user data preserved, write failure/recovery and idempotence tested |
 | 2 | P0 | 79/81/86 security slice; **97 new** | Native permissions/isolation and adversarial control tests | Additive protections need not wait for 25. Windows/Linux allowed and blocked probes without optional parsers; shell access, injection, timeouts and missing controls covered |
-| 3 | P0 | 80/82/83/87/89; 79/81 removals; 88 core defaults | Remove inert/duplicate hooks and command collisions; one verify contract; honest runtime support; respect existing design system | 25 before adopter removals. All packed profiles execute checks; no per-prompt verification; failures/skips distinct; oldest/current supported runtime tested; imposed branding removed |
+| 3 | P0 | 80/82/83/87/89; 79/81 removals; 88 core defaults; **102A new** | Remove inert/duplicate hooks and command collisions; one verify contract; honest runtime support; respect existing design system | 25 before adopter removals. All packed profiles execute checks; no per-prompt verification; failures/skips distinct; oldest/current supported runtime tested; imposed branding removed; no shipped `test:e2e`/gstack instruction a generated project cannot run (102A) |
 | 4 | P1 | remaining 21/22 | Release documentation/workflow hygiene | Reconciled status is not open work; retain only remaining checks/input validation and use the Release Action contract |
 | 5 | P1 | 76 → 67; **98 new** | Maintainer/adopter separation and actual cross-tool conformance | Preserve root CLAUDE.md authority; test declared tool versions; root placeholders removed; unsupported commands/hooks explicit |
 | 6 | P1 | 85 → 84; 69/T2/T5; 95 | Accurate context measurement and concise default core | Verify existing 85/95 work; compare actual session loading and task quality before/after; required guidance retrievable; no disk-size-as-context assumption |
@@ -65,7 +65,7 @@ start early; migration dependencies govern rollout to existing installations.
 | 10 | P1 | 75; 70/71 remaining server controls; 19 minimal CI slice | Effective rulesets/check enforcement beyond bypassable local hooks | Doctor read-side evidence; sandbox repo proves denied direct push, failed required check and permitted release path; least-privilege bypass identity |
 | 11 | P1 | 73 → 72; 93; **100 new** | Minimal schemas, computed state/health and consistent roadmap | Begin with status/dependencies/blockers/next action; identical input yields identical state; cycles/missing evidence explicit; score weights/checks documented |
 | 12 | P1 | remaining 15; 27; 17; 28 | Local lifecycle audit, repair/uninstall previews and current CLI docs | After 25 ownership model; no telemetry by default; redacted records; preview writes nothing; user edits survive; help/docs agree |
-| 13 | P2 | 90; 19 optional pack; 91; design manifest/88 extension | Optional process/compliance/API/UX/E2E packs | 34 + 25 + 87; core 88 fixes stay P0. Reversible pack lifecycle; preserve existing tokens; execute E2E/accessibility when installed |
+| 13 | P2 | 90; 19 optional pack; 91 + **102B** (first in row); design manifest/88 extension | Optional process/compliance/API/UX/E2E packs | 34 + 25 + 87; core 88 fixes stay P0. Reversible pack lifecycle; preserve existing tokens; execute E2E/accessibility when installed; E2E pack = Playwright + Playwright Test Agents, deterministic CI, no model needed to run (102) |
 | 14 | P2 | 51 → 52 → 53; T6 | Optional context provider after successful retrieval pilot | 99 task baseline; no accuracy regression; stale/missing index falls back; verify source; exclusions/privacy tested |
 | 15 | P2 | 48/49/50 | MCP/plugin distribution and capability maintenance | Declared versions, least privilege, credential redaction, unavailable-service behavior and safe lifecycle verified; no governance overwrite |
 | 16 | P3 | 30; 23; 31/32/33 beyond packs; 42/43 extensions | Additional stacks and specialist research/handoff/approval flows | Promote only for adopter demand and measurable benefit; no new profile without packed golden path and maintenance owner |
@@ -184,6 +184,29 @@ concise, applicable project requirements belong in the core; details load on dem
 - **98 — Cross-tool conformance (P1):** `tasks/todo/98-cross-tool-conformance.md`.
 - **99 — Task evaluations (P1):** `tasks/todo/99-task-evaluations.md`.
 - **100 — Roadmap consistency (P1):** `tasks/todo/100-roadmap-consistency.md`.
+
+### Proposed revision — 2026-10-26 (pending maintainer acceptance)
+
+Evidence: [effectiveness review 2026-10-26](effectiveness-review-2026-10-26.md).
+The approved order above stands until accepted; ticket status is unchanged.
+
+1. **25** — unchanged top P0 (slice 3 merged in #158; slice 4 draft #159).
+2. **Follow-up B promoted to 0.16.2, with 79/81 guard honesty.**
+   `UserPromptSubmit` ignores matchers, so pre-review runs on every prompt;
+   in Go projects that is a full build/vet/test per prompt. The secret guard
+   fails open under the Windows Store `python3` alias without `jq`. New
+   installs only; existing-adopter removal still needs 25.
+3. **97 + 80/87** — test native deny/ask, the layer that actually enforces,
+   across default/auto/bypass modes on native Windows and WSL2. State that
+   native Windows has no OS sandbox. Dangerous-Bash regex gaps are P1:
+   native `ask` rules already cover them outside `bypassPermissions`.
+4. **99/74B** — start the evaluation design now, in parallel with 2–3;
+   snapshot #2 follows the 2026-08-27 baseline rules.
+5. **84/69/88 + 76-D, then 98** — concise core measured against the 99
+   baseline; exercise Cursor hook loading before adding adapters.
+
+Stale, to correct with #160: line 24 (an update engine exists on `dev`,
+#158) and line 860 (`design-system/scripts/check-tokens.sh` exists).
 
 ## Historical scope catalogue (scheduling superseded)
 
@@ -568,7 +591,8 @@ the packed tarball.
   base. Restores the full gated workflow as a choice, not a default. *(L)*
 - **91. E2E pack**: Playwright config, one smoke journey,
   `@axe-core/playwright` and a 390px project, so item 87's UI gates can be
-  satisfied. *(M)*
+  satisfied. *(M)* Tool decision, `/qa` gstack replacement and the
+  tester-army/e2e pilot (P3): `tasks/todo/102-e2e-testing-approach.md`.
 - **92. Pre-commit review.** Two layers after the corrections land:
   - the git pre-commit hook as the automatic gate for every tool (lint,
     typecheck, fast tests, gitleaks, and item 66's commit-identity check);
