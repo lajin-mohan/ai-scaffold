@@ -101,7 +101,6 @@ async function runLocked(doc, context) {
   if (checked.versions.current) {
     checkExceptionsAtCurrent(checked.flags);
     Object.assign(doc, { status: 'current', exitCode: 0 });
-    doc.notices.push(`Already at ${checked.versions.to}. No files changed.`);
     return;
   }
   const computed = await computePlan({
