@@ -265,9 +265,19 @@ existing app.
 - packed smoke passes, including apply;
 - CI on Ubuntu and Windows was pending at the time of writing.
 
-**Slice 5:** the 2026-10-23 approval above records slice 5 in this PR. The
-2026-10-26 review asks for it to be tracked separately and its authorisation
-confirmed before this PR grows. It is not started, pending that
-confirmation.
+**Slice 5:** the 2026-10-23 approval above stands (about 5 focused days,
+criteria 5A–5D). **Destination changed (maintainer, 2026-10-26): its own PR,
+branched from updated `dev` after #159 squash-merges**, not #159, so slice 4's
+safety implementation and acceptance evidence stay reviewable on their own.
+Not started.
+
+**Added to S7 (maintainer, 2026-10-26):** a `settings.json` classified
+`unowned` stays untouched. The earlier review reproduced apply restoring a
+deny rule while reporting `skip-unowned`. Fixed: the merge is decided only
+when the planner's settings entry is `merge`. A regression test fails
+against the old code.
+
+**Before #159 is marked ready:** re-review both P1 fixes (`02830ea`,
+`6073c2f`).
 
 **Remaining:** S7 (7.1–7.3), S8 (8.1–8.3).
