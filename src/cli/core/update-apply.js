@@ -67,8 +67,18 @@ async function ensureDirectoryChain(root, rel, fsApi) {
   for (let i = 1; i <= segments.length; i++) await createDirectory(root, segments.slice(0, i).join('/'), fsApi);
 }
 
+// BRD Q-01, HLD §5: backups stay out of git, so `git add -A` never commits
+// them (or a crafted journal or marker with them). An existing file is left.
+async function ignoreBackups(root, fsApi) {
+  const rel = `${BACKUPS_REL}/.gitignore`;
+  const checked = await checkContained(root, rel, fsApi);
+  if (checked.ok && checked.exists) return;
+  await createExclusive(root, rel, '*\n', fsApi);
+}
+
 async function createBackupDirectory(root, runId, now, fsApi) {
   await ensureDirectoryChain(root, BACKUPS_REL, fsApi);
+  await ignoreBackups(root, fsApi);
   const stamp = now.toISOString().replace(/[:.]/g, '-');
   const backupDir = `${BACKUPS_REL}/${stamp}-${runId}`;
   if (!(await createDirectory(root, backupDir, fsApi))) {

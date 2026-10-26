@@ -131,7 +131,8 @@ describe('applyTransaction', { timeout: 60_000 }, () => {
     const before = snapshot(root);
     await expect(applyTransaction({ root, ...plan() })).rejects.toMatchObject({ code: 'BACKUP_MISMATCH' });
     expect(snapshot(root)).toEqual(before);
-    const backups = fs.readdirSync(path.join(root, '.ai-scaffold', 'backups'));
+    const backups = fs.readdirSync(path.join(root, '.ai-scaffold', 'backups'), { withFileTypes: true })
+      .filter((e) => e.isDirectory()).map((e) => e.name);
     expect(fs.existsSync(path.join(root, '.ai-scaffold', 'backups', backups[0], 'abandoned'))).toBe(true);
   });
 

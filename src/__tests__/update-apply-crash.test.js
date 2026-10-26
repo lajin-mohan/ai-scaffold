@@ -79,7 +79,7 @@ function files(root) {
 function journalOf(root) {
   const backups = path.join(root, '.ai-scaffold', 'backups');
   if (!fs.existsSync(backups)) return { dir: null, journal: null };
-  const [name] = fs.readdirSync(backups);
+  const [name] = fs.readdirSync(backups, { withFileTypes: true }).filter((e) => e.isDirectory()).map((e) => e.name);
   const dir = path.join(backups, name);
   const file = path.join(dir, 'journal.json');
   return { dir, journal: fs.existsSync(file) ? JSON.parse(fs.readFileSync(file, 'utf-8')) : null };

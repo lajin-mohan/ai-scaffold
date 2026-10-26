@@ -122,6 +122,17 @@ describe.runIf(GIT)('ais update --apply', { timeout: 120_000 }, () => {
     expect(tree(target)).toEqual(before);
   });
 
+  it('backups are ignored by git, so git add -A never commits them (BRD Q-01, #159 review W3)', async () => {
+    const target = await install();
+    makeOlderPristine(target, 'CLAUDE.md', 'older\n');
+    commit(target);
+    const doc = await apply(target);
+    expect(doc.status).toBe('applied');
+    expect(fs.readFileSync(at(target, '.ai-scaffold/backups/.gitignore'), 'utf-8')).toBe('*\n');
+    git(target, 'add', '-A');
+    expect(git(target, 'diff', '--cached', '--name-only')).not.toContain('.ai-scaffold/backups');
+  });
+
   it('keeps an edited file, writes the new version beside it, and exits 2 (6.2)', async () => {
     const target = await install();
     fs.appendFileSync(at(target, 'AGENTS.md'), '\nadopter edit\n');
