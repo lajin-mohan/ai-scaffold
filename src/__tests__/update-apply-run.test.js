@@ -17,6 +17,14 @@ import { hashRaw } from '../cli/core/hashing.js';
 import { runApply } from '../cli/core/update-apply-run.js';
 import { emptyApplyDocument } from '../cli/core/update-apply-run.js';
 import { scaffoldSubset } from '../cli/core/settings-merge.js';
+import { applyTransaction } from '../cli/core/update-apply.js';
+import { buildApplyOps } from '../cli/core/update-apply-ops.js';
+import { readManifestObserved } from '../cli/core/update-manifest.js';
+import { computePlan } from '../cli/core/update-pipeline.js';
+import { checkFlags, checkVersions } from '../cli/core/update-policy.js';
+import { defaultIo } from '../cli/core/update-state.js';
+import { nativeFs } from '../cli/core/write-ops.js';
+import { resolveProjectRoot } from '../cli/core/containment.js';
 
 const GIT = resolveOnPath('git');
 const NOW = new Date(Date.UTC(2026, 9, 15, 12));
@@ -193,5 +201,76 @@ describe.runIf(GIT)('ais update --apply', { timeout: 120_000 }, () => {
     expect(second).toMatchObject({ status: 'current', exitCode: 0 });
     expect(second.notices.join(' ')).toContain('completed (all-final)');
     expect(fs.existsSync(at(target, `${first.backup}/complete`))).toBe(true);
+  });
+});
+
+describe('apply writes only over the state the plan decided on (P1, #159 review)', { timeout: 120_000 }, () => {
+  const io = defaultIo({ ...nativeFs, readdir: (p, o) => fs.promises.readdir(p, o) });
+
+  async function planned(target) {
+    const root = await resolveProjectRoot(target);
+    const { manifest, observed } = await readManifestObserved(root, io);
+    const versions = checkVersions({ installed: manifest.version, cli: NEXT });
+    const computed = await computePlan({ root, manifest, versions, flags: checkFlags({}), io, today: NOW });
+    return { root, computed, versions, manifestObserved: observed };
+  }
+
+  async function buildThenApply(plan) {
+    const { ops, dirs } = await buildApplyOps({ ...plan, now: NOW });
+    try {
+      return await applyTransaction({ root: plan.root, ops, dirs, now: NOW });
+    } catch (error) {
+      return { status: 'refused', error: { code: error.code } };
+    }
+  }
+
+  it('the reviewer repro: a pristine file edited after planning keeps the edit', async () => {
+    const target = await install({ repo: false });
+    makeOlderPristine(target, 'CLAUDE.md', 'older\n');
+    const plan = await planned(target);
+    expect(plan.computed.entries.find((e) => e.path === 'CLAUDE.md').action).toBe('replace');
+    fs.writeFileSync(at(target, 'CLAUDE.md'), 'edited after planning\n');
+    const result = await buildThenApply(plan);
+    expect(result.status).not.toBe('applied');
+    expect(fs.readFileSync(at(target, 'CLAUDE.md'), 'utf-8')).toBe('edited after planning\n');
+  });
+
+  it('settings.json edited after planning is not overwritten by the earlier merge', async () => {
+    const target = await install({ repo: false });
+    editManifest(target, (m) => ({ ...m, version: '0.0.1' }));
+    const file = at(target, '.claude/settings.json');
+    const settings = JSON.parse(fs.readFileSync(file, 'utf-8'));
+    settings.permissions.deny = settings.permissions.deny.slice(1);
+    fs.writeFileSync(file, JSON.stringify(settings, null, 2));
+    const plan = await planned(target);
+    fs.writeFileSync(file, `${JSON.stringify({ ...settings, mine: true }, null, 2)}\n`);
+    const edited = fs.readFileSync(file, 'utf-8');
+    const result = await buildThenApply(plan);
+    expect(result.status).not.toBe('applied');
+    expect(fs.readFileSync(file, 'utf-8')).toBe(edited);
+  });
+
+  it('a file created where the plan saw none is not overwritten by an add', async () => {
+    const target = await install({ repo: false });
+    fs.rmSync(at(target, 'AGENTS.md'));
+    editManifest(target, (m) => ({ ...m, version: '0.0.1', managedFiles: m.managedFiles.filter((r) => r.path !== 'AGENTS.md') }));
+    const plan = await planned(target);
+    expect(plan.computed.entries.find((e) => e.path === 'AGENTS.md').action).toBe('add');
+    fs.writeFileSync(at(target, 'AGENTS.md'), 'created after planning\n');
+    const result = await buildThenApply(plan);
+    expect(result.status).not.toBe('applied');
+    expect(fs.readFileSync(at(target, 'AGENTS.md'), 'utf-8')).toBe('created after planning\n');
+  });
+
+  it('a manifest edited after planning is not overwritten', async () => {
+    const target = await install({ repo: false });
+    makeOlderPristine(target, 'CLAUDE.md', 'older\n');
+    const plan = await planned(target);
+    fs.appendFileSync(at(target, '.ai-scaffold.json'), '\n');
+    const edited = fs.readFileSync(at(target, '.ai-scaffold.json'), 'utf-8');
+    const result = await buildThenApply(plan);
+    expect(result.status).not.toBe('applied');
+    expect(fs.readFileSync(at(target, '.ai-scaffold.json'), 'utf-8')).toBe(edited);
+    expect(fs.readFileSync(at(target, 'CLAUDE.md'), 'utf-8')).toBe('older\n');
   });
 });

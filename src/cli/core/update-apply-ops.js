@@ -36,22 +36,30 @@ async function sidecarOp(root, entry, data, fsApi) {
   return { rel, action: 'write', data, pre: null, final, sidecar: true };
 }
 
-async function mergedSettings(root, computed, fsApi) {
+function mergedSettings(computed) {
   const { settingsFile, decided } = computed;
   if (!settingsFile.valid || !decided) return { op: null, bytes: null };
   const merged = Buffer.from(serializeSettings(applySettingsChanges(settingsFile.local, decided.changes)));
-  const pre = await currentHash(root, SETTINGS, fsApi);
+  // The merge was computed from the bytes read at planning: write only over those.
+  const pre = settingsFile.observed;
   if (pre === hashRaw(merged)) return { op: null, bytes: merged };
   return { op: { rel: SETTINGS, action: 'write', data: merged, pre, final: hashRaw(merged) }, bytes: merged };
 }
 
+function observedPre(entry) {
+  if (entry.observed === undefined) throw new UpdateError('INTERNAL', `No planned state recorded for ${entry.path}`);
+  return entry.observed;
+}
+
 async function entryOp(root, entry, computed, fsApi) {
   const render = computed.renders.get(entry.path);
+  // `pre` is the state the plan decided on, never a fresh read: the
+  // transaction then refuses any file that changed since (FR-41).
   if (entry.action === 'replace' || entry.action === 'add') {
-    return { rel: entry.path, action: 'write', data: render, pre: await currentHash(root, entry.path, fsApi), final: hashRaw(render) };
+    return { rel: entry.path, action: 'write', data: render, pre: observedPre(entry), final: hashRaw(render) };
   }
   if (entry.action === 'remove') {
-    return { rel: entry.path, action: 'remove', pre: await currentHash(root, entry.path, fsApi), final: null };
+    return { rel: entry.path, action: 'remove', pre: observedPre(entry), final: null };
   }
   if (entry.action === 'conflict' && render) return sidecarOp(root, entry, render, fsApi);
   return null;
@@ -104,13 +112,13 @@ async function checkWritable(root, ops, fsApi) {
  * @returns {Promise<{ ops: object[], dirs: string[], sidecars: string[] }>}
  *   `ops` in apply order with the manifest last.
  */
-export async function buildApplyOps({ root, computed, versions, now, fsApi = nativeFs }) {
+export async function buildApplyOps({ root, computed, versions, now, manifestObserved, fsApi = nativeFs }) {
   const ops = [];
   for (const entry of computed.entries) {
     const op = await entryOp(root, entry, computed, fsApi);
     if (op) ops.push(op);
   }
-  const settings = await mergedSettings(root, computed, fsApi);
+  const settings = mergedSettings(computed);
   if (settings.op) ops.push(settings.op);
   const manifest = buildManifestAfter({
     migrated: computed.migrated.manifest, entries: computed.entries, renders: computed.renders,
@@ -118,7 +126,7 @@ export async function buildApplyOps({ root, computed, versions, now, fsApi = nat
     to: versions.to, now,
   });
   const manifestBytes = Buffer.from(serializeManifest(manifest));
-  ops.push({ rel: MANIFEST, action: 'write', data: manifestBytes, pre: await currentHash(root, MANIFEST, fsApi), final: hashRaw(manifestBytes) });
+  ops.push({ rel: MANIFEST, action: 'write', data: manifestBytes, pre: manifestObserved, final: hashRaw(manifestBytes) });
   await checkCollisions(root, ops, computed.renders, fsApi);
   await checkWritable(root, ops, fsApi);
   const dirs = await missingDirectories(root, ops.map((op) => op.rel), fsApi);

@@ -12,7 +12,7 @@ import { checkGitSafety } from './git-state.js';
 import { applyTransaction } from './update-apply.js';
 import { buildApplyOps } from './update-apply-ops.js';
 import { acquireLock, describeLock, releaseLock } from './update-lock.js';
-import { MANIFEST, readManifest } from './update-manifest.js';
+import { MANIFEST, readManifestObserved } from './update-manifest.js';
 import {
   checkOptionNames, computePlan, countActions, lockNotice, planExitCode, publicEntries,
 } from './update-pipeline.js';
@@ -35,7 +35,7 @@ export function emptyApplyDocument() {
 }
 
 async function readChecked(doc, { root, options, cliVersion, io }) {
-  const manifest = await readManifest(root, io);
+  const { manifest, observed: manifestObserved } = await readManifestObserved(root, io);
   doc.profile = typeof manifest.profile === 'string' ? manifest.profile : null;
   doc.installMode = typeof manifest.install?.mode === 'string' ? manifest.install.mode : null;
   checkOptionNames(options);
@@ -45,7 +45,7 @@ async function readChecked(doc, { root, options, cliVersion, io }) {
   if (!isSupportedProfile(manifest.profile)) {
     throw new UpdateError('MANIFEST_INVALID', `Unsupported profile in ${MANIFEST}: ${manifest.profile}`);
   }
-  return { manifest, flags, versions };
+  return { manifest, manifestObserved, flags, versions };
 }
 
 /** FR-38: resolve or refuse interrupted backups; true if one was completed. */
@@ -74,11 +74,11 @@ function setPlanFields(doc, computed) {
   doc.notices.push(...computed.notices);
 }
 
-async function transact(doc, { root, options, versions, computed, fsApi, now }) {
+async function transact(doc, { root, options, versions, computed, manifestObserved, fsApi, now }) {
   if (doc.counts.rejected) {
     throw new UpdateError('PATH_UNSAFE', 'Some paths are unsafe to read or write; nothing was changed. See the rejected entries.');
   }
-  const { ops, dirs, sidecars } = await buildApplyOps({ root, computed, versions, now, fsApi });
+  const { ops, dirs, sidecars } = await buildApplyOps({ root, computed, versions, now, manifestObserved, fsApi });
   doc.gitSafety = checkGitSafety({
     root, writePaths: ops.map((op) => op.rel), allowDirty: options.allowDirty === true, allowNoGit: options.allowNoGit === true,
   });
