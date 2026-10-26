@@ -280,4 +280,32 @@ against the old code.
 **Before #159 is marked ready:** re-review both P1 fixes (`02830ea`,
 `6073c2f`).
 
-**Remaining:** S7 (7.1–7.3), S8 (8.1–8.3).
+## Slice 4: S7 and S8.1 checkpoint, 2026-10-26
+
+| Criterion | Commit | Evidence |
+|---|---|---|
+| Unowned `settings.json` untouched (added to S7) | `a35d852` | Regression test; fails against the old code (file rewritten, deny rule restored) |
+| 7.1 BRD AC-02/03/04/05/06/08/09/12/13/15/16/17/18/19/20/21 | `2a102fb` | `src/__tests__/update-acceptance.test.js`, 17 tests on generated node projects in real git repositories; AC-16/17 SIGKILL the real CLI |
+| 7.2 packed smoke covers apply and real SIGKILL | `d544aa4` | `scripts/update-preview-smoke.js` loads a crash hook into the packed CLI; CI green on Ubuntu and Windows at `ac2b98a` |
+| 7.3 full CLI apply writes only inside the journaled set | `ac2b98a` | `src/__tests__/update-write-scope.test.js`: fsApi recorder plus whole-tree diff over replace, add into a new directory, remove, sidecar and settings merge; a planted stray write fails it |
+| 8.1 docs checked against the packed CLI | `e31751c`, `d3a238c` | README, HOW-TO-USE, CLI reference, CHANGELOG; CLI help banner; 25 claims checked against a freshly packed tarball, all hold |
+
+**Found by 7.1 and fixed (`6e21d5f`):** an FR-41 refusal ended
+`rollback-incomplete` because rollback inspected the refused path, which
+holds the adopter's edit and never this run's bytes. FR-48 requires a
+complete rollback with `CONCURRENT_EDIT`. Rollback now settles entries the
+run did not attempt or did not write; a test that enshrined the old outcome
+was corrected. HLD §10b updated.
+
+**Also:**
+- A version migration can declare retired settings rules and hooks
+  (needed for AC-03).
+- The packed smoke's doctor gate read JSON through `echo | grep -q` under
+  `pipefail`, which raced on Ubuntu; it now uses a here-string (`a7f8228`).
+- **AC-16 note:** a killed apply leaves its lock, and the lock wins over the
+  journal (FR-44), so the first later run reports the stale lock
+  (`not-running`); the interrupted apply is reported once the lock is
+  deleted. Nothing changes on disk at any step.
+
+**Remaining:** 8.2 (backend and security reviews, including the P1
+re-review), 8.3 (ready for review).

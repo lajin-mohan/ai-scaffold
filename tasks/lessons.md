@@ -314,3 +314,20 @@ This file records patterns from mistakes and corrections. Claude reads this at t
   - Each safety property gets a test that tampers with the input in between
     (a crafted journal, an edit after planning). Mutation-check it: the test
     must fail against the unfixed code.
+
+## 2026-10-26 — Code generated through a script lost its escapes, three times (item 25)
+
+- **What happened:** Three edits made by a Node script that wrote JavaScript
+  source (`s.replace(old, new)` with the new text in a template literal)
+  turned `'\n'` into a real newline or dropped regex backslashes, giving
+  unterminated strings and a regex that matched the wrong text. Lint caught
+  two; one was caught only because the smoke check failed.
+- **Why:** The text passes through two or three escaping layers: shell
+  heredoc, the generator's string literal, and the target's. `replace()` also
+  interprets `$` patterns in its replacement string.
+- **Rule:**
+  - Edit source with the Edit tool, whose `new_string` is taken literally.
+  - Use a generator script only for text without backslashes, `$` or
+    backticks.
+  - After any scripted edit, lint the file, then grep for the escapes you
+    expected (`\n`, `\.`) before running anything.
