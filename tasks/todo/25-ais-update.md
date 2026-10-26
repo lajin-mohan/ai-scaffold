@@ -2,7 +2,7 @@
 
 ## Status
 
-**Slices 1–3 merged (#149, #156, #157, #158). Slice 4 (apply): S0–S6 implemented on draft PR lajin-mohan/ai-scaffold#159; two P1 review findings on `e0ab979` fixed (2026-10-26); S7 and S8 remain. Full design acceptance and release approval remain separate.** Design reconciled (BRD v1.3, HLD v2.2, ADR-007 rev 3, 2026-10-15; merged in lajin-mohan/ai-scaffold#156) after the round-3 review; FR-09 corrected after the round-4 review (2026-10-16). Round 3 found the round-2 changes had reached the HLD only; see `docs/architecture/review-25-ais-update.md` § Round 3. FR-20 is decided: restore by default with persisted per-rule exceptions (FR-39).
+**Slices 1–4 merged (#149, #156, #157, #158; slice 4 `ais update --apply` in lajin-mohan/ai-scaffold#159, squash `b21a423`, 2026-10-26). Slice 5 (real-install compatibility matrix) implemented on `feature/25-slice5-compat`, in its own PR. Nothing is released: `npm view` still shows 0.16.1. Full design acceptance and release approval remain separate.** Design reconciled (BRD v1.3, HLD v2.2, ADR-007 rev 3, 2026-10-15; merged in lajin-mohan/ai-scaffold#156) after the round-3 review; FR-09 corrected after the round-4 review (2026-10-16). Round 3 found the round-2 changes had reached the HLD only; see `docs/architecture/review-25-ais-update.md` § Round 3. FR-20 is decided: restore by default with persisted per-rule exceptions (FR-39).
 - The independent review returned **REVISE** (5 BLOCK, 9 WARN, 7 NIT):
   `docs/architecture/review-25-ais-update.md`. It was recovered after a squash
   merge lost it (see the `tasks/lessons.md` entry of 2026-10-12).
@@ -36,7 +36,9 @@ priority and validation are in `docs/process/pre-npm-publish-todo.md`
 ## Key facts carried forward
 
 - Install-time sha256 hashes exist (`manifest.js:111`, `copy.js:98`) from
-  **0.8.6** onward, and `doctor` detects drift, so update is a classifier
+  **0.7.0**, the first CLI release, onward (corrected 2026-10-26 from
+  0.8.6 after slice 5 installed every early version), and `doctor` detects
+  drift, so update is a classifier
   and an applier.
 - `create` records **every** file it writes, including application files
   (`README.md`, `routes/**`, migrations). Update owns only the managed set
@@ -219,7 +221,7 @@ attempts, or anything destructive. The 0.17.0 release is not approved.
 | 8.1 | README, `docs/cli-reference.md`, `HOW-TO-USE.md`, CHANGELOG updated; every claim checked against the packed CLI |
 | 8.2 | Backend and security reviews end with no BLOCK open |
 | 8.3 | #159 ready for review, CI green on Ubuntu and Windows, ticket updated |
-| 5A | Real installs from npm 0.8.5, 0.14.0, 0.16.1 (`create`: node, laravel, python; plus `init`) previewed and applied with the packed tarball: untouched managed files equal a fresh `create`; application files untouched; user-data byte-identical; 0.8.5 replaces and removes nothing (AC-01, AC-07, AC-11, AC-14) |
+| 5A | Real installs from npm 0.8.5, 0.14.0, 0.16.1 (`create`: node, laravel, python; plus `init`) previewed and applied with the packed tarball: untouched managed files equal a fresh `create`; application files untouched; user-data byte-identical; 0.8.5 replaces and removes nothing (AC-01, AC-07, AC-11, AC-14). *Correction 2026-10-26, for maintainer confirmation:* 0.8.5 records hashes (as does every version from 0.7.0), so the last clause cannot hold for a real 0.8.5 install. AC-07 is tested on a 0.8.5 install with `managedFiles` removed, and real 0.8.5 installs must meet the AC-01 checks. 0.8.5 has no python profile |
 | 5B | A Windows clone with `autocrlf=true` classifies as pristine (AC-10) |
 | 5C | A CI job runs 5A and 5B on Ubuntu and Windows |
 | 5D | Evidence report recorded in this ticket |
@@ -357,5 +359,36 @@ spoofing or unsafe behaviour.
   - a Git LFS file may read as modified;
   - N2–N4.
 
-**8.3:** #159 is marked ready once CI passes on the final commit (the code
-of `9085f30` plus `dev`'s documentation-only commits merged in).
+**8.3:** done. #159 was marked ready at `3834da0` with CI green
+(run 40311596999), and squash-merged into `dev` as `b21a423` on 2026-10-26.
+The squash is byte-identical to the verified head.
+
+## Slice 5: real installs from npm, 2026-10-26
+
+Evidence: `docs/qa/item-25-update-compat-evidence.md` and
+`docs/qa/item-25-update-compat-run-windows.md`. The matrix is
+`scripts/update-compat-matrix.js`, run by the CI job `Update compatibility`
+on Ubuntu and Windows, which is part of `CI passed`.
+
+| Criterion | Status | Evidence |
+|---|---|---|
+| 5A | Verified locally (Windows) | 11 real-install cases (0.8.5 node/laravel/init; 0.14.0 and 0.16.1 node/laravel/python/init), all checks pass, no unexplained difference |
+| AC-07 | Verified locally | A 0.8.5 install with `managedFiles` removed: nothing replaced or removed |
+| 5B | Verified locally | `autocrlf=true` init clone with 154 CRLF files: no conflict; create clone stays LF |
+| 5C | Implemented; CI result in the slice 5 PR | `update-compat` job, matrix `ubuntu-latest`, `windows-latest` |
+| 5D | This section and the evidence file | — |
+
+**For maintainer confirmation in the slice 5 PR:**
+- **The 5A wording "0.8.5 replaces and removes nothing" was based on a
+  wrong premise.** Every published version from 0.7.0 records hashes. This
+  is now tested as AC-01 for real 0.8.5 installs and as AC-07 on a manifest
+  without `managedFiles`. The BRD, HLD and ADR-007 are corrected.
+- **ADR-007's v0.7.x follow-up is open:** 0.7.x installs are
+  hash-classified.
+
+**Observation:** the schema-2 migration fills the missing `install` command
+with the generic default `none`, not the profile's (`npm install` for node).
+
+**Remaining:** CI green on both platforms, then the PR ready for review.
+The ticket stays open until slice 5 merges and the 0.17.0 release is
+published (`npm view`).
