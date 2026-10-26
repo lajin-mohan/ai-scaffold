@@ -63,15 +63,19 @@ export async function computePlan({ root, manifest, versions, flags, io, today }
   const planned = await buildUpdatePlan({ root, manifest: migrated.manifest, renders, reader: io });
   const scaffold = JSON.parse(renders.get(SETTINGS)?.toString('utf-8') ?? '{}');
   const { exceptions, dropped } = effectiveExceptions({ recorded: migrated.manifest.settingsExceptions, ...flags, scaffold });
-  const decided = settingsFile.rejected ? null : decideSettingsMerge({
+  const entries = planned.entries.map((entry) => ({ ...entry }));
+  adjustSettingsEntry(entries, settingsFile);
+  // Only a settings entry the planner chose to merge is merged: a stored
+  // `unowned` or `user-data` class, a rejection or invalid JSON leaves the
+  // adopter's file untouched (FR-42).
+  const merging = entries.find((e) => e.path === SETTINGS)?.action === 'merge';
+  const decided = !merging ? null : decideSettingsMerge({
     local: settingsFile.local, localValid: settingsFile.valid, scaffold, exceptions,
     baseState: migrated.settingsBase, recordedBase: migrated.manifest.settingsBase,
     // No release retires settings entries yet (HLD §10); the first one to do
     // so passes its migration's list here, which fills the `removed` group.
     retired: {},
   });
-  const entries = planned.entries.map((entry) => ({ ...entry }));
-  adjustSettingsEntry(entries, settingsFile);
   const notices = [...planned.notices];
   if (decided?.groups.base === 'unknown') notices.push('settings.json has no recorded base: deliberate removals cannot be determined.');
   if (dropped.length > 0) notices.push(`Exceptions for rules no longer shipped are dropped: ${dropped.join(', ')}`);

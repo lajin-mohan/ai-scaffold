@@ -204,6 +204,30 @@ describe.runIf(GIT)('ais update --apply', { timeout: 120_000 }, () => {
   });
 });
 
+describe('unowned settings.json is never written (#159 review)', { timeout: 120_000 }, () => {
+  it('a settings.json recorded as unowned keeps its removed deny rule through preview and apply', async () => {
+    const target = await install();
+    const file = at(target, '.claude/settings.json');
+    const settings = JSON.parse(fs.readFileSync(file, 'utf-8'));
+    const removed = settings.permissions.deny[0];
+    settings.permissions.deny = settings.permissions.deny.slice(1);
+    fs.writeFileSync(file, `${JSON.stringify(settings, null, 2)}
+`);
+    editManifest(target, (m) => ({
+      ...m, version: '0.0.1',
+      managedFiles: m.managedFiles.map((r) => (r.path === '.claude/settings.json' ? { ...r, class: 'unowned' } : r)),
+    }));
+    commit(target);
+    const before = fs.readFileSync(file, 'utf-8');
+    const doc = await apply(target);
+    expect(doc.entries.find((e) => e.path === '.claude/settings.json').action).toBe('skip-unowned');
+    expect(doc.settings).toBeNull();
+    expect(doc.status).toBe('applied');
+    expect(fs.readFileSync(file, 'utf-8')).toBe(before);
+    expect(JSON.parse(fs.readFileSync(file, 'utf-8')).permissions.deny).not.toContain(removed);
+  });
+});
+
 describe('apply writes only over the state the plan decided on (P1, #159 review)', { timeout: 120_000 }, () => {
   const io = defaultIo({ ...nativeFs, readdir: (p, o) => fs.promises.readdir(p, o) });
 
