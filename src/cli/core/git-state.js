@@ -1,8 +1,9 @@
 /**
  * Git safety for `ais update --apply` (item 25, BRD FR-32, FR-33, FR-47).
- * Runs `git rev-parse` and `git status` only, with optional locks off so the
- * index is not refreshed, and with `core.fsmonitor` off so a command
- * configured in the project's own repository never runs.
+ * Runs `git rev-parse`, `git config` (read only) and `git status` only, with
+ * optional locks off so the index is not refreshed, and with `core.fsmonitor`
+ * and every filter driver off and submodules skipped, so no command
+ * configured in the project's own repository runs.
  */
 
 import { spawnSync } from 'child_process';
@@ -18,6 +19,31 @@ function runGit(git, root, args, env) {
   // Resolved from PATH, never from the project directory (item 94); array
   // form, no shell, fixed arguments.
   return spawnSync(git, [...SAFE_GIT_OPTIONS, '-C', root, ...args], { env, encoding: 'utf-8', timeout: GIT_TIMEOUT_MS, windowsHide: true });
+}
+
+// A driver name that would change the meaning of `-c name=value`.
+const UNSAFE_DRIVER_NAME = /[=\0\r\n]/;
+
+/**
+ * Filter drivers configured for the project (its own config, a file it
+ * includes, or the adopter's) run on stat-dirty files during `git status`,
+ * and a copied repository makes every tracked file stat-dirty. Reading config
+ * runs nothing, so each driver found is neutralised for the status call
+ * (#159 security review).
+ * @returns {{ args: string[] } | { error: string }}
+ */
+function filterOverrides(git, root, env) {
+  const listed = runGit(git, root, ['config', '-z', '--includes', '--name-only', '--get-regexp', '^filter\\.'], env);
+  if (listed.status === 1) return { args: [] };
+  if (listed.status !== 0) return { error: (listed.stderr || 'git config failed').trim() };
+  const names = new Set(listed.stdout.split('\0').filter(Boolean)
+    .map((key) => key.slice('filter.'.length, key.lastIndexOf('.'))));
+  const args = [];
+  for (const name of names) {
+    if (UNSAFE_DRIVER_NAME.test(name)) return { error: 'a git filter driver name cannot be neutralised' };
+    args.push('-c', `filter.${name}.clean=`, '-c', `filter.${name}.process=`, '-c', `filter.${name}.required=false`);
+  }
+  return { args };
 }
 
 /** Split `git status --porcelain=v1 -z` output into { code, path } records. */
@@ -50,7 +76,11 @@ export function readGitState(root, { env = process.env, platform = process.platf
     return { state: 'unavailable', reason: detail || 'not inside a git work tree' };
   }
   const prefix = inside.stdout.split('\n')[1]?.trim() ?? '';
-  const status = runGit(git, root, ['status', '--porcelain=v1', '-z', '--untracked-files=all', '--', '.'], env);
+  const filters = filterOverrides(git, root, env);
+  if (filters.error) return { state: 'unavailable', reason: filters.error };
+  // Submodules are skipped: their own config could define drivers too.
+  const status = runGit(git, root,
+    [...filters.args, 'status', '--porcelain=v1', '-z', '--untracked-files=all', '--ignore-submodules=all', '--', '.'], env);
   if (status.status !== 0) return { state: 'unavailable', reason: (status.stderr || 'git status failed').trim() };
   const dirty = parsePorcelain(status.stdout)
     .filter((record) => record.path.startsWith(prefix))

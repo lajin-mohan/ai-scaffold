@@ -101,6 +101,30 @@ describe.runIf(GIT)('checkGitSafety (FR-32, FR-47)', { timeout: 60_000 }, () => 
     expect(fs.existsSync(marker)).toBe(false);
   });
 
+  it.each(['local', 'included'])('a filter driver from the project repository (%s config) never runs (#159 review)', (where) => {
+    const { root } = repo();
+    const marker = path.join(root, 'filter-ran');
+    const script = path.join(root, 'filter.sh');
+    fs.writeFileSync(script, `#!/bin/sh\ntouch "${marker.split(path.sep).join('/')}"\ncat\n`, { mode: 0o755 });
+    fs.writeFileSync(path.join(root, '.git', 'info', 'attributes'), '* filter=evil\n');
+    const clean = script.split(path.sep).join('/');
+    if (where === 'local') {
+      git(root, 'config', 'filter.evil.clean', clean);
+    } else {
+      fs.writeFileSync(path.join(root, 'evil.cfg'), `[filter "evil"]\n\tclean = ${clean}\n`);
+      git(root, 'config', 'include.path', '../evil.cfg');
+    }
+    // Stat-dirty, as every tracked file is in a copied repository.
+    const file = path.join(root, 'CLAUDE.md');
+    fs.utimesSync(file, new Date(2001, 0, 1), new Date(2001, 0, 1));
+    spawnSync(GIT, ['status', '--porcelain'], { cwd: root });
+    expect(fs.existsSync(marker)).toBe(true); // positive control: plain git runs it
+    fs.rmSync(marker);
+    fs.utimesSync(file, new Date(2002, 0, 1), new Date(2002, 0, 1));
+    expect(readGitState(root).state).toBe('repository');
+    expect(fs.existsSync(marker)).toBe(false);
+  });
+
   it('changes outside the planned paths do not block', () => {
     const { root } = repo();
     fs.appendFileSync(path.join(root, 'README.md'), 'adopter edit\n');

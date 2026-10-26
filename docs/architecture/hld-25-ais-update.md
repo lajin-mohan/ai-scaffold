@@ -441,7 +441,14 @@ or rollback incomplete. JSON: `ais-update-apply/1` (FR-45).
    as FR-38 allows; otherwise report and exit 1.
 4. Plan, settings merge and git safety (FR-32, FR-47): not a work tree or no
    `git` → refuse unless `--allow-no-git`; uncommitted planned paths →
-   refuse unless `--allow-dirty`.
+   refuse unless `--allow-dirty`. The project may arrive with a hostile
+   `.git/`, so git runs with `core.fsmonitor` off, optional locks off,
+   submodules skipped, and every filter driver found by a read-only
+   `git config --includes` neutralised (empty `clean`/`process`); a driver
+   name that cannot be passed safely makes git safety unavailable. A file
+   tracked under a real filter (for example Git LFS) may then read as
+   modified, which only matters if it is a planned path (maintainer
+   decision, 2026-10-26).
 5. Write set (FR-49, FR-50): targets, sidecars, temporary names (write and
    rollback), new directories; strict identity key plus dev/ino; collisions
    → `PLAN_COLLISION`; an existing sidecar that differs → `SIDECAR_EXISTS`.
