@@ -10,7 +10,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { resolveProjectRoot } from '../cli/core/containment.js';
 import { hashRaw } from '../cli/core/hashing.js';
 import { applyTransaction } from '../cli/core/update-apply.js';
-import { resolveInterrupted } from '../cli/core/update-recovery.js';
+import { pruneBackups, resolveInterrupted } from '../cli/core/update-recovery.js';
 import { classifyBackup, defaultIo, findInterrupted, interruptedNotice } from '../cli/core/update-state.js';
 import { nativeFs } from '../cli/core/write-ops.js';
 
@@ -191,5 +191,49 @@ describe('a crafted journal never steers recovery deletions (P1, #159 review)', 
     expect(await resolveInterrupted(root, classified)).toBe('abandoned');
     expect(fs.existsSync(at(root, `.claude/rules/new.md.ais-tmp-${RUN}-0`))).toBe(false);
     expect(fs.readFileSync(at(root, 'README.md'), 'utf-8')).toBe('adopter readme\n');
+  });
+});
+
+describe('pruneBackups keeps the adopter backups (#159 security review W2)', { timeout: 60_000 }, () => {
+  const NOW = new Date(Date.UTC(2026, 9, 15, 12));
+  const stamped = (minutesAgo, id) => `${new Date(NOW.getTime() - minutesAgo * 60_000).toISOString().replace(/[:.]/g, '-')}-${id.padEnd(12, '0')}`;
+
+  async function backupsProject(names) {
+    const dir = path.join(tmpDir, `prune${counter++}`);
+    for (const name of names) fse.outputFileSync(path.join(dir, '.ai-scaffold', 'backups', name, 'complete'), '');
+    return resolveProjectRoot(dir);
+  }
+  const listed = (root) => fs.readdirSync(at(root, '.ai-scaffold/backups')).sort();
+
+  it('keeps the five newest finished backups, counting the current one, and never prunes the current one', async () => {
+    const real = [1, 2, 3, 4, 5, 6, 7].map((m) => stamped(m, `a${m}`));
+    const current = stamped(0, 'cccc');
+    const root = await backupsProject([...real, current]);
+    const result = await pruneBackups(root, { current: `.ai-scaffold/backups/${current}`, now: NOW });
+    expect(listed(root)).toEqual([current, ...real.slice(0, 4)].sort());
+    expect(result.failed).toEqual([]);
+  });
+
+  it('planted directories stamped in the future or not named like a backup never displace real ones', async () => {
+    const real = [1, 2].map((m) => stamped(m, `b${m}`));
+    const planted = ['9999-12-31T00-00-00-000Z-ffffffffffff', '9999-12-31T00-00-00-001Z-ffffffffffff', 'zzz-planted', 'b1', 'x'];
+    const current = stamped(0, 'dddd');
+    const root = await backupsProject([...real, ...planted, ...planted.map((p) => `${p}2`), current]);
+    await pruneBackups(root, { current: `.ai-scaffold/backups/${current}`, now: NOW, keep: 2 });
+    const left = listed(root);
+    expect(left).toContain(current);
+    expect(left).toContain(real[0]);
+    for (const name of planted) expect(left).toContain(name);
+  });
+
+  it('a link inside a pruned backup is removed without following it', async () => {
+    const old = stamped(10, 'eeee');
+    const root = await backupsProject([old, stamped(0, 'ffff')]);
+    const outside = path.join(tmpDir, `outside${counter++}`);
+    fse.outputFileSync(path.join(outside, 'keep.txt'), 'outside\n');
+    fs.symlinkSync(outside, at(root, `.ai-scaffold/backups/${old}/link`), process.platform === 'win32' ? 'junction' : 'dir');
+    await pruneBackups(root, { keep: 1, now: NOW });
+    expect(listed(root)).not.toContain(old);
+    expect(fs.readFileSync(path.join(outside, 'keep.txt'), 'utf-8')).toBe('outside\n');
   });
 });

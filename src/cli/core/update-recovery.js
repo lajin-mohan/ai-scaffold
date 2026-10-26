@@ -20,25 +20,41 @@ async function isTerminalBackup(root, backup, fsApi) {
   return false;
 }
 
+// The directory name an apply creates: its UTC start time, then its run id.
+const BACKUP_NAME = /^(\d{4}-\d\d-\d\dT\d\d-\d\d-\d\d-\d{3}Z)-[0-9a-f]{12}$/;
+
+const stampOf = (date) => date.toISOString().replace(/[:.]/g, '-');
+
+// Stamps share one fixed-width format, so string order is time order.
+function isPrunable(name, latest) {
+  const match = BACKUP_NAME.exec(name);
+  return match !== null && match[1] <= latest;
+}
+
 /**
- * Keep the last KEEP_BACKUPS terminal backups (HLD §10b). Only contained,
- * marked backup directories are removed; an unmarked one is never pruned.
+ * Keep the last KEEP_BACKUPS terminal backups (HLD §10b), the current run's
+ * included. Only contained, marked directories named as an apply names them
+ * and stamped no later than now are candidates, so planted directories
+ * cannot push real backups out; the current run's backup is never removed.
  * Failures are returned, not thrown: pruning never undoes an apply.
  * @returns {Promise<{ removed: string[], failed: string[] }>}
  */
-export async function pruneBackups(root, { fsApi = nativeFs, keep = KEEP_BACKUPS } = {}) {
+export async function pruneBackups(root, { fsApi = nativeFs, keep = KEEP_BACKUPS, current = null, now = new Date() } = {}) {
   const outcome = { removed: [], failed: [] };
   const backups = await checkDirectory(root, BACKUPS_DIR, fsApi);
   if (!backups.ok || !backups.exists) return outcome;
+  const latest = stampOf(now);
   const names = (await fs.promises.readdir(backups.abs, { withFileTypes: true }))
     .filter((entry) => entry.isDirectory() && !entry.isSymbolicLink())
     .map((entry) => entry.name)
+    .filter((name) => isPrunable(name, latest) && `${BACKUPS_DIR}/${name}` !== current)
     .sort();
   const terminal = [];
   for (const name of names) {
     if (await isTerminalBackup(root, `${BACKUPS_DIR}/${name}`, fsApi)) terminal.push(`${BACKUPS_DIR}/${name}`);
   }
-  for (const backup of terminal.slice(0, Math.max(0, terminal.length - keep))) {
+  const keepOthers = Math.max(0, keep - (current ? 1 : 0));
+  for (const backup of terminal.slice(0, Math.max(0, terminal.length - keepOthers))) {
     const checked = await checkDirectory(root, backup, fsApi);
     try {
       if (!checked.ok) throw new Error(checked.reason);

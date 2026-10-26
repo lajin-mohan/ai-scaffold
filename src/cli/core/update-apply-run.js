@@ -89,7 +89,7 @@ async function transact(doc, { root, options, versions, computed, manifestObserv
     return;
   }
   for (const sidecar of sidecars) doc.notices.push(`Wrote ${sidecar}: merge it into the original, then delete it.`);
-  const pruned = await pruneBackups(root, { fsApi });
+  const pruned = await pruneBackups(root, { fsApi, current: result.backupDir, now });
   if (pruned.failed.length > 0) doc.notices.push(`Old backups could not be removed: ${pruned.failed.join(', ')}.`);
   Object.assign(doc, { status: 'applied', exitCode: planExitCode(doc.counts, doc.settings) });
 }
