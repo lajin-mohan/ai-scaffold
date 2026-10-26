@@ -73,8 +73,26 @@ export async function readManifestObserved(root, io) {
   return { manifest: validateManifest(manifest), observed: hashRaw(read.data) };
 }
 
+const RULE_LISTS = ['allow', 'deny', 'ask'];
+const isStringArray = (value) => Array.isArray(value) && value.every((item) => typeof item === 'string');
+
+// The shape the merge reads. Anything else is treated like invalid JSON
+// (FR-24) rather than crashing the merge (#159 review).
+function hasSettingsShape(local) {
+  const { permissions, hooks } = local;
+  if (permissions !== undefined) {
+    if (!isObject(permissions)) return false;
+    if (!RULE_LISTS.every((type) => permissions[type] === undefined || isStringArray(permissions[type]))) return false;
+  }
+  if (hooks === undefined) return true;
+  if (!isObject(hooks)) return false;
+  return Object.values(hooks).every((groups) => Array.isArray(groups)
+    && groups.every((group) => isObject(group) && (group.hooks === undefined || Array.isArray(group.hooks))));
+}
+
 /**
- * @returns {Promise<{ local: object|null, valid: boolean, pristine: boolean|null, rejected?: string }>}
+ * @returns {Promise<{ local: object|null, valid: boolean, pristine: boolean|null,
+ *   rejected?: string, invalidReason?: 'invalid-json'|'invalid-shape' }>}
  *   `rejected` carries the reason; the preview reports it and merges nothing.
  */
 export async function readSettings(root, manifest, io) {
@@ -84,10 +102,13 @@ export async function readSettings(root, manifest, io) {
   const observed = hashRaw(read.data);
   const record = (manifest.managedFiles ?? []).find((r) => safeKey(r.path) === pathKey(SETTINGS));
   const pristine = record ? isPristine(read.data, record) : null;
+  let local;
   try {
-    const local = JSON.parse(read.data.toString('utf-8'));
-    return isObject(local) ? { local, valid: true, pristine, observed } : { local: null, valid: false, pristine, observed };
+    local = JSON.parse(read.data.toString('utf-8'));
   } catch {
-    return { local: null, valid: false, pristine, observed };
+    return { local: null, valid: false, pristine, observed, invalidReason: 'invalid-json' };
   }
+  if (!isObject(local)) return { local: null, valid: false, pristine, observed, invalidReason: 'invalid-json' };
+  if (!hasSettingsShape(local)) return { local: null, valid: false, pristine, observed, invalidReason: 'invalid-shape' };
+  return { local, valid: true, pristine, observed };
 }

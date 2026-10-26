@@ -49,7 +49,7 @@ function adjustSettingsEntry(entries, settingsFile) {
   // The first read decides: a later read that succeeds must not turn a
   // rejected settings target back into a merge.
   if (settingsFile.rejected) Object.assign(settingsEntry, { action: 'rejected', reason: settingsFile.rejected, recordAfter: 'carry' });
-  else if (!settingsFile.valid) Object.assign(settingsEntry, { action: 'conflict', reason: 'invalid-json' });
+  else if (!settingsFile.valid) Object.assign(settingsEntry, { action: 'conflict', reason: settingsFile.invalidReason ?? 'invalid-json' });
 }
 
 /**

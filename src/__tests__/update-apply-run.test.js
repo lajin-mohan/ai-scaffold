@@ -133,6 +133,23 @@ describe.runIf(GIT)('ais update --apply', { timeout: 120_000 }, () => {
     expect(git(target, 'diff', '--cached', '--name-only')).not.toContain('.ai-scaffold/backups');
   });
 
+  it.each([
+    ['permissions is not an object', { permissions: 'x' }],
+    ['a rule list is not an array', { permissions: { deny: 'rm' } }],
+    ['a rule is not a string', { permissions: { allow: [1] } }],
+    ['hooks is not an object of arrays', { hooks: { PreToolUse: 'x' } }],
+  ])('settings.json whose %s is a conflict, never merged or rewritten (FR-24, #159 review)', async (_name, settings) => {
+    const target = await install();
+    fs.writeFileSync(at(target, '.claude/settings.json'), `${JSON.stringify(settings)}\n`);
+    commit(target);
+    const before = fs.readFileSync(at(target, '.claude/settings.json'), 'utf-8');
+    const doc = await apply(target);
+    expect(doc).toMatchObject({ status: 'applied', exitCode: 2, settings: null });
+    expect(doc.entries.find((e) => e.path === '.claude/settings.json')).toMatchObject({ action: 'conflict', reason: 'invalid-shape' });
+    expect(fs.readFileSync(at(target, '.claude/settings.json'), 'utf-8')).toBe(before);
+    expect(fs.existsSync(at(target, '.claude/settings.json.ais-new'))).toBe(true);
+  });
+
   it('keeps an edited file, writes the new version beside it, and exits 2 (6.2)', async () => {
     const target = await install();
     fs.appendFileSync(at(target, 'AGENTS.md'), '\nadopter edit\n');
