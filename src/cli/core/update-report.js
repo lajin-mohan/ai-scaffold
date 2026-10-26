@@ -51,7 +51,7 @@ function settingsLines(settings) {
 
 function rollbackLines(doc) {
   if (!Array.isArray(doc.rollback)) return [];
-  const unsettled = doc.rollback.filter((s) => !['restored', 'untouched', 'removed'].includes(s.state));
+  const unsettled = doc.rollback.filter((s) => !['restored', 'untouched', 'removed', 'not-written', 'not-attempted'].includes(s.state));
   return unsettled.map((s) => `  restore by hand: ${s.rel} (${s.state}${s.reason ? `, ${s.reason}` : ''})`);
 }
 

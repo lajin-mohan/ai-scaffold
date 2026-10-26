@@ -135,20 +135,34 @@ async function removeDirectories(root, dirs, fsApi, states) {
   }
 }
 
-const SETTLED = new Set(['restored', 'untouched', 'removed']);
+const SETTLED = new Set(['restored', 'untouched', 'removed', 'not-written', 'not-attempted']);
+
+/**
+ * State of one entry relative to how far the run got: entries after the
+ * failing one were never attempted; the failing one was written only if it
+ * holds this run's final bytes, since a write lands by one atomic rename.
+ */
+async function rollbackState(root, journal, index, attempted, fsApi) {
+  const entry = journal.entries[index];
+  if (index >= attempted) return 'not-attempted';
+  if (index === attempted - 1 && (await currentHash(root, entry.rel, fsApi)) !== entry.final) return 'not-written';
+  return rollbackEntry(root, journal.backupDir, entry, fsApi);
+}
 
 /**
  * FR-48: reverse order, only paths still holding this run's bytes, then the
  * journal-named temporary files, then the directories this run created
- * (`createdDirs`; recovery passes the journal's list). Complete only when
- * every path settled and no temporary file or created directory remains.
+ * (`createdDirs`; recovery passes the journal's list). `attempted` is how
+ * many entries the run reached, the last being the one that failed. Complete
+ * only when every path settled and no temporary file or created directory
+ * remains.
  */
-export async function rollback(root, journal, fsApi = nativeFs, createdDirs = journal.dirs) {
+export async function rollback(root, journal, { fsApi = nativeFs, createdDirs = journal.dirs, attempted = journal.entries.length } = {}) {
   const states = [];
   for (const [index, entry] of [...journal.entries.entries()].reverse()) {
     emit('rollback-step', { index });
     try {
-      states.push({ rel: entry.rel, state: await rollbackEntry(root, journal.backupDir, entry, fsApi) });
+      states.push({ rel: entry.rel, state: await rollbackState(root, journal, index, attempted, fsApi) });
     } catch (error) {
       states.push({ rel: entry.rel, state: 'failed', reason: error.code ?? 'ERROR' });
     }
@@ -189,17 +203,19 @@ export async function applyTransaction({ root, ops, dirs = [], meta, fsApi = nat
     throw error;
   }
   const createdDirs = [];
+  let attempted = 0;
   try {
     for (const dir of dirs) {
       if (await createDirectory(root, dir, fsApi)) createdDirs.push(dir);
       emit('dir-created', { dir });
     }
     for (const [index, entry] of journal.entries.entries()) {
+      attempted = index + 1;
       await applyEntry(root, entry, ops[index].data, fsApi);
       emit('write-done', { index, last: index === journal.entries.length - 1 });
     }
   } catch (error) {
-    const result = await rollback(root, journal, fsApi, createdDirs);
+    const result = await rollback(root, journal, { fsApi, createdDirs, attempted });
     const status = result.complete ? 'rolled-back' : 'rollback-incomplete';
     const code = result.complete ? (error.code ?? 'ERROR') : 'ROLLBACK_INCOMPLETE';
     return { status, backupDir, error: { code, message: error.message }, rollback: result.states };

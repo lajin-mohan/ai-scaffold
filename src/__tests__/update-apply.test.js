@@ -135,7 +135,7 @@ describe('applyTransaction', { timeout: 60_000 }, () => {
     expect(fs.existsSync(path.join(root, '.ai-scaffold', 'backups', backups[0], 'abandoned'))).toBe(true);
   });
 
-  it('a concurrent edit before its write stops the run and is never overwritten (FR-41)', async () => {
+  it('a concurrent edit before its write stops the run, is never overwritten, and the rollback is complete (FR-41, FR-48)', async () => {
     const root = await project();
     const listener = (event) => {
       if (event.stage === 'write-done' && event.index === 0) {
@@ -151,9 +151,11 @@ describe('applyTransaction', { timeout: 60_000 }, () => {
     }
     expect(fs.readFileSync(path.join(root, '.claude', 'rules', 'old.md'), 'utf-8')).toBe('adopter edit\n');
     expect(fs.readFileSync(path.join(root, '.claude', 'rules', 'a.md'), 'utf-8')).toBe('rule a v1\n');
-    expect(result.status).toBe('rollback-incomplete');
-    expect(result.rollback.find((s) => s.rel === '.claude/rules/old.md').state).toBe('conflict');
-    expect(fs.existsSync(path.join(backupDirOf(root, result), 'rollback.json'))).toBe(true);
+    // FR-48: the refused path never held this run's bytes, so nothing of the
+    // run remains and the rollback completes with the FR-41 code.
+    expect(result).toMatchObject({ status: 'rolled-back', error: { code: 'CONCURRENT_EDIT' } });
+    expect(result.rollback.find((s) => s.rel === '.claude/rules/old.md').state).toBe('not-written');
+    expect(fs.existsSync(path.join(backupDirOf(root, result), 'rolled-back'))).toBe(true);
   });
 
   it('rollback leaves an adopter edit to an already-written file and reports it (FR-48)', async () => {
