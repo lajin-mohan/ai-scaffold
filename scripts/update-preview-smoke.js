@@ -86,8 +86,13 @@ expectJson('already current: one document, exit 0', ['update', current], { statu
 expectJson('exception flags at the installed version fail', ['update', current, '--keep-removed', 'Read(.env)'],
   { status: 1, docStatus: 'error', code: 'EXCEPTIONS_AT_CURRENT' });
 
+// A fresh install is schema 2 already; model a pre-schema-2 (0.16.1) manifest.
+function toLegacy({ manifestSchema: _schema, settingsBase: _base, ...rest }) {
+  return { ...rest, version: '0.1.0', managedFiles: rest.managedFiles.map(({ class: _class, ...record }) => record) };
+}
+
 const older = project('older');
-setManifest(older, (m) => ({ ...m, version: '0.1.0' }));
+setManifest(older, toLegacy);
 const manifestBytes = fs.readFileSync(path.join(older, '.ai-scaffold.json'));
 const planned = expectJson('older install: planned, no conflicts, exit 0', ['update', older], { status: 0, docStatus: 'planned' });
 check('planned document has sorted entries and the schema-2 migration',
