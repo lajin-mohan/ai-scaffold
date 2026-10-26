@@ -2,7 +2,7 @@
 
 ## Status
 
-**Slices 1–3 merged (#149, #156, #157, #158). Slice 4 (apply): contracts approved for documentation (2026-10-19); implementation awaits approval of these contracts. Full design acceptance, remaining budget and release approval remain separate.** Design reconciled (BRD v1.3, HLD v2.2, ADR-007 rev 3, 2026-10-15; merged in lajin-mohan/ai-scaffold#156) after the round-3 review; FR-09 corrected after the round-4 review (2026-10-16). Round 3 found the round-2 changes had reached the HLD only; see `docs/architecture/review-25-ais-update.md` § Round 3. FR-20 is decided: restore by default with persisted per-rule exceptions (FR-39).
+**Slices 1–3 merged (#149, #156, #157, #158). Slice 4 (apply): S0–S6 implemented on draft PR lajin-mohan/ai-scaffold#159; two P1 review findings on `e0ab979` fixed (2026-10-26); S7 and S8 remain. Full design acceptance and release approval remain separate.** Design reconciled (BRD v1.3, HLD v2.2, ADR-007 rev 3, 2026-10-15; merged in lajin-mohan/ai-scaffold#156) after the round-3 review; FR-09 corrected after the round-4 review (2026-10-16). Round 3 found the round-2 changes had reached the HLD only; see `docs/architecture/review-25-ais-update.md` § Round 3. FR-20 is decided: restore by default with persisted per-rule exceptions (FR-39).
 - The independent review returned **REVISE** (5 BLOCK, 9 WARN, 7 NIT):
   `docs/architecture/review-25-ais-update.md`. It was recovered after a squash
   merge lost it (see the `tasks/lessons.md` entry of 2026-10-12).
@@ -223,3 +223,51 @@ attempts, or anything destructive. The 0.17.0 release is not approved.
 | 5B | A Windows clone with `autocrlf=true` classifies as pristine (AC-10) |
 | 5C | A CI job runs 5A and 5B on Ubuntu and Windows |
 | 5D | Evidence report recorded in this ticket |
+
+## Slice 4 (apply): S3–S6 checkpoint and #159 review, 2026-10-26
+
+| Step | Commit | Result |
+|---|---|---|
+| S3 recovery classification, lock reporting | `796e76a` | `no-journal` / `all-pre-run` abandoned, `all-final` completed, others refused `INTERRUPTED_APPLY`; lock pid, host, age, liveness |
+| S4 git safety | `60dec64` | 9 tests (criteria 4.1–4.3) |
+| S5 settings write, manifest after apply | `a3806e7` | 15 settings tests; B3 manifest rule |
+| S6 CLI wiring | `e0ab979` | `--apply`, `--allow-dirty`, `--allow-no-git`; FR-46 retired; 8 apply integration tests; doctor `.ais-new` warning and `hashing.js` (6.3); create/init schema 2 (6.4) |
+| Packed smoke fixture | `88dcd78` | Older install modelled as pre-schema-2; smoke covers apply on the packed CLI |
+
+**Review of `e0ab979` (maintainer, 2026-10-26): two P1, both reproduced and fixed.**
+
+| Finding | Fix | Evidence |
+|---|---|---|
+| Recovery deleted any path a journal named as a temporary (crafted `tmp: "README.md"` → README deleted), before git safety | `02830ea`: journal accepted only in the exact apply shape (schema, run id matching its backup directory, contained paths, derived temporary names, directories that are ancestors of journaled paths); recovery derives names itself | 8 tests incl. the reviewer repro; all 7 crafted-journal tests fail against the old code |
+| Apply re-read `pre` after planning, so an edit between planning and writing was overwritten (managed files and settings) | `6073c2f`: the planner records the hash or absence it decided on; settings and manifest carry the bytes they were read from; operations use those, so the transaction refuses later changes | 4 tests (pristine file, settings, an add over a new file, the manifest); each fails against the old code |
+
+Lesson recorded in `tasks/lessons.md` (2026-10-26).
+
+**Criterion 6.4 evidence (local Windows, packed tarball vs npm 0.16.1).**
+Same project names, clock pinned to 2026-10-15T12:00Z through an `--import`
+preload, `create` for node, python and laravel, and `init` for node into an
+existing app.
+
+- `create`: only `.ai-scaffold.json` differs. Its differences are
+  `install.mode`, `manifestSchema`, `settingsBase` and a `class` on every
+  record. All paths and hashes are identical.
+- `init`: the same manifest fields, plus `.ai-scaffold/README.md`. That
+  file now holds the project README: the slice 2 Windows fix recorded in
+  `CHANGELOG.md` (0.16.1 planned the path twice, and the generic README
+  overwrote it).
+- No unexplained difference.
+
+**Verification at `6073c2f`:**
+
+- lint and typecheck pass;
+- full suite 675 passed, 13 skipped, plus the 3 known machine-specific
+  failures (they fail on base `3f3d2ee` too);
+- packed smoke passes, including apply;
+- CI on Ubuntu and Windows was pending at the time of writing.
+
+**Slice 5:** the 2026-10-23 approval above records slice 5 in this PR. The
+2026-10-26 review asks for it to be tracked separately and its authorisation
+confirmed before this PR grows. It is not started, pending that
+confirmation.
+
+**Remaining:** S7 (7.1–7.3), S8 (8.1–8.3).
