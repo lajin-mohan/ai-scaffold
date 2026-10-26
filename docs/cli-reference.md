@@ -17,7 +17,7 @@ run any command via `npx @lajin.m/ai-scaffold <command>` without installing.
 | [`doctor`](#ais-doctor-target-dir) | Diagnose scaffold installation health |
 | [`list`](#ais-list-category-target-dir) | List installed commands, agents, skills, and rules |
 | [`export-context`](#ais-export-context-target-dir) | Back up memory/lessons/settings before a reinstall |
-| [`update`](#ais-update-target-dir) | Preview what updating to this CLI version would change (read-only) |
+| [`update`](#ais-update-target-dir) | Preview what updating to this CLI version would change; `--apply` applies it |
 
 **Bare shortcuts:** `ais <name>` routes to `create <name>`; `ais .` routes to
 `init` in the current directory.
@@ -112,8 +112,9 @@ ais status ./my-project --json
 ## `ais doctor [target-dir]`
 
 Deep health check: validates the manifest, required files, project memory,
-settings overrides, managed files, meaningful setup values, wired hooks,
-verification commands, and git presence. Exits non-zero when a critical or
+settings overrides, managed files (a line-ending-only difference is not a
+modification), unmerged `.ais-new` files left by `ais update --apply`,
+meaningful setup values, wired hooks, verification commands, and git presence. Exits non-zero when a critical or
 high-severity check fails, so CI and scripts can gate on it.
 
 It also reports **effective** governance rather than configured intent:
@@ -236,30 +237,44 @@ ais export-context ./my-project --out ~/backups/my-project
 
 ## `ais update [target-dir]`
 
-**Read-only preview in the current release.** Shows what updating the project
-to this CLI's version would change and writes nothing. Applying is not
-available yet; until it is, the supported upgrade path is `export-context` →
-delete → `create` (see "Before You Reinstall" in the README).
+Without `--apply`, a **read-only preview**: shows what updating the project to
+this CLI's version would change and writes nothing. With `--apply`, applies
+that plan: takes the update lock, resolves an interrupted earlier update where
+it can, checks git, backs up every file it will change, writes, and rolls back
+on failure. The README's "Update An Installed Scaffold" section describes what
+is replaced, kept, merged and never touched.
 
 ```bash
-ais update
-ais update ./my-project --json
+ais update                               # preview
+ais update --apply                       # apply
+ais update ./my-project --json           # one JSON document
 npx @lajin.m/ai-scaffold@0.17.0 update   # preview against another version
 ```
 
 | Option | Meaning |
 |---|---|
-| `--json` | Print exactly one JSON document (`ais-update-preview/1`) to stdout, in every outcome |
+| `--apply` | Apply the update: back up, write, roll back on failure |
+| `--allow-dirty` | With `--apply`, proceed although files the update changes have uncommitted git changes |
+| `--allow-no-git` | With `--apply`, proceed although git safety cannot be checked (no repository, or no `git`) |
+| `--json` | Print exactly one JSON document to stdout in every outcome: `ais-update-preview/1`, or `ais-update-apply/1` with `--apply` |
 | `--target-version <version>` | Must equal this CLI's version; otherwise the error names the `npx …@<version> update` form |
-| `--keep-removed <rule>` | Show the effect of keeping a removed scaffold `deny`/`ask` rule removed (repeatable). Takes effect only during an update |
-| `--restore-removed <rule>` | Show the effect of restoring such a rule (repeatable) |
-| `--dry-run` | Accepted; update is always a preview in this version |
+| `--keep-removed <rule>` | Keep a removed scaffold `deny`/`ask` rule removed (repeatable); saved by `--apply` |
+| `--restore-removed <rule>` | Restore a rule kept removed (repeatable); saved by `--apply` |
+| `--dry-run` | Preview only; overrides `--apply` |
 | `--force` | **Removed in 0.17.0**; exits 1 |
-| `--apply` | Not available in this version; exits 1 |
 
-Exit codes: `0` no planning conflicts (not a statement that applying is safe;
-git state is not checked yet), `2` conflicts present, `1` error, lock held by
-another update, or an interrupted apply.
+What `--apply` leaves behind:
+
+| Path | Meaning |
+|---|---|
+| `<file>.ais-new` | The new version of a scaffold file you edited. Merge, then delete it; `ais doctor` warns until you do. A differing one already present stops the next apply (`SIDECAR_EXISTS`) |
+| `.ai-scaffold/backups/<timestamp>-<id>/` | Copies of every file the apply changed, its journal, and a marker: `complete`, `rolled-back` or `abandoned`. The last five such backups are kept |
+| `.ai-scaffold/update.lock` | Present only while an update runs. A lock left by a killed update is reported with its pid, host, age and whether that process is still running; delete it once no update is running |
+
+Exit codes: `0` nothing to merge (applied, already current, or a preview with
+no conflicts; a preview does not check git), `2` conflicts (a preview found
+some, or an apply wrote `.ais-new` files), `1` error, refusal, lock held,
+interrupted update, or a rolled-back apply.
 
 ---
 

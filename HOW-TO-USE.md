@@ -297,16 +297,19 @@ There are two versions to understand:
 | `ais --version` | CLI version installed on your machine |
 | `ais status` | Scaffold version installed in the current project |
 
-`ais update` is currently a read-only preview: it shows what an update would
-change and writes nothing. Applying is not available yet. Until it is, update
-carefully:
+To update, preview first, then apply with your work committed:
 
 ```bash
-ais doctor
-ais init --profile <profile> --dry-run
+ais update            # read-only: what would change
+ais update --apply    # back up, write, roll back on failure
+ais doctor            # warns while any .ais-new file is left to merge
 ```
 
-Review the dry run before applying any changes.
+`--apply` replaces only scaffold files you have not edited. For a file you
+changed, it keeps yours and writes the new version beside it as
+`<file>.ais-new`: merge what you want, then delete the `.ais-new` file. The
+README's "Update An Installed Scaffold" section lists what apply never
+touches, how `.claude/settings.json` is merged, and the exit codes.
 
 ---
 
