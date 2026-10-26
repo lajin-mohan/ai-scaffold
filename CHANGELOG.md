@@ -21,6 +21,11 @@ This file is configured with `merge=union` in `.gitattributes` so parallel addit
   Plan paths are now always POSIX, matching Linux and macOS. Projects
   created with `ais create` are unaffected. Found by the item 25 render
   guard test.
+- **The Windows item 94 exec-path tests timed out under load.** Each test
+  launches a freshly copied `node.exe` as `gh.exe`, and the first launch of a
+  new unsigned executable waits on the antivirus scan (3–7s measured, more
+  under suite load). The block now carries an explicit 30s timeout; what it
+  asserts is unchanged. Test-only; nothing shipped changes.
 
 ### Changed
 - **`{{YEAR}}` and every generated date now come from one UTC clock per
