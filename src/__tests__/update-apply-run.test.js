@@ -134,6 +134,28 @@ describe.runIf(GIT)('ais update --apply', { timeout: 120_000 }, () => {
     expect(git(target, 'diff', '--cached', '--name-only')).not.toContain('.ai-scaffold/backups');
   });
 
+  it('a lock left by a crash is ignored by git in a new install (maintainer request, #159)', async () => {
+    const target = await install();
+    fs.writeFileSync(at(target, '.ai-scaffold/update.lock'), '{}');
+    fse.outputFileSync(at(target, '.ai-scaffold/backups/b/journal.json'), '{}');
+    git(target, 'add', '-A');
+    const staged = git(target, 'diff', '--cached', '--name-only');
+    expect(staged).not.toContain('update.lock');
+    expect(staged).not.toContain('.ai-scaffold/backups');
+  });
+
+  it('an install without .ai-scaffold/.gitignore gets it from its next apply, journaled', async () => {
+    const target = await install();
+    fs.rmSync(at(target, '.ai-scaffold/.gitignore'));
+    editManifest(target, (m) => ({ ...m, managedFiles: m.managedFiles.filter((r) => r.path !== '.ai-scaffold/.gitignore') }));
+    commit(target);
+    const doc = await apply(target);
+    expect(doc.entries.find((e) => e.path === '.ai-scaffold/.gitignore')).toMatchObject({ class: 'managed', action: 'add' });
+    const journal = JSON.parse(fs.readFileSync(at(target, `${doc.backup}/journal.json`), 'utf-8'));
+    expect(journal.entries.map((e) => e.rel)).toContain('.ai-scaffold/.gitignore');
+    expect(fs.readFileSync(at(target, '.ai-scaffold/.gitignore'), 'utf-8')).toMatch(/^update\.lock$/m);
+  });
+
   it.each([
     ['permissions is not an object', { permissions: 'x' }],
     ['a rule list is not an array', { permissions: { deny: 'rm' } }],

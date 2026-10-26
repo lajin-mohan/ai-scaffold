@@ -285,7 +285,8 @@ update.js
      │     (never broken automatically; released in `finally`; preview only reports a lock)
      ├─ refuse if dirty ∩ (writes ∪ deletes ∪ settings) ≠ ∅, .ais-new exempt   FR-32
      ├─ pre-flight: every target writable, containment checked (§7)           W7
-     ├─ backup → .ai-scaffold/backups/<ts>/ (self-ignoring .gitignore, path printed)
+     ├─ backup → .ai-scaffold/backups/<ts>/ (self-ignoring .gitignore, path printed;
+     │     the managed .ai-scaffold/.gitignore also ignores backups/ and update.lock)
      ├─ journal.json written to the backup dir BEFORE the first write          FR-38
      │     records from/to, every path with its expected final hash or absence, and the
      │     new manifest's hash (all computed before the first write)

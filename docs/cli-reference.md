@@ -273,6 +273,7 @@ What `--apply` leaves behind:
 | `<file>.ais-new` | The new version of a scaffold file you edited. Merge, then delete it; `ais doctor` warns until you do. A differing one already present stops the next apply (`SIDECAR_EXISTS`) |
 | `.ai-scaffold/backups/<timestamp>-<id>/` | Copies of every file the apply changed, its journal, and a marker: `complete`, `rolled-back` or `abandoned`. The last five such backups are kept |
 | `.ai-scaffold/update.lock` | Present only while an update runs. A lock left by a killed update is reported with its pid, host, age and whether that process is still running; delete it once no update is running |
+| `.ai-scaffold/.gitignore` | Keeps `update.lock` and `backups/` out of git. Written at install; an older project gets it from its next `--apply` |
 
 Exit codes: `0` nothing to merge (applied, already current, or a preview with
 no conflicts; a preview does not check git), `2` conflicts (a preview found

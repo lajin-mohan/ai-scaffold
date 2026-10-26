@@ -62,8 +62,11 @@ This file is configured with `merge=union` in `.gitattributes` so parallel addit
   managed file's ownership class, the install mode, and the scaffold's own
   `.claude/settings.json` rules and hooks as `settingsBase`, so the first
   update needs no migration and can tell rules you removed from rules that
-  are new. Generated files are otherwise identical to 0.16.1, apart from
-  the Windows `init` README fix under Fixed.
+  are new. They also write `.ai-scaffold/.gitignore`, which keeps
+  `update.lock` and `backups/` out of git, so a lock left by a crashed
+  update cannot be committed and lock every clone; an existing project gets
+  it from its next `ais update --apply`. Generated files are otherwise
+  identical to 0.16.1, apart from the Windows `init` README fix under Fixed.
 - **`ais doctor` no longer reports a line-ending-only difference as a
   modified managed file** (CRLF checkouts with `core.autocrlf=true`).
 
