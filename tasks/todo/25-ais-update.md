@@ -340,6 +340,22 @@ spoofing or unsafe behaviour.
 - the packed CLI writes and records `.ai-scaffold/.gitignore` for `create`
   and `init`.
 
-**Before 8.3 (ready for review):** both reviewers confirm their fixes, and
-CI passes at the final code commit. Their fix re-check stopped at the
-session limit and resumes after it resets.
+**Fix verification (2026-10-26):** both reviewers re-checked their fixes.
+- **Backend: APPROVE**, every WARN closed. Remaining NITs: `pruneBackups`
+  calls `fs` directly rather than the injected `fsApi`, and `runUpdate`
+  defaults to `process.argv`.
+- **Security: APPROVE**, W1–W5 and N1 closed. The re-check found that W5
+  was only partly fixed: a filter driver in the project's git config still
+  ran during `git status`. The maintainer chose to neutralise drivers, done
+  in `9085f30`. The reviewer confirmed it and checked textconv, the pager,
+  hooks, the `ident` and `working-tree-encoding` attributes, `includeIf` and
+  submodules: none runs a command during this call.
+- **Accepted leftovers:**
+  - an empty directory in a scaffold namespace can be removed by a crafted
+    journal;
+  - planted backups can push out older real backups, within retention;
+  - a Git LFS file may read as modified;
+  - N2–N4.
+
+**8.3:** #159 is marked ready once CI passes on the final commit (the code
+of `9085f30` plus `dev`'s documentation-only commits merged in).
