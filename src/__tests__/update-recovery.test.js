@@ -121,3 +121,61 @@ describe('classifyBackup and resolveInterrupted (FR-38)', { timeout: 60_000 }, (
     expect((await classifyBackup(root, backup, io)).state).toBe('malformed');
   });
 });
+
+describe('a crafted journal never steers recovery deletions (P1, #159 review)', { timeout: 60_000 }, () => {
+  const RUN = '0123456789ab';
+  const BACKUP = `.ai-scaffold/backups/2026-10-16T00-00-00-000Z-${RUN}`;
+
+  async function project() {
+    const dir = path.join(tmpDir, `crafted${counter++}`);
+    fse.outputFileSync(path.join(dir, 'README.md'), 'adopter readme\n');
+    fse.ensureDirSync(path.join(dir, 'docs', 'empty'));
+    fse.ensureDirSync(path.join(dir, ...BACKUP.split('/')));
+    return resolveProjectRoot(dir);
+  }
+
+  function journal(root, overrides = {}, entryOverrides = {}) {
+    const rel = '.claude/rules/new.md';
+    const entry = { rel, action: 'write', pre: null, final: hashRaw('x'), tmp: `${rel}.ais-tmp-${RUN}-0`, rollbackTmp: `${rel}.ais-tmp-${RUN}-0r`, ...entryOverrides };
+    const doc = { schema: 'ais-update-journal/1', runId: RUN, backupDir: BACKUP, meta: null, dirs: [], entries: [entry], ...overrides };
+    fs.writeFileSync(at(root, `${BACKUP}/journal.json`), JSON.stringify(doc));
+  }
+
+  async function expectRefused(root) {
+    const classified = await classifyBackup(root, BACKUP, io);
+    expect(classified.state).toBe('malformed');
+    await expect(resolveInterrupted(root, classified)).rejects.toMatchObject({ code: 'INTERRUPTED_APPLY' });
+    expect(fs.readFileSync(at(root, 'README.md'), 'utf-8')).toBe('adopter readme\n');
+    expect(fs.existsSync(at(root, 'docs/empty'))).toBe(true);
+  }
+
+  it('the reviewer repro: an absent target with tmp README.md is malformed and README.md survives', async () => {
+    const root = await project();
+    journal(root, {}, { tmp: 'README.md' });
+    await expectRefused(root);
+  });
+
+  it.each([
+    ['a rollbackTmp naming a project file', {}, { rollbackTmp: 'README.md' }],
+    ['a directory that is not an ancestor of a journaled path', { dirs: ['docs/empty'] }, {}],
+    ['a path escaping the project', {}, { rel: '../outside.md', tmp: `../outside.md.ais-tmp-${RUN}-0`, rollbackTmp: `../outside.md.ais-tmp-${RUN}-0r` }],
+    ['a journal for another backup directory', { backupDir: '.ai-scaffold/backups/other' }, {}],
+    ['a run id that is not the apply format', { runId: 'README' }, {}],
+    ['a missing schema', { schema: undefined }, {}],
+  ])('%s is malformed', async (_name, overrides, entryOverrides) => {
+    const root = await project();
+    journal(root, overrides, entryOverrides);
+    await expectRefused(root);
+  });
+
+  it('a journal in the exact apply shape is abandoned, removing only its own temporaries', async () => {
+    const root = await project();
+    journal(root);
+    fse.outputFileSync(at(root, `.claude/rules/new.md.ais-tmp-${RUN}-0`), 'partial');
+    const classified = await classifyBackup(root, BACKUP, io);
+    expect(classified.state).toBe('all-pre-run');
+    expect(await resolveInterrupted(root, classified)).toBe('abandoned');
+    expect(fs.existsSync(at(root, `.claude/rules/new.md.ais-tmp-${RUN}-0`))).toBe(false);
+    expect(fs.readFileSync(at(root, 'README.md'), 'utf-8')).toBe('adopter readme\n');
+  });
+});

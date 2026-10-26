@@ -9,13 +9,13 @@ import crypto from 'crypto';
 import diagnosticsChannel from 'diagnostics_channel';
 import { checkContained, readContained } from './containment.js';
 import { hashRaw } from './hashing.js';
+import { JOURNAL_SCHEMA, temporaryName } from './update-state.js';
 import {
   createDirectory, createExclusive, nativeFs, permissionBits, removeEmptyDirectory, removeFile,
   ROLLBACK_RETRY_BUDGET_MS, WriteError, writeFileAtomic,
 } from './write-ops.js';
 
 export const BACKUPS_REL = '.ai-scaffold/backups';
-export const JOURNAL_SCHEMA = 'ais-update-journal/1';
 export const MAX_APPLY_BYTES = 20 * 1024 * 1024;
 const channel = diagnosticsChannel.channel('ais:update:apply');
 
@@ -49,8 +49,8 @@ function journalFor({ runId, backupDir, ops, dirs, meta, modes }) {
       rel, action, pre, final,
       preMode: modes[index],
       mode: mode ?? modes[index],
-      tmp: `${rel}.ais-tmp-${runId}-${index}`,
-      rollbackTmp: `${rel}.ais-tmp-${runId}-${index}r`,
+      tmp: temporaryName(rel, runId, index),
+      rollbackTmp: `${temporaryName(rel, runId, index)}r`,
     })),
   };
 }

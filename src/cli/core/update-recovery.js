@@ -7,7 +7,7 @@
 import fs from 'fs';
 import { checkContained, checkDirectory } from './containment.js';
 import { UpdateError } from './update-policy.js';
-import { BACKUPS_DIR, TERMINAL_MARKERS } from './update-state.js';
+import { BACKUPS_DIR, TERMINAL_MARKERS, temporaryName } from './update-state.js';
 import { createExclusive, nativeFs, removeEmptyDirectory, removeFile } from './write-ops.js';
 
 export const KEEP_BACKUPS = 5;
@@ -53,8 +53,11 @@ export async function pruneBackups(root, { fsApi = nativeFs, keep = KEEP_BACKUPS
 }
 
 async function removeJournaledTemporaries(root, journal, fsApi) {
-  for (const entry of journal.entries) {
-    for (const tmp of [entry.tmp, entry.rollbackTmp]) await removeFile(root, tmp, { fsApi });
+  // Names are derived, never read from the journal (classifyBackup also
+  // rejects a journal whose names differ).
+  for (const [index, entry] of journal.entries.entries()) {
+    const tmp = temporaryName(entry.rel, journal.runId, index);
+    for (const name of [tmp, `${tmp}r`]) await removeFile(root, name, { fsApi });
   }
 }
 

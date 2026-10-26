@@ -4,7 +4,7 @@
  * backup or journal is read, because another updater may be writing them.
  */
 
-import { checkContained, checkDirectory, readContained } from './containment.js';
+import { checkContained, checkDirectory, normaliseRel, readContained } from './containment.js';
 import { hashRaw } from './hashing.js';
 import { UpdateError } from './update-policy.js';
 
@@ -13,6 +13,13 @@ export const BACKUPS_DIR = '.ai-scaffold/backups';
 export const MAX_JOURNAL_BYTES = 5 * 1024 * 1024;
 export const MAX_RECOVERY_BYTES = 20 * 1024 * 1024;
 export const TERMINAL_MARKERS = ['complete', 'rolled-back', 'abandoned'];
+export const JOURNAL_SCHEMA = 'ais-update-journal/1';
+const RUN_ID = /^[0-9a-f]{12}$/;
+
+/** The temporary file an apply writes for journal entry `index`. */
+export function temporaryName(rel, runId, index) {
+  return `${rel}.ais-tmp-${runId}-${index}`;
+}
 
 function unsafe(result) {
   return new UpdateError('PATH_UNSAFE', `Refusing to read ${result.rel}: ${result.reason}`);
@@ -31,10 +38,32 @@ export async function isLocked(root, io) {
 
 const isHash = (value) => value === null || typeof value === 'string';
 
-function validJournal(journal) {
-  if (!journal || typeof journal !== 'object' || !Array.isArray(journal.entries) || !Array.isArray(journal.dirs)) return false;
-  return journal.entries.every((e) => e && typeof e.rel === 'string' && isHash(e.pre) && isHash(e.final)
-    && typeof e.tmp === 'string' && typeof e.rollbackTmp === 'string');
+function isSafeRel(rel) {
+  if (typeof rel !== 'string') return false;
+  try {
+    return normaliseRel(rel) === rel && rel !== BACKUPS_DIR && !rel.startsWith(`${BACKUPS_DIR}/`);
+  } catch {
+    return false;
+  }
+}
+
+// Recovery deletes temporaries and empty directories a journal names, before
+// git safety runs, so a journal is trusted only in the exact shape an apply
+// writes: temporary names derived from path, run and index, and directories
+// that are ancestors of journaled paths.
+function validEntry(entry, index, runId) {
+  if (!entry || !isSafeRel(entry.rel) || !isHash(entry.pre) || !isHash(entry.final)) return false;
+  const tmp = temporaryName(entry.rel, runId, index);
+  return entry.tmp === tmp && entry.rollbackTmp === `${tmp}r`;
+}
+
+function validJournal(journal, backup) {
+  if (!journal || typeof journal !== 'object' || journal.schema !== JOURNAL_SCHEMA) return false;
+  if (typeof journal.runId !== 'string' || !RUN_ID.test(journal.runId)) return false;
+  if (journal.backupDir !== backup || !backup.endsWith(`-${journal.runId}`)) return false;
+  if (!Array.isArray(journal.entries) || !Array.isArray(journal.dirs)) return false;
+  if (!journal.entries.every((entry, index) => validEntry(entry, index, journal.runId))) return false;
+  return journal.dirs.every((dir) => isSafeRel(dir) && journal.entries.some((entry) => entry.rel.startsWith(`${dir}/`)));
 }
 
 async function readJournal(root, backup, io) {
@@ -43,7 +72,7 @@ async function readJournal(root, backup, io) {
   if (!read.exists) return { state: 'no-journal' };
   try {
     const journal = JSON.parse(read.data.toString('utf-8'));
-    return validJournal(journal) ? { journal } : { state: 'malformed' };
+    return validJournal(journal, backup) ? { journal } : { state: 'malformed' };
   } catch {
     return { state: 'malformed' };
   }

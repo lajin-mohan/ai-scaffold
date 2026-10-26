@@ -136,10 +136,12 @@ describe('FR-44 check order', { timeout: 60_000 }, () => {
     ['malformed', '{"to":"x"}'],
     ['malformed', '{ broken'],
     ['no-journal', null],
-    ['all-pre-run', JSON.stringify({ entries: [], dirs: [] })],
+    ['all-pre-run', JSON.stringify({
+      schema: 'ais-update-journal/1', runId: '0123456789ab', backupDir: '.ai-scaffold/backups/2026-10-16T00-00-00Z-0123456789ab', entries: [], dirs: [],
+    })],
   ])('an unmarked backup is interrupted (%s)', async (journal, content) => {
     const target = await install(`interrupted-${journal}-${content === null ? 'none' : content.length}`);
-    const dir = path.join(target, '.ai-scaffold', 'backups', '2026-10-16T00-00-00Z');
+    const dir = path.join(target, '.ai-scaffold', 'backups', '2026-10-16T00-00-00Z-0123456789ab');
     fse.ensureDirSync(dir);
     if (content !== null) fs.writeFileSync(path.join(dir, 'journal.json'), content);
     const doc = await preview(target);
