@@ -155,7 +155,7 @@ describe('buildUpdatePlan on generated projects', { timeout: 60_000 }, () => {
     expect(reads.some((rel) => rel.startsWith('.claude/rules/'))).toBe(false);
   });
 
-  it('pre-0.8.6: no hashes, nothing replaced or removed, and the report says so (FR-03)', async () => {
+  it('a manifest without managedFiles: no hashes, nothing replaced or removed, and the report says so (FR-03)', async () => {
     const target = await install('legacy');
     await fs.appendFile(path.join(target, 'CLAUDE.md'), '\nedit\n');
     const { plan } = await preview(target, (m) => {
@@ -166,7 +166,9 @@ describe('buildUpdatePlan on generated projects', { timeout: 60_000 }, () => {
     expect(plan.installMode).toBe('unknown');
     expect(plan.counts.replace ?? 0).toBe(0);
     expect(plan.counts.remove ?? 0).toBe(0);
-    expect(plan.notices.join(' ')).toMatch(/before 0\.8\.6/);
+    expect(plan.notices.join(' ')).toMatch(/No file hashes are recorded/);
+    // Every published version records hashes, so no version is named (slice 5).
+    expect(plan.notices.join(' ')).not.toMatch(/0\.8\.6/);
     expect(plan.notices.join(' ')).toMatch(/CLAUDE\.md.*will never be updated/);
   });
 

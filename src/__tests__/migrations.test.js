@@ -41,7 +41,7 @@ describe('schema-2 migration', () => {
     expect(intents).toContain(`inferred install.mode: ${expected}`);
   });
 
-  it('records unknown when the manifest predates managedFiles (pre-0.8.6)', () => {
+  it('records unknown when the manifest has no managedFiles', () => {
     const manifest = manifestFor();
     delete manifest.managedFiles;
     expect(runMigrations(manifest, { ...VERSIONS, settingsPristine: null }).manifest.install.mode).toBe('unknown');
