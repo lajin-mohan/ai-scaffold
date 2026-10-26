@@ -6,16 +6,18 @@
  * adopters receive. This script packs the CLI, installs the tarball in a
  * scratch directory and exercises the preview's CLI contract: one JSON
  * document on stdout, exit codes, removed flags, exception flags at the
- * installed version, invalid manifests, locks and malformed journals, and
- * one `--apply` outside git (FR-46 retired in slice 4). CI runs it on
- * Ubuntu and Windows.
+ * installed version, invalid manifests, locks and malformed journals, one
+ * `--apply` outside git (FR-46 retired in slice 4), and the packed CLI
+ * killed with SIGKILL mid-apply and before its marker (NFR-09, AC-16,
+ * AC-17). CI runs it on Ubuntu and Windows.
  */
 
 import { spawnSync } from 'node:child_process';
+import crypto from 'node:crypto';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const scratch = fs.mkdtempSync(path.join(os.tmpdir(), 'ais-update-smoke-'));
@@ -45,6 +47,41 @@ const cliVersion = JSON.parse(fs.readFileSync(path.join(cliDir, 'node_modules', 
 
 function ais(...args) {
   return spawnSync(process.execPath, [bin, ...args], { cwd: scratch, encoding: 'utf-8', timeout: 120_000 });
+}
+
+// The crash hook is test-only and not in the tarball: it SIGKILLs the packed
+// CLI at the stage its own apply publishes on the diagnostics channel.
+const crashHook = path.join(scratch, 'crash-hook.mjs');
+fs.writeFileSync(crashHook, [
+  "import diagnosticsChannel from 'node:diagnostics_channel';",
+  "import process from 'node:process';",
+  "diagnosticsChannel.subscribe('ais:update:apply', (event) => {",
+  '  if (event.stage !== process.env.AIS_TEST_CRASH_STAGE) return;',
+  "  if (process.env.AIS_TEST_CRASH_INDEX && String(event.index) !== process.env.AIS_TEST_CRASH_INDEX) return;",
+  "  process.kill(process.pid, 'SIGKILL');",
+  '});',
+  '',
+].join('\n'));
+
+function aisKilled(stage, index, ...args) {
+  const env = { ...process.env, AIS_TEST_CRASH_STAGE: stage, AIS_TEST_CRASH_INDEX: index };
+  return spawnSync(process.execPath, ['--import', pathToFileURL(crashHook).href, bin, ...args],
+    { cwd: scratch, env, encoding: 'utf-8', timeout: 120_000 });
+}
+
+/** Hash of every file under dir except .git, keyed by relative path. */
+function snapshot(dir) {
+  const out = {};
+  const walk = (rel) => {
+    for (const entry of fs.readdirSync(path.join(dir, rel), { withFileTypes: true })) {
+      const child = path.join(rel, entry.name);
+      if (entry.name === '.git') continue;
+      if (entry.isDirectory()) walk(child);
+      else out[child] = fs.readFileSync(path.join(dir, child)).toString('base64');
+    }
+  };
+  walk('');
+  return JSON.stringify(out);
 }
 
 /** Run with --json; the whole of stdout must parse as one document. */
@@ -133,6 +170,45 @@ const manifestAfter = JSON.parse(fs.readFileSync(path.join(applied, '.ai-scaffol
 check('the manifest records this CLI version and schema 2', manifestAfter.version === cliVersion && manifestAfter.manifestSchema === 2);
 expectJson('a second --apply is current', ['update', applied, '--apply', '--allow-no-git'],
   { status: 0, docStatus: 'current', schema: 'ais-update-apply/1' });
+
+console.log('==> SIGKILL cases (packed CLI)');
+// Two writes (CLAUDE.md, then the manifest), so a kill after the first
+// leaves a mixed state.
+function killed(name, stage, index) {
+  const dir = project(name);
+  const older = 'older scaffold claude\n';
+  fs.writeFileSync(path.join(dir, 'CLAUDE.md'), older);
+  const hash = `sha256:${crypto.createHash('sha256').update(older).digest('hex')}`;
+  setManifest(dir, (m) => ({
+    ...m, version: '0.1.0',
+    managedFiles: m.managedFiles.map((r) => (r.path === 'CLAUDE.md' ? { ...r, hash } : r)),
+  }));
+  const child = aisKilled(stage, index, 'update', dir, '--apply', '--allow-no-git', '--json');
+  check(`${name}: killed at ${stage}, lock left in place`,
+    child.status !== 0 && fs.existsSync(path.join(dir, '.ai-scaffold', 'update.lock')), `exit ${child.status} signal ${child.signal}`);
+  return dir;
+}
+
+const midWrite = killed('killed-mid-write', 'write-done', '0');
+const frozen = snapshot(midWrite);
+expectJson('after a kill the stale lock is reported, not run over', ['update', midWrite, '--apply', '--allow-no-git'],
+  { status: 1, docStatus: 'locked', schema: 'ais-update-apply/1' });
+fs.rmSync(path.join(midWrite, '.ai-scaffold', 'update.lock'));
+const unlocked = snapshot(midWrite);
+const midPreview = expectJson('preview after the lock is cleared reports the interrupted apply', ['update', midWrite], { status: 1, docStatus: 'interrupted' });
+check('the notice names the backup and the mixed state', /\.ai-scaffold\/backups\/\S+ \(mixed\)/.test(midPreview?.notices?.join(' ') ?? ''));
+expectJson('--apply refuses a mixed interrupted apply', ['update', midWrite, '--apply', '--allow-no-git'],
+  { status: 1, docStatus: 'interrupted', schema: 'ais-update-apply/1' });
+check('no file in the project or the backup changed after the kill', snapshot(midWrite) === unlocked && unlocked !== frozen);
+
+const beforeMarker = killed('killed-before-marker', 'before-marker', '');
+fs.rmSync(path.join(beforeMarker, '.ai-scaffold', 'update.lock'));
+const markerFrozen = snapshot(beforeMarker);
+expectJson('preview after a kill before the marker reports and writes nothing', ['update', beforeMarker], { status: 1, docStatus: 'interrupted' });
+check('preview changed nothing', snapshot(beforeMarker) === markerFrozen);
+const completed = expectJson('--apply completes it and plans normally (already current)', ['update', beforeMarker, '--apply', '--allow-no-git'],
+  { status: 0, docStatus: 'current', schema: 'ais-update-apply/1' });
+check('the completion is reported', completed?.notices?.join(' ').includes('completed (all-final)'));
 
 const broken = project('broken');
 fs.writeFileSync(path.join(broken, '.ai-scaffold.json'), '{');
