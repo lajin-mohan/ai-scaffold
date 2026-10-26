@@ -725,7 +725,9 @@ else
 fi
 
 DOCTOR_OUT=$(node bin/ai-scaffold.js doctor "$INIT_DIR" --json 2>&1) || true
-if echo "$DOCTOR_OUT" | grep -q '"criticalFailed": 0' && echo "$DOCTOR_OUT" | grep -q '"highFailed": 0'; then
+# Here-strings, not `echo | grep -q`: under pipefail, grep -q exiting on the
+# first match can SIGPIPE echo mid-write on this large JSON and fail the gate.
+if grep -q '"criticalFailed": 0' <<< "$DOCTOR_OUT" && grep -q '"highFailed": 0' <<< "$DOCTOR_OUT"; then
   pass "doctor recognizes namespaced init install"
 else
   fail "doctor reports critical/high failures after init"
