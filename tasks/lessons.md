@@ -277,3 +277,19 @@ This file records patterns from mistakes and corrections. Claude reads this at t
   - Review `git diff --cached --name-only` **before** committing, as its own
     step.
   - An unexpected `A` (added) path in the staged list is a stop signal.
+
+## 2026-10-26 — Packed smoke went red in CI after a later change it never saw (item 25, PR #159)
+
+- **What happened:** The packed-tarball update smoke passed locally, then
+  `copy.js` was changed to write manifest schema 2 at `create`. The unit
+  fixtures were updated, but the smoke was not rerun. Its "older install"
+  case still started from a fresh (now schema-2) manifest, so the schema-2
+  migration no longer ran, and CI failed on Ubuntu and Windows.
+- **Why:** A verification result is only valid for the code it ran against.
+  The smoke ran before the last behaviour change, and its fixture modelled
+  "older" by bumping the version alone.
+- **Rule:**
+  - Rerun every gate (unit, packed smoke) after the **last** behaviour
+    change before pushing, not only the tests the change obviously touches.
+  - A fixture for an older install strips every field the new version adds,
+    not just the version number.
