@@ -6,6 +6,7 @@ import { spawnSync } from 'child_process';
 import fs from 'fs';
 import os from 'os';
 import path from 'path';
+import { fileURLToPath } from 'url';
 import fse from 'fs-extra';
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import { buildFilePlan } from '../cli/core/file-plan.js';
@@ -348,5 +349,29 @@ describe('apply writes only over the state the plan decided on (P1, #159 review)
     const result = await applyTransaction({ root: plan.root, ops, dirs, now: NOW });
     expect(result).toMatchObject({ status: 'rolled-back', error: { code: 'CONCURRENT_EDIT' } });
     expect(fs.readFileSync(at(target, 'AGENTS.md.ais-new'), 'utf-8')).toBe('the adopter got here first\n');
+  });
+});
+
+describe('a value on a switch is refused before anything runs (#159 review)', { timeout: 180_000 }, () => {
+  const BIN = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', '..', 'bin', 'ai-scaffold.js');
+
+  it.each([
+    ['--apply=foo', 'ais-update-apply/1'],
+    ['--apply=false', 'ais-update-apply/1'],
+    ['--allow-no-git=yes --apply', 'ais-update-apply/1'],
+    ['--allow-dirty=1 --apply', 'ais-update-apply/1'],
+    ['--dry-run=no', 'ais-update-preview/1'],
+    ['--json=x', 'ais-update-preview/1'],
+  ])('%s exits 1 with INVALID_OPTION and writes nothing', async (flags, schema) => {
+    const target = await install({ repo: false });
+    editManifest(target, (m) => ({ ...m, version: '0.0.1' }));
+    const before = tree(target);
+    const child = spawnSync(process.execPath, [BIN, 'update', target, ...flags.split(' '), '--json'], { encoding: 'utf-8', timeout: 120_000 });
+    expect(child.status).toBe(1);
+    const doc = JSON.parse(child.stdout);
+    expect(doc).toMatchObject({ schema, status: 'error', exitCode: 1, error: { code: 'INVALID_OPTION' } });
+    expect(doc.error.message).toContain(flags.split(' ')[0].split('=')[0]);
+    expect(tree(target)).toEqual(before);
+    expect(fs.existsSync(at(target, '.ai-scaffold/backups'))).toBe(false);
   });
 });

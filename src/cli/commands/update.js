@@ -6,9 +6,30 @@
 
 import path from 'path';
 import { getVersion } from '../core/version.js';
-import { runPreview } from '../core/update-preview.js';
-import { runApply } from '../core/update-apply-run.js';
+import { emptyDocument, runPreview } from '../core/update-preview.js';
+import { emptyApplyDocument, runApply } from '../core/update-apply-run.js';
 import { formatReport } from '../core/update-report.js';
+
+// Switches take no value. The parser turns `--apply=foo` into true and keeps
+// `--allow-no-git=yes` as a string, so both are caught here, from the raw
+// arguments, before anything runs or is written (#159 review).
+const SWITCHES = ['apply', 'allow-dirty', 'allow-no-git', 'dry-run', 'json'];
+const optionKey = (name) => name.replace(/-([a-z])/g, (_, letter) => letter.toUpperCase());
+
+function valuedSwitch(argv, options) {
+  for (const name of SWITCHES) {
+    if (argv.some((arg) => arg.startsWith(`--${name}=`))) return name;
+    const value = options[optionKey(name)];
+    if (value !== undefined && typeof value !== 'boolean') return name;
+  }
+  return null;
+}
+
+function invalidSwitchDocument(name, applying) {
+  const doc = applying ? emptyApplyDocument() : emptyDocument();
+  const message = `--${name} takes no value; pass --${name} on its own. Nothing was changed.`;
+  return Object.assign(doc, { status: 'error', exitCode: 1, error: { code: 'INVALID_OPTION', message } });
+}
 
 export function updateCommand(cli) {
   cli.command('update [target-dir]', 'Preview, or with --apply perform, an update of the scaffold to this CLI version')
@@ -33,11 +54,14 @@ export function updateCommand(cli) {
 }
 
 /** @returns {Promise<number>} the exit code */
-export async function runUpdate(targetDir, options = {}) {
+export async function runUpdate(targetDir, options = {}, argv = process.argv.slice(2)) {
   const target = targetDir ? path.resolve(targetDir) : process.cwd();
+  const invalid = valuedSwitch(argv, options);
   const apply = options.apply === true && options.dryRun !== true;
   const run = apply ? runApply : runPreview;
-  const doc = await run({ target, options, cliVersion: getVersion() });
+  const doc = invalid
+    ? invalidSwitchDocument(invalid, options.apply !== undefined)
+    : await run({ target, options, cliVersion: getVersion() });
   if (options.json) {
     process.stdout.write(`${JSON.stringify(doc, null, 2)}\n`);
   } else {

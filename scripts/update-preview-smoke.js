@@ -160,6 +160,10 @@ setManifest(applied, (m) => ({ ...m, version: '0.1.0' }));
 fs.appendFileSync(path.join(applied, 'AGENTS.md'), '\nlocal edit\n');
 expectJson('--apply outside git needs --allow-no-git', ['update', applied, '--apply'],
   { status: 1, docStatus: 'error', code: 'GIT_UNAVAILABLE', schema: 'ais-update-apply/1' });
+expectJson('--apply=foo is refused before anything runs', ['update', applied, '--apply=foo'],
+  { status: 1, docStatus: 'error', code: 'INVALID_OPTION', schema: 'ais-update-apply/1' });
+check('the refused switch wrote nothing', !fs.existsSync(path.join(applied, '.ai-scaffold', 'backups'))
+  && !fs.existsSync(path.join(applied, '.ai-scaffold', 'update.lock')));
 const done = expectJson('--apply --allow-no-git applies, exit 2 for the sidecar', ['update', applied, '--apply', '--allow-no-git'],
   { status: 2, docStatus: 'applied', schema: 'ais-update-apply/1' });
 check('apply kept the edit, wrote AGENTS.md.ais-new and a completed backup',

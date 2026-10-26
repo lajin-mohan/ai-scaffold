@@ -263,6 +263,9 @@ npx @lajin.m/ai-scaffold@0.17.0 update   # preview against another version
 | `--dry-run` | Preview only; overrides `--apply` |
 | `--force` | **Removed in 0.17.0**; exits 1 |
 
+`--apply`, `--allow-dirty`, `--allow-no-git`, `--dry-run` and `--json` take no
+value: `--apply=foo` exits 1 with `INVALID_OPTION` before anything runs.
+
 What `--apply` leaves behind:
 
 | Path | Meaning |

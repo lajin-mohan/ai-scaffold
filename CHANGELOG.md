@@ -30,7 +30,8 @@ This file is configured with `merge=union` in `.gitattributes` so parallel addit
   and `--restore-removed` are saved. `--json` prints one
   `ais-update-apply/1` document. Exit codes: `0` applied or already current,
   `2` applied with `.ais-new` files to merge, `1` error, refusal, lock held,
-  interrupted update or rolled-back apply.
+  interrupted update or rolled-back apply. A switch given a value
+  (`--apply=foo`) exits 1 with `INVALID_OPTION` before anything runs.
 - **`ais doctor` warns while `.ais-new` files remain** after an update.
 
 ### Fixed
