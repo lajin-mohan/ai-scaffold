@@ -293,3 +293,24 @@ This file records patterns from mistakes and corrections. Claude reads this at t
     change before pushing, not only the tests the change obviously touches.
   - A fixture for an older install strips every field the new version adds,
     not just the version number.
+
+## 2026-10-26 — Apply trusted on-disk state it should have pinned (item 25, PR #159 review)
+
+- **What happened:** Review of `e0ab979` found two P1s, both reproduced.
+  Recovery deleted whatever paths a journal named as temporaries, so a
+  crafted journal could delete `README.md`, before git safety ran. Separately,
+  apply operations re-read each file's hash after planning, so a file edited
+  between planning and writing was overwritten under the earlier decision.
+- **Why:** Both treated data read from disk as authoritative at the point of
+  use: a journal's free-form fields for deletion, and a fresh read for the
+  write precondition. The tests built journals and plans only the way the
+  code itself writes them, so neither a hostile journal nor an edit between
+  planning and writing was ever exercised.
+- **Rule:**
+  - Anything that deletes or overwrites derives its target paths from
+    validated structure, never from a free-form field read back from disk.
+  - A write precondition is the state the decision was made on, captured at
+    that moment and carried forward, not re-read later.
+  - Each safety property gets a test that tampers with the input in between
+    (a crafted journal, an edit after planning). Mutation-check it: the test
+    must fail against the unfixed code.
