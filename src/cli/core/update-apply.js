@@ -162,7 +162,8 @@ async function rollbackState(root, journal, index, attempted, fsApi) {
 /**
  * FR-48: reverse order, only paths still holding this run's bytes, then the
  * journal-named temporary files, then the directories this run created
- * (`createdDirs`; recovery passes the journal's list). `attempted` is how
+ * (`createdDirs`). Only the running apply calls this; recovery never rolls
+ * back from a journal on disk (FR-38). `attempted` is how
  * many entries the run reached, the last being the one that failed. Complete
  * only when every path settled and no temporary file or created directory
  * remains.

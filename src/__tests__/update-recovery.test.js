@@ -116,9 +116,13 @@ describe('classifyBackup and resolveInterrupted (FR-38)', { timeout: 60_000 }, (
     const incomplete = await classifyBackup(root, backup, io);
     expect(incomplete.state).toBe('rollback-incomplete');
     await expect(resolveInterrupted(root, incomplete)).rejects.toMatchObject({ code: 'INTERRUPTED_APPLY' });
+    await expect(resolveInterrupted(root, incomplete)).rejects.toThrow(/rollback\.json lists every path.*move that backup directory out/);
     fs.rmSync(at(root, `${backup}/rollback.json`));
     fs.writeFileSync(at(root, `${backup}/journal.json`), '{"entries":"nope"}');
-    expect((await classifyBackup(root, backup, io)).state).toBe('malformed');
+    const malformed = await classifyBackup(root, backup, io);
+    expect(malformed.state).toBe('malformed');
+    // No paths are listed for a journal that cannot be read (backend review).
+    await expect(resolveInterrupted(root, malformed)).rejects.toThrow(/journal cannot be read.*move that backup directory out/);
   });
 });
 

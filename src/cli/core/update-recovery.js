@@ -12,6 +12,14 @@ import { createExclusive, nativeFs, removeEmptyDirectory, removeFile } from './w
 
 export const KEEP_BACKUPS = 5;
 
+const MOVE_ASIDE = 'then move that backup directory out of .ai-scaffold/backups and run again.';
+// What the adopter does for each state recovery refuses (FR-38).
+const REMEDY = {
+  mixed: `Restore the paths listed above from that backup, ${MOVE_ASIDE}`,
+  'rollback-incomplete': `Its rollback.json lists every path and its state: restore those from the backup, ${MOVE_ASIDE}`,
+  malformed: `Its journal cannot be read, so what it changed is unknown. Compare the scaffold files against that backup, ${MOVE_ASIDE}`,
+};
+
 async function isTerminalBackup(root, backup, fsApi) {
   for (const marker of TERMINAL_MARKERS) {
     const checked = await checkContained(root, `${backup}/${marker}`, fsApi);
@@ -105,6 +113,5 @@ export async function resolveInterrupted(root, classified, { fsApi = nativeFs } 
     await createExclusive(root, `${backup}/complete`, '', fsApi);
     return 'completed';
   }
-  throw new UpdateError('INTERRUPTED_APPLY',
-    `A previous apply did not finish (${backup}, ${state}). Restore the listed paths from that backup, then move it aside.`);
+  throw new UpdateError('INTERRUPTED_APPLY', `A previous apply did not finish (${backup}, ${state}). ${REMEDY[state] ?? REMEDY.mixed}`);
 }
