@@ -326,8 +326,12 @@ This file records patterns from mistakes and corrections. Claude reads this at t
   heredoc, the generator's string literal, and the target's. `replace()` also
   interprets `$` patterns in its replacement string.
 - **Rule:**
-  - Edit source with the Edit tool, whose `new_string` is taken literally.
+  - Edit source with the Edit tool rather than a generator script.
   - Use a generator script only for text without backslashes, `$` or
     backticks.
   - After any scripted edit, lint the file, then grep for the escapes you
     expected (`\n`, `\.`) before running anything.
+  - The Edit tool is not fully literal either: it turned `​`-style
+    escapes into the actual invisible characters (2026-10-26, caught by
+    `no-irregular-whitespace`). For non-printing characters, check the bytes
+    (`od -c`) after the edit and keep them as explicit `\uXXXX` escapes.
