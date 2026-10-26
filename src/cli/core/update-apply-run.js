@@ -104,17 +104,21 @@ async function runLocked(doc, context) {
     doc.notices.push(`Already at ${checked.versions.to}. No files changed.`);
     return;
   }
-  const computed = await computePlan({ root, manifest: checked.manifest, versions: checked.versions, flags: checked.flags, io, today: context.today });
+  const computed = await computePlan({
+    root, manifest: checked.manifest, versions: checked.versions, flags: checked.flags, io,
+    today: context.today, migrations: context.migrations,
+  });
   setPlanFields(doc, computed);
   await transact(doc, { ...context, ...checked, computed });
 }
 
 /**
  * @param {{ target: string, options?: object, cliVersion: string,
- *   fsApi?: object, today?: Date, now?: Date }} input
+ *   fsApi?: object, today?: Date, now?: Date, migrations?: object[] }} input
+ *   `migrations` replaces the built-in version migrations (tests only).
  * @returns {Promise<object>} the `ais-update-apply/1` document
  */
-export async function runApply({ target, options = {}, cliVersion, fsApi = applyFs, today, now = new Date() }) {
+export async function runApply({ target, options = {}, cliVersion, fsApi = applyFs, today, now = new Date(), migrations }) {
   const doc = emptyApplyDocument();
   const io = defaultIo(fsApi);
   let root;
@@ -132,7 +136,7 @@ export async function runApply({ target, options = {}, cliVersion, fsApi = apply
       Object.assign(doc, { status: 'locked', exitCode: 1 });
       return doc;
     }
-    await runLocked(doc, { root, options, cliVersion, io, fsApi, today, now });
+    await runLocked(doc, { root, options, cliVersion, io, fsApi, today, now, migrations });
   } catch (error) {
     const code = error?.code && typeof error.code === 'string' ? error.code : 'INTERNAL';
     const status = code === 'INTERRUPTED_APPLY' ? 'interrupted' : 'error';

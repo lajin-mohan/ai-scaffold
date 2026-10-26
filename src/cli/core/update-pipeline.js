@@ -56,9 +56,12 @@ function adjustSettingsEntry(entries, settingsFile) {
  * @returns {Promise<object>} migrated manifest, renders, planner entries
  *   (with recordAfter), settings decisions, exceptions and notices.
  */
-export async function computePlan({ root, manifest, versions, flags, io, today }) {
+export async function computePlan({ root, manifest, versions, flags, io, today, migrations }) {
   const settingsFile = await readSettings(root, manifest, io);
-  const migrated = runMigrations(manifest, { from: versions.from, to: versions.to, settingsPristine: settingsFile.pristine });
+  const migrated = runMigrations(manifest, {
+    from: versions.from, to: versions.to, settingsPristine: settingsFile.pristine,
+    ...(migrations ? { migrations } : {}),
+  });
   const { renders } = await renderManagedSet(migrated.manifest, root, { today });
   const planned = await buildUpdatePlan({ root, manifest: migrated.manifest, renders, reader: io });
   const scaffold = JSON.parse(renders.get(SETTINGS)?.toString('utf-8') ?? '{}');
@@ -72,9 +75,8 @@ export async function computePlan({ root, manifest, versions, flags, io, today }
   const decided = !merging ? null : decideSettingsMerge({
     local: settingsFile.local, localValid: settingsFile.valid, scaffold, exceptions,
     baseState: migrated.settingsBase, recordedBase: migrated.manifest.settingsBase,
-    // No release retires settings entries yet (HLD §10); the first one to do
-    // so passes its migration's list here, which fills the `removed` group.
-    retired: {},
+    // Settings entries a crossed migration retires fill the `removed` group (HLD §10).
+    retired: migrated.retired,
   });
   const notices = [...planned.notices];
   if (decided?.groups.base === 'unknown') notices.push('settings.json has no recorded base: deliberate removals cannot be determined.');

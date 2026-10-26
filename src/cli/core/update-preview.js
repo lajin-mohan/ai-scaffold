@@ -51,7 +51,7 @@ function previewGitSafety(root) {
   return readGitState(root).state === 'unavailable' ? 'no-repository' : 'not-assessed';
 }
 
-async function runChecks(doc, { target, options, cliVersion, io, fsApi, today }) {
+async function runChecks(doc, { target, options, cliVersion, io, fsApi, today, migrations }) {
   const root = await resolveProjectRoot(target, fsApi).catch(() => {
     throw new UpdateError('TARGET_NOT_FOUND', `Project directory not found: ${target}`);
   });
@@ -76,7 +76,7 @@ async function runChecks(doc, { target, options, cliVersion, io, fsApi, today })
     return { status: 'current', exitCode: 0, notices: [`Already at ${versions.to}.`] };
   }
   doc.gitSafety = previewGitSafety(root);
-  return plan(doc, { root, manifest, versions, flags, io, today });
+  return plan(doc, { root, manifest, versions, flags, io, today, migrations });
 }
 
 /**
@@ -84,11 +84,11 @@ async function runChecks(doc, { target, options, cliVersion, io, fsApi, today })
  *   fsApi?: object, today?: Date }} input
  * @returns {Promise<object>} the FR-45 document
  */
-export async function runPreview({ target, options = {}, cliVersion, fsApi = realFs, today }) {
+export async function runPreview({ target, options = {}, cliVersion, fsApi = realFs, today, migrations }) {
   const doc = emptyDocument();
   const io = defaultIo(fsApi);
   try {
-    const result = await runChecks(doc, { target, options, cliVersion, io, fsApi, today });
+    const result = await runChecks(doc, { target, options, cliVersion, io, fsApi, today, migrations });
     if (result.notices && !doc.notices) doc.notices = result.notices;
     Object.assign(doc, { status: result.status, exitCode: result.exitCode });
   } catch (error) {
