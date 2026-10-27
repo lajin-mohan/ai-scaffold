@@ -112,6 +112,19 @@ export function buildSettingsOverridesData(values) {
   };
 }
 
+/**
+ * The records the scaffold owns, for integrity checks (ADR-002). Once records
+ * carry an ownership class (schema 2), only `managed` ones: unowned, user-data,
+ * seeded and merged files belong to the project. An unclassified manifest
+ * keeps every record, since nothing says otherwise.
+ * @returns {object[]}
+ */
+export function scaffoldOwnedRecords(manifest) {
+  const records = Array.isArray(manifest?.managedFiles) ? manifest.managedFiles : [];
+  if (!records.some((record) => typeof record?.class === 'string')) return records;
+  return records.filter((record) => record?.class === 'managed');
+}
+
 export async function buildManagedFileRecords(targetDir, relPaths) {
   const uniquePaths = [...new Set(relPaths.map(toPosixPath))]
     .filter((relPath) => relPath !== '.ai-scaffold.json')
