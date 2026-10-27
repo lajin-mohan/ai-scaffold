@@ -17,21 +17,27 @@ import {
   check, conflictKept, idempotent, managedParity, manifestAfter, outcomes, unchanged, writeScope, byAction, list,
 } from './update-compat/checks.js';
 import {
-  commitAll, exists, git, installCandidate, installPublished, readFile, readJson, runCli, runJson, snapshot, writeClock,
+  commitAll, git, installCandidate, installPublished, readJson, runCli, runJson, snapshot, writeClock,
 } from './update-compat/lib.js';
 import { renderReport } from './update-compat/report.js';
+import { runCrlf, runHashless, runLegacy070 } from './update-compat/special-cases.js';
 
 const REPO = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-// Newer than every published version, so 0.16.1 installs have an update to take.
+// Newer than the latest published version (0.16.1), so it has an update to take.
 const CANDIDATE = '0.17.0-compat.0';
 const NAME = 'compat-app';
 const CONFLICT = 'AGENTS.md';
-// 0.8.5 shipped only the generic, laravel and node profiles.
 const MATRIX = [
   { version: '0.8.5', profiles: ['node', 'laravel'] },
   { version: '0.14.0', profiles: ['node', 'laravel', 'python'] },
   { version: '0.16.1', profiles: ['node', 'laravel', 'python'] },
 ];
+// Combinations the release could not produce, reported rather than skipped.
+const NOT_APPLICABLE = [
+  { id: '0.8.5 create python', kind: '5A', notApplicable: '0.8.5 ships only the generic, laravel and node profiles', checks: [], counts: null, differing: [] },
+];
+// ADR-002: the 0.7.x manifest generation, re-baselined to the current contract.
+const LEGACY_VERSION = '0.7.0';
 const INSTALL_ARGS = ['--yes', '--purpose', 'Compatibility matrix', '--owner-email', 'compat@example.com'];
 const SCAFFOLD_ADD = /^(\.claude\/|\.ai-scaffold\/|tasks\/|CLAUDE\.md$|AGENTS\.md$|constitution\.md$|CHANGELOG\.md$)/;
 
@@ -52,7 +58,7 @@ function answerArgs(manifest) {
 }
 
 /** Generate `<parent>/compat-app` with a CLI; init gets an existing application first. */
-function install(bin, parent, { mode, profile, extra = [] }) {
+function install(bin, parent, { mode, profile, extra = [], noGit = true }) {
   const project = path.join(parent, NAME);
   fs.mkdirSync(parent, { recursive: true });
   if (mode === 'init') {
@@ -62,7 +68,7 @@ function install(bin, parent, { mode, profile, extra = [] }) {
     fs.writeFileSync(path.join(project, 'src', 'index.js'), 'export const app = true;\n');
   }
   const args = mode === 'create'
-    ? ['create', NAME, '--profile', profile, '--no-git', ...INSTALL_ARGS, ...extra]
+    ? ['create', NAME, '--profile', profile, ...(noGit ? ['--no-git'] : []), ...INSTALL_ARGS, ...extra]
     : ['init', NAME, '--profile', profile, ...INSTALL_ARGS, ...extra];
   const result = runCli({ bin, clock: ctx.clock, cwd: parent, args });
   if (result.status !== 0) throw new Error(`${mode} ${profile} failed:\n${result.stderr || result.stdout}`);
@@ -177,57 +183,6 @@ function runCase(spec) {
   };
 }
 
-/** AC-07: a manifest without managedFiles (no published version writes one). */
-function runHashless() {
-  const parent = path.join(ctx.root, 'cases', 'hashless-0.8.5');
-  const project = install(ctx.olds['0.8.5'], parent, { mode: 'create', profile: 'node' });
-  const manifestFile = path.join(project, '.ai-scaffold.json');
-  const { managedFiles: _dropped, ...manifest } = JSON.parse(fs.readFileSync(manifestFile, 'utf-8'));
-  fs.writeFileSync(manifestFile, `${JSON.stringify(manifest, null, 2)}\n`);
-  commitAll(project, 'hashless manifest');
-  const before = snapshot(project);
-  const preview = update(parent);
-  const applied = update(parent, '--apply');
-  const after = snapshot(project);
-  const touchedExisting = [...before.keys()].filter((rel) => after.get(rel) !== before.get(rel))
-    .filter((rel) => !['.ai-scaffold.json', '.claude/settings.json'].includes(rel));
-  const checks = [
-    check('preview plans no replace and no remove (FR-03)', byAction(preview.doc, 'replace').length + byAction(preview.doc, 'remove').length === 0,
-      `replace ${list(byAction(preview.doc, 'replace'))}; remove ${list(byAction(preview.doc, 'remove'))}`),
-    check('the report says no hashes were recorded', (preview.doc?.notices ?? []).some((n) => n.includes('No file hashes')), 'notice missing'),
-    check('apply: applied', applied.doc?.status === 'applied', `status ${applied.doc?.status}, error ${applied.doc?.error?.code}`),
-    check('no existing file replaced or removed, apart from the manifest and the settings merge', touchedExisting.length === 0,
-      `changed: ${list(touchedExisting)}`),
-  ];
-  return { id: '0.8.5 create node, managedFiles removed', kind: 'AC-07', counts: applied.doc?.counts ?? null, checks, differing: [] };
-}
-
-/** AC-10: a clone with core.autocrlf=true classifies untouched files as pristine. */
-function runCrlf(mode) {
-  const parent = path.join(ctx.root, 'cases', `crlf-${mode}`);
-  const source = install(ctx.olds['0.16.1'], path.join(parent, 'source'), { mode, profile: 'node' });
-  commitAll(source, 'installed');
-  git(parent, '-c', 'core.autocrlf=true', 'clone', '-q', source, NAME);
-  const project = path.join(parent, NAME);
-  git(project, 'config', 'core.autocrlf', 'true');
-  // A clone holds only committed files; the project's .gitignore keeps some
-  // recorded files (local memory, for example) out of it.
-  const records = readJson(project, '.ai-scaffold.json').managedFiles.filter((r) => exists(project, r.path));
-  const crlf = records.filter((r) => readFile(project, r.path).includes('\r\n')).length;
-  const run = { preview: update(parent) };
-  run.applied = update(parent, '--apply');
-  const conflicts = byAction(run.preview.doc, 'conflict');
-  const checks = [
-    mode === 'init'
-      ? check('the clone really has CRLF managed files (not vacuous)', crlf > 0, 'no CRLF file: the test would prove nothing')
-      : check('.gitattributes keeps create projects LF (eol=lf)', crlf === 0, `${crlf} CRLF files`),
-    check('no untouched file is a conflict (AC-10)', conflicts.length === 0, `conflicts: ${list(conflicts)}`),
-    check('apply: applied, exit 0', run.applied.doc?.status === 'applied' && run.applied.status === 0,
-      `exit ${run.applied.status}, status ${run.applied.doc?.status}, error ${run.applied.doc?.error?.code}`),
-  ];
-  return { id: `0.16.1 ${mode} node, autocrlf=true clone (${crlf} CRLF files)`, kind: '5B', counts: run.applied.doc?.counts ?? null, checks, differing: [] };
-}
-
 // A case that throws is a failed case in the report, never a crashed run.
 function guarded(id, run) {
   console.log(`==> ${id}`);
@@ -259,19 +214,25 @@ function runMatrix() {
   console.log(`==> packing the candidate CLI (${CANDIDATE}) and installing published versions`);
   const candidate = installCandidate(ctx.root, REPO, CANDIDATE);
   ctx.candidate = candidate.bin;
-  ctx.olds = Object.fromEntries(MATRIX.map(({ version }) => [version, installPublished(ctx.root, version)]));
+  const versions = [...MATRIX.map(({ version }) => version), LEGACY_VERSION];
+  ctx.olds = Object.fromEntries(versions.map((version) => [version, installPublished(ctx.root, version)]));
   ctx.fresh = {};
   const specs = MATRIX.flatMap(({ version, profiles }) => [
     ...profiles.map((profile) => ({ version, mode: 'create', profile })),
     { version, mode: 'init', profile: 'node' },
   ]);
+  const env = {
+    ctx, NAME, CONFLICT, install, adopt, update, updateTwice, freshInstall, answerArgs,
+    cli: (parent, args) => runJson({ bin: ctx.candidate, clock: ctx.clock, cwd: parent, args }),
+  };
   const cases = [
     ...specs.map((spec) => [`${spec.version} ${spec.mode} ${spec.profile}`, () => runCase(spec)]),
-    ['hashless manifest', runHashless],
-    ['autocrlf init clone', () => runCrlf('init')],
-    ['autocrlf create clone', () => runCrlf('create')],
+    ['synthetic hashless manifest', () => runHashless(env)],
+    ['autocrlf init clone', () => runCrlf(env, 'init')],
+    ['autocrlf create clone', () => runCrlf(env, 'create')],
+    ['0.7.0 ownership re-baseline', () => runLegacy070(env)],
   ];
-  const results = cases.map(([id, run]) => guarded(id, run));
+  const results = [...cases.map(([id, run]) => guarded(id, run)), ...NOT_APPLICABLE];
   const meta = {
     candidate: CANDIDATE, tarball: candidate.tarball, commit: git(REPO, 'rev-parse', 'HEAD').trim(),
     platform: `${process.platform} ${os.release()}`, node: process.version,

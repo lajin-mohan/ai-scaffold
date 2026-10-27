@@ -23,6 +23,10 @@ export function renderReport(results, meta) {
     '|---|---|---|---|',
   ];
   for (const r of results) {
+    if (r.notApplicable) {
+      lines.push(`| ${r.id} | ${r.kind} | not applicable | ${r.notApplicable} |`);
+      continue;
+    }
     const failed = r.checks.filter((c) => !c.ok).length;
     const verdict = failed === 0 ? `pass ${r.checks.length}/${r.checks.length}` : `**FAIL ${failed}**/${r.checks.length}`;
     lines.push(`| ${r.id} | ${r.kind} | ${verdict} | ${countsCell(r.counts)} |`);
