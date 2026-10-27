@@ -69,7 +69,11 @@ describe('resolveOnPath', () => {
 
 // ------------------------------------------------- planted binaries (Windows)
 
-describe.skipIf(!isWindows)('a planted gh.exe / git.exe never runs (item 94)', () => {
+// The first launch of each freshly copied node.exe (~90 MB, unsigned) waits on
+// the antivirus scan of a new executable: 3–7s idle, more under suite load,
+// against ~0.25s for a second launch. A hard link would skip the scan, but
+// Windows refuses one into Program Files. So vitest's 5s default is too tight.
+describe.skipIf(!isWindows)('a planted gh.exe / git.exe never runs (item 94)', { timeout: 30_000 }, () => {
   let plant;
   let sentinel;
   let savedEnv;
