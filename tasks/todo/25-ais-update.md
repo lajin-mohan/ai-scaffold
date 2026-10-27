@@ -36,8 +36,9 @@ priority and validation are in `docs/process/pre-npm-publish-todo.md`
 ## Key facts carried forward
 
 - Install-time sha256 hashes exist (`manifest.js:111`, `copy.js:98`) from
-  **0.7.0**, the first CLI release, onward (corrected 2026-10-26 from
-  0.8.6 after slice 5 installed every early version), and `doctor` detects
+  **0.7.0**, the first CLI release, in every inspected release (0.7.0,
+  0.8.0, 0.8.2, 0.8.3, 0.8.5, 0.14.0, 0.16.1; corrected 2026-10-26 from
+  0.8.6), and `doctor` detects
   drift, so update is a classifier
   and an applier.
 - `create` records **every** file it writes, including application files
@@ -363,32 +364,47 @@ spoofing or unsafe behaviour.
 (run 40311596999), and squash-merged into `dev` as `b21a423` on 2026-10-26.
 The squash is byte-identical to the verified head.
 
-## Slice 5: real installs from npm, 2026-10-26
+## Slice 5: real installs from npm, 2026-10-26 to 2026-10-27
 
 Evidence: `docs/qa/item-25-update-compat-evidence.md` and
 `docs/qa/item-25-update-compat-run-windows.md`. The matrix is
 `scripts/update-compat-matrix.js`, run by the CI job `Update compatibility`
-on Ubuntu and Windows, which is part of `CI passed`.
+on Ubuntu and Windows, which is part of `CI passed`. PR:
+lajin-mohan/ai-scaffold#164.
 
 | Criterion | Status | Evidence |
 |---|---|---|
-| 5A | Verified locally (Windows) | 11 real-install cases (0.8.5 node/laravel/init; 0.14.0 and 0.16.1 node/laravel/python/init), all checks pass, no unexplained difference |
-| AC-07 | Verified locally | A 0.8.5 install with `managedFiles` removed: nothing replaced or removed |
+| 5A | Verified locally (Windows) | 11 real-install cases (0.8.5 node/laravel/init; 0.14.0 and 0.16.1 node/laravel/python/init); 0.8.5 python not applicable (no such profile); all checks pass, no unexplained difference |
+| AC-07 | Verified locally | SYNTHETIC: a real 0.8.5 install with `managedFiles` removed; nothing replaced or removed |
+| ADR-002 | Verified locally | Real 0.7.0 re-baseline: 30 legacy files untouched and recorded `unowned`, scaffold files correctly classed, edits and user data kept, `doctor` reports no legacy file, second apply changes nothing |
 | 5B | Verified locally | `autocrlf=true` init clone with 154 CRLF files: no conflict; create clone stays LF |
-| 5C | Implemented; CI result in the slice 5 PR | `update-compat` job, matrix `ubuntu-latest`, `windows-latest` |
+| 5C | CI on #164 | `update-compat` job, matrix `ubuntu-latest`, `windows-latest` |
 | 5D | This section and the evidence file | — |
 
-**For maintainer confirmation in the slice 5 PR:**
-- **The 5A wording "0.8.5 replaces and removes nothing" was based on a
-  wrong premise.** Every published version from 0.7.0 records hashes. This
-  is now tested as AC-01 for real 0.8.5 installs and as AC-07 on a manifest
-  without `managedFiles`. The BRD, HLD and ADR-007 are corrected.
-- **ADR-007's v0.7.x follow-up is open:** 0.7.x installs are
-  hash-classified.
+**Maintainer decisions (2026-10-27):**
+- **The 5A criterion is corrected.** Real 0.8.5 installs record hashes and
+  are tested as AC-01: eligible untouched files updated, and edits and data
+  kept. AC-07 is tested on a manifest without `managedFiles`, labelled
+  synthetic. Unsupported profile/version combinations are listed as not
+  applicable. Historical claims are limited to the inspected releases
+  (0.7.0, 0.8.0, 0.8.2, 0.8.3, 0.8.5, 0.14.0, 0.16.1).
+- **0.7.x is not satisfied by hashes alone.** ADR-002's re-baseline is
+  demonstrated by a real 0.7.0 apply. ADR-007 is reconciled with ADR-002,
+  refining it, not superseding it.
+
+**Defects found by slice 5 and fixed:**
+- `--apply` refused every 0.7.x install (the lock required an
+  `.ai-scaffold/` folder 0.7.x never created);
+- `doctor` and `status` verified every record, claiming the project's own
+  files;
+- the no-hashes notice named the wrong version.
 
 **Observation:** the schema-2 migration fills the missing `install` command
 with the generic default `none`, not the profile's (`npm install` for node).
 
-**Remaining:** CI green on both platforms, then the PR ready for review.
-The ticket stays open until slice 5 merges and the 0.17.0 release is
-published (`npm view`).
+**Also carried into #164:** the ticket-status corrections from #160 (95 and
+96 done, 77 D3 open, roadmap status). #160 was closed as superseded.
+
+**Remaining:** CI green on both platforms at the final commit, then #164
+ready for review. The ticket stays open until #164 merges and the 0.17.0
+release is published (`npm view`).

@@ -32,6 +32,9 @@ This file is configured with `merge=union` in `.gitattributes` so parallel addit
   `2` applied with `.ais-new` files to merge, `1` error, refusal, lock held,
   interrupted update or rolled-back apply. A switch given a value
   (`--apply=foo`) exits 1 with `INVALID_OPTION` before anything runs.
+  Verified against real installs from 0.7.0, 0.8.5, 0.14.0 and 0.16.1. A
+  0.7.x install is re-baselined: docs, tasks and application files its
+  manifest listed are recorded as unowned and left untouched (ADR-002).
 - **`ais doctor` warns while `.ais-new` files remain** after an update.
 
 ### Fixed
@@ -42,6 +45,12 @@ This file is configured with `merge=union` in `.gitattributes` so parallel addit
   Plan paths are now always POSIX, matching Linux and macOS. Projects
   created with `ais create` are unaffected. Found by the item 25 render
   guard test.
+- **`ais doctor` and `ais status` reported the project's own files as
+  modified managed files.** They checked every manifest record, so editing
+  your `README.md`, project memory, `CHANGELOG.md` or `settings.json` showed
+  as drift. Once records carry ownership classes (new installs, and any
+  project after `ais update --apply`), only scaffold-managed files are
+  verified. The `.ais-new` warning still covers every file.
 
 ### Changed
 - **`{{YEAR}}` and every generated date now come from one UTC clock per
