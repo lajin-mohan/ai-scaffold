@@ -7,6 +7,7 @@ import path from 'path';
 import fs from 'fs-extra';
 import chalk from 'chalk';
 import crypto from 'crypto';
+import { scaffoldOwnedRecords } from '../core/manifest.js';
 
 export function statusCommand(cli) {
   cli.command('status [target-dir]', 'Show installed scaffold version, profile, and status')
@@ -108,7 +109,7 @@ async function getStatusObject(target) {
 
 async function countManagedFiles(target, status = {}) {
   if (Array.isArray(status.managedFiles) && status.managedFiles.length > 0) {
-    return status.managedFiles.length;
+    return scaffoldOwnedRecords(status).length;
   }
 
   const managedPaths = [
@@ -133,11 +134,7 @@ async function findManagedFileIssues(target, status = {}) {
   const modified = [];
   const missing = [];
 
-  if (!Array.isArray(status.managedFiles)) {
-    return { modified, missing };
-  }
-
-  for (const file of status.managedFiles) {
+  for (const file of scaffoldOwnedRecords(status)) {
     const fullPath = path.join(target, file.path);
     if (!(await fs.pathExists(fullPath))) {
       missing.push(file.path);

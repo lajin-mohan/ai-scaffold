@@ -335,3 +335,24 @@ This file records patterns from mistakes and corrections. Claude reads this at t
     escapes into the actual invisible characters (2026-10-26, caught by
     `no-irregular-whitespace`). For non-printing characters, check the bytes
     (`od -c`) after the edit and keep them as explicit `\uXXXX` escapes.
+
+## 2026-10-27 — A clean preview was offered as evidence; the apply failed (item 25 slice 5)
+
+- **What happened:** To answer whether 0.7.x installs were handled, I
+  reported that a real 0.7.0 install "previews cleanly" (no conflict,
+  nothing rejected). The maintainer asked for a real apply case instead.
+  The apply failed every 0.7.0 install with `MANIFEST_MISSING`, because the
+  slice 4 lock required an `.ai-scaffold/` folder that 0.7.x never created.
+  Separately, the slice 5 criterion had assumed 0.8.5 has no hashes, an
+  assumption about history nobody had checked against the registry.
+- **Why:** Preview and apply share planning, but not preconditions: the
+  lock, git safety and the write path run only under `--apply`. A plan
+  proves what would be written, not that it can be. Historical claims had
+  been copied between documents instead of checked against the published
+  tarballs.
+- **Rule:**
+  - Evidence for "version X is supported" is an apply on a real install of
+    X, followed by a second apply that changes nothing. A preview alone is
+    not evidence.
+  - A claim about what past releases did is checked by installing them
+    from npm, and states which versions were inspected.

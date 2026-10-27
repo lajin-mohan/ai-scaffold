@@ -7,19 +7,33 @@
 import crypto from 'crypto';
 import os from 'os';
 import { checkContained, readContained } from './containment.js';
-import { createExclusive, nativeFs, removeFile, WriteError } from './write-ops.js';
+import { createDirectory, createExclusive, nativeFs, removeFile, WriteError } from './write-ops.js';
 
 export const LOCK_REL = '.ai-scaffold/update.lock';
 const MAX_LOCK_BYTES = 64 * 1024;
 
+const MISSING = 'No scaffold installation found. Run `ais init` first.';
+
+/**
+ * The lock comes before the manifest read (FR-40), so a directory that is not
+ * a scaffold installation is refused here rather than given a lock. 0.7.x
+ * installs keep their manifest at the root with no `.ai-scaffold/` folder, so
+ * the folder is created only when a real `.ai-scaffold.json` is present.
+ */
+async function ensureLockHome(root, fsApi) {
+  const home = await checkContained(root, '.ai-scaffold', fsApi);
+  if (home.ok && home.exists && home.stat.isDirectory()) return;
+  if (!home.ok || home.exists) throw new WriteError('MANIFEST_MISSING', MISSING, '.ai-scaffold');
+  const manifest = await checkContained(root, '.ai-scaffold.json', fsApi);
+  if (!manifest.ok || !manifest.exists || !manifest.stat.isFile()) {
+    throw new WriteError('MANIFEST_MISSING', MISSING, '.ai-scaffold.json');
+  }
+  await createDirectory(root, '.ai-scaffold', fsApi);
+}
+
 /** @returns {Promise<{ token: string }>} */
 export async function acquireLock(root, { fsApi = nativeFs, now = new Date() } = {}) {
-  // The lock comes before the manifest read (FR-40), so a directory that is
-  // not a scaffold installation is refused here rather than given a lock.
-  const home = await checkContained(root, '.ai-scaffold', fsApi);
-  if (!home.ok || !home.exists || !home.stat.isDirectory()) {
-    throw new WriteError('MANIFEST_MISSING', 'No scaffold installation found. Run `ais init` first.', '.ai-scaffold');
-  }
+  await ensureLockHome(root, fsApi);
   const token = crypto.randomBytes(16).toString('hex');
   const body = { pid: process.pid, host: os.hostname(), startedAt: now.toISOString(), token };
   try {

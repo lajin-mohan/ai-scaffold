@@ -97,7 +97,7 @@ async function planPath({ rel, record, render, duplicate }, ctx) {
 function noticesFor({ installMode, hashed, keys }) {
   const notices = [];
   if (!hashed) {
-    notices.push('No file hashes were recorded at install (before 0.8.6): nothing will be replaced or removed.');
+    notices.push('No file hashes are recorded in .ai-scaffold.json (no managedFiles): nothing will be replaced or removed.');
   }
   if (installMode === 'unknown') {
     const never = PROTECTED_MANAGED.filter((rel) => !keys.has(pathKey(rel)));

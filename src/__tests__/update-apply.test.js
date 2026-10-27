@@ -284,6 +284,21 @@ describe('the update lock (FR-40, FR-52)', () => {
     expect(fs.readdirSync(bare)).toEqual([]);
   });
 
+  it('a manifest with no .ai-scaffold/ folder (0.7.x layout) gets the folder and the lock (slice 5)', async () => {
+    const legacy = await resolveProjectRoot(fse.mkdtempSync(path.join(tmpDir, 'legacy-')));
+    fs.writeFileSync(path.join(legacy, '.ai-scaffold.json'), '{"version":"0.7.0"}\n');
+    const { token } = await acquireLock(legacy);
+    expect(fs.existsSync(path.join(legacy, ...LOCK_REL.split('/')))).toBe(true);
+    expect(await releaseLock(legacy, token)).toBe(true);
+  });
+
+  it('refuses a manifest path that is not a regular file, and creates nothing', async () => {
+    const odd = await resolveProjectRoot(fse.mkdtempSync(path.join(tmpDir, 'odd-')));
+    fs.mkdirSync(path.join(odd, '.ai-scaffold.json'));
+    await expect(acquireLock(odd)).rejects.toMatchObject({ code: 'MANIFEST_MISSING' });
+    expect(fs.readdirSync(odd)).toEqual(['.ai-scaffold.json']);
+  });
+
   it('is exclusive and released only with its token', async () => {
     const root = await project();
     const { token } = await acquireLock(root);

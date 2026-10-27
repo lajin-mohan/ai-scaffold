@@ -8,6 +8,7 @@ import fs from 'fs-extra';
 import chalk from 'chalk';
 import { validateManifestContext } from '../core/prompts.js';
 import { isPristine } from '../core/hashing.js';
+import { scaffoldOwnedRecords } from '../core/manifest.js';
 import { createBudget, resolveRepo } from '../core/gh-runner.js';
 import { getProtection } from '../core/github-protection.js';
 import { configuredContexts, observeContexts } from '../core/github-required-checks.js';
@@ -376,13 +377,12 @@ async function findManagedFileIssues(target, manifestData) {
   const missing = [];
   const sidecars = [];
 
-  if (!Array.isArray(manifestData.managedFiles)) {
-    return { modified, missing, sidecars };
+  // An update writes .ais-new beside managed and merged files alike.
+  for (const file of Array.isArray(manifestData.managedFiles) ? manifestData.managedFiles : []) {
+    if (await fs.pathExists(`${path.join(target, file.path)}.ais-new`)) sidecars.push(`${file.path}.ais-new`);
   }
-
-  for (const file of manifestData.managedFiles) {
+  for (const file of scaffoldOwnedRecords(manifestData)) {
     const fullPath = path.join(target, file.path);
-    if (await fs.pathExists(`${fullPath}.ais-new`)) sidecars.push(`${file.path}.ais-new`);
     if (!(await fs.pathExists(fullPath))) {
       missing.push(file.path);
       continue;

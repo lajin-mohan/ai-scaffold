@@ -42,8 +42,12 @@ in place:
 Every run previews first, backs up before writing, and rolls back on failure.
 
 The detection half already exists: install-time sha256 hashes have been
-recorded since 0.8.6, and the spike proved that every managed file re-renders
-byte-for-byte from `.ai-scaffold.json`.
+recorded by every inspected release, from the first CLI release (0.7.0)
+onward, and the spike proved that every managed file re-renders
+byte-for-byte from `.ai-scaffold.json`. *(Corrected 2026-10-26 from "since
+0.8.6": slice 5 installed 0.7.0, 0.8.0, 0.8.2, 0.8.3, 0.8.5, 0.14.0 and
+0.16.1 from npm, and every `create` and `init` it ran recorded a hash for
+every managed file. Releases not inspected are not claimed.)*
 
 ---
 
@@ -101,7 +105,7 @@ The class is recorded per file in `.ai-scaffold.json`.
 |---|---|---|
 | FR-01 | `update` SHALL target the version of the running CLI (D-Q1). `--target-version` SHALL error unless it equals that version, and the error SHALL name the `npx @lajin.m/ai-scaffold@X update` form | Must Have |
 | FR-02 | `update` SHALL refuse downgrades with exit code 1. *(C, W6)* The `--force` option SHALL be removed, because it bypasses the version checks and contradicts BR-01. *(slice 3)* Passing `--force` SHALL fail with exit 1 and a message that it was removed in 0.17.0; it is never silently ignored | Must Have |
-| FR-03 | Installs from **0.8.6 or later** (manifest has `managedFiles`) SHALL use hash classification. Older installs SHALL treat every managed file as edited (D-Q4) unless its content already equals the new render, in which case it is unchanged; nothing is replaced or removed, and the report says so | Must Have |
+| FR-03 | Installs whose manifest has `managedFiles` (every inspected release; *corrected 2026-10-26 from "0.8.6 or later"*) SHALL use hash classification. Installs without them SHALL treat every managed file as edited (D-Q4) unless its content already equals the new render, in which case it is unchanged; nothing is replaced or removed, and the report says so | Must Have |
 | FR-04 | Updating to the installed version SHALL report "already at X", change nothing, and exit 0 | Must Have |
 
 ### 5.2 Classification and plan
@@ -166,8 +170,8 @@ The class is recorded per file in `.ai-scaffold.json`.
 | ID | Requirement | Priority |
 |---|---|---|
 | FR-25 | A migration SHALL be code keyed by the version that introduces it, run once when an update crosses that version, in ascending order | Must Have |
-| FR-26 | The first migration SHALL classify existing manifests (pre-ownership) by the OC rule table and write the class per file. *(C, B2)* It SHALL also infer and record `install.mode`: with `managedFiles`, `create` when it holds any profile root file or a root `.gitattributes`, otherwise `init`; *(v1.3)* without `managedFiles` (pre-0.8.6), `unknown`, which plans as `init` with disk-independent planning (HLD §3) | Must Have |
-| FR-42 | *(v1.3, slice 2)* **Context-aware ownership.** Ownership SHALL be decided from the path, the install mode and whether the manifest records the path, never from what is on disk. In `init` and `unknown` modes, a path in `PROTECTED_PATHS` (`file-plan.js`) whose OC class is managed (today `CLAUDE.md`, `AGENTS.md`, `constitution.md`; the set SHALL be computed from that constant, not restated) and that has **no** manifest record is **unowned**: `init` found the adopter's own file and update never touches it. Consequence: an `unknown`-mode project (pre-0.8.6, no records) never updates those three files; the preview SHALL say so. With a record it is classified by the OC table. In `create` mode the OC table alone applies; an unrecorded file at a planned path is a conflict (FR-08) | Must Have |
+| FR-26 | The first migration SHALL classify existing manifests (pre-ownership) by the OC rule table and write the class per file. *(C, B2)* It SHALL also infer and record `install.mode`: with `managedFiles`, `create` when it holds any profile root file or a root `.gitattributes`, otherwise `init`; *(v1.3)* without `managedFiles` (no inspected release writes such a manifest), `unknown`, which plans as `init` with disk-independent planning (HLD §3) | Must Have |
+| FR-42 | *(v1.3, slice 2)* **Context-aware ownership.** Ownership SHALL be decided from the path, the install mode and whether the manifest records the path, never from what is on disk. In `init` and `unknown` modes, a path in `PROTECTED_PATHS` (`file-plan.js`) whose OC class is managed (today `CLAUDE.md`, `AGENTS.md`, `constitution.md`; the set SHALL be computed from that constant, not restated) and that has **no** manifest record is **unowned**: `init` found the adopter's own file and update never touches it. Consequence: an `unknown`-mode project (no records) never updates those three files; the preview SHALL say so. With a record it is classified by the OC table. In `create` mode the OC table alone applies; an unrecorded file at a planned path is a conflict (FR-08) | Must Have |
 | FR-37 | *(C, B2)* `create` and `init` SHALL record `install.mode`, and `update` SHALL plan with that mode (`unknown` plans as `init`, FR-26). Re-planning an `init` or `unknown` install as a `create` install is prohibited | Must Have |
 | FR-27 | Migrations SHALL be idempotent: running the same update twice produces no second change | Must Have |
 
@@ -227,7 +231,7 @@ The class is recorded per file in `.ai-scaffold.json`.
 | AC-04 | `settings.json` with an adopter `allow` rule and an adopter hook | `--apply` | The new deny/ask rules are present, the adopter rule and hook are kept, and no `allow` rule is removed |
 | AC-05 | A write failure injected after half the files | `--apply` | The project is byte-identical to before; exit 1; the backup location is reported |
 | AC-06 | Any project | `ais update` (no flags) | Nothing changes on disk; the plan is printed |
-| AC-07 | A 0.8.5 project (no hashes) | `ais update`, then `--apply` | *(v1.3)* Each existing managed file whose content differs from the new render is a conflict; one already equal to it is unchanged; nothing is replaced or removed |
+| AC-07 | A project whose manifest has no `managedFiles` (no hashes). *(Corrected 2026-10-26: no inspected release writes one, including 0.8.5; the test manifest is synthetic; tested by removing `managedFiles` from a real 0.8.5 install. A real 0.8.5 install is hashed and is covered by AC-01.)* | `ais update`, then `--apply` | *(v1.3)* Each existing managed file whose content differs from the new render is a conflict; one already equal to it is unchanged; nothing is replaced or removed |
 | AC-08 | Uncommitted edits to a managed file | `--apply` | Refused and the path is named; nothing is written |
 | AC-09 | The same update run twice | second `--apply` | "Already at X", no changes |
 | AC-10 | A project created on Windows and cloned with `core.autocrlf=true` | `ais update` | Pristine files are classified as pristine (CRLF-normalised hashing) |
@@ -298,6 +302,7 @@ these defaults.
 |---|---|---|
 | 1.0 | 2026-10-09 | Initial draft from the analysis (D-Q1 to D-Q5) and the spike. Approved the same day by the maintainer; Q-01 to Q-03 defaults accepted |
 | 1.2 | 2026-10-12 | Architecture review (REVISE) amendments. **B1** (unowned paths never touched) and **B5** (base-aware `settings.json` merge: FR-21, FR-22 and new FR-34 to FR-36) were **approved by the maintainer on 2026-10-12**. Clarifications *(C)* for B2 (FR-26, FR-37), B3 (FR-30), B4 (FR-38), W1 (FR-06), W2 (FR-09), W3 (FR-05), W4 (FR-32), W5 (NFR-06) and W6 (FR-02) are pending re-confirmation. New AC-11 to AC-16 |
+| 1.3 | 2026-10-26 | *Slice 5 factual correction, for maintainer confirmation in the slice 5 PR:* hashes are recorded by every inspected release (0.7.0, 0.8.0, 0.8.2, 0.8.3, 0.8.5, 0.14.0, 0.16.1), not "since 0.8.6". FR-03's operative condition (the manifest has `managedFiles`) and its behaviour are unchanged. AC-07 now names that condition rather than 0.8.5, and is tested by removing `managedFiles` from a real 0.8.5 install; real 0.8.5 installs are covered as hashed installs. FR-26 and FR-42 lose the wrong version label |
 | 1.3 | 2026-10-19 | *Slice 4 contracts (maintainer approval of 2026-10-19, documentation only):* FR-47 `--allow-no-git` acknowledgment; FR-48 rollback failure; FR-49 write containment; FR-50 sidecar and temporary collisions; FR-51 bounded retries; FR-52 stale-lock reporting; NFR-09 fault and genuine-crash testing; FR-46 retired; FR-34 recorded at install |
 | 1.3 | 2026-10-16 | *Slice 3 contracts (maintainer approval of 2026-10-16):* FR-02 `--force` explicit error; FR-35 tri-state settings base; new FR-43 safe reads, FR-44 check order (lock before journal), FR-45 preview JSON contract, FR-46 `--apply` unavailable, NFR-08 no write attempts and packed-tarball CLI tests |
 | 1.3 | 2026-10-15 | *Slice 2 corrections (maintainer conditions of 2026-10-15):* FR-09 hashing contract made bidirectional with a conditional `hashLf`; new FR-42 context-aware `init` ownership; new NFR-07 deterministic rendering and comparison. Round-3 review reconciliation, documentation only (maintainer authorisation 2026-10-15; not design sign-off). Hook key (FR-36) aligned with HLD §5 as (event, script), with an ambiguity rule. Preview is read-only in every state (FR-12); recovery completes only under `--apply` after verifying the journal's expected final state (FR-38). Pre-0.8.6 handling aligned with the HLD (FR-03, FR-26, FR-37, AC-07). FR-20 restorations are visible and grouped; new FR-39 persisted per-rule exceptions. New FR-40 single-writer lock and FR-41 pre-write re-check. AC-16 tightened; new AC-17 to AC-21 |
