@@ -179,6 +179,9 @@ export async function buildFilePlan(sourceDir, targetDir, options = {}) {
     // README path is taken by the namespaced project README template, and an
     // existing repository is exactly the case with branch protection to check.
     '.ai-scaffold/cli-reference.md',
+    // Keeps update.lock and backups/ out of git (#159). Generated, so the
+    // npm pack exclusion of files named .gitignore does not apply.
+    '.ai-scaffold/.gitignore',
     '.ai-scaffold/context.md',
     'constitution.md',
   ];

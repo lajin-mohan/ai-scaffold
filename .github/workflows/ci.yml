@@ -98,7 +98,7 @@ jobs:
       - name: Pre-publish smoke
         run: bash scripts/pre-publish-smoke.sh
 
-      - name: Update preview from the packed tarball (item 25)
+      - name: Update preview, apply and SIGKILL recovery from the packed tarball (item 25)
         run: node scripts/update-preview-smoke.js
 
       - name: Verify npm pack
@@ -190,13 +190,49 @@ jobs:
       - name: Pre-publish smoke (includes npm test)
         run: bash scripts/pre-publish-smoke.sh
 
-      - name: Update preview from the packed tarball (item 25)
+      - name: Update preview, apply and SIGKILL recovery from the packed tarball (item 25)
         run: node scripts/update-preview-smoke.js
+
+  update-compat:
+    name: Update compatibility (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 40
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    defaults:
+      run:
+        shell: bash
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      # Item 25 slice 5: real npm installs of 0.8.5, 0.14.0 and 0.16.1, updated
+      # with the packed tarball, plus autocrlf=true clones (criteria 5A, 5B).
+      - name: ais update against real installs
+        run: node scripts/update-compat-matrix.js --report "$RUNNER_TEMP/compat-report.md"
+
+      - name: Report
+        if: always()
+        run: cat "$RUNNER_TEMP/compat-report.md" >> "$GITHUB_STEP_SUMMARY" 2>/dev/null || true
 
   ci-passed:
     name: CI passed
     runs-on: ubuntu-latest
-    needs: [cli-checks, golden-path, windows-checks]
+    needs: [cli-checks, golden-path, windows-checks, update-compat]
     if: always()
 
     steps:
@@ -212,6 +248,10 @@ jobs:
           fi
           if [ "${{ needs.windows-checks.result }}" != "success" ]; then
             echo "FAILED - Windows checks did not pass."
+            exit 1
+          fi
+          if [ "${{ needs.update-compat.result }}" != "success" ]; then
+            echo "FAILED - update compatibility (Ubuntu and Windows) did not pass."
             exit 1
           fi
           echo "All required CI jobs passed."

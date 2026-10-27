@@ -20,8 +20,8 @@ describe('checkFlags', () => {
     expect(() => checkFlags({ force: true })).toThrow(/removed in 0\.17\.0/);
   });
 
-  it('rejects --apply while applying is unavailable', () => {
-    expect(codeOf(() => checkFlags({ apply: true }))).toBe('APPLY_UNAVAILABLE');
+  it('accepts --apply now that applying is available (FR-46 retired)', () => {
+    expect(codeOf(() => checkFlags({ apply: true }))).toBeNull();
   });
 
   it('normalises single and repeated exception flags to arrays', () => {

@@ -2,8 +2,8 @@
 
 ## Status
 
-**Implemented 2026-10-13 (plan v2); PR open.** Size XS. Ships in
-**0.16.1**. Found 2026-10-12 while verifying item 94.
+**Done — shipped in 0.16.1** (lajin-mohan/ai-scaffold#154, `release: v0.16.1`;
+`npm view @lajin.m/ai-scaffold version` showed 0.16.1 on 2026-10-23).
 
 ## Why
 

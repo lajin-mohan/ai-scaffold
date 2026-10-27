@@ -34,10 +34,6 @@ export function checkFlags(options = {}) {
     throw new UpdateError('FLAG_REMOVED',
       '--force was removed in 0.17.0: it bypassed the version checks. Preview runs without it.');
   }
-  if (options.apply !== undefined && options.apply !== false) {
-    throw new UpdateError('APPLY_UNAVAILABLE',
-      'Applying an update is not available in this version. `ais update` shows a preview only.');
-  }
   const keepRemoved = toList(options.keepRemoved, '--keep-removed');
   const restoreRemoved = toList(options.restoreRemoved, '--restore-removed');
   const both = keepRemoved.filter((rule) => restoreRemoved.includes(rule));

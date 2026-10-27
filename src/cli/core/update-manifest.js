@@ -4,7 +4,7 @@
  * manifest's shape before anything trusts it (item 25, BRD FR-43, FR-44).
  */
 
-import { isPristine } from './hashing.js';
+import { hashRaw, isPristine } from './hashing.js';
 import { INSTALL_MODES, pathKey } from './ownership.js';
 import { UpdateError } from './update-policy.js';
 
@@ -56,6 +56,11 @@ function safeKey(rel) {
 
 /** FR-44 step 1: containment first, then a capped read, then shape checks. */
 export async function readManifest(root, io) {
+  return (await readManifestObserved(root, io)).manifest;
+}
+
+/** @returns {Promise<{ manifest: object, observed: string }>} with the hash of the bytes read */
+export async function readManifestObserved(root, io) {
   const read = await io.readContained(root, MANIFEST, MAX_MANIFEST_BYTES);
   if (!read.ok) throw new UpdateError('MANIFEST_UNSAFE', `Refusing to read ${MANIFEST}: ${read.reason}`);
   if (!read.exists) throw new UpdateError('MANIFEST_MISSING', 'No scaffold installation found. Run `ais init` first.');
@@ -65,23 +70,45 @@ export async function readManifest(root, io) {
   } catch {
     throw invalid('not valid JSON');
   }
-  return validateManifest(manifest);
+  return { manifest: validateManifest(manifest), observed: hashRaw(read.data) };
+}
+
+const RULE_LISTS = ['allow', 'deny', 'ask'];
+const isStringArray = (value) => Array.isArray(value) && value.every((item) => typeof item === 'string');
+
+// The shape the merge reads. Anything else is treated like invalid JSON
+// (FR-24) rather than crashing the merge (#159 review).
+function hasSettingsShape(local) {
+  const { permissions, hooks } = local;
+  if (permissions !== undefined) {
+    if (!isObject(permissions)) return false;
+    if (!RULE_LISTS.every((type) => permissions[type] === undefined || isStringArray(permissions[type]))) return false;
+  }
+  if (hooks === undefined) return true;
+  if (!isObject(hooks)) return false;
+  return Object.values(hooks).every((groups) => Array.isArray(groups)
+    && groups.every((group) => isObject(group) && (group.hooks === undefined || Array.isArray(group.hooks))));
 }
 
 /**
- * @returns {Promise<{ local: object|null, valid: boolean, pristine: boolean|null, rejected?: string }>}
+ * @returns {Promise<{ local: object|null, valid: boolean, pristine: boolean|null,
+ *   rejected?: string, invalidReason?: 'invalid-json'|'invalid-shape' }>}
  *   `rejected` carries the reason; the preview reports it and merges nothing.
  */
 export async function readSettings(root, manifest, io) {
   const read = await io.readContained(root, SETTINGS, MAX_SETTINGS_BYTES);
   if (!read.ok) return { local: null, valid: false, pristine: null, rejected: read.reason };
-  if (!read.exists) return { local: {}, valid: true, pristine: null };
+  if (!read.exists) return { local: {}, valid: true, pristine: null, observed: null };
+  const observed = hashRaw(read.data);
   const record = (manifest.managedFiles ?? []).find((r) => safeKey(r.path) === pathKey(SETTINGS));
   const pristine = record ? isPristine(read.data, record) : null;
+  let local;
   try {
-    const local = JSON.parse(read.data.toString('utf-8'));
-    return isObject(local) ? { local, valid: true, pristine } : { local: null, valid: false, pristine };
+    local = JSON.parse(read.data.toString('utf-8'));
   } catch {
-    return { local: null, valid: false, pristine };
+    return { local: null, valid: false, pristine, observed, invalidReason: 'invalid-json' };
   }
+  if (!isObject(local)) return { local: null, valid: false, pristine, observed, invalidReason: 'invalid-json' };
+  if (!hasSettingsShape(local)) return { local: null, valid: false, pristine, observed, invalidReason: 'invalid-shape' };
+  return { local, valid: true, pristine, observed };
 }

@@ -12,6 +12,7 @@ import {
   buildContextFile,
   buildMemoryFile,
   buildCliReference,
+  buildScaffoldGitignore,
   buildScaffoldReadme,
   buildStarterChangelog,
   buildStarterLessons,
@@ -29,6 +30,7 @@ function toJson(data) {
 function generatedContent(relPath, values, now) {
   if (relPath === '.ai-scaffold/README.md') return buildScaffoldReadme(values);
   if (relPath === '.ai-scaffold/cli-reference.md') return buildCliReference(values);
+  if (relPath === '.ai-scaffold/.gitignore') return buildScaffoldGitignore();
   if (relPath === '.ai-scaffold/context.md') return buildContextFile(values);
   if (relPath === '.ai-scaffold.json') return toJson(buildManifestData(values, { now }));
   if (relPath === '.claude/settings-overrides.json') return toJson(buildSettingsOverridesData(values));

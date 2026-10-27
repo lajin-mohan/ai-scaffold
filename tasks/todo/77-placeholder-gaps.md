@@ -2,9 +2,10 @@
 
 ## Status
 
-**Implemented 2026-10-13 (plan v2); PR open.** Size XS. Ships in
-**0.16.1**. D3 (eight hardcoded `N/A` tech-stack rows) is a product decision
-and is **not** in this slice.
+**D1, D2 and D4 shipped in 0.16.1** (lajin-mohan/ai-scaffold#154,
+`release: v0.16.1`; registry showed 0.16.1 on 2026-10-23). **D3 remains open**
+(eight hardcoded `N/A` tech-stack rows): a product decision, not scheduled.
+The ticket stays open for D3.
 
 ## Why (backlog item 77, audited 2026-08-27)
 

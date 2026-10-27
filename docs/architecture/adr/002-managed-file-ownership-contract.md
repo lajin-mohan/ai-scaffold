@@ -60,3 +60,11 @@ updated to the `v0.8.x` ownership contract.
   records before making destructive changes.
 - Optional packs need explicit manifest records before they can be safely
   updated or removed.
+
+## Status note (2026-10-27)
+
+The re-baseline this ADR requires is implemented by item 25's ownership
+classification, not by file hashes. The reconciliation is in ADR-007
+("ADR-002 v0.7.x re-baseline"), with evidence from a real 0.7.0 install in
+`docs/qa/item-25-update-compat-evidence.md`. This ADR's decision is
+unchanged; ADR-007 refines it.

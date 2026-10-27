@@ -7,6 +7,10 @@ import path from 'path';
 import chalk from 'chalk';
 import { buildManagedFileRecords } from './manifest.js';
 import { renderPlannedFile } from './render.js';
+import { classifyPath } from './ownership.js';
+import { scaffoldSubset } from './settings-merge.js';
+
+const SETTINGS_REL = '.claude/settings.json';
 
 /**
  * Copy staged files to target directory.
@@ -86,11 +90,31 @@ export async function copyFiles(plan, bootstrapValues, opts = {}) {
       const manifest = await fs.readJson(manifestPath);
       manifest.defaultedValues = values.defaulted ?? [];
       manifest.managedFiles = await buildManagedFileRecords(opts.targetDir, writtenFiles);
+      await recordSchema2(manifest, plan, values, now);
       await fs.writeJson(manifestPath, manifest, { spaces: 2 });
     }
   }
 
   return { copied, skipped, errors };
+}
+
+/**
+ * FR-34, FR-37: a new install is born at manifest schema 2, so its first
+ * update needs no migration. settingsBase is the scaffold's own rendering of
+ * settings.json, not the adopter's file that init may have kept.
+ */
+async function recordSchema2(manifest, plan, values, now) {
+  const installMode = manifest.install?.mode ?? 'unknown';
+  for (const record of manifest.managedFiles) {
+    record.class = classifyPath(record.path, { installMode, recorded: true });
+  }
+  manifest.manifestSchema = 2;
+  const entry = [...plan.copy, ...plan.generate, ...plan.skipProtected].find((file) => file.rel === SETTINGS_REL);
+  if (!entry) return;
+  const kind = entry.src ? 'copy' : 'generate';
+  const rendered = await renderPlannedFile(entry, values, { kind, now });
+  if (rendered === null) return;
+  manifest.settingsBase = scaffoldSubset(JSON.parse(rendered.toString()));
 }
 
 async function writePlannedFile(file, values, dryRun, now) {

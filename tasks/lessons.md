@@ -12,6 +12,12 @@ This file records patterns from mistakes and corrections. Claude reads this at t
 
 <!-- Add lessons below as they are captured. Most recent at the top. -->
 
+## 2026-10-23 — Backticks in a double-quoted shell string executed a Markdown file
+
+- **Mistake:** A `node -e "…"` edit carried Markdown with backticks inside a double-quoted bash string. Bash treated `` `docs/cli-reference.md` `` as command substitution and executed that file as a shell script, up to a syntax error on line 69. Lines before it included `` `npm install -g …` `` and `ais create …`. Nothing ran in practice (no `ais` on PATH, no global install, worktree clean), but the ticket text was silently corrupted and committed. Earlier shell-quoting slips in this work only garbled text; this one could have executed commands.
+- **Why:** Scripted edits were passed inline through the shell for speed, and the content contained shell metacharacters.
+- **Rule:** Never pass file content containing backticks, `$` or quotes through a shell string. Use the Edit/Write tools, or write the script to a file with the Write tool and run it. After any scripted edit, read the diff before committing.
+
 ## 2026-10-16 — A test enshrined an edge case that broke the safety invariant
 
 - **Mistake:** An architect review called `a\r\r\n` matching an `a\r\n` record "harmless", and slice 2 added a test asserting it was pristine. It is a content change: `ais update` could overwrite it. Every check passed because the test encoded the defect. Caught by a maintainer-supplied review.
@@ -271,3 +277,82 @@ This file records patterns from mistakes and corrections. Claude reads this at t
   - Review `git diff --cached --name-only` **before** committing, as its own
     step.
   - An unexpected `A` (added) path in the staged list is a stop signal.
+
+## 2026-10-26 — Packed smoke went red in CI after a later change it never saw (item 25, PR #159)
+
+- **What happened:** The packed-tarball update smoke passed locally, then
+  `copy.js` was changed to write manifest schema 2 at `create`. The unit
+  fixtures were updated, but the smoke was not rerun. Its "older install"
+  case still started from a fresh (now schema-2) manifest, so the schema-2
+  migration no longer ran, and CI failed on Ubuntu and Windows.
+- **Why:** A verification result is only valid for the code it ran against.
+  The smoke ran before the last behaviour change, and its fixture modelled
+  "older" by bumping the version alone.
+- **Rule:**
+  - Rerun every gate (unit, packed smoke) after the **last** behaviour
+    change before pushing, not only the tests the change obviously touches.
+  - A fixture for an older install strips every field the new version adds,
+    not just the version number.
+
+## 2026-10-26 — Apply trusted on-disk state it should have pinned (item 25, PR #159 review)
+
+- **What happened:** Review of `e0ab979` found two P1s, both reproduced.
+  Recovery deleted whatever paths a journal named as temporaries, so a
+  crafted journal could delete `README.md`, before git safety ran. Separately,
+  apply operations re-read each file's hash after planning, so a file edited
+  between planning and writing was overwritten under the earlier decision.
+- **Why:** Both treated data read from disk as authoritative at the point of
+  use: a journal's free-form fields for deletion, and a fresh read for the
+  write precondition. The tests built journals and plans only the way the
+  code itself writes them, so neither a hostile journal nor an edit between
+  planning and writing was ever exercised.
+- **Rule:**
+  - Anything that deletes or overwrites derives its target paths from
+    validated structure, never from a free-form field read back from disk.
+  - A write precondition is the state the decision was made on, captured at
+    that moment and carried forward, not re-read later.
+  - Each safety property gets a test that tampers with the input in between
+    (a crafted journal, an edit after planning). Mutation-check it: the test
+    must fail against the unfixed code.
+
+## 2026-10-26 — Code generated through a script lost its escapes, three times (item 25)
+
+- **What happened:** Three edits made by a Node script that wrote JavaScript
+  source (`s.replace(old, new)` with the new text in a template literal)
+  turned `'\n'` into a real newline or dropped regex backslashes, giving
+  unterminated strings and a regex that matched the wrong text. Lint caught
+  two; one was caught only because the smoke check failed.
+- **Why:** The text passes through two or three escaping layers: shell
+  heredoc, the generator's string literal, and the target's. `replace()` also
+  interprets `$` patterns in its replacement string.
+- **Rule:**
+  - Edit source with the Edit tool rather than a generator script.
+  - Use a generator script only for text without backslashes, `$` or
+    backticks.
+  - After any scripted edit, lint the file, then grep for the escapes you
+    expected (`\n`, `\.`) before running anything.
+  - The Edit tool is not fully literal either: it turned `​`-style
+    escapes into the actual invisible characters (2026-10-26, caught by
+    `no-irregular-whitespace`). For non-printing characters, check the bytes
+    (`od -c`) after the edit and keep them as explicit `\uXXXX` escapes.
+
+## 2026-10-27 — A clean preview was offered as evidence; the apply failed (item 25 slice 5)
+
+- **What happened:** To answer whether 0.7.x installs were handled, I
+  reported that a real 0.7.0 install "previews cleanly" (no conflict,
+  nothing rejected). The maintainer asked for a real apply case instead.
+  The apply failed every 0.7.0 install with `MANIFEST_MISSING`, because the
+  slice 4 lock required an `.ai-scaffold/` folder that 0.7.x never created.
+  Separately, the slice 5 criterion had assumed 0.8.5 has no hashes, an
+  assumption about history nobody had checked against the registry.
+- **Why:** Preview and apply share planning, but not preconditions: the
+  lock, git safety and the write path run only under `--apply`. A plan
+  proves what would be written, not that it can be. Historical claims had
+  been copied between documents instead of checked against the published
+  tarballs.
+- **Rule:**
+  - Evidence for "version X is supported" is an apply on a real install of
+    X, followed by a second apply that changes nothing. A preview alone is
+    not evidence.
+  - A claim about what past releases did is checked by installing them
+    from npm, and states which versions were inspected.

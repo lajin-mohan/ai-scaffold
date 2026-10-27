@@ -74,7 +74,7 @@ async function planPath({ rel, record, render, duplicate }, ctx) {
   if (!contained.ok) return entry(rel, cls, 'rejected', 'carry', contained.reason);
   if (cls === 'seeded') {
     if (contained.exists || !render) return entry(rel, cls, 'skip-seeded', 'carry');
-    return entry(rel, cls, 'add', hashRaw(render));
+    return { ...entry(rel, cls, 'add', hashRaw(render)), observed: null };
   }
   if (cls === 'merged') {
     if (!contained.exists) return entry(rel, cls, 'merge', 'merged');
@@ -88,13 +88,16 @@ async function planPath({ rel, record, render, duplicate }, ctx) {
     current = read.data ?? null;
   }
   const decision = managedAction({ current, record, render });
-  return entry(rel, cls, decision.action, decision.recordAfter, decision.reason ?? null);
+  // `observed` is what this decision was made on; apply writes only while
+  // the file still matches it (FR-41).
+  const observed = current ? hashRaw(current) : null;
+  return { ...entry(rel, cls, decision.action, decision.recordAfter, decision.reason ?? null), observed };
 }
 
 function noticesFor({ installMode, hashed, keys }) {
   const notices = [];
   if (!hashed) {
-    notices.push('No file hashes were recorded at install (before 0.8.6): nothing will be replaced or removed.');
+    notices.push('No file hashes are recorded in .ai-scaffold.json (no managedFiles): nothing will be replaced or removed.');
   }
   if (installMode === 'unknown') {
     const never = PROTECTED_MANAGED.filter((rel) => !keys.has(pathKey(rel)));

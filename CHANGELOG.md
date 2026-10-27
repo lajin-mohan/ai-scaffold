@@ -13,6 +13,30 @@ This file is configured with `merge=union` in `.gitattributes` so parallel addit
 
 ## [Unreleased]
 
+### Added
+- **`ais update --apply`** (item 25 slice 4). Applies the plan the preview
+  shows. It replaces only scaffold files you have not edited; for a file you
+  changed it keeps yours and writes the new version beside it as
+  `<file>.ais-new`. It never touches project memory, lessons, settings
+  overrides, setup context, application files or files the scaffold did not
+  install, and merges `.claude/settings.json` rule by rule and hook by hook.
+  Before writing it takes `.ai-scaffold/update.lock`, refuses uncommitted
+  changes in the files it would change (`--allow-dirty` overrides; outside
+  git, `--allow-no-git` is required), and copies every file it changes to
+  `.ai-scaffold/backups/<timestamp>-<id>/`. Each file is re-checked
+  immediately before its write; any failure rolls back exactly what the run
+  wrote. An update killed part-way is reported on the next run and completed
+  or abandoned only where every file's state can be proven. `--keep-removed`
+  and `--restore-removed` are saved. `--json` prints one
+  `ais-update-apply/1` document. Exit codes: `0` applied or already current,
+  `2` applied with `.ais-new` files to merge, `1` error, refusal, lock held,
+  interrupted update or rolled-back apply. A switch given a value
+  (`--apply=foo`) exits 1 with `INVALID_OPTION` before anything runs.
+  Verified against real installs from 0.7.0, 0.8.5, 0.14.0 and 0.16.1. A
+  0.7.x install is re-baselined: docs, tasks and application files its
+  manifest listed are recorded as unowned and left untouched (ADR-002).
+- **`ais doctor` warns while `.ais-new` files remain** after an update.
+
 ### Fixed
 - **`ais init` on Windows wrote the generic scaffold README to
   `.ai-scaffold/README.md` instead of the project README.** `buildFilePlan`
@@ -26,6 +50,12 @@ This file is configured with `merge=union` in `.gitattributes` so parallel addit
   new unsigned executable waits on the antivirus scan (3–7s measured, more
   under suite load). The block now carries an explicit 30s timeout; what it
   asserts is unchanged. Test-only; nothing shipped changes.
+- **`ais doctor` and `ais status` reported the project's own files as
+  modified managed files.** They checked every manifest record, so editing
+  your `README.md`, project memory, `CHANGELOG.md` or `settings.json` showed
+  as drift. Once records carry ownership classes (new installs, and any
+  project after `ais update --apply`), only scaffold-managed files are
+  verified. The `.ais-new` warning still covers every file.
 
 ### Changed
 - **`{{YEAR}}` and every generated date now come from one UTC clock per
@@ -40,8 +70,19 @@ This file is configured with `merge=union` in `.gitattributes` so parallel addit
   (no symlinks or junctions), and reports a held update lock or an
   interrupted apply instead of planning. `--json` prints exactly one
   `ais-update-preview/1` document on stdout. Exit codes: `0` no planning
-  conflicts (git state is not assessed yet), `2` conflicts, `1` error,
-  locked or interrupted. Applying is not available yet; `--apply` exits 1.
+  conflicts (a preview does not check git), `2` conflicts, `1` error,
+  locked or interrupted. `--apply` applies the plan (see Added).
+- **`ais create` and `ais init` write manifest schema 2** (item 25): each
+  managed file's ownership class, the install mode, and the scaffold's own
+  `.claude/settings.json` rules and hooks as `settingsBase`, so the first
+  update needs no migration and can tell rules you removed from rules that
+  are new. They also write `.ai-scaffold/.gitignore`, which keeps
+  `update.lock` and `backups/` out of git, so a lock left by a crashed
+  update cannot be committed and lock every clone; an existing project gets
+  it from its next `ais update --apply`. Generated files are otherwise
+  identical to 0.16.1, apart from the Windows `init` README fix under Fixed.
+- **`ais doctor` no longer reports a line-ending-only difference as a
+  modified managed file** (CRLF checkouts with `core.autocrlf=true`).
 
 ### Removed
 - **`ais update --force`** (item 25, BRD FR-02). It bypassed the version

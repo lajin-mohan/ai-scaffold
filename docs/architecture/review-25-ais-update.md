@@ -328,3 +328,34 @@ CHANGES**, no BLOCK. Applied:
 
 Out of scope, raised separately: `init` silently overwrites an existing
 `.claude/settings.json` (and other unprotected `.claude/**` files).
+
+---
+
+## Round 5 — slice 4 apply contracts (2026-10-19)
+
+An independent `architect` agent reviewed the slice 4 contracts (`aee2a5e`)
+before any write code. **Verdict: APPROVE WITH CHANGES** (2 BLOCK, 11 WARN,
+4 NIT), all contract text. Applied in the follow-up S0 commit:
+- **B1:** an existing `.ais-new` is never overwritten (`SIDECAR_EXISTS`
+  unless identical); adopters may be mid-merge.
+- **B2:** the §6 glob sweep of `*.ais-tmp` removed; only journal-named
+  temporary files are ever removed.
+- **W1–W3:** journal before backup copies; recovery classifies no-journal,
+  all pre-run (`abandoned`), all final (`complete`) and mixed; a
+  `rolled-back` terminal marker; rollback temporary names journaled.
+- **W4–W5:** created directories journaled and removed when empty on
+  rollback; backup copies hash-verified before any project write.
+- **W6:** lock first under `--apply`, with a token checked before removal;
+  malformed lock is unknown.
+- **W7:** strict collision key (NFC plus case folding everywhere) and
+  dev/ino comparison.
+- **W8:** pruning only contained, marked backups without following links.
+- **W9:** fsync of temporary files and the journal; power loss beyond that
+  is an accepted risk.
+- **W10:** FR-45 apply schema, status and `gitSafety` values.
+- **W11:** FR-34 names `create`, `init` and apply.
+- **NITs:** FR-40 aligned with FR-44; three-valued lock liveness with age;
+  Windows-only jittered retries (about 4 s, 8 s in rollback); a test that
+  graceful-fs does not alter native renames.
+- **Q5:** crash points via `diagnostics_channel` and a test `--import` hook
+  instead of an environment variable in shipped code.

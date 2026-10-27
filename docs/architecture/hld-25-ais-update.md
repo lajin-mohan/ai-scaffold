@@ -93,7 +93,9 @@ report or `--json`, apply, exit code.
   - **Inference (round 2, #4):** with `managedFiles`, a profile root file or a
     root `.gitattributes` among the records means `create` (true from 0.8.3,
     commit 09d3918); otherwise `init`.
-  - **Without `managedFiles`** (pre-0.8.6) the mode is recorded as
+  - **Without `managedFiles`** (no inspected release writes such a manifest:
+    0.7.0, 0.8.0, 0.8.2, 0.8.3, 0.8.5, 0.14.0, 0.16.1; corrected 2026-10-26
+    from "pre-0.8.6") the mode is recorded as
     `unknown`. It plans as `init` with `ignoreDisk`, the narrower set. That is
     harmless, because such installs have no hashes, so nothing is replaced or
     removed anyway (§4).
@@ -151,7 +153,7 @@ type Action = 'add' | 'replace' | 'unchanged' | 'conflict' | 'user-deleted'
 interface PlanEntry { path: string; class: Class; action: Action; recordAfter: Hash | 'drop' | 'carry'; reason?: string }
 interface UpdatePlan {
   from: string; to: string; profile: string; installMode: 'create' | 'init'
-  hashed: boolean               // false before 0.8.6 (FR-03)
+  hashed: boolean               // false when the manifest has no managedFiles (FR-03)
   entries: PlanEntry[]; migrations: string[]
   settings?: { added: string[]; restored: string[]; missingNoBase: string[]; exceptions: string[]
               removed: string[]; reported: string[]; ambiguous: string[]; suggestions: string[] }
@@ -185,7 +187,8 @@ current file and N = new render:
 | 9 | no | yes | no | — | `drop-record` | drop |
 
 - **pristine(C, R)** is `hashRaw(C) = R` or `hashLf(C) = R`.
-- **Pre-0.8.6** (no `managedFiles`): every R is absent. Rows 1, 5 and 6 still
+- **No `managedFiles`** (no inspected release writes this; see the
+  inspected list above): every R is absent. Rows 1, 5 and 6 still
   apply, so a file already equal to N is `unchanged` and every other existing
   file is a `conflict`. **Nothing is ever replaced or removed**, which is what
   AC-07 asserts (W1).
@@ -285,16 +288,17 @@ update.js
      │     (never broken automatically; released in `finally`; preview only reports a lock)
      ├─ refuse if dirty ∩ (writes ∪ deletes ∪ settings) ≠ ∅, .ais-new exempt   FR-32
      ├─ pre-flight: every target writable, containment checked (§7)           W7
-     ├─ backup → .ai-scaffold/backups/<ts>/ (self-ignoring .gitignore, path printed)
+     ├─ backup → .ai-scaffold/backups/<ts>/ (self-ignoring .gitignore, path printed;
+     │     the managed .ai-scaffold/.gitignore also ignores backups/ and update.lock)
      ├─ journal.json written to the backup dir BEFORE the first write          FR-38
      │     records from/to, every path with its expected final hash or absence, and the
      │     new manifest's hash (all computed before the first write)
      ├─ each write/delete: re-check the target equals what the plan classified   FR-41
      │     (hash or absence; settings.json against the content merged from); else stop → rollback
-     ├─ then <file>.ais-tmp → fs-extra rename (graceful-fs retries EBUSY/EPERM on win32)
+     ├─ then <file>.ais-tmp-<pid>-<rand> (created exclusively) → native rename, bounded retries (FR-51)
      ├─ on error: replay the journal in reverse from backup; exit 1, listing every path on rollback failure
      ├─ manifest → temp → rename (written last)
-     ├─ `complete` marker written; stale `*.ais-tmp` swept on the next --apply
+     ├─ `complete` marker written; only journal-named temporary files are ever removed (§10b)
      └─ lock removed (finally)
 ```
 
@@ -425,6 +429,81 @@ for this. CI runs the script in the Ubuntu CLI job and the Windows job.
 **Time reporting:** intervals between commits are calendar intervals
 (they include gaps and unrelated work). Focused effort is reported only if
 tracked separately; otherwise it is unknown.
+
+## 10b. Apply contract (slice 4)
+
+Slice 4 ships `--apply`; FR-46 is retired. Exit codes: `0` applied with no
+conflicts, `2` applied with `.ais-new` sidecars, `1` refused, rolled back
+or rollback incomplete. JSON: `ais-update-apply/1` (FR-45).
+
+**Order under `--apply`** (nothing is written before step 6):
+1. Take the lock exclusively (`wx`; pid, host, start time, random token).
+   Held → report it (FR-52) and exit 1.
+2. Read and validate the manifest; FR-44 flag and version checks.
+3. Interrupted backups (FR-38): classify, and abandon or complete them only
+   as FR-38 allows; otherwise report and exit 1.
+4. Plan, settings merge and git safety (FR-32, FR-47): not a work tree or no
+   `git` → refuse unless `--allow-no-git`; uncommitted planned paths →
+   refuse unless `--allow-dirty`. The project may arrive with a hostile
+   `.git/`, so git runs with `core.fsmonitor` off, optional locks off,
+   submodules skipped, and every filter driver found by a read-only
+   `git config --includes` neutralised (empty `clean`/`process`); a driver
+   name that cannot be passed safely makes git safety unavailable. A file
+   tracked under a real filter (for example Git LFS) may then read as
+   modified, which only matters if it is a planned path (maintainer
+   decision, 2026-10-26).
+5. Write set (FR-49, FR-50): targets, sidecars, temporary names (write and
+   rollback), new directories; strict identity key plus dev/ino; collisions
+   → `PLAN_COLLISION`; an existing sidecar that differs → `SIDECAR_EXISTS`.
+   Containment and writability for each.
+6. Create the backup directory exclusively, then write the **journal**
+   (exclusive temp, fsync, rename): pre-run and final state per path,
+   temporary names, directories to create, the new manifest's hash.
+7. Copy each changed path into the backup and verify the copy's hash
+   against the pre-run hash; a mismatch stops the run before any project
+   write (the backup then classifies as all pre-run → abandoned).
+
+**Writes**, in journal order: create journaled directories segment by
+segment; re-check the target (FR-41) and its containment; write the
+temporary file exclusively and fsync it; rename over the target (FR-51);
+conflicts write the sidecar the same way and leave the target untouched.
+`settings.json` is re-checked against the bytes it was merged from. The
+manifest goes last, then the `complete` marker, then pruning, then the lock
+is released in `finally` after its token is checked.
+
+**Rollback (FR-48):** reverse journal order with journaled rollback
+temporary names; restore or remove only what still holds this run's bytes;
+remove journaled directories only when empty; continue past failures.
+Entries after the failing one are `not-attempted`; the failing entry is
+`not-written` unless it holds this run's final bytes (a write lands by one
+atomic rename). Both are settled, so an FR-41 refusal, whose path holds the
+adopter's edit and never this run's bytes, ends in a complete rollback with
+`CONCURRENT_EDIT`. A path this run did write and someone changed afterwards
+is a rollback conflict. Complete → `rolled-back` marker, exit 1 with the
+failure code. Incomplete → `rollback.json`, no marker,
+`ROLLBACK_INCOMPLETE`, exit 1.
+
+**Recovery (FR-38):** no journal → nothing changed, remove the directory;
+all pre-run → `abandoned`; all final → verify and `complete`; mixed →
+report per path, exit 1. Only journal-named temporary files and empty
+journaled directories are ever removed.
+
+**Pruning:** keep the last 5 terminal backups (`complete`, `rolled-back`,
+`abandoned`). Only contained, marked backups are pruned, with an lstat walk
+that never follows links. A pruning failure is reported and does not undo
+the apply.
+
+**Crash testing (NFR-09):** apply publishes `diagnostics_channel` events per
+stage (no effect without a subscriber). Tests spawn `node --import
+<test-hook>` on the installed CLI; the hook calls
+`process.kill(process.pid, 'SIGKILL')` on the chosen event, a genuine
+process death on POSIX and Windows. No test environment variable is read in
+shipped code.
+
+**Accepted residual risks:** the check-then-rename window (FR-41, FR-49)
+narrows but cannot close a race with another local process; a local process
+swapping in a junction mid-operation; hard links passing containment;
+durability after power loss beyond the file and journal flushes.
 
 ## 10. What this HLD does not decide
 

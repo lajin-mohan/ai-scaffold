@@ -76,7 +76,7 @@ Tutorials:
 - It is not a full application framework.
 - It does not generate production business logic for you.
 - It does not remove the need to configure real lint, typecheck, test, build, CI, secrets, or deployment commands.
-- `update` previews what an update would change but does not apply it yet; applying is the next part of item 25.
+- It does not merge your edits for you: `ais update --apply` keeps every scaffold file you changed and writes the new version beside it as `<file>.ais-new` for you to merge.
 - It is not a magic prompt collection; it is an operating system for disciplined AI-assisted delivery.
 - It is not only for Claude. The root `AGENTS.md`, profile templates, and governance docs are intended to help Codex, Cursor, Copilot, and other coding assistants follow the same project rules.
 
@@ -398,18 +398,28 @@ ais doctor ./my-project --json
 
 ### Update An Installed Scaffold
 
-`update` is a **read-only preview** in this version. It shows, file by file, what updating to the running CLI's version would change: which scaffold files would be replaced, added or removed, which of your edits would be kept as conflicts, and what would change in `.claude/settings.json`. It never writes anything. Applying an update is not available yet.
+`ais update` without flags is a **read-only preview**: it shows, file by file, what updating to the running CLI's version would change (scaffold files replaced, added or removed, your edits kept as conflicts, and the `.claude/settings.json` merge) and writes nothing. `ais update --apply` applies that plan.
 
 ```bash
-npx @lajin.m/ai-scaffold@latest update        # preview against the latest CLI
-ais update --json                              # one JSON document on stdout
+npx @lajin.m/ai-scaffold@latest update            # preview against the latest CLI
+npx @lajin.m/ai-scaffold@latest update --apply    # apply it
+ais update --json                                  # one JSON document on stdout
 ```
 
-Exit codes: `0` no planning conflicts (this does not mean applying is safe; git state is not checked yet), `2` conflicts present, `1` error, locked or interrupted. `--force` was removed in 0.17.0, and `--apply` exits 1 until applying is available.
+What `--apply` does, and never does:
+
+- **Replaces only scaffold files you have not edited.** A file you changed is kept as it is, and the new version is written beside it as `<file>.ais-new` for you to merge, then delete. `ais doctor` warns while any `.ais-new` file remains. If an `.ais-new` file from an earlier update is still there and differs, apply stops (`SIDECAR_EXISTS`) instead of overwriting your half-done merge.
+- **Never touches** your project memory and lessons (`.claude/memory/`, `.claude/MEMORY.md`, `tasks/lessons.md`), `.claude/settings-overrides.json`, `.claude/settings.local.json`, `.ai-scaffold/context.md`, your application files, or files the scaffold did not install. `CHANGELOG.md` and the `tasks/` placeholders are added only when missing.
+- **Merges `.claude/settings.json`** instead of replacing it: new scaffold rules and hooks are added (in a project installed before 0.17.0 whose `settings.json` you edited, new `allow` rules are only suggested, since what you deliberately removed cannot be known), scaffold `deny`/`ask` rules you removed are restored and listed (keep one removed with `--keep-removed "<rule>"`, undo that with `--restore-removed "<rule>"`; both are saved), `allow` rules you removed stay removed, your own rules and hooks are kept, and a scaffold hook you modified is reported instead of replaced.
+- **Checks git first.** If a file the update would change has uncommitted changes, it stops and names the file; `--allow-dirty` proceeds anyway. Outside a git repository, or without `git`, it needs `--allow-no-git`.
+- **Backs up and can roll back.** Every file it changes is copied to `.ai-scaffold/backups/<timestamp>-<id>/` first. If anything fails, it restores what it wrote and reports the backup. The last five finished backups are kept.
+- **One update at a time.** It holds `.ai-scaffold/update.lock` while it runs. If an update was killed, the next run reports the stale lock; delete that file once no update is running. The run after that completes or abandons the interrupted update where it can prove which state each file is in, and otherwise stops and names the backup to restore from.
+
+Exit codes: `0` nothing to merge (applied, already current, or a preview with no conflicts; a preview does not check git), `2` conflicts (a preview found some, or an apply wrote `.ais-new` files), `1` error, refusal, lock held, interrupted update, or a rolled-back apply. `--force` was removed in 0.17.0.
 
 ### Before You Reinstall
 
-Until managed-file migrations ship (see above), the safe way to move an existing project onto a newer scaffold version is: **back up context, delete, `create` again.** Reinstalling **does not** preserve any project state — it generates a fresh project from the template.
+To move a project onto a newer scaffold version, use `ais update --apply` (see above). Reinstall only when you want a fresh start: **back up context, delete, `create` again.** Reinstalling **does not** preserve any project state — it generates a fresh project from the template.
 
 **Back up first, always.** Two files accumulate real, non-regenerable project value and are lost on a plain delete-and-recreate:
 
@@ -440,7 +450,7 @@ Full per-command reference with every flag: [docs/cli-reference.md](docs/cli-ref
 | `list [dir]` | List installed commands, agents, skills, and rules | `npx @lajin.m/ai-scaffold list` |
 | `export-context [dir]` | Back up memory/lessons/settings before deleting and reinstalling | `npx @lajin.m/ai-scaffold export-context ./my-app` |
 | `doctor [dir]` | Diagnose missing, changed, or invalid scaffold files | `npx @lajin.m/ai-scaffold doctor --json` |
-| `update [dir]` | Preview what updating to this CLI version would change (read-only) | `npx @lajin.m/ai-scaffold update --json` |
+| `update [dir]` | Preview what updating to this CLI version would change; `--apply` applies it | `npx @lajin.m/ai-scaffold update --apply` |
 
 ## Local Development
 
