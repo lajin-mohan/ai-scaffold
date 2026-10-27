@@ -167,7 +167,7 @@ describe('buildUpdatePlan on generated projects', { timeout: 60_000 }, () => {
     expect(plan.counts.replace ?? 0).toBe(0);
     expect(plan.counts.remove ?? 0).toBe(0);
     expect(plan.notices.join(' ')).toMatch(/No file hashes are recorded/);
-    // Every published version records hashes, so no version is named (slice 5).
+    // Every inspected release records hashes, so no version is named (slice 5).
     expect(plan.notices.join(' ')).not.toMatch(/0\.8\.6/);
     expect(plan.notices.join(' ')).toMatch(/CLAUDE\.md.*will never be updated/);
   });

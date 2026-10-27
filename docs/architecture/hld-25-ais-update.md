@@ -93,8 +93,9 @@ report or `--json`, apply, exit code.
   - **Inference (round 2, #4):** with `managedFiles`, a profile root file or a
     root `.gitattributes` among the records means `create` (true from 0.8.3,
     commit 09d3918); otherwise `init`.
-  - **Without `managedFiles`** (no published version writes such a manifest;
-    corrected 2026-10-26 from "pre-0.8.6") the mode is recorded as
+  - **Without `managedFiles`** (no inspected release writes such a manifest:
+    0.7.0, 0.8.0, 0.8.2, 0.8.3, 0.8.5, 0.14.0, 0.16.1; corrected 2026-10-26
+    from "pre-0.8.6") the mode is recorded as
     `unknown`. It plans as `init` with `ignoreDisk`, the narrower set. That is
     harmless, because such installs have no hashes, so nothing is replaced or
     removed anyway (§4).
@@ -186,8 +187,8 @@ current file and N = new render:
 | 9 | no | yes | no | — | `drop-record` | drop |
 
 - **pristine(C, R)** is `hashRaw(C) = R` or `hashLf(C) = R`.
-- **No `managedFiles`** (no published version writes this; every install
-  from 0.7.0 records hashes): every R is absent. Rows 1, 5 and 6 still
+- **No `managedFiles`** (no inspected release writes this; see the
+  inspected list above): every R is absent. Rows 1, 5 and 6 still
   apply, so a file already equal to N is `unchanged` and every other existing
   file is a `conflict`. **Nothing is ever replaced or removed**, which is what
   AC-07 asserts (W1).

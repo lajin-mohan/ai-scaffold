@@ -23,10 +23,10 @@ Corrective phase (items 79–89) can ship fixes, including **deletions**, to
 adopted projects.
 
 Facts the decision rests on:
-- Every install since the first CLI release, **0.7.0**, records a raw
-  sha256 per written file. *(Corrected 2026-10-26 from "since 0.8.6": slice 5
-  installed 0.7.0, 0.8.0, 0.8.2, 0.8.3 and 0.8.5 from npm and every one
-  records a hash for every managed file.)*
+- Every inspected release records a raw sha256 per written file: 0.7.0,
+  0.8.0, 0.8.2, 0.8.3, 0.8.5, 0.14.0 and 0.16.1, installed from npm in slice
+  5. *(Corrected 2026-10-26 from "since 0.8.6". Releases not inspected are
+  not claimed.)*
 - Every managed file re-renders byte-for-byte from `.ai-scaffold.json` alone
   (spike: 994 files, 0 mismatches after fix F1).
 - Adopters edit governance files, especially `settings.json`, and some clone on
@@ -126,12 +126,37 @@ Facts the decision rests on:
 - **Negative:** the lock serialises `ais` processes only; the pre-write
   re-check narrows, but cannot close, the race with an editor writing between
   check and rename. Accepted and documented.
-- **Follow-up (open, 2026-10-26):** this entry said ADR-002's v0.7.x
-  re-baselining requirement was met by a "pre-0.8.6 all-conflict path". It
-  is not: v0.7.x installs record hashes, so they take hash classification
-  and pristine files are replaced. Whether that satisfies ADR-002 is a
-  maintainer decision, raised in the slice 5 PR. The no-hashes path still
-  exists for a manifest without `managedFiles`.
+- **ADR-002 v0.7.x re-baseline (reconciled 2026-10-27; this ADR refines
+  ADR-002 and does not supersede it).** This entry previously said ADR-002's
+  re-baseline was met by a "pre-0.8.6 all-conflict path". That was wrong:
+  0.7.x installs record hashes, and a hash says whether bytes changed, not
+  whether the updater should own a file.
+
+  The re-baseline is met by ownership classification, not by hashes. The
+  first apply on a 0.7.x install runs the schema-2 migration, and the
+  ownership table then:
+  - classes every recorded path;
+  - records docs, tasks, optional-pack and application files outside the
+    current contract as `unowned`, so update never writes or deletes them
+    (B1);
+  - normalises 0.7.0's backslash record paths.
+
+  `doctor` and `status` verify only `managed` records once a manifest is
+  classified, so the project's manifest stops claiming those files in
+  behaviour as well as in the record.
+
+  Evidence: the slice 5 0.7.0 case (`docs/qa/item-25-update-compat-evidence.md`)
+  shows:
+  - legacy files byte-identical and recorded `unowned`;
+  - current scaffold files classed as a fresh install classes them;
+  - edits and user data kept;
+  - a second apply changes nothing.
+
+  That case also found and fixed an apply defect: the lock refused 0.7.x
+  installs because they have no `.ai-scaffold/` folder.
+
+  The no-hashes path (FR-03) remains for a manifest without `managedFiles`,
+  which no inspected release writes.
 - **Follow-up:** ADR-002's consequence "`ais update` must not mutate versions
   until file migration and re-baselining exist" is satisfied by this decision
   together with FR-25/FR-26 (migrations and manifest re-classification).
