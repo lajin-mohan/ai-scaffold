@@ -13,6 +13,8 @@ This file is configured with `merge=union` in `.gitattributes` so parallel addit
 
 ## [Unreleased]
 
+## [0.17.0] - 2026-10-28
+
 ### Added
 - **`ais update --apply`** (item 25 slice 4). Applies the plan the preview
   shows. It replaces only scaffold files you have not edited; for a file you
