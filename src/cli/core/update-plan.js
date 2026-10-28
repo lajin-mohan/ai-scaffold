@@ -106,12 +106,17 @@ function noticesFor({ installMode, hashed, keys }) {
   return notices;
 }
 
+function sameRecord(a, b) {
+  return a.hash === b.hash && a.class === b.class;
+}
+
 /**
  * One item per file identity (FR-43): records and renders are matched by
  * pathKey, so `./CLAUDE.md` and `CLAUDE.md` are one file. Two records for one
- * file are a duplicate, rejected rather than resolved by choosing one; a
- * record whose path cannot be normalised keeps its raw spelling and is
- * rejected by planPath.
+ * file that agree on hash and class are one record (0.8.1 on Windows wrote
+ * some paths in both spellings); records that disagree are a duplicate,
+ * rejected rather than resolved by choosing one. A record whose path cannot
+ * be normalised keeps its raw spelling and is rejected by planPath.
  */
 function identify(records, renders) {
   const byKey = new Map();
@@ -130,7 +135,7 @@ function identify(records, renders) {
       key = `\u0000${record.path}`;
     }
     const slot = item(key, rel);
-    if (slot.record) slot.duplicate = true;
+    if (slot.record) slot.duplicate ||= !sameRecord(slot.record, record);
     else slot.record = record;
     recordKeys.add(key);
   }

@@ -79,6 +79,29 @@ describe('one file, one entry: path identity is canonical', { timeout: 60_000 },
     expect(doc.exitCode).toBe(1);
   });
 
+  it('two spellings of one file with the same hash are one record (0.8.1 Windows install)', async () => {
+    const target = await install('equivalent-records');
+    editManifest(target, (m) => {
+      const record = m.managedFiles.find((r) => r.path === 'CLAUDE.md');
+      return { ...m, managedFiles: [...m.managedFiles, { ...record, path: '.\\CLAUDE.md' }] };
+    });
+    const doc = await preview(target);
+    expect(doc.entries.filter((e) => e.path === 'CLAUDE.md')).toEqual([
+      expect.objectContaining({ path: 'CLAUDE.md', action: 'unchanged' }),
+    ]);
+    expect(doc.entries.some((e) => e.action === 'rejected')).toBe(false);
+  });
+
+  it('the same hash under a different class is still a duplicate', async () => {
+    const target = await install('equivalent-hash-other-class');
+    editManifest(target, (m) => {
+      const record = m.managedFiles.find((r) => r.path === 'CLAUDE.md');
+      return { ...m, managedFiles: [...m.managedFiles, { ...record, path: './CLAUDE.md', class: 'user-data' }] };
+    });
+    const doc = await preview(target);
+    expect(doc.entries.find((e) => e.path === 'CLAUDE.md')).toMatchObject({ action: 'rejected', reason: 'duplicate-record' });
+  });
+
   it.runIf(CASE_INSENSITIVE)('a case alias is the same file on a case-insensitive file system', async () => {
     const target = await install('case-alias');
     respell(target, 'CLAUDE.md', 'claude.md');

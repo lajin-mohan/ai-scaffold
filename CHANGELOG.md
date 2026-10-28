@@ -13,6 +13,15 @@ This file is configured with `merge=union` in `.gitattributes` so parallel addit
 
 ## [Unreleased]
 
+### Fixed
+- **`ais update` refused projects installed with 0.8.1 on Windows.** That
+  release recorded some files twice in `.ai-scaffold.json`, once with `/` and
+  once with `\`, with the same hash. The update treated the pair as an
+  ambiguous duplicate and stopped with `PATH_UNSAFE`, changing nothing. Two
+  records for one file that agree on hash and class are now one record;
+  records that disagree are still rejected. Found upgrading a real 0.8.1
+  project; verified there with preview, apply and a second apply.
+
 ## [0.17.0] - 2026-10-28
 
 ### Added

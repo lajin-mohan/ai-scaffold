@@ -12,6 +12,12 @@ This file records patterns from mistakes and corrections. Claude reads this at t
 
 <!-- Add lessons below as they are captured. Most recent at the top. -->
 
+## 2026-10-28 — The compatibility matrix tested the versions we chose, not the ones adopters run
+
+- **Mistake:** 0.17.0 shipped with a matrix of 0.7.0, 0.8.5, 0.14.0 and 0.16.1. The first real adopter project checked after release, engyne on 0.8.1, could not be updated at all: 0.8.1 on Windows had recorded one file under both `/` and `\` spellings, and the update rejected the pair as a duplicate.
+- **Why:** The matrix versions were picked as representative; nobody asked which versions real projects were on. A single release can carry its own manifest quirks.
+- **Rule:** Before calling a migration verified, preview it against copies of the real adopter projects you can reach, read-only, and add each version found there to the matrix. Representative versions are a floor, not proof.
+
 ## 2026-10-23 — Backticks in a double-quoted shell string executed a Markdown file
 
 - **Mistake:** A `node -e "…"` edit carried Markdown with backticks inside a double-quoted bash string. Bash treated `` `docs/cli-reference.md` `` as command substitution and executed that file as a shell script, up to a syntax error on line 69. Lines before it included `` `npm install -g …` `` and `ais create …`. Nothing ran in practice (no `ais` on PATH, no global install, worktree clean), but the ticket text was silently corrupted and committed. Earlier shell-quoting slips in this work only garbled text; this one could have executed commands.
