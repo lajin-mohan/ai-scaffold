@@ -2,7 +2,7 @@
 
 ## Status
 
-**Slices 1–4 merged (#149, #156, #157, #158; slice 4 `ais update --apply` in lajin-mohan/ai-scaffold#159, squash `b21a423`, 2026-10-26). Slice 5 (real-install compatibility matrix) implemented on `feature/25-slice5-compat`, in its own PR. Nothing is released: `npm view` still shows 0.16.1. Full design acceptance and release approval remain separate.** Design reconciled (BRD v1.3, HLD v2.2, ADR-007 rev 3, 2026-10-15; merged in lajin-mohan/ai-scaffold#156) after the round-3 review; FR-09 corrected after the round-4 review (2026-10-16). Round 3 found the round-2 changes had reached the HLD only; see `docs/architecture/review-25-ais-update.md` § Round 3. FR-20 is decided: restore by default with persisted per-rule exceptions (FR-39).
+**All five slices merged (#149, #156, #157, #158, #159, #164) and released in 0.17.0 (verified 2026-10-28: `npm view` shows 0.17.0; `dev`, `main` and tag `v0.17.0` at `f91371a`; a 0.16.1 project updated with the published package). Still open: the first real adopter project checked (engyne, 0.8.1 on Windows) could not be updated, because its manifest records one file in both `/` and `\` spellings and the pair was rejected as a duplicate. Fixed on `fix/25-duplicate-records` for 0.17.1; the ticket closes when 0.17.1 is published and the adopter update is verified.** Design reconciled (BRD v1.3, HLD v2.2, ADR-007 rev 3, 2026-10-15; merged in lajin-mohan/ai-scaffold#156) after the round-3 review; FR-09 corrected after the round-4 review (2026-10-16). Round 3 found the round-2 changes had reached the HLD only; see `docs/architecture/review-25-ais-update.md` § Round 3. FR-20 is decided: restore by default with persisted per-rule exceptions (FR-39).
 - The independent review returned **REVISE** (5 BLOCK, 9 WARN, 7 NIT):
   `docs/architecture/review-25-ais-update.md`. It was recovered after a squash
   merge lost it (see the `tasks/lessons.md` entry of 2026-10-12).
@@ -391,6 +391,8 @@ lajin-mohan/ai-scaffold#164.
 - **0.7.x is not satisfied by hashes alone.** ADR-002's re-baseline is
   demonstrated by a real 0.7.0 apply. ADR-007 is reconciled with ADR-002,
   refining it, not superseding it.
+
+**Defect found after the 0.17.0 release (fix for 0.17.1):** a 0.8.1 Windows manifest records `.ai-scaffold/README.md` and `.ai-scaffold\README.md` with the same hash. The planner rejected the pair as `duplicate-record`, so apply stopped with `PATH_UNSAFE`. Records that agree on hash and class are now one record; records that disagree stay rejected. Regression tests in `update-review4.test.js`. Verified on a clone of engyne with the packed fix: preview; apply (95 replaced, 20 added, 7 retired removed, 30 edited files kept with `.ais-new`); second apply `current`; no backslash record left.
 
 **Defects found by slice 5 and fixed:**
 - `--apply` refused every 0.7.x install (the lock required an
