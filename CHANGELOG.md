@@ -13,6 +13,8 @@ This file is configured with `merge=union` in `.gitattributes` so parallel addit
 
 ## [Unreleased]
 
+## [0.17.1] - 2026-10-28
+
 ### Fixed
 - **`ais update` refused projects installed with 0.8.1 on Windows.** That
   release recorded some files twice in `.ai-scaffold.json`, once with `/` and
