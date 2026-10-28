@@ -1,6 +1,6 @@
 # Item 25 slice 5: `ais update` against real installs — evidence
 
-Criteria 5A–5D of `tasks/todo/25-ais-update.md`, plus the ADR-002 0.7.x
+Criteria 5A–5D of `tasks/done/25-ais-update.md`, plus the ADR-002 0.7.x
 re-baseline. The matrix is reproducible:
 
 ```bash
@@ -28,6 +28,7 @@ and every project is named `compat-app`. Each case then:
 |---|---|---|
 | Windows 11 (local), Node 24.20.0 | 15/15 cases pass, 1 not applicable, no unexplained difference | [item-25-update-compat-run-windows.md](item-25-update-compat-run-windows.md) |
 | Ubuntu and Windows (CI job `Update compatibility`) | see the slice 5 PR's checks | printed to the job log and step summary |
+| Published 0.17.1, Windows, 2026-10-28 | a clone of a real 0.8.1 project (engyne): preview, apply (95 replaced, 20 added, 7 removed, 30 conflicts kept with `.ais-new`), second apply `current` | 0.17.0 had refused it (`PATH_UNSAFE`, duplicate record); fixed in #165 |
 
 ## Coverage
 
