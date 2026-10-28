@@ -180,6 +180,9 @@ concise, applicable project requirements belong in the core; details load on dem
 - **98 — Cross-tool conformance (P1):** `tasks/todo/98-cross-tool-conformance.md`.
 - **99 — Task evaluations (P1):** `tasks/todo/99-task-evaluations.md`.
 - **100 — Roadmap consistency (P1):** `tasks/todo/100-roadmap-consistency.md`.
+- **103 — Non-GitHub hosts and non-default branch models (P1, 2026-10-28):**
+  `tasks/todo/103-host-and-branch-model.md`. Found upgrading adopter projects to
+  0.17.1 (a GitLab project with a `qa → main` flow). Sits with row 10 (75).
 
 ### Proposed revision — 2026-10-26 (pending maintainer acceptance)
 
