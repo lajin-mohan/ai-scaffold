@@ -16,11 +16,10 @@ work is proposed and requires the normal design/implementation gates.
 - Item 94 is complete: the maintainer verified decoy probes against installed
   npm 0.16.0 and 0.16.1, with a positive control in Windows CI. Preserve this
   evidence; do not schedule verification already performed as new P0 work.
-- Item 25 is the top remaining P0, targeting **0.17.0**. *(Status 2026-10-27.)*
-  Slices 1–4 are merged: design (#149, #156), foundations (#157), the
-  read-only preview (#158) and `ais update --apply` (#159). Slice 5 (the
-  real-install compatibility matrix) is in #164. The 0.17.0 release is not
-  approved; the registry shows 0.16.1.
+- **Item 25 is done** *(2026-10-28)*: released in 0.17.0, with the 0.8.1
+  Windows manifest fix (#165) in 0.17.1. The registry shows 0.17.1; the
+  published package updated a real 0.8.1 adopter project. Ticket in
+  `tasks/done/25-ais-update.md`.
 - Items 60 and 66's first slice have recorded merge evidence. Windows CI and
   Ubuntu packed-artifact golden paths exist; `init` hooks/rest of 66 remain open.
 - Items 77 D1/D2/D4, 85, 95 (with basic 86 guidance) and 96 **shipped in
@@ -187,7 +186,7 @@ concise, applicable project requirements belong in the core; details load on dem
 Evidence: [effectiveness review 2026-10-26](effectiveness-review-2026-10-26.md).
 The approved order above stands until accepted; ticket status is unchanged.
 
-1. **25** — unchanged top P0 (slice 3 merged in #158; slice 4 draft #159).
+1. **25** — done, released in 0.17.0 and 0.17.1 (2026-10-28).
 2. **Follow-up B promoted to 0.16.2, with 79/81 guard honesty.**
    `UserPromptSubmit` ignores matchers, so pre-review runs on every prompt;
    in Go projects that is a full build/vet/test per prompt. The secret guard
@@ -202,8 +201,7 @@ The approved order above stands until accepted; ticket status is unchanged.
 5. **84/69/88 + 76-D, then 98** — concise core measured against the 99
    baseline; exercise Cursor hook loading before adding adapters.
 
-Stale, to correct with #160: line 24 (an update engine exists on `dev`,
-#158) and line 860 (`design-system/scripts/check-tokens.sh` exists).
+The two stale lines noted here earlier (no update engine; no `check-tokens.sh`) are corrected.
 
 ## Historical scope catalogue (scheduling superseded)
 
@@ -442,8 +440,8 @@ requirement. Implement in safe slices—ownership manifest, dry-run/conflict
 report, backup/rollback, one real version migration, then broader automation.
 The delete-and-reinstall safeguard remains a fallback, not the update strategy.
 
-- **25. Real `ais update` (managed-file migration).** **P0 — next lifecycle
-  programme.**
+- **25. Real `ais update` (managed-file migration).** **DONE — 0.17.0 and
+  0.17.1 (2026-10-28); see `tasks/done/25-ais-update.md`.**
   Diff installed vs target version; classify each file (managed / protected /
   app-owned via `.ai-scaffold.json` hashes); preview the change set; apply with
   backup + rollback; version-pinned migrations. Converts the product from "a
@@ -781,7 +779,9 @@ saving starts costing correctness.
 ## Hygiene track (parallel — not a phase gate)
 
 - **21.** Docs-honesty pass (stale version/claims). **22.** Publish-workflow input
-  cleanup. **18.** Hooks-roadmap doc. **41.** Decide the fate of the example hooks
+  cleanup. Also: `actions/checkout@v4` and `actions/setup-node@v4` target
+  the deprecated Node 20 runtime, and `ubuntu-latest` moves to Ubuntu 26
+  (both warned in the 0.17.0 release run, 2026-10-28). **18.** Hooks-roadmap doc. **41.** Decide the fate of the example hooks
   (`jira-sync.py`, `notify-review.py`) — pack or remove.
 
 - **66. 🟡 First slice DONE (2026-10-12, #146; ships in 0.16.0): the shipped `commit-msg` hook and `doctor` C-05.** Open: this repo’s own gate (exception not granted), `ais init` hook wiring, and the CHANGELOG/approval-artifact controls (`tasks/todo/66-objective-controls.md`). Original finding:

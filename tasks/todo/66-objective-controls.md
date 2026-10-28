@@ -15,7 +15,20 @@ undecided or unbuilt:
 - (a) enforcement in this repository: the 2026-08-27 exception was not
   granted;
 - (b) `ais init` hook wiring;
-- (c) the CHANGELOG-entry and approval-artifact controls.
+- (c) the CHANGELOG-entry and approval-artifact controls;
+- (d) **`ais update` does not activate the git hooks it delivers** (found
+  2026-10-28 upgrading a real 0.8.1 project, engyne, to 0.17.1). `create`
+  copies `.claude/hooks/pre-commit` and `commit-msg` into `.git/hooks`
+  (`src/cli/commands/create.js` `installGitHooks`); `update` only writes
+  `.claude/hooks/`. So on every upgraded project the new `commit-msg` hook is
+  inert, and an updated `pre-commit` leaves the active `.git/hooks` copy
+  stale. `doctor` C-05 does report the missing `commit-msg`
+  (`governance-checks.js` `checkCommitMsgHook`), but nothing prompts the
+  adopter to run it. Proposed: after a successful `--apply`, refresh any
+  `.git/hooks` copy whose source changed and install missing ones, honouring
+  `core.hooksPath` the way `create` does (warn, do not write elsewhere); or,
+  at minimum, report inactive hooks in the apply summary. Verify on a packed
+  install: an upgraded project rejects a `Co-Authored-By` commit.
 
 The plan v2 history follows. Q1 and Q2 were taken at the plan defaults
 because the maintainer declined the decision prompt.
