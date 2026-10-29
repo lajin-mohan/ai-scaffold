@@ -93,17 +93,17 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash .claude/hooks/governance-file-guard.sh",
+            "command": "bash \"${CLAUDE_PROJECT_DIR}/.claude/hooks/governance-file-guard.sh\"",
             "timeout": 5
           },
           {
             "type": "command",
-            "command": "bash .claude/hooks/pre-secret-guard.sh",
+            "command": "bash \"${CLAUDE_PROJECT_DIR}/.claude/hooks/pre-secret-guard.sh\"",
             "timeout": 5
           },
           {
             "type": "command",
-            "command": "bash .claude/hooks/token-budget-guard.sh",
+            "command": "bash \"${CLAUDE_PROJECT_DIR}/.claude/hooks/token-budget-guard.sh\"",
             "timeout": 5
           }
         ]
@@ -113,7 +113,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash .claude/hooks/pre-write-fact-check.sh",
+            "command": "bash \"${CLAUDE_PROJECT_DIR}/.claude/hooks/pre-write-fact-check.sh\"",
             "timeout": 10
           }
         ]
@@ -123,12 +123,12 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash .claude/hooks/pre-dangerous-bash-guard.sh",
+            "command": "bash \"${CLAUDE_PROJECT_DIR}/.claude/hooks/pre-dangerous-bash-guard.sh\"",
             "timeout": 5
           },
           {
             "type": "command",
-            "command": "bash .claude/hooks/pre-bash-quality-gate.sh",
+            "command": "bash \"${CLAUDE_PROJECT_DIR}/.claude/hooks/pre-bash-quality-gate.sh\"",
             "timeout": 60
           }
         ]
@@ -140,7 +140,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash .claude/hooks/post-write-console-warn.sh",
+            "command": "bash \"${CLAUDE_PROJECT_DIR}/.claude/hooks/post-write-console-warn.sh\"",
             "timeout": 10
           }
         ]

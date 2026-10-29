@@ -13,6 +13,16 @@ This file is configured with `merge=union` in `.gitattributes` so parallel addit
 
 ## [Unreleased]
 
+### Security
+- **The secret guard allowed everything on a stock Windows machine (item 81).**
+  With no `jq`, the guards found the Microsoft Store `python3` alias, which
+  fails and prints nothing, so `Read .env` was allowed. The secret,
+  dangerous-command and governance guards now run each parser to check it
+  works and otherwise fall back to plain text matching. The secret guard
+  blocks a tool call it cannot read instead of allowing it. Hook commands run
+  from `${CLAUDE_PROJECT_DIR}`, so they no longer break when the working
+  directory changes. Probed with a failing `jq` and `python3` on `PATH`.
+
 ### Removed
 - **The per-prompt `pre-review` hook (item 80).** `UserPromptSubmit` hooks take
   no matcher, so the `/review` matcher was ignored and the full lint, type
