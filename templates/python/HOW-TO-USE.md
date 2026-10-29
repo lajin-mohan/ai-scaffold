@@ -431,7 +431,6 @@ For escalations:
 | `/ux-design-prompt` | Stage 4 — design prompt | Self-contained Figma/Claude design prompt at `tasks/<MODULE>-<NNN>/03-design-prompt.md` + build notes at `04-figma-build-notes.md`. Inlines tokens, states, viewports, exclusions, defaults. |
 | `/ux-review` | Stage 4/6 — UX verification | 32-item check + 4-viewport browser verification (desktop L/D + mobile L/D at 390px) |
 | `/ux-handoff` | Stage 4 — dev handoff | Developer-ready checklist: components, state matrix, tokens, responsive, Figma link (hard gate before Stage 5) |
-| `/loop` | Stage 5 — autonomous task queue | Execute numbered task list with one-approval contract. Stop conditions prevent scope creep. |
 | `/ponytail-audit` | Any time — periodic YAGNI pressure | Whole-repo over-engineering scan. Tags: delete / stdlib / native / yagni / shrink. Report only, never modifies. |
 | `/ponytail-debt` | Any time — periodic debt sweep | Harvest `ponytail:` shortcut markers into `tasks/ponytail-debt.md`. Flags `no-trigger` markers. Read-only by default. |
 

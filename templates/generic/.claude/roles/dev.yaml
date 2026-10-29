@@ -10,7 +10,6 @@ allowed_commands:
   - /debug-fix
   - /investigate
   - /commit-changes
-  - /loop
   - /lessons
   - /reflect
   - /health

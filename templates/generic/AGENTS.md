@@ -29,7 +29,7 @@ This repo is an **AI development scaffold** — a pre-built operating system for
 
 - **Governance rules** — hallucination guards, plan-and-confirm protocol, verification mandate
 - **Agents** — specialized AI assistants for planning, architecture, review, QA, security
-- **Commands** — `/start-task`, `/review`, `/health`, `/loop`, `/kickoff`, and more
+- **Commands** — `/start-task`, `/review`, `/health`, `/kickoff`, and more
 - **Skills** — domain knowledge for UX, backend APIs, frontend, debugging, accessibility
 
 ## Daily Loop (for executor agents)

@@ -34,6 +34,10 @@ This file is configured with `merge=union` in `.gitattributes` so parallel addit
   directory changes. Probed with a failing `jq` and `python3` on `PATH`.
 
 ### Removed
+- **`/compact` and `/loop` commands that shadowed Claude Code's own (item
+  82).** A project command with a built-in's name replaces it, so these hid the
+  native `/compact` and `/loop`. References now point at the built-ins, and
+  `ais update --apply` removes the unedited files from existing projects.
 - **The per-prompt `pre-review` hook (item 80).** `UserPromptSubmit` hooks take
   no matcher, so the `/review` matcher was ignored and the full lint, type
   and test suite ran on every prompt: a Go project ran `go build`, `vet` and

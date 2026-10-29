@@ -107,7 +107,7 @@ Produce a plan in the exact format below. **Do not write any code yet.**
 ### Autonomous execution after approval
 - I will continue through the approved steps without asking again for routine implementation choices.
 - I will stop only for the stop conditions listed below.
-- If multiple approved tasks remain, I may use `/loop` semantics to complete them one by one.
+- If multiple approved tasks remain, I complete them one at a time, verifying each before the next.
 
 ### Stop conditions
 - Required scope or file changes are outside this plan.

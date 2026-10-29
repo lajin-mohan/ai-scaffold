@@ -171,7 +171,7 @@ Pick an AI role to get relevant commands, evidence requirements, and output styl
 | `ux` | UX creation, review, accessibility | `/ux-analyze` |
 | `owner` | Project orchestration, status, risk | `/what-next` |
 
-AI role configs live at `.claude/roles/`. Human-facing AI role docs live at `docs/ai-os/`. AI role routing for `/what-next` and `/loop` is planned for Phase 3.
+AI role configs live at `.claude/roles/`. Human-facing AI role docs live at `docs/ai-os/`. AI role routing for `/what-next` is planned for Phase 3.
 
 ### Claude's Operating Rules
 
@@ -231,10 +231,8 @@ Run via `/command-name` in Claude Code.
 | `/investigate` | Root cause debugging: gather evidence → form hypothesis → test → fix. Iron law: no fix without investigation. Run when user reports error or bug. | Pre-fix |
 | `/health` | Code quality dashboard: auto-detect tools (tsc, biome, eslint, ruff, pytest, etc.), run them, compute 0-10 composite score, show tabular dashboard. HARD GATE: show only, never fix. Run weekly. | Any time |
 | `/lessons` | Query past root causes and debugging lessons from `tasks/lessons.md`. Search by keyword or filter by tag. Read-only — never writes lessons. | Any time |
-| `/compact` | Session compaction: write key decisions, stage state, open questions, and Next Session Brief to `MEMORY.md`. Run when approaching token threshold (300K) or at natural milestones. Audit-log ready. | Any time |
 | `/reflect` | Post-task reflection: captures lessons, patterns, process improvements. Writes to `tasks/lessons.md` and audit log. Run after significant work sessions. | Any time |
 | `/qa` | Live-site QA with headless browser: walk the feature flow, detect rendering/interaction/console issues, fix and re-verify. | Stage 8 |
-| `/loop` | Autonomous task queue: execute a numbered task list with one-approval contract. Generates tests via `/gen-tests` per task. Stop conditions prevent scope creep. | Stage 5 |
 | `/commit-changes` | Git workflow enforcement: branch safety check, unrelated-changes detection, verification evidence requirement. Optional `--dev` / `--main` merge promotion. No Co-Authored-By ever. | Any time |
 | `/qa-plan` | QA automation planning via qa-reviewer agent. Coverage matrix: Requirement → Scenario → Test → Result. | Stage 8 |
 | `/qa-review` | QA coverage and quality review. Validates traceability, independence, data isolation, CI commands. Severity: BLOCK / HIGH / MEDIUM / LOW. | Stage 8 |

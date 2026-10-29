@@ -1,6 +1,7 @@
 /**
  * Wave A removals reach existing projects through `ais update --apply`:
- * item 80 retires the per-prompt pre-review hook.
+ * item 80 retires the per-prompt pre-review hook; item 82 drops the commands
+ * that shadowed the built-in /compact and /loop.
  */
 import { spawnSync } from 'child_process';
 import fs from 'fs';
@@ -71,6 +72,15 @@ describe('item 80: no per-prompt hook ships', () => {
     const settings = JSON.parse(fs.readFileSync(templatePath(profile, '.claude/settings.json'), 'utf-8'));
     expect(settings.hooks.UserPromptSubmit).toBeUndefined();
     expect(fs.existsSync(templatePath(profile, PRE_REVIEW))).toBe(false);
+  });
+});
+
+describe('item 82: no command shadows a built-in', () => {
+  it.each(SUPPORTED_PROFILES)('%s ships no /compact or /loop command', (profile) => {
+    for (const name of ['compact', 'loop']) {
+      expect(fs.existsSync(templatePath(profile, `.claude/commands/${name}.md`))).toBe(false);
+    }
+    expect(fs.readFileSync(templatePath(profile, 'CLAUDE.md'), 'utf-8')).not.toMatch(/^\| `\/(compact|loop)` \|/m);
   });
 });
 

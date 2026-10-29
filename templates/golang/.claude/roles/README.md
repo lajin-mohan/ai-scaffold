@@ -79,7 +79,7 @@ Each role YAML uses the same schema:
 
 ## Commands
 
-AI role routing for `/what-next` and `/loop` is planned for Phase 3 — after V1 role configs are live and usage patterns are understood.
+AI role routing for `/what-next` is planned for Phase 3 — after V1 role configs are live and usage patterns are understood.
 
 ## See Also
 
