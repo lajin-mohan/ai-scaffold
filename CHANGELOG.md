@@ -13,6 +13,22 @@ This file is configured with `merge=union` in `.gitattributes` so parallel addit
 
 ## [Unreleased]
 
+### Fixed
+- **Upgraded projects did not run the git hooks the update delivered.**
+  `ais update --apply` wrote `.claude/hooks/` but never the hooks directory
+  git runs, so the new `commit-msg` check never ran and `pre-commit` stayed
+  at its old version. After a successful apply it now installs a missing
+  `pre-commit` or `commit-msg`, updates a copy of the previous scaffold
+  version, and leaves a hook the project wrote itself in place with a note.
+  With `core.hooksPath` set to `.claude/hooks` there is nothing to do; set
+  anywhere else, it warns and writes nothing, as `create` does.
+- **Hooks were committed without the executable bit**, so Linux and macOS
+  clones skipped them. On Windows git records every new file without the bit,
+  which is how an upgraded project shared a `commit-msg` its Linux
+  teammates never ran. `create` now commits the hook scripts as executable,
+  `update` writes them executable and says how to fix one committed without
+  the bit, and `doctor` C-04 and C-05 fail on it with the fix.
+
 ## [0.17.1] - 2026-10-28
 
 ### Fixed

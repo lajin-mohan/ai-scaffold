@@ -307,7 +307,10 @@ ais doctor            # warns while any .ais-new file is left to merge
 
 `--apply` replaces only scaffold files you have not edited. For a file you
 changed, it keeps yours and writes the new version beside it as
-`<file>.ais-new`: merge what you want, then delete the `.ais-new` file. The
+`<file>.ais-new`: merge what you want, then delete the `.ais-new` file. It also
+installs or updates the `pre-commit` and `commit-msg` git hooks; read its notes
+for anything it could not do, such as a hook committed without the executable
+bit. The
 README's "Update An Installed Scaffold" section lists what apply never
 touches, how `.claude/settings.json` is merged, and the exit codes.
 

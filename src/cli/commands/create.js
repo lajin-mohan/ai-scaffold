@@ -9,6 +9,7 @@ import chalk from 'chalk';
 import { spawnSync } from 'child_process';
 import { collectBootstrapValues, resolveWithDefaults } from '../core/prompts.js';
 import { resolveOnPath } from '../core/exec-path.js';
+import { isExecutableHook } from '../core/git-hooks.js';
 import { buildFilePlan } from '../core/file-plan.js';
 import { detectConflicts, printConflictReport } from '../core/conflicts.js';
 import { copyFiles } from '../core/copy.js';
@@ -205,6 +206,11 @@ function initializeGitRepository(targetDir) {
     };
   }
 
+  // On Windows (core.fileMode false) git records every new file without the
+  // executable bit, and Linux and macOS clones then skip the hooks.
+  const hooks = add.status === 0 ? executableHooks(targetDir) : [];
+  if (hooks.length) runGit(['update-index', '--chmod=+x', '--', ...hooks], targetDir);
+
   const commit = runGit([
     '-c',
     'user.name=AI Scaffold',
@@ -276,6 +282,12 @@ function installGitHooks(targetDir) {
   }
 
   return warnings.length ? `git initialized, but ${warnings.join('; ')}` : undefined;
+}
+
+function executableHooks(targetDir) {
+  const dir = path.join(targetDir, '.claude', 'hooks');
+  if (!fs.existsSync(dir)) return [];
+  return fs.readdirSync(dir).map((name) => `.claude/hooks/${name}`).filter(isExecutableHook);
 }
 
 function runGit(args, cwd) {

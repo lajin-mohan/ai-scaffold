@@ -155,6 +155,13 @@ describe('CLI e2e smoke', { timeout: 30_000 }, () => {
     // block project creation itself (see create.js comment).
     const gitHead = spawnSync('git', ['-C', targetDir, 'rev-parse', '--verify', 'HEAD'], { encoding: 'utf-8' });
     expect(gitHead.status, gitHead.stderr || gitHead.stdout).toBe(0);
+
+    // The index carries the bit on every platform, including Windows where
+    // core.fileMode is false; without it Linux and macOS clones skip the hooks (item 66 d).
+    const staged = spawnSync('git', ['-C', targetDir, 'ls-files', '-s', '.claude/hooks'], { encoding: 'utf-8' }).stdout;
+    expect(staged).toMatch(/^100755 \S+ 0\t\.claude\/hooks\/commit-msg$/m);
+    expect(staged).toMatch(/^100755 \S+ 0\t\.claude\/hooks\/pre-secret-guard\.sh$/m);
+    expect(staged).toMatch(/^100644 \S+ 0\t\.claude\/hooks\/jira-sync\.py$/m);
   });
 
   it('create --dry-run --json prints a plan and writes nothing', async () => {

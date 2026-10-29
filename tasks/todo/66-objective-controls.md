@@ -29,6 +29,12 @@ undecided or unbuilt:
   `core.hooksPath` the way `create` does (warn, do not write elsewhere); or,
   at minimum, report inactive hooks in the apply summary. Verify on a packed
   install: an upgraded project rejects a `Co-Authored-By` commit.
+  **Also found 2026-10-28 (engyne):** the upgraded `.claude/hooks/commit-msg`
+  was committed as mode 100644, because git on Windows records no executable
+  bit for a new file, so Linux and macOS clones skip it. Fixed with (d) on
+  `feature/66d-update-hooks`, 2026-10-29: `update` refreshes hooks
+  (`src/cli/core/git-hooks.js`), writes hook scripts 0755, `create` commits
+  them as 100755, and `doctor` C-04/C-05 fail on a 100644 hook.
 
 The plan v2 history follows. Q1 and Q2 were taken at the plan defaults
 because the maintainer declined the decision prompt.

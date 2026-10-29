@@ -23,6 +23,7 @@ import { spawnSync } from 'child_process';
 import fs from 'fs-extra';
 import { toPosixPath } from './paths.js';
 import { resolveOnPath } from './exec-path.js';
+import { committedNonExecutable } from './git-hooks.js';
 import { REASONS, remedyFor } from './gh-runner.js';
 import { FIELD_ABSENT, pickReason } from './github-protection.js';
 import { NO_EVIDENCE } from './github-required-checks.js';
@@ -174,6 +175,14 @@ async function checkHookFile(target, hookName, checkName) {
   // is false), so requiring it would report a false gap on every Windows install
   // — the class of defect core.test.js already guards for two other checks.
   const executable = process.platform === 'win32' || (hookStat.mode & 0o111) !== 0;
+  if (executable && committedNonExecutable(target, hookName)) {
+    return check({
+      ...named,
+      state: 'fail',
+      message: `.claude/hooks/${hookName} is committed without the executable bit, so Linux and macOS clones skip it.`,
+      remedy: `Run git update-index --chmod=+x .claude/hooks/${hookName} and commit`,
+    });
+  }
   return executable
     ? check({ ...named, state: 'pass' })
     : check({
