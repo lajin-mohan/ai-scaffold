@@ -14,7 +14,15 @@ All original open questions are decided
 - Existing-adopter removal migrations start when item 25 (`ais update`) ships.
   New/additive protections and item 97 probes follow the authoritative roadmap.
 - Next gate for C1–C4: a three-point estimate
-  (`docs/estimates/corrective-phase-estimate.md`).
+  (`docs/estimates/corrective-phase-estimate.md`). The small Wave A items
+  (80, 81's parser and fail-closed fix, 82's `/compact` and `/loop`, 87's
+  honest UI gates) went ahead on the maintainer's 2026-10-29 "go" for Wave A
+  without it; the estimate still gates the rest of C1–C4.
+- **Wave A (PR #168, 2026-10-29):** 80 done; 81 parser probe, fail-closed
+  secret guard and `${CLAUDE_PROJECT_DIR}` exec form done (timeout probes
+  and Windows runner evidence open); 82 `/compact` and `/loop` removed
+  (`/ais-review` rename open); 87 honest UI gates done (`verify` script
+  per profile open).
 
 ## Why this phase exists
 
