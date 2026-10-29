@@ -53,6 +53,15 @@ This file is configured with `merge=union` in `.gitattributes` so parallel addit
   the unedited script from existing projects.
 
 ### Fixed
+- **Updating a 0.8.x generic project overwrote `.ai-scaffold/README.md`
+  with the project README.** Those installs record no root file the update
+  used to recognise `create` (their `.gitignore` was lost to `npm pack`),
+  so it assumed `init`, where the project README is rendered under
+  `.ai-scaffold/`. A recorded root `README.md` now marks a `create`
+  install. Missing commands in old manifests also take the profile's values,
+  as `create` gives them, instead of `none`. The compatibility matrix now
+  covers 0.8.1 and 0.17.1 and the generic profile, the versions and profile
+  real adopters run; it found this defect.
 - **Upgraded projects did not run the git hooks the update delivered.**
   `ais update --apply` wrote `.claude/hooks/` but never the hooks directory
   git runs, so the new `commit-msg` check never ran and `pre-commit` stayed
