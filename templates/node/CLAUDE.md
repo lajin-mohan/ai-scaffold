@@ -15,9 +15,6 @@ This file governs how Claude, Codex, and other AI tools collaborate on every pro
 >
 > While in template state, generated projects do not receive a CI workflow by
 > default. Add CI through project-specific setup or a future AI Scaffold CI pack.
-> `/review` runs with `PRE_REVIEW_ALLOW_UNCONFIGURED=1` set in
-> `.claude/settings.json` so it works before lint/typecheck/test commands are
-> configured. `/bootstrap` removes this opt-out as part of stack configuration.
 >
 > If you are editing this template itself (improving rules, agents, commands), the placeholders stay. If you are starting a real project, run `/bootstrap` first.
 
@@ -287,7 +284,7 @@ Wired in `.claude/settings.json` and fired deterministically by Claude Code at t
 | `.claude/hooks/pre-commit-secrets` | git pre-commit (extended) | Heuristic secret detection for common API key patterns. |
 | `.claude/hooks/commit-msg` | git commit-msg | Rejects commit messages carrying a `Co-Authored-By:` trailer (commit identity rule). Installed by `ais create`; `ais doctor` check C-05 verifies it. |
 
-All hooks fail open in template state (exit 0 with no checks run) so the scaffold itself stays CI-green before `/bootstrap` configures the stack. Disable any hook with `ECC_<HOOK>_DISABLED=1`. Hooks run via `bash .claude/hooks/<name>.sh`, so they fire without needing an executable bit.
+All hooks fail open in template state (exit 0 with no checks run) so the scaffold itself stays CI-green before `/bootstrap` configures the stack. Disable any hook with `ECC_<HOOK>_DISABLED=1`. Hooks run via `bash "${CLAUDE_PROJECT_DIR}/.claude/hooks/<name>.sh"`, so they fire from any working directory and without needing an executable bit.
 
 ---
 
