@@ -83,7 +83,7 @@ Each test has a correct CI command that runs it in isolation.
 CI command check:
   Unit:      npm run test:unit -- --run          ✅
   Integ:     npm run test:integration             ✅
-  E2E:       npm run test:e2e                     ✅
+  E2E:       the project's E2E command, or none  ✅ (none: say so)
   All:       npm test                             ✅ (runs unit + integration)
 ```
 

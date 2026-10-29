@@ -13,6 +13,16 @@ This file is configured with `merge=union` in `.gitattributes` so parallel addit
 
 ## [Unreleased]
 
+### Changed
+- **Shipped guidance no longer demands what a project cannot run (items 87,
+  102 part A).** No profile ships Playwright or a `test:e2e` script, yet the
+  rules, `/qa-review`, `/what-next` and the debugging skill told agents to
+  run `npm run test:e2e`. Those references are now conditional on the
+  project adding an E2E harness. `/qa` checks for gstack's browser daemon
+  before it starts and reports `not verified: no E2E harness` when it is
+  missing. The DoD and review checklists accept that disclosure for the
+  browser, mobile and theme checks; the token rules still apply.
+
 ### Security
 - **The secret guard allowed everything on a stock Windows machine (item 81).**
   With no `jq`, the guards found the Microsoft Store `python3` alias, which

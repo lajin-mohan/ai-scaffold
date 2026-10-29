@@ -131,7 +131,7 @@ return <UserCard user={user} />
 
 ```bash
 npm run test:unit    # Vitest + React Testing Library
-npm run test:e2e     # Playwright
+npm run test:e2e     # Playwright: only once the project adds it; not shipped by the scaffold
 ```
 
 - Use `@testing-library/react` — test behaviour, not implementation.
@@ -148,6 +148,6 @@ npm run test:e2e     # Playwright
 npm run lint          # ESLint
 npm run typecheck     # tsc --noEmit
 npm run test:unit     # Vitest / React Testing Library
-npm run test:e2e      # Playwright
+npm run test:e2e      # Playwright, if the project has added it
 npm run test:visual   # Chromatic (visual regression)
 ```
