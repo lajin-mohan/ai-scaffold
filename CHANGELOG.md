@@ -14,6 +14,9 @@ This file is configured with `merge=union` in `.gitattributes` so parallel addit
 ## [Unreleased]
 
 ### Changed
+- **HOW-TO-USE has an upgrade walkthrough and a paste-ready agent prompt**:
+  branch, preview, apply, merge `.ais-new` files while keeping
+  project-specific choices, follow the apply notes, check with `ais doctor`.
 - **CI actions moved off the deprecated Node 20 runtime (items 21, 22).**
   `checkout@v5`, `setup-node@v5`, `setup-python@v6`, `setup-go@v6` and
   `gitleaks-action@v3` run on Node 24, and Linux jobs pin `ubuntu-24.04`

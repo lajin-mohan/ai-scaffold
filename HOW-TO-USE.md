@@ -310,9 +310,49 @@ changed, it keeps yours and writes the new version beside it as
 `<file>.ais-new`: merge what you want, then delete the `.ais-new` file. It also
 installs or updates the `pre-commit` and `commit-msg` git hooks; read its notes
 for anything it could not do, such as a hook committed without the executable
-bit. The
-README's "Update An Installed Scaffold" section lists what apply never
+bit. The README's "Update An Installed Scaffold" section lists what apply never
 touches, how `.claude/settings.json` is merged, and the exit codes.
+
+### Upgrading a project, step by step
+
+1. **Branch from your integration branch** with your work committed, for
+   example `chore/scaffold-upgrade`. Apply refuses to write over uncommitted
+   changes in files it changes.
+2. **Preview** with the version you are moving to, and read the conflicts:
+   `npx @lajin.m/ai-scaffold@latest update`. Exit code `2` means some scaffold
+   files were edited locally; that is normal.
+3. **Apply:** `npx @lajin.m/ai-scaffold@latest update --apply`. A backup goes
+   to `.ai-scaffold/backups/`.
+4. **Merge each `.ais-new` file** into the file beside it, then delete it.
+   Keep what is specific to your project: your branch names and flow, your
+   stack commands, your hosting platform. Take the scaffold's new rules and
+   fixes. If the scaffold assumes GitHub and you host elsewhere, keep your own
+   version and configure branch protection in your platform's settings.
+5. **Read the notes** the apply printed. Run any command they give, such as
+   `git update-index --chmod=+x .claude/hooks/commit-msg`, so Linux and macOS
+   clones run the hooks.
+6. **Check and commit:** `ais doctor` should show no `.ais-new` file left and
+   both git hook checks passing. Commit, then run `ais update` again: it
+   should report the project as current.
+
+### Asking an AI agent to do the upgrade
+
+Paste this into the agent working in the project:
+
+```text
+Upgrade this project's AI Scaffold to the latest version.
+1. Create a branch chore/scaffold-upgrade from our integration branch. Stop if
+   the working tree has uncommitted changes.
+2. Run `npx @lajin.m/ai-scaffold@latest update` and summarise the conflicts.
+3. Run it again with `--apply`.
+4. For each .ais-new file, merge the new scaffold content into the existing
+   file, keeping anything specific to this project (branch model, stack
+   commands, hosting platform), then delete the .ais-new file. List every
+   merge decision you were unsure about and ask me before committing.
+5. Run every command the apply notes ask for, then `ais doctor`.
+6. Commit with my identity only, no Co-Authored-By trailer, and open a PR.
+   Do not write new scripts for platforms the scaffold does not support.
+```
 
 ---
 
