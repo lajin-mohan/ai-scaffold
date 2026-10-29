@@ -10,9 +10,23 @@ import { migrateToSchema2, settingsBaseState } from './schema-2.js';
  * Version-keyed migrations, ascending. Each runs once when an update crosses
  * its version: `{ version, run(manifest) → string[] intents, retired? }`,
  * where `retired: { rules?: string[], hooks?: string[] }` names settings
- * entries that version stops shipping (FR-21, AC-03). None yet.
+ * entries that version stops shipping (FR-21, AC-03).
  */
-export const VERSION_MIGRATIONS = [];
+export const VERSION_MIGRATIONS = [
+  // Item 80: UserPromptSubmit has no matcher, so this ran the full check suite
+  // on every prompt; lint and tests now run at commit time (pre-commit).
+  {
+    version: '0.18.0',
+    run: () => [],
+    retired: {
+      hooks: ['UserPromptSubmit .claude/hooks/pre-review.sh'],
+      rules: [
+        'Bash(.claude/hooks/pre-review.sh)',
+        'Bash(chmod +x .claude/hooks/pre-commit .claude/hooks/pre-commit-secrets .claude/hooks/pre-review.sh .claude/hooks/pre-write-fact-check.sh .claude/hooks/post-write-console-warn.sh .claude/hooks/pre-bash-quality-gate.sh .claude/hooks/pre-secret-guard.sh .claude/hooks/pre-dangerous-bash-guard.sh .claude/hooks/governance-file-guard.sh)',
+      ],
+    },
+  },
+];
 
 /**
  * @param {object} manifest  parsed `.ai-scaffold.json` (never modified)

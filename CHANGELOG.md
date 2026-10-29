@@ -13,6 +13,14 @@ This file is configured with `merge=union` in `.gitattributes` so parallel addit
 
 ## [Unreleased]
 
+### Removed
+- **The per-prompt `pre-review` hook (item 80).** `UserPromptSubmit` hooks take
+  no matcher, so the `/review` matcher was ignored and the full lint, type
+  and test suite ran on every prompt: a Go project ran `go build`, `vet` and
+  `test` per message. Lint and tests run at commit time through
+  `pre-commit`. `ais update --apply` removes the hook, its allow rules and
+  the unedited script from existing projects.
+
 ### Fixed
 - **Upgraded projects did not run the git hooks the update delivered.**
   `ais update --apply` wrote `.claude/hooks/` but never the hooks directory

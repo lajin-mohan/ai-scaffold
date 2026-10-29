@@ -27,7 +27,6 @@
       "Bash(php artisan test*)",
       "Bash(dotnet build*)",
       "Bash(dotnet test*)",
-      "Bash(.claude/hooks/pre-review.sh)",
       "Edit(docs/**)",
       "Edit(tasks/**)",
       "Edit(.claude/memory/**)",
@@ -35,7 +34,7 @@
       "Write(tasks/**)",
       "Write(.claude/memory/**)",
       "Bash(rm .claude/hooks/pre-commit.sh)",
-      "Bash(chmod +x .claude/hooks/pre-commit .claude/hooks/pre-commit-secrets .claude/hooks/pre-review.sh .claude/hooks/pre-write-fact-check.sh .claude/hooks/post-write-console-warn.sh .claude/hooks/pre-bash-quality-gate.sh .claude/hooks/pre-secret-guard.sh .claude/hooks/pre-dangerous-bash-guard.sh .claude/hooks/governance-file-guard.sh)",
+      "Bash(chmod +x .claude/hooks/pre-commit .claude/hooks/pre-commit-secrets .claude/hooks/pre-write-fact-check.sh .claude/hooks/post-write-console-warn.sh .claude/hooks/pre-bash-quality-gate.sh .claude/hooks/pre-secret-guard.sh .claude/hooks/pre-dangerous-bash-guard.sh .claude/hooks/governance-file-guard.sh)",
       "Bash(git add *)",
       "Bash(git commit -m ' *)"
     ],
@@ -88,18 +87,6 @@
     ]
   },
   "hooks": {
-    "UserPromptSubmit": [
-      {
-        "matcher": "/review",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "PRE_REVIEW_ALLOW_UNCONFIGURED=1 bash .claude/hooks/pre-review.sh",
-            "timeout": 300
-          }
-        ]
-      }
-    ],
     "PreToolUse": [
       {
         "matcher": "Read|Grep|Glob|Edit|Write|MultiEdit",

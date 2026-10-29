@@ -280,7 +280,6 @@ Wired in `.claude/settings.json` and fired deterministically by Claude Code at t
 
 | Hook | Event | What it enforces |
 |---|---|---|
-| `.claude/hooks/pre-review.sh` | UserPromptSubmit on `/review` | Runs lint + typecheck + tests + audit before AI review. Fails closed by default; template state opts out via `PRE_REVIEW_ALLOW_UNCONFIGURED=1`. |
 | `.claude/hooks/pre-write-fact-check.sh` | PreToolUse on Edit/Write/MultiEdit | Warns (or blocks in `ECC_FACT_CHECK_STRICT=1`) when the edit targets a file cited as `file:line` in this session but never Read in this session. Enforces H1/H2/H7. |
 | `.claude/hooks/post-write-console-warn.sh` | PostToolUse on Edit/Write/MultiEdit | Warns on newly-added `console.log` / `print(` / `println!(` / `var_dump(` / `print_r(` / `dd(` / `dump(` / `error_log(` to `.ts/.tsx/.js/.jsx/.mjs/.cjs/.py/.rs/.php` files (diff-based, so pre-existing statements are not flagged). Enforces the "no debug logs in committed code" preference. |
 | `.claude/hooks/pre-bash-quality-gate.sh` | PreToolUse on Bash | Runs `.claude/hooks/pre-commit` inline before `git commit` / `git push` lands. Blocks the commit if pre-commit fails. Respects `--no-verify`. Enforces the "lint + typecheck pass before review" hard gate. |
