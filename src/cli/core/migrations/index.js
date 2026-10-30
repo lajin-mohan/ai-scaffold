@@ -12,21 +12,24 @@ import { migrateToSchema2, settingsBaseState } from './schema-2.js';
  * where `retired: { rules?: string[], hooks?: string[] }` names settings
  * entries that version stops shipping (FR-21, AC-03).
  */
-export const VERSION_MIGRATIONS = [
+export const VERSION_MIGRATIONS = [];
+
+/**
+ * Settings entries the scaffold no longer ships, retired on every update
+ * whatever the version numbers. The merge removes an entry only when the
+ * scaffold does not ship it, so applying these again is a no-op; tying them to
+ * a version would leave the entry behind, pointing at a script the same update
+ * deletes, whenever the release is numbered below it.
+ */
+export const RETIRED_SETTINGS = Object.freeze({
   // Item 80: UserPromptSubmit has no matcher, so this ran the full check suite
   // on every prompt; lint and tests now run at commit time (pre-commit).
-  {
-    version: '0.18.0',
-    run: () => [],
-    retired: {
-      hooks: ['UserPromptSubmit .claude/hooks/pre-review.sh'],
-      rules: [
-        'Bash(.claude/hooks/pre-review.sh)',
-        'Bash(chmod +x .claude/hooks/pre-commit .claude/hooks/pre-commit-secrets .claude/hooks/pre-review.sh .claude/hooks/pre-write-fact-check.sh .claude/hooks/post-write-console-warn.sh .claude/hooks/pre-bash-quality-gate.sh .claude/hooks/pre-secret-guard.sh .claude/hooks/pre-dangerous-bash-guard.sh .claude/hooks/governance-file-guard.sh)',
-      ],
-    },
-  },
-];
+  hooks: ['UserPromptSubmit .claude/hooks/pre-review.sh'],
+  rules: [
+    'Bash(.claude/hooks/pre-review.sh)',
+    'Bash(chmod +x .claude/hooks/pre-commit .claude/hooks/pre-commit-secrets .claude/hooks/pre-review.sh .claude/hooks/pre-write-fact-check.sh .claude/hooks/post-write-console-warn.sh .claude/hooks/pre-bash-quality-gate.sh .claude/hooks/pre-secret-guard.sh .claude/hooks/pre-dangerous-bash-guard.sh .claude/hooks/governance-file-guard.sh)',
+  ],
+});
 
 /**
  * @param {object} manifest  parsed `.ai-scaffold.json` (never modified)
@@ -41,7 +44,7 @@ export function runMigrations(manifest, { from, to, settingsPristine, migrations
   const next = JSON.parse(JSON.stringify(manifest));
   const applied = [];
   const intents = [];
-  const retired = { rules: [], hooks: [] };
+  const retired = { rules: [...RETIRED_SETTINGS.rules], hooks: [...RETIRED_SETTINGS.hooks] };
   let settingsBase = settingsBaseState(next, settingsPristine);
 
   if ((next.manifestSchema ?? 1) < 2) {

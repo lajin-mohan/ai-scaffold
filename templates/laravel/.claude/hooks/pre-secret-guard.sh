@@ -106,7 +106,9 @@ check_sensitive_path() {
   local path="$1"
   [ -z "$path" ] && return 0
 
-  # Normalize a leading ./ so regexes work the same for relative paths.
+  # Normalize a leading ./ so regexes work the same for relative paths, and
+  # Windows separators, since Claude Code on Windows sends D:\proj\.env.
+  path="${path//\\//}"
   path="${path#./}"
 
   if is_allowed_template "$path"; then

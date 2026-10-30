@@ -12,6 +12,12 @@ This file records patterns from mistakes and corrections. Claude reads this at t
 
 <!-- Add lessons below as they are captured. Most recent at the top. -->
 
+## 2026-10-30 — Review fixes pushed to a branch whose PR had already merged
+
+- **Mistake:** The second-review fixes for #168 were pushed to `feature/66d-update-hooks` five minutes after the PR was squash-merged at `39481e2`. GitHub accepted the push, and the summary reported them as on the PR, but they never reached `dev`. The maintainer found it.
+- **Why:** The PR's state was checked when the work started, not again before pushing, and a push to a merged PR's branch succeeds silently.
+- **Rule:** Before pushing follow-up commits, run `gh pr view <n> --json state`. If it is merged, branch from `dev` and open a new PR. Report a fix as "in the PR" only after confirming the PR's head SHA contains it.
+
 ## 2026-10-30 — A new git call skipped the hardened runner that already existed
 
 - **Mistake:** Wave A's hook activation (`git-hooks.js`) spawned `git ls-files` directly instead of through `git-state.js`'s safe options, so a `core.fsmonitor` command in the project's config ran during `ais update --apply` and `ais doctor`. The same code copied hooks through a `.git/hooks` junction into another directory. Both were caught by review of #168 against the packed artifact, not by tests.
