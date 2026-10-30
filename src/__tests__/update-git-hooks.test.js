@@ -218,3 +218,50 @@ describe.runIf(GIT)('hook activation cannot be turned against the machine (#168 
     expect(fs.readFileSync(at(target, '.git/hooks/commit-msg'), 'utf-8')).toBe(read(worktree, '.claude/hooks/commit-msg'));
   });
 });
+
+describe.runIf(GIT)('hook activation reaches the hooks it should (#168 review 2)', { timeout: 120_000 }, () => {
+  it('refreshes a copy older than the version just replaced, keeping it as a backup', async () => {
+    const target = await install();
+    const source = read(target, '.claude/hooks/pre-commit');
+    const header = source.split('\n', 2).join('\n');
+    const older = `${header}\necho 0.14-era gate\n`;
+    fse.outputFileSync(at(target, '.git/hooks/pre-commit'), older);
+
+    const notices = activateGitHooks(target, readHookSources(target));
+
+    expect(read(target, '.git/hooks/pre-commit')).toBe(source);
+    expect(read(target, '.git/hooks/pre-commit.ais-backup')).toBe(older);
+    expect(notices.some((n) => n.startsWith('Updated the pre-commit git hook from an older scaffold copy'))).toBe(true);
+  });
+
+  it('activates hooks for a project in a subdirectory of its repository', async () => {
+    const project = await install();
+    const parent = fs.realpathSync(fse.mkdtempSync(path.join(tmpDir, 'mono-')));
+    const app = path.join(parent, 'apps', 'web');
+    fse.moveSync(project, app);
+    fs.rmSync(path.join(app, '.git'), { recursive: true, force: true });
+    git(parent, 'init', '-q');
+
+    const notices = activateGitHooks(app, readHookSources(app));
+
+    expect(notices).toContain('Installed the commit-msg git hook.');
+    expect(read(parent, '.git/hooks/commit-msg')).toBe(read(app, '.claude/hooks/commit-msg'));
+  });
+
+  it('ignores a GIT_DIR inherited from the caller', async () => {
+    const target = await install();
+    const other = fs.realpathSync(fse.mkdtempSync(path.join(tmpDir, 'other-')));
+    git(other, 'init', '-q');
+    const saved = process.env.GIT_DIR;
+    process.env.GIT_DIR = path.join(other, '.git');
+    try {
+      activateGitHooks(target, readHookSources(target));
+    } finally {
+      if (saved === undefined) delete process.env.GIT_DIR;
+      else process.env.GIT_DIR = saved;
+    }
+
+    expect(fs.existsSync(path.join(other, '.git', 'hooks', 'commit-msg'))).toBe(false);
+    expect(fs.existsSync(at(target, '.git/hooks/commit-msg'))).toBe(true);
+  });
+});

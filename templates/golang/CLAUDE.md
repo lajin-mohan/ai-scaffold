@@ -282,7 +282,7 @@ Wired in `.claude/settings.json` and fired deterministically by Claude Code at t
 | `.claude/hooks/pre-commit-secrets` | git pre-commit (extended) | Heuristic secret detection for common API key patterns. |
 | `.claude/hooks/commit-msg` | git commit-msg | Rejects commit messages carrying a `Co-Authored-By:` trailer (commit identity rule). Installed by `ais create`; `ais doctor` check C-05 verifies it. |
 
-All hooks fail open in template state (exit 0 with no checks run) so the scaffold itself stays CI-green before `/bootstrap` configures the stack. Disable any hook with `ECC_<HOOK>_DISABLED=1`. Hooks run via `bash "${CLAUDE_PROJECT_DIR}/.claude/hooks/<name>.sh"`, so they fire from any working directory and without needing an executable bit.
+All hooks fail open in template state (exit 0 with no checks run) so the scaffold itself stays CI-green before `/bootstrap` configures the stack. Disable any hook with `ECC_<HOOK>_DISABLED=1`. Hooks run via `bash "${CLAUDE_PROJECT_DIR}/.claude/hooks/<name>.sh"`, so the script is found from any working directory and runs without an executable bit; the guards still match the paths each tool call gives them.
 
 ---
 

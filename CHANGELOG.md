@@ -42,9 +42,11 @@ This file is configured with `merge=union` in `.gitattributes` so parallel addit
   fails and prints nothing, so `Read .env` was allowed. The secret,
   dangerous-command and governance guards now run each parser to check it
   works and otherwise fall back to plain text matching. The secret guard
-  blocks a tool call it cannot read instead of allowing it. Hook commands run
-  from `${CLAUDE_PROJECT_DIR}`, so they no longer break when the working
-  directory changes. Probed with a failing `jq` and `python3` on `PATH`.
+  blocks a tool call it cannot read instead of allowing it, and matches
+  Windows paths written with backslashes. Hook commands name their script
+  through `${CLAUDE_PROJECT_DIR}`, so the script is found whatever the working
+  directory; the guards still match the paths a tool call gives them. Probed
+  with a failing `jq` and `python3` on `PATH`.
 
 ### Removed
 - **`/compact` and `/loop` commands that shadowed Claude Code's own (item

@@ -75,7 +75,8 @@ export async function computePlan({ root, manifest, versions, flags, io, today, 
   const decided = !merging ? null : decideSettingsMerge({
     local: settingsFile.local, localValid: settingsFile.valid, scaffold, exceptions,
     baseState: migrated.settingsBase, recordedBase: migrated.manifest.settingsBase,
-    // Settings entries a crossed migration retires fill the `removed` group (HLD §10).
+    // Retired settings entries (RETIRED_SETTINGS, plus any a crossed migration
+    // names) fill the `removed` group (HLD §10).
     retired: migrated.retired,
   });
   const notices = [...planned.notices];
