@@ -13,6 +13,8 @@ This file is configured with `merge=union` in `.gitattributes` so parallel addit
 
 ## [Unreleased]
 
+## [0.18.0] - 2026-10-30
+
 ### Changed
 - **HOW-TO-USE has an upgrade walkthrough and a paste-ready agent prompt**:
   branch, preview, apply, merge `.ais-new` files while keeping
