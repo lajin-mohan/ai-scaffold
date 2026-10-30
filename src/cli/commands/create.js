@@ -9,7 +9,7 @@ import chalk from 'chalk';
 import { spawnSync } from 'child_process';
 import { collectBootstrapValues, resolveWithDefaults } from '../core/prompts.js';
 import { resolveOnPath } from '../core/exec-path.js';
-import { isExecutableHook } from '../core/git-hooks.js';
+import { activateGitHooks, isExecutableHook } from '../core/git-hooks.js';
 import { buildFilePlan } from '../core/file-plan.js';
 import { detectConflicts, printConflictReport } from '../core/conflicts.js';
 import { copyFiles } from '../core/copy.js';
@@ -209,7 +209,10 @@ function initializeGitRepository(targetDir) {
   // On Windows (core.fileMode false) git records every new file without the
   // executable bit, and Linux and macOS clones then skip the hooks.
   const hooks = add.status === 0 ? executableHooks(targetDir) : [];
-  if (hooks.length) runGit(['update-index', '--chmod=+x', '--', ...hooks], targetDir);
+  const chmod = hooks.length ? runGit(['update-index', '--chmod=+x', '--', ...hooks], targetDir) : null;
+  const chmodWarning = chmod && chmod.status !== 0
+    ? `git initialized, but marking the hooks executable failed (${summarizeGitError(chmod)}); run git update-index --chmod=+x on .claude/hooks/* and commit`
+    : undefined;
 
   const commit = runGit([
     '-c',
@@ -250,37 +253,15 @@ function initializeGitRepository(targetDir) {
       ? undefined
       : `git initialized, but creating the dev branch failed (${summarizeGitError(devBranch)})`;
 
-  return { initialized: true, committed: true, warning: hookWarning ?? branchWarning };
+  return { initialized: true, committed: true, warning: chmodWarning ?? hookWarning ?? branchWarning };
 }
 
-// Git hooks copied from the generated project's own .claude/hooks/ into
-// .git/hooks/, so the gates apply to every commit, not only to commits the
-// agent makes. commit-msg rejects AI attribution trailers (item 66).
-const GIT_HOOKS = ['pre-commit', 'commit-msg'];
-
-// Best-effort: a missing hook file or a chmod failure (e.g. some Windows
-// filesystems) degrades to a warning naming the hook, never blocks creation.
+// The project's own .claude/hooks/ go into the hooks directory git runs, so
+// the gates apply to every commit, not only to commits the agent makes. The
+// same hardened installer `ais update` uses; best effort, so anything it could
+// not do (a global core.hooksPath, a link) becomes a warning, never a failure.
 function installGitHooks(targetDir) {
-  const warnings = [];
-  for (const hook of GIT_HOOKS) {
-    const source = path.join(targetDir, '.claude', 'hooks', hook);
-    const dest = path.join(targetDir, '.git', 'hooks', hook);
-    if (!fs.existsSync(source)) continue;
-    try {
-      fs.copySync(source, dest);
-      fs.chmodSync(dest, 0o755);
-    } catch (error) {
-      warnings.push(`wiring the ${hook} hook failed (${error.message})`);
-    }
-  }
-
-  // A global core.hooksPath (husky, corporate config) makes git ignore
-  // .git/hooks entirely, so the hooks above would never run.
-  const hooksPath = runGit(['config', '--get', 'core.hooksPath'], targetDir);
-  if (hooksPath.status === 0 && hooksPath.stdout.trim()) {
-    warnings.push(`core.hooksPath is set to ${hooksPath.stdout.trim()}, so git ignores .git/hooks; copy .claude/hooks/pre-commit and commit-msg into that directory`);
-  }
-
+  const warnings = activateGitHooks(targetDir, new Map()).filter((notice) => !notice.startsWith('Installed the '));
   return warnings.length ? `git initialized, but ${warnings.join('; ')}` : undefined;
 }
 

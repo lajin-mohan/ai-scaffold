@@ -58,16 +58,16 @@ describe('the FR-45 document', { timeout: 60_000 }, () => {
     expect(doc).toMatchObject({
       schema: 'ais-update-preview/1', status: 'planned', exitCode: 0, error: null,
       from: installed, to: NEXT, profile: 'node', installMode: 'create', hashed: true,
-      applyAvailable: true, migrations: ['schema-2', '0.18.0'],
+      applyAvailable: true, migrations: ['schema-2'],
     });
     expect(doc.settings.base).toBe('derived');
     expect(doc.entries.every((e) => Object.keys(e).sort().join() === 'action,class,path,reason')).toBe(true);
     expect(JSON.stringify(doc)).not.toMatch(/"permissions"|"hooks"/);
   });
 
-  it('a schema-2 install needs no schema migration and has a recorded settings base (FR-34)', async () => {
+  it('a schema-2 install needs no migration and has a recorded settings base (FR-34)', async () => {
     const doc = await preview(await install('fresh-schema-2', { legacy: false }));
-    expect(doc).toMatchObject({ status: 'planned', exitCode: 0, migrations: ['0.18.0'] });
+    expect(doc).toMatchObject({ status: 'planned', exitCode: 0, migrations: [] });
     expect(doc.settings.base).toBe('recorded');
     expect(doc.counts.conflict ?? 0).toBe(0);
   });

@@ -13,6 +13,7 @@ import os from 'node:os';
 import path from 'node:path';
 import process from 'node:process';
 import { fileURLToPath } from 'node:url';
+import semver from 'semver';
 import {
   check, conflictKept, idempotent, managedParity, manifestAfter, outcomes, unchanged, writeScope, byAction, list,
 } from './update-compat/checks.js';
@@ -23,9 +24,10 @@ import { renderReport } from './update-compat/report.js';
 import { runCrlf, runHashless, runLegacy070 } from './update-compat/special-cases.js';
 
 const REPO = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-// Newer than the latest published version (0.17.1), so it has an update to
-// take, and equal to the next release so the 0.18.0 migration is crossed.
-const CANDIDATE = '0.18.0';
+// The next minor after this checkout's version: newer than every published
+// release, so each row has an update to take, and it moves with every release
+// instead of going stale at a hardcoded number.
+const CANDIDATE = semver.inc(JSON.parse(fs.readFileSync(path.join(REPO, 'package.json'), 'utf-8')).version, 'minor');
 const NAME = 'compat-app';
 const CONFLICT = 'AGENTS.md';
 // 0.8.1 and generic are what real adopters ran (engyne; a 0.14.0 generic

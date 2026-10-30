@@ -40,7 +40,11 @@ function gitRunner(root) {
   // core.fsmonitor off, since the project's own git config may name a command.
   const git = resolveOnPath('git');
   if (!git) return null;
-  const env = { ...process.env, GIT_CEILING_DIRECTORIES: path.dirname(path.resolve(root)) };
+  // No ceiling: a project in a subdirectory of its repository (a monorepo app)
+  // must find that repository, as the update's git safety check does. The
+  // caller's repository overrides are dropped so git acts on this project.
+  const env = { ...process.env };
+  for (const name of ['GIT_DIR', 'GIT_WORK_TREE', 'GIT_INDEX_FILE', 'GIT_COMMON_DIR']) delete env[name];
   return (args) => {
     const result = spawnSync(git, [...SAFE_GIT_OPTIONS, ...args], {
       cwd: root, encoding: 'utf-8', stdio: ['ignore', 'pipe', 'ignore'], env, timeout: GIT_TIMEOUT_MS, windowsHide: true,
@@ -84,7 +88,18 @@ function hooksDirProblem(root, git, hooksDir) {
   return actual && samePath(actual, path.join(commonReal, 'hooks')) ? null : `${hooksDir} is not the repository's hooks directory`;
 }
 
-// One hook: install when missing, refresh a copy of the previous scaffold
+// Every shipped version of a hook opens with the same two lines (shebang and
+// a one-line description). A copy older than the version just replaced, left
+// behind by an upgrade done by hand, still carries them.
+function headerOf(bytes) {
+  return bytes.toString('utf-8').split('\n', 2).join('\n');
+}
+
+function isOlderScaffoldCopy(current, source) {
+  return headerOf(current) === headerOf(source);
+}
+
+// One hook: install when missing, refresh a copy of an earlier scaffold
 // version, leave anything else alone, since it is the project's own hook.
 function syncHook(root, hooksDir, hook, previous) {
   const sourcePath = path.join(root, HOOK_DIR, hook);
@@ -95,17 +110,27 @@ function syncHook(root, hooksDir, hook, previous) {
   const source = readOrNull(sourcePath);
   if (!source) return null;
   const current = readOrNull(dest);
-  if (current && !current.equals(source) && !(previous && current.equals(previous))) {
+  const previousCopy = Boolean(current && previous && current.equals(previous));
+  const olderCopy = Boolean(current && !previousCopy && !current.equals(source) && isOlderScaffoldCopy(current, source));
+  if (current && !current.equals(source) && !previousCopy && !olderCopy) {
     return `Left ${hook} in the git hooks directory unchanged: it differs from ${HOOK_DIR}/${hook}. Merge the two by hand if you want the scaffold version.`;
   }
+  // .git/hooks is not versioned, so an older copy that may carry hand edits is
+  // kept beside the new one rather than lost.
+  const backup = `${dest}.ais-backup`;
   try {
     fs.mkdirSync(hooksDir, { recursive: true });
+    if (olderCopy) {
+      if (isLink(backup)) throw Object.assign(new Error(`${backup} is a link`), { code: 'ELINK' });
+      fs.writeFileSync(backup, current);
+    }
     if (!current || !current.equals(source)) fs.writeFileSync(dest, source);
     fs.chmodSync(dest, 0o755);
   } catch (error) {
     return `Could not install the ${hook} git hook (${error.code ?? error.message}); copy ${HOOK_DIR}/${hook} into ${hooksDir} by hand.`;
   }
   if (!current) return `Installed the ${hook} git hook.`;
+  if (olderCopy) return `Updated the ${hook} git hook from an older scaffold copy; the old one is saved as ${backup}.`;
   return current.equals(source) ? null : `Updated the ${hook} git hook to the new version.`;
 }
 
@@ -142,7 +167,7 @@ function indexModeNotices(git) {
  */
 export function activateGitHooks(root, previous) {
   const git = gitRunner(root);
-  if (!git) return [];
+  if (!git) return ['git was not found on PATH, so the git hooks were not activated; run `ais update --apply` again once git is installed.'];
   const resolved = git(['rev-parse', '--git-path', 'hooks']);
   if (resolved === null) return [];
   const hooksDir = path.resolve(root, resolved);

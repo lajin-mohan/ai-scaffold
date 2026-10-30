@@ -88,10 +88,10 @@ describe.runIf(GIT)('item 80: ais update retires the pre-review hook', { timeout
   it('removes the hook from settings.json and the pristine script from the project', async () => {
     const target = await olderInstall();
 
-    const doc = await runApply({ target, options: { apply: true }, cliVersion: '0.18.0', today: NOW, now: NOW });
+    // 0.17.2: the retirement must not depend on the release number.
+    const doc = await runApply({ target, options: { apply: true }, cliVersion: '0.17.2', today: NOW, now: NOW });
 
     expect(doc.status).toBe('applied');
-    expect(doc.migrations).toContain('0.18.0');
     expect(doc.settings.removed).toContain(`hook: UserPromptSubmit ${PRE_REVIEW}`);
     const after = readJson(target, '.claude/settings.json');
     expect(after.hooks.UserPromptSubmit).toBeUndefined();

@@ -51,6 +51,11 @@ describe.runIf(BASH)('guards with no working jq and a python3 stub (items 81, 97
     ['id_rsa', 2],
     ['.env.example', 0],
     ['src/index.js', 0],
+    // Claude Code on Windows sends absolute paths with backslashes.
+    ['D:\\proj\\.env', 2],
+    ['C:\\Users\\me\\.ssh\\id_rsa', 2],
+    ['D:\\proj\\.env.example', 0],
+    ['D:\\proj\\src\\index.js', 0],
   ])('secret guard: Read %s exits %i', (file, status) => {
     expect(runGuard('pre-secret-guard.sh', read(file))).toBe(status);
   });

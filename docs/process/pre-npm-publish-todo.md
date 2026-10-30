@@ -519,7 +519,7 @@ the packed tarball.
     `git push origin main --force`, `rm -fr` and `curl | bash`, and blocks
     `rm -rf node_modules`.
   - *(S–M)*
-- **80. ✅ Remove the per-prompt `pre-review` hook.** Done (Wave A, PR #168, 2026-10-29; ships in 0.18.0); a 0.18.0 migration retires it in existing projects.
+- **80. ✅ Remove the per-prompt `pre-review` hook.** Done (Wave A, PR #168, 2026-10-29; ships in 0.18.0); `ais update` retires it in existing projects on every update, whatever the version (`RETIRED_SETTINGS`).
   - `UserPromptSubmit` ignores matchers, so it fires on every prompt, and its
     `exit 1` is non-blocking.
   - The checks move to item 87, and the Stop-hook gate stays item 66.
