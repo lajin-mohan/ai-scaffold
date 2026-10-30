@@ -13,6 +13,76 @@ This file is configured with `merge=union` in `.gitattributes` so parallel addit
 
 ## [Unreleased]
 
+### Changed
+- **HOW-TO-USE has an upgrade walkthrough and a paste-ready agent prompt**:
+  branch, preview, apply, merge `.ais-new` files while keeping
+  project-specific choices, follow the apply notes, check with `ais doctor`.
+- **CI actions moved off the deprecated Node 20 runtime (items 21, 22).**
+  `checkout@v5`, `setup-node@v5`, `setup-python@v6`, `setup-go@v6` and
+  `gitleaks-action@v3` run on Node 24, and Linux jobs pin `ubuntu-24.04`
+  instead of tracking `ubuntu-latest` onto a new image unannounced.
+- **Shipped guidance no longer demands what a project cannot run (items 87,
+  102 part A).** No profile ships Playwright or a `test:e2e` script, yet the
+  rules, `/qa-review`, `/what-next` and the debugging skill told agents to
+  run `npm run test:e2e`. Those references are now conditional on the
+  project adding an E2E harness. `/qa` checks for gstack's browser daemon
+  before it starts and reports `not verified: no E2E harness` when it is
+  missing. The DoD and review checklists accept that disclosure for the
+  browser, mobile and theme checks; the token rules still apply.
+
+### Security
+- **Hook activation hardened (#168 review).** Its git calls disable
+  `core.fsmonitor`, as the update's other git calls do, so a command named in
+  the project's git config cannot run during `ais update --apply` or
+  `ais doctor`. Hooks are written only into the repository's own hooks
+  directory (a linked worktree's shared one included); a hooks directory or
+  hook file that is a link, or a junction on Windows, is refused with a note.
+- **The secret guard allowed everything on a stock Windows machine (item 81).**
+  With no `jq`, the guards found the Microsoft Store `python3` alias, which
+  fails and prints nothing, so `Read .env` was allowed. The secret,
+  dangerous-command and governance guards now run each parser to check it
+  works and otherwise fall back to plain text matching. The secret guard
+  blocks a tool call it cannot read instead of allowing it. Hook commands run
+  from `${CLAUDE_PROJECT_DIR}`, so they no longer break when the working
+  directory changes. Probed with a failing `jq` and `python3` on `PATH`.
+
+### Removed
+- **`/compact` and `/loop` commands that shadowed Claude Code's own (item
+  82).** A project command with a built-in's name replaces it, so these hid the
+  native `/compact` and `/loop`. References now point at the built-ins, and
+  `ais update --apply` removes the unedited files from existing projects.
+- **The per-prompt `pre-review` hook (item 80).** `UserPromptSubmit` hooks take
+  no matcher, so the `/review` matcher was ignored and the full lint, type
+  and test suite ran on every prompt: a Go project ran `go build`, `vet` and
+  `test` per message. Lint and tests run at commit time through
+  `pre-commit`. `ais update --apply` removes the hook, its allow rules and
+  the unedited script from existing projects.
+
+### Fixed
+- **Updating a 0.8.x generic project overwrote `.ai-scaffold/README.md`
+  with the project README.** Those installs record no root file the update
+  used to recognise `create` (their `.gitignore` was lost to `npm pack`),
+  so it assumed `init`, where the project README is rendered under
+  `.ai-scaffold/`. A recorded root `README.md` now marks a `create`
+  install. Missing commands in old manifests also take the profile's values,
+  as `create` gives them, instead of `none`. The compatibility matrix now
+  covers 0.8.1 and 0.17.1 and the generic profile, the versions and profile
+  real adopters run; it found this defect.
+- **Upgraded projects did not run the git hooks the update delivered.**
+  `ais update --apply` wrote `.claude/hooks/` but never the hooks directory
+  git runs, so the new `commit-msg` check never ran and `pre-commit` stayed
+  at its old version. After a successful apply it now installs a missing
+  `pre-commit` or `commit-msg`, updates a copy of the previous scaffold
+  version, and leaves a hook the project wrote itself in place with a note.
+  With `core.hooksPath` set to `.claude/hooks` there is nothing to do; set
+  anywhere else, it warns and writes nothing, as `create` does.
+- **Hooks were committed without the executable bit**, so Linux and macOS
+  clones skipped them. On Windows git records every new file without the bit,
+  which is how an upgraded project shared a `commit-msg` its Linux
+  teammates never ran. `create` now commits the hook scripts as executable,
+  `update` writes them executable and says how to fix one committed without
+  the bit, and `doctor` C-04 and C-05 fail on it with the fix.
+
 ## [0.17.1] - 2026-10-28
 
 ### Fixed

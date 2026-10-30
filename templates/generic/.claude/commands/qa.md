@@ -6,7 +6,7 @@ description: Live-site QA with headless browser: walk the feature flow, detect r
 
 Browser-based QA: open a real browser, walk the feature flow, find what breaks, fix it, re-verify.
 
-Requires gstack's browse daemon (`$B`). If gstack is not installed, this command is unavailable — see [Prerequisites](#prerequisites) below.
+Requires gstack's browse daemon (`$B`), which the scaffold does not install. **Check first:** run `command -v gstack-browse` (or the `$B` helper). If it is not available, stop before Phase 1 and report `not verified: no E2E harness`; do not walk the flow by guesswork. See [Prerequisites](#prerequisites) for installing it, or use the project's own Playwright tests if it has them.
 
 ---
 

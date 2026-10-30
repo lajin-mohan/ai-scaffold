@@ -11,9 +11,9 @@ import { resolveOnPath } from './exec-path.js';
 import { UpdateError } from './update-policy.js';
 import { identityKey } from './write-ops.js';
 
-const GIT_TIMEOUT_MS = 30_000;
+export const GIT_TIMEOUT_MS = 30_000;
 // The project may arrive with a hostile .git/config (#159 review).
-const SAFE_GIT_OPTIONS = ['-c', 'core.fsmonitor=false', '--no-optional-locks'];
+export const SAFE_GIT_OPTIONS = ['-c', 'core.fsmonitor=false', '--no-optional-locks'];
 
 function runGit(git, root, args, env) {
   // Resolved from PATH, never from the project directory (item 94); array

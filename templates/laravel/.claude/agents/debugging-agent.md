@@ -76,4 +76,4 @@ Status must be one of:
 - Silent assumptions.
 - Unrelated cleanup.
 - Changing public contracts without calling out impact.
-- Marking frontend/full-stack bugs done without browser verification or an explicitly approved exception.
+- Marking frontend/full-stack bugs done without browser verification, an explicitly approved exception, or, when the project has no E2E harness, the `not verified: no E2E harness` disclosure.

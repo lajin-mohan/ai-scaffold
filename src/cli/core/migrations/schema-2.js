@@ -8,7 +8,8 @@
 import picomatch from 'picomatch';
 import { CREATE_ROOT_FILES_BY_PROFILE } from '../file-plan.js';
 import { classifyPath } from '../ownership.js';
-import { CREATE_DEFAULTS } from '../prompts.js';
+import { CREATE_DEFAULTS, resolveWithDefaults } from '../prompts.js';
+import { isSupportedProfile } from '../paths.js';
 
 export const SCHEMA_2_ID = 'schema-2';
 
@@ -33,7 +34,10 @@ const DEFAULT_FIELDS = [
 
 function inferInstallMode(manifest) {
   if (!Array.isArray(manifest.managedFiles)) return 'unknown';
-  const rootFiles = ['.gitattributes', ...(CREATE_ROOT_FILES_BY_PROFILE[manifest.profile] ?? [])];
+  // init namespaces the project README under .ai-scaffold/, so a recorded root
+  // README.md means create. 0.8.x generic installs record no other root file:
+  // their .gitignore was lost to npm pack and .gitattributes came later.
+  const rootFiles = ['.gitattributes', 'README.md', ...(CREATE_ROOT_FILES_BY_PROFILE[manifest.profile] ?? [])];
   const isRootFile = picomatch(rootFiles, { dot: true });
   return manifest.managedFiles.some((record) => isRootFile(record.path)) ? 'create' : 'init';
 }
@@ -46,11 +50,19 @@ function recordDefault(manifest, valueKey) {
   manifest.defaultedValues = list;
 }
 
+// A missing command takes the value create gives the same profile, so a
+// migrated laravel project renders `composer install`, not `none`.
+function defaultsFor(manifest) {
+  if (!isSupportedProfile(manifest.profile)) return CREATE_DEFAULTS;
+  return resolveWithDefaults({ profile: manifest.profile }).resolved;
+}
+
 function fillDefaults(manifest, intents) {
+  const profileDefaults = defaultsFor(manifest);
   for (const [section, key, defaultKey] of DEFAULT_FIELDS) {
     manifest[section] ??= {};
     if (manifest[section][key] === undefined) {
-      const value = CREATE_DEFAULTS[defaultKey];
+      const value = section === 'commands' ? profileDefaults[defaultKey] : CREATE_DEFAULTS[defaultKey];
       manifest[section][key] = Array.isArray(value) ? [...value] : value;
       recordDefault(manifest, defaultKey);
       intents.push(`defaulted ${section}.${key}`);

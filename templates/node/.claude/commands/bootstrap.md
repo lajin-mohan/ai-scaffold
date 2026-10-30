@@ -208,11 +208,10 @@ These are stored in `settings-overrides.json` under `techStack` and flow into `C
 
 ## Verification
 
-After write, run three checks:
+After write, run two checks:
 
 1. `grep -rn '{{[A-Z_]*}}' .` — must return 0 matches
-2. `grep 'PRE_REVIEW_ALLOW_UNCONFIGURED' .claude/settings.json` — must return 0 matches
-3. Verify `.claude/settings-overrides.json` exists and contains `projectName`, `type`, `multiTenant`, and `techStack`
+2. Verify `.claude/settings-overrides.json` exists and contains `projectName`, `type`, `multiTenant`, and `techStack`
 
 If any check fails, report the survivors and stop. The scaffold is not "bootstrapped" until all pass.
 
@@ -239,7 +238,6 @@ No action needed. Run `/what-next` to begin Stage 1.
 ⚠ Bootstrap validation:  N issues found
    - .claude/settings-overrides.json missing techStack section
    - CLAUDE.md contains 3 unresolved {{PLACEHOLDER}} tokens
-   - PRE_REVIEW_ALLOW_UNCONFIGURED still present in .claude/settings.json
 
 Run /bootstrap --resume to complete the bootstrap.
 ```

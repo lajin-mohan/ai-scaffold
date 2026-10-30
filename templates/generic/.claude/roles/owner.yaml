@@ -9,7 +9,6 @@ allowed_commands:
   - /review
   - /qa-review
   - /deployment-review
-  - /loop
   - /reflect
   - /lessons
   - /compact

@@ -22,6 +22,7 @@ import { runApply } from '../cli/core/update-apply-run.js';
 import { runPreview } from '../cli/core/update-preview.js';
 import { formatReport } from '../cli/core/update-report.js';
 import { nativeFs } from '../cli/core/write-ops.js';
+import { hookScript } from '../cli/core/settings-hooks.js';
 
 const GIT = resolveOnPath('git');
 const HERE = path.dirname(fileURLToPath(import.meta.url));
@@ -96,7 +97,7 @@ function singleHookGroup(settings) {
   }
   throw new Error('no single-hook group with a matcher');
 }
-const scriptOf = (command) => command.split(/\s+/).find((t) => t.startsWith('.claude/hooks/'));
+const scriptOf = hookScript;
 const hookCommands = (settings) => Object.values(settings.hooks ?? {}).flat().flatMap((g) => g.hooks.map((h) => h.command));
 
 beforeAll(async () => {

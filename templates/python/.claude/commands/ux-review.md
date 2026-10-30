@@ -20,7 +20,7 @@ Review a UI implementation or UX artifact against the centralized UX system.
 2. Use `.claude/skills/ux-review/SKILL.md`.
 3. Reference `.claude/skills/ux-system/` for design-system rules.
 4. Validate enterprise UX quality, accessibility, responsiveness, mobile behavior, theme behavior, density, hierarchy, and component consistency.
-5. For frontend implementation, require browser verification evidence before DONE.
+5. For frontend implementation, require browser verification evidence before DONE when the project has a browser E2E harness; without one, record `not verified: no E2E harness`.
 
 ## Validate
 
@@ -43,7 +43,7 @@ Review a UI implementation or UX artifact against the centralized UX system.
 
 ## Browser Verification Requirement
 
-For frontend pages, review evidence must include:
+For frontend pages, when the project has a browser E2E harness, review evidence must include the four states below. Without one, list each as `not verified: no E2E harness`; the rules after the list still apply to the code:
 - desktop light theme
 - desktop dark theme
 - mobile light theme at approximately 390px width

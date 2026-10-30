@@ -519,12 +519,12 @@ the packed tarball.
     `git push origin main --force`, `rm -fr` and `curl | bash`, and blocks
     `rm -rf node_modules`.
   - *(S–M)*
-- **80. Remove the per-prompt `pre-review` hook.**
+- **80. ✅ Remove the per-prompt `pre-review` hook.** Done (Wave A, PR #168, 2026-10-29; ships in 0.18.0); a 0.18.0 migration retires it in existing projects.
   - `UserPromptSubmit` ignores matchers, so it fires on every prompt, and its
     `exit 1` is non-blocking.
   - The checks move to item 87, and the Stop-hook gate stays item 66.
   - *(XS)*
-- **81. Make the remaining hooks portable.**
+- **81. 🟡 Make the remaining hooks portable.** Parser probe, fail-closed secret guard and `${CLAUDE_PROJECT_DIR}` exec form done (Wave A, PR #168, 2026-10-29; ships in 0.18.0), with item 97 probes for the no-`jq`/Store-stub case. Open: timeout probes and item 60's Windows runner evidence.
   - Acceptance extension: item 97 supplies allowed/blocked, positive-control and
     missing-dependency/timeout probes; share evidence with item 87.
   - Exec form with `${CLAUDE_PROJECT_DIR}`; no `jq` or `python3` dependency;
@@ -533,7 +533,7 @@ the packed tarball.
   - *(S)*
 
 **C2 — Native collisions and dead weight**
-- **82. Remove the commands that shadow native ones** (`/compact`, `/loop`).
+- **82. 🟡 Remove the commands that shadow native ones** (`/compact`, `/loop`). `/compact` and `/loop` removed (Wave A, PR #168, 2026-10-29; ships in 0.18.0). Open: the `/review` → `/ais-review` rename.
   - Repoint about 16 referencing files per profile first.
   - Rename `/review` to `/ais-review` and repoint every reference.
   - *(S)*
@@ -559,7 +559,7 @@ the packed tarball.
   controls and validate allowed, disallowed and unavailable cases. *(XS)*
 
 **C4 — Verification and UX honesty**
-- **87. Single `verify` contract and honest UI gates.**
+- **87. 🟡 Single `verify` contract and honest UI gates.** Honest UI gates and item 102 part A done (Wave A, PR #168, 2026-10-29; ships in 0.18.0). Open: one real `verify` script per profile.
   - Acceptance extension: item 97 proves failure/skip and enforcement behavior;
     an AI reviewer approval alone is not verification evidence.
   - One real `verify` script per profile, shared by the git hook, CI and the
@@ -782,12 +782,11 @@ saving starts costing correctness.
 ## Hygiene track (parallel — not a phase gate)
 
 - **21.** Docs-honesty pass (stale version/claims). **22.** Publish-workflow input
-  cleanup. Also: `actions/checkout@v4` and `actions/setup-node@v4` target
-  the deprecated Node 20 runtime, and `ubuntu-latest` moves to Ubuntu 26
-  (both warned in the 0.17.0 release run, 2026-10-28). **18.** Hooks-roadmap doc. **41.** Decide the fate of the example hooks
+  cleanup. The Node 20 actions and `ubuntu-latest` drift warned in the 0.17.0
+  release run were fixed in Wave A (Node 24 majors, `ubuntu-24.04`, PR #168). **18.** Hooks-roadmap doc. **41.** Decide the fate of the example hooks
   (`jira-sync.py`, `notify-review.py`) — pack or remove.
 
-- **66. 🟡 First slice DONE (2026-10-12, #146; ships in 0.16.0): the shipped `commit-msg` hook and `doctor` C-05.** Open: this repo’s own gate (exception not granted), `ais init` hook wiring, and the CHANGELOG/approval-artifact controls (`tasks/todo/66-objective-controls.md`). Original finding:
+- **66. 🟡 First slice DONE (2026-10-12, #146; ships in 0.16.0): the shipped `commit-msg` hook and `doctor` C-05.** Slice (d), `update` activating delivered hooks and the executable bit, done (Wave A, PR #168, 2026-10-29; ships in 0.18.0). Open: this repo’s own gate (exception not granted), `ais init` hook wiring, and the CHANGELOG/approval-artifact controls (`tasks/todo/66-objective-controls.md`). Original finding:
   **Plan-and-confirm has no deterministic backing — prompted rule only.**
   Found 2026-08-13 cross-checking current Claude Code docs
   (`code.claude.com/docs/en/best-practices`, `.../memory`) against this

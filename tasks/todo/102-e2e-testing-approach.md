@@ -48,14 +48,17 @@ it is never required to run them.
 
 ## Part A — honest claims (P0, with item 87)
 
-- [ ] Every shipped `test:e2e` reference is conditional on a harness being
+Done in Wave A (PR #168, 2026-10-29), verified on projects generated from the
+packed tarball for all five profiles; `src/__tests__/honest-claims.test.js`.
+
+- [x] Every shipped `test:e2e` reference is conditional on a harness being
   present, or names the pack that provides it. No command is presented as
   runnable when the generated project cannot run it.
-- [ ] `/qa` detects gstack; when absent it says so and points at Part B (or
+- [x] `/qa` detects gstack; when absent it says so and points at Part B (or
   the Playwright MCP), instead of failing mid-run. Item 87's
   "not verified: no E2E harness" disclosure applies.
-- [ ] Applied byte-identically to all five profiles (shared governance).
-- [ ] Packed-tarball check: a generated project contains no unconditional
+- [x] Applied byte-identically to all five profiles (shared governance).
+- [x] Packed-tarball check: a generated project contains no unconditional
   instruction to run a script it lacks.
 
 ## Part B — the E2E pack (P2, item 91)

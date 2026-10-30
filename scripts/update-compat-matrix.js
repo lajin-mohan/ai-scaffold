@@ -23,14 +23,19 @@ import { renderReport } from './update-compat/report.js';
 import { runCrlf, runHashless, runLegacy070 } from './update-compat/special-cases.js';
 
 const REPO = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-// Newer than the latest published version (0.16.1), so it has an update to take.
-const CANDIDATE = '0.17.0-compat.0';
+// Newer than the latest published version (0.17.1), so it has an update to
+// take, and equal to the next release so the 0.18.0 migration is crossed.
+const CANDIDATE = '0.18.0';
 const NAME = 'compat-app';
 const CONFLICT = 'AGENTS.md';
+// 0.8.1 and generic are what real adopters ran (engyne; a 0.14.0 generic
+// workspace), not just representative picks (lessons 2026-10-28).
 const MATRIX = [
+  { version: '0.8.1', profiles: ['node', 'generic'], noGitFlag: false },
   { version: '0.8.5', profiles: ['node', 'laravel'] },
-  { version: '0.14.0', profiles: ['node', 'laravel', 'python'] },
+  { version: '0.14.0', profiles: ['node', 'laravel', 'python', 'generic'] },
   { version: '0.16.1', profiles: ['node', 'laravel', 'python'] },
+  { version: '0.17.1', profiles: ['node', 'generic'] },
 ];
 // Combinations the release could not produce, reported rather than skipped.
 const NOT_APPLICABLE = [
@@ -58,7 +63,7 @@ function answerArgs(manifest) {
 }
 
 /** Generate `<parent>/compat-app` with a CLI; init gets an existing application first. */
-function install(bin, parent, { mode, profile, extra = [], noGit = true }) {
+function install(bin, parent, { mode, profile, extra = [], noGit = true, noGitFlag = true }) {
   const project = path.join(parent, NAME);
   fs.mkdirSync(parent, { recursive: true });
   if (mode === 'init') {
@@ -68,10 +73,13 @@ function install(bin, parent, { mode, profile, extra = [], noGit = true }) {
     fs.writeFileSync(path.join(project, 'src', 'index.js'), 'export const app = true;\n');
   }
   const args = mode === 'create'
-    ? ['create', NAME, '--profile', profile, ...(noGit ? ['--no-git'] : []), ...INSTALL_ARGS, ...extra]
+    ? ['create', NAME, '--profile', profile, ...(noGit && noGitFlag ? ['--no-git'] : []), ...INSTALL_ARGS, ...extra]
     : ['init', NAME, '--profile', profile, ...INSTALL_ARGS, ...extra];
   const result = runCli({ bin, clock: ctx.clock, cwd: parent, args });
   if (result.status !== 0) throw new Error(`${mode} ${profile} failed:\n${result.stderr || result.stdout}`);
+  // A release without --no-git made its own repository; drop it so the case
+  // commits with the same git settings as every other row.
+  if (noGit && !noGitFlag) fs.rmSync(path.join(project, '.git'), { recursive: true, force: true });
   return project;
 }
 
@@ -217,8 +225,8 @@ function runMatrix() {
   const versions = [...MATRIX.map(({ version }) => version), LEGACY_VERSION];
   ctx.olds = Object.fromEntries(versions.map((version) => [version, installPublished(ctx.root, version)]));
   ctx.fresh = {};
-  const specs = MATRIX.flatMap(({ version, profiles }) => [
-    ...profiles.map((profile) => ({ version, mode: 'create', profile })),
+  const specs = MATRIX.flatMap(({ version, profiles, noGitFlag }) => [
+    ...profiles.map((profile) => ({ version, mode: 'create', profile, noGitFlag })),
     { version, mode: 'init', profile: 'node' },
   ]);
   const env = {

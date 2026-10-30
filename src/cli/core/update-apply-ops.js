@@ -13,6 +13,7 @@ import { currentHash } from './update-apply.js';
 import { buildManifestAfter, serializeManifest } from './update-manifest-after.js';
 import { MANIFEST, SETTINGS } from './update-manifest.js';
 import { UpdateError } from './update-policy.js';
+import { isExecutableHook } from './git-hooks.js';
 import { identityKey, missingDirectories, nativeFs } from './write-ops.js';
 
 export const SIDECAR_SUFFIX = '.ais-new';
@@ -56,7 +57,8 @@ async function entryOp(root, entry, computed, fsApi) {
   // `pre` is the state the plan decided on, never a fresh read: the
   // transaction then refuses any file that changed since (FR-41).
   if (entry.action === 'replace' || entry.action === 'add') {
-    return { rel: entry.path, action: 'write', data: render, pre: observedPre(entry), final: hashRaw(render) };
+    const op = { rel: entry.path, action: 'write', data: render, pre: observedPre(entry), final: hashRaw(render) };
+    return isExecutableHook(entry.path) ? { ...op, mode: 0o755 } : op;
   }
   if (entry.action === 'remove') {
     return { rel: entry.path, action: 'remove', pre: observedPre(entry), final: null };

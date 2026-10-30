@@ -12,6 +12,18 @@ This file records patterns from mistakes and corrections. Claude reads this at t
 
 <!-- Add lessons below as they are captured. Most recent at the top. -->
 
+## 2026-10-30 — A new git call skipped the hardened runner that already existed
+
+- **Mistake:** Wave A's hook activation (`git-hooks.js`) spawned `git ls-files` directly instead of through `git-state.js`'s safe options, so a `core.fsmonitor` command in the project's config ran during `ais update --apply` and `ais doctor`. The same code copied hooks through a `.git/hooks` junction into another directory. Both were caught by review of #168 against the packed artifact, not by tests.
+- **Why:** The #159 hardening lived in one module's private constant, and the new module was written as a convenience helper rather than as code that reads an untrusted repository.
+- **Rule:** Every git invocation on an adopter's repository goes through the shared `SAFE_GIT_OPTIONS`, and every write into `.git` checks for links and that the real path is the repository's own. Each new path gets the fsmonitor-marker and junction tests.
+
+## 2026-10-29 — Hooks shipped as 100755 reached adopters as 100644, and Windows tests could not see it
+
+- **Mistake:** Every profile ships `commit-msg` and `pre-commit` as `100755`, yet engyne's upgraded `commit-msg` was committed as `100644`, so it never runs on a Linux or macOS clone. `create` on Windows did the same to every hook. Lint, tests and smoke all passed, because they read the working tree and the executable bit means nothing on Windows (`core.fileMode` false).
+- **Why:** git records a new file's mode from the filesystem, and Windows has no executable bit, so a project created or upgraded there commits its hooks without it. No check read the git index, which is the only place the bit survives.
+- **Rule:** When a file must be executable for adopters, assert its mode in the git index (`git ls-files -s`) of a generated or upgraded project, not the file on disk. Run that check on Windows too, since the index records the mode on every platform.
+
 ## 2026-10-28 — The compatibility matrix tested the versions we chose, not the ones adopters run
 
 - **Mistake:** 0.17.0 shipped with a matrix of 0.7.0, 0.8.5, 0.14.0 and 0.16.1. The first real adopter project checked after release, engyne on 0.8.1, could not be updated at all: 0.8.1 on Windows had recorded one file under both `/` and `\` spellings, and the update rejected the pair as a duplicate.

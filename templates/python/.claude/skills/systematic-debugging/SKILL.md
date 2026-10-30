@@ -51,7 +51,7 @@ A bug is not fixed until the original failure has been reproduced or clearly sim
 
 6. **Verify Against The Original Failure**
    Match verification to the bug:
-   - UI/browser: run targeted Playwright or `npm run test:e2e`.
+   - UI/browser: run the project's targeted E2E test if it has one; if it has none, report `not verified: no E2E harness`.
    - React code: run `npm run typecheck` and relevant tests.
    - Laravel API: run targeted PHP syntax, route/config checks, API request checks, and relevant backend tests.
    - Database: verify migration/schema/data state.
@@ -101,4 +101,4 @@ Recommended Next Step:
 - Silent assumptions.
 - Large unrelated cleanup.
 - Unverified code changes.
-- Marking frontend/full-stack bugs done without browser verification or an explicitly approved exception.
+- Marking frontend/full-stack bugs done without browser verification, an explicitly approved exception, or, when the project has no E2E harness, the `not verified: no E2E harness` disclosure.

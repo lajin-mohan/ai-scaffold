@@ -7,9 +7,10 @@ set -uo pipefail
 PAYLOAD=$(cat 2>/dev/null || echo "")
 
 extract_command() {
-  if command -v jq >/dev/null 2>&1; then
+  if jq --version >/dev/null 2>&1; then
     printf '%s' "$PAYLOAD" | jq -r '.tool_input.command // empty' 2>/dev/null || true
-  elif command -v python3 >/dev/null 2>&1; then
+  # A found python3 may be the Microsoft Store stub, which fails; run it to check.
+  elif python3 -c '' >/dev/null 2>&1; then
     printf '%s' "$PAYLOAD" | python3 -c '
 import json, sys
 try:

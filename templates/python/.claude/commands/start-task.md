@@ -95,7 +95,7 @@ Produce a plan in the exact format below. **Do not write any code yet.**
 - Project test command covering the changed feature — must pass
 - Project build command, when configured — must pass
 - `/ux-review` — required for frontend/full-stack tasks; include result or approved exception
-- Configured browser/e2e command — required for frontend/full-stack tasks; include screenshots/traces on failure
+- Configured browser/e2e command — required for frontend/full-stack tasks when the project has one; include screenshots/traces on failure. Without one, report `not verified: no E2E harness`
 - Desktop light/dark verification — required for frontend/full-stack tasks
 - Mobile light/dark verification at approximately 390px — required for frontend/full-stack tasks
 - Walk through each AC and report status
@@ -107,7 +107,7 @@ Produce a plan in the exact format below. **Do not write any code yet.**
 ### Autonomous execution after approval
 - I will continue through the approved steps without asking again for routine implementation choices.
 - I will stop only for the stop conditions listed below.
-- If multiple approved tasks remain, I may use `/loop` semantics to complete them one by one.
+- If multiple approved tasks remain, I complete them one at a time, verifying each before the next.
 
 ### Stop conditions
 - Required scope or file changes are outside this plan.
@@ -168,7 +168,7 @@ When the implementation is done, run the verification suite and produce the repo
 ✅ Build: `<configured build command>` — passing (if configured)
 ✅ UX: `/ux-review` — passing (required for frontend/full-stack tasks)
 ✅ UX Handoff: `/ux-handoff` file exists `docs/ux/<module>/tasks/<task-id>/06-dev-handoff.md` — hard gate before Stage 5
-✅ Browser: `<configured browser/e2e command>` — passing (required for frontend/full-stack tasks)
+✅ Browser: `<configured browser/e2e command>` — passing, or ⚠ `not verified: no E2E harness` (required for frontend/full-stack tasks)
 ✅ Desktop themes: light + dark verified (required for frontend/full-stack tasks)
 ✅ Mobile themes: light + dark verified at ~390px (required for frontend/full-stack tasks)
 {{#if Intensity set}}
@@ -223,7 +223,7 @@ If the user interrupts mid-task, save state to `tasks/start-task-state.json` (gi
 - The plan must list **every file** that will be touched. Discovering an unlisted file mid-execution = stop and ask.
 - Verification is **mandatory** for the report. If a verification step can't run (e.g., test framework not configured), say so explicitly.
 - UX review is **mandatory** before marking frontend or full-stack tasks `DONE`. Run `/ux-review` and include the result in the verification report. If UX review cannot run, the task remains not done unless the exception is explicitly approved and documented.
-- Browser verification is **mandatory** before marking frontend or full-stack tasks `DONE`. Run the configured browser/e2e command and include the result in the verification report. If browser verification cannot run, the task remains not done unless the exception is explicitly approved and documented.
+- Browser verification is **mandatory** before marking frontend or full-stack tasks `DONE` when the project has a browser E2E harness. Run it and include the result in the verification report; if it cannot run, the task remains not done unless the exception is explicitly approved and documented. Without a harness, the report states `not verified: no E2E harness` for the browser, mobile and theme checks, as the DoD allows.
 - A "go" approves the plan **as written**. New scope = new plan.
 - The command leaves the working tree clean OR clearly explains why it doesn't (e.g., "left WIP on branch X for human review").
 - `--intensity` is per-call. Never persist the level, never write a flag file, never modify `.claude/settings.local.json` from this command. The user passes the flag on each invocation they want it for.

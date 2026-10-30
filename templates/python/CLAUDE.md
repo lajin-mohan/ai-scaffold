@@ -15,9 +15,6 @@ This file governs how Claude, Codex, and other AI tools collaborate on every pro
 >
 > While in template state, generated projects do not receive a CI workflow by
 > default. Add CI through project-specific setup or a future AI Scaffold CI pack.
-> `/review` runs with `PRE_REVIEW_ALLOW_UNCONFIGURED=1` set in
-> `.claude/settings.json` so it works before lint/typecheck/test commands are
-> configured. `/bootstrap` removes this opt-out as part of stack configuration.
 >
 > If you are editing this template itself (improving rules, agents, commands), the placeholders stay. If you are starting a real project, run `/bootstrap` first.
 
@@ -174,7 +171,7 @@ Pick an AI role to get relevant commands, evidence requirements, and output styl
 | `ux` | UX creation, review, accessibility | `/ux-analyze` |
 | `owner` | Project orchestration, status, risk | `/what-next` |
 
-AI role configs live at `.claude/roles/`. Human-facing AI role docs live at `docs/ai-os/`. AI role routing for `/what-next` and `/loop` is planned for Phase 3.
+AI role configs live at `.claude/roles/`. Human-facing AI role docs live at `docs/ai-os/`. AI role routing for `/what-next` is planned for Phase 3.
 
 ### Claude's Operating Rules
 
@@ -234,10 +231,8 @@ Run via `/command-name` in Claude Code.
 | `/investigate` | Root cause debugging: gather evidence → form hypothesis → test → fix. Iron law: no fix without investigation. Run when user reports error or bug. | Pre-fix |
 | `/health` | Code quality dashboard: auto-detect tools (tsc, biome, eslint, ruff, pytest, etc.), run them, compute 0-10 composite score, show tabular dashboard. HARD GATE: show only, never fix. Run weekly. | Any time |
 | `/lessons` | Query past root causes and debugging lessons from `tasks/lessons.md`. Search by keyword or filter by tag. Read-only — never writes lessons. | Any time |
-| `/compact` | Session compaction: write key decisions, stage state, open questions, and Next Session Brief to `MEMORY.md`. Run when approaching token threshold (300K) or at natural milestones. Audit-log ready. | Any time |
 | `/reflect` | Post-task reflection: captures lessons, patterns, process improvements. Writes to `tasks/lessons.md` and audit log. Run after significant work sessions. | Any time |
 | `/qa` | Live-site QA with headless browser: walk the feature flow, detect rendering/interaction/console issues, fix and re-verify. | Stage 8 |
-| `/loop` | Autonomous task queue: execute a numbered task list with one-approval contract. Generates tests via `/gen-tests` per task. Stop conditions prevent scope creep. | Stage 5 |
 | `/commit-changes` | Git workflow enforcement: branch safety check, unrelated-changes detection, verification evidence requirement. Optional `--dev` / `--main` merge promotion. No Co-Authored-By ever. | Any time |
 | `/qa-plan` | QA automation planning via qa-reviewer agent. Coverage matrix: Requirement → Scenario → Test → Result. | Stage 8 |
 | `/qa-review` | QA coverage and quality review. Validates traceability, independence, data isolation, CI commands. Severity: BLOCK / HIGH / MEDIUM / LOW. | Stage 8 |
@@ -280,7 +275,6 @@ Wired in `.claude/settings.json` and fired deterministically by Claude Code at t
 
 | Hook | Event | What it enforces |
 |---|---|---|
-| `.claude/hooks/pre-review.sh` | UserPromptSubmit on `/review` | Runs lint + typecheck + tests + audit before AI review. Fails closed by default; template state opts out via `PRE_REVIEW_ALLOW_UNCONFIGURED=1`. |
 | `.claude/hooks/pre-write-fact-check.sh` | PreToolUse on Edit/Write/MultiEdit | Warns (or blocks in `ECC_FACT_CHECK_STRICT=1`) when the edit targets a file cited as `file:line` in this session but never Read in this session. Enforces H1/H2/H7. |
 | `.claude/hooks/post-write-console-warn.sh` | PostToolUse on Edit/Write/MultiEdit | Warns on newly-added `console.log` / `print(` / `println!(` / `var_dump(` / `print_r(` / `dd(` / `dump(` / `error_log(` to `.ts/.tsx/.js/.jsx/.mjs/.cjs/.py/.rs/.php` files (diff-based, so pre-existing statements are not flagged). Enforces the "no debug logs in committed code" preference. |
 | `.claude/hooks/pre-bash-quality-gate.sh` | PreToolUse on Bash | Runs `.claude/hooks/pre-commit` inline before `git commit` / `git push` lands. Blocks the commit if pre-commit fails. Respects `--no-verify`. Enforces the "lint + typecheck pass before review" hard gate. |
@@ -288,7 +282,7 @@ Wired in `.claude/settings.json` and fired deterministically by Claude Code at t
 | `.claude/hooks/pre-commit-secrets` | git pre-commit (extended) | Heuristic secret detection for common API key patterns. |
 | `.claude/hooks/commit-msg` | git commit-msg | Rejects commit messages carrying a `Co-Authored-By:` trailer (commit identity rule). Installed by `ais create`; `ais doctor` check C-05 verifies it. |
 
-All hooks fail open in template state (exit 0 with no checks run) so the scaffold itself stays CI-green before `/bootstrap` configures the stack. Disable any hook with `ECC_<HOOK>_DISABLED=1`. Hooks run via `bash .claude/hooks/<name>.sh`, so they fire without needing an executable bit.
+All hooks fail open in template state (exit 0 with no checks run) so the scaffold itself stays CI-green before `/bootstrap` configures the stack. Disable any hook with `ECC_<HOOK>_DISABLED=1`. Hooks run via `bash "${CLAUDE_PROJECT_DIR}/.claude/hooks/<name>.sh"`, so they fire from any working directory and without needing an executable bit.
 
 ---
 

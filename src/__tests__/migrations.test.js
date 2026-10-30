@@ -34,6 +34,7 @@ describe('schema-2 migration', () => {
     ['laravel', ['composer.json', 'CLAUDE.md'], 'create'],
     ['node', ['.gitattributes', 'CLAUDE.md'], 'create'],
     ['python', ['pyproject.toml'], 'create'],
+    ['generic', ['AGENTS.md', 'CLAUDE.md', 'README.md'], 'create'],
     ['node', ['CLAUDE.md', '.claude/rules/a.md', '.ai-scaffold/README.md'], 'init'],
   ])('infers install.mode for %s from %j as %s', (profile, records, expected) => {
     const { manifest, intents } = runMigrations(manifestFor({ profile, records }), { ...VERSIONS, settingsPristine: null });
@@ -64,6 +65,17 @@ describe('schema-2 migration', () => {
     expect(manifest.commands.lint).toBe('none');
     expect(manifest.stack.database).toBe('PostgreSQL');
     expect(intents).toEqual(expect.arrayContaining(['defaulted requirements.source', 'defaulted commands.lint']));
+  });
+
+  it.each([
+    ['laravel', { install: 'composer install', dev: 'php artisan serve', migration: 'php artisan migrate --force' }],
+    ['golang', { install: 'go mod download', test: 'go test ./...' }],
+    ['generic', { install: 'none', test: 'none' }],
+  ])('fills missing %s commands with what create gives that profile', (profile, expected) => {
+    const input = manifestFor({ profile, installMode: 'create' });
+    delete input.commands;
+    const { manifest } = runMigrations(input, { ...VERSIONS, settingsPristine: null });
+    expect(manifest.commands).toMatchObject(expected);
   });
 
   it('marks the manifest as schema 2 and records the migration', () => {

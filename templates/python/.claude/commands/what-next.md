@@ -254,7 +254,7 @@ Evaluate each stage in order. The **current stage** is the earliest stage with i
 - `/review` has been run on the feature branch
 - All BLOCK findings resolved
 - WARN findings acknowledged in PR description
-- Browser verification evidence exists for frontend/full-stack work (`npm run test:e2e`, with screenshots/traces/videos retained on failure)
+- Browser verification evidence exists for frontend/full-stack work when the project has an E2E harness (its E2E command, with screenshots/traces/videos retained on failure); without one, the PR states `not verified: no E2E harness`
 - Frontend/full-stack verification includes desktop light, desktop dark, mobile light, and mobile dark states
 - Mobile primary workflows are verified at approximately 390px width
 - Theme switching is verified to preserve page state where applicable

@@ -453,7 +453,6 @@ describe('python and golang profiles', () => {
   it('wires shared profile quality gates to Go-aware stack commands', () => {
     const canonicalFiles = [
       '.claude/hooks/pre-commit',
-      '.claude/hooks/pre-review.sh',
       '.claude/settings.json',
       '.claude/settings.local.example.json',
       '.claude/commands/start-task.md',
@@ -473,12 +472,6 @@ describe('python and golang profiles', () => {
     expect(preCommit).toContain('run_check "Go build" "go build ./..."');
     expect(preCommit).toContain('run_check "Go vet" "go vet ./..."');
     expect(preCommit).toContain('run_check "Go tests" "go test ./..."');
-
-    const preReview = readFileSync(templatePath('generic', '.claude/hooks/pre-review.sh'), 'utf-8');
-    expect(preReview).toContain('if [ -f go.mod ]; then');
-    expect(preReview).toContain('run_check "Go build" "go build ./..."');
-    expect(preReview).toContain('run_check "Go vet" "go vet ./..."');
-    expect(preReview).toContain('run_check "Go tests" "go test ./..."');
 
     const settings = JSON.parse(readFileSync(templatePath('generic', '.claude/settings.json'), 'utf-8'));
     expect(settings.permissions.allow).toContain('Bash(npm run lint*)');

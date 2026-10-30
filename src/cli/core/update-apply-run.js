@@ -10,6 +10,7 @@ import { isSupportedProfile } from './paths.js';
 import { resolveProjectRoot } from './containment.js';
 import { checkGitSafety } from './git-state.js';
 import { applyTransaction } from './update-apply.js';
+import { activateGitHooks, readHookSources } from './git-hooks.js';
 import { buildApplyOps } from './update-apply-ops.js';
 import { acquireLock, describeLock, releaseLock } from './update-lock.js';
 import { MANIFEST, readManifestObserved } from './update-manifest.js';
@@ -82,12 +83,14 @@ async function transact(doc, { root, options, versions, computed, manifestObserv
   doc.gitSafety = checkGitSafety({
     root, writePaths: ops.map((op) => op.rel), allowDirty: options.allowDirty === true, allowNoGit: options.allowNoGit === true,
   });
+  const previousHooks = readHookSources(root);
   const result = await applyTransaction({ root, ops, dirs, meta: { from: versions.from, to: versions.to }, fsApi, now });
   doc.backup = result.backupDir;
   if (result.status !== 'applied') {
     Object.assign(doc, { status: result.status, exitCode: 1, error: result.error, rollback: result.rollback });
     return;
   }
+  doc.notices.push(...activateGitHooks(root, previousHooks));
   for (const sidecar of sidecars) doc.notices.push(`Wrote ${sidecar}: merge it into the original, then delete it.`);
   const pruned = await pruneBackups(root, { fsApi, current: result.backupDir, now });
   if (pruned.failed.length > 0) doc.notices.push(`Old backups could not be removed: ${pruned.failed.join(', ')}.`);

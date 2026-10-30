@@ -79,7 +79,7 @@ Reply `go` once. After approval, I will continue through reproduce → root caus
 
 ## Required Verification By Bug Type
 
-- **Frontend/full-stack:** browser verification is required with Playwright or a documented approved exception.
+- **Frontend/full-stack:** browser verification is required with the project's E2E harness or a documented approved exception; with no harness, report `not verified: no E2E harness`.
 - **API:** verify request/response status, body, auth, tenant/organization scope, and error handling.
 - **API config/routing:** verify syntax/config/routes and relevant API behavior.
 - **Database:** verify migration/schema/data state and tenant isolation.

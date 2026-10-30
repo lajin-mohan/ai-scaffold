@@ -30,8 +30,10 @@ Creates a new project from a profile template: copies governance files
 (`.claude/`, `constitution.md`, `CLAUDE.md`, `AGENTS.md`, rules, hooks),
 resolves placeholders from your answers, writes install metadata
 (`.ai-scaffold.json`), initializes git with an initial scaffold commit, and
-wires `.claude/hooks/pre-commit` into `.git/hooks/` so branch-name and lint
-gates apply to every commit — including ones made outside Claude Code.
+wires `.claude/hooks/pre-commit` and `commit-msg` into `.git/hooks/` so
+branch-name, lint and attribution-trailer gates apply to every commit,
+including ones made outside Claude Code. The hook scripts are committed with
+the executable bit, on Windows too, so Linux and macOS clones run them.
 
 ```bash
 ais create billing-api
@@ -125,6 +127,7 @@ It also reports **effective** governance rather than configured intent:
 | Required status checks | Is a check both *required* and *observed reporting*? |
 | Administrator bypass | Can an administrator override that protection? |
 | Pre-commit hook | Is `.git/hooks/pre-commit` really installed and executable — not merely wired in `.claude/settings.json`? |
+| Commit-msg hook | Is `.git/hooks/commit-msg` installed and executable? Both hook checks also fail when `.claude/hooks/<hook>` is committed without the executable bit, which makes Linux and macOS clones skip it. |
 
 The hook check is local and needs no network. The three GitHub checks use the
 `gh` CLI and are read-only: the only commands they can issue are

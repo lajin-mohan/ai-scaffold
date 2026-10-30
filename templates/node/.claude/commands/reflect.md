@@ -134,4 +134,3 @@ When given a brief note (`/reflect "brief description"`), expand it into a full 
 - `/lessons` — query past lessons by keyword or tag
 - `/investigate` — captures debugging lessons via the 3-strike rule
 - `/debug-fix` — captures bug-fix lessons via the 5-status report
-- `/compact` — runs `/reflect` as part of Step 4 before compacting
