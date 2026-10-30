@@ -137,5 +137,5 @@ Available CSS variables (defined in `apps/web/src/index.css`):
 - Treat hardcoded brand/theme colors outside centralized token/default-branding definitions as HIGH, or BLOCK if they break organization branding overrides.
 - Treat green overuse across navigation, avatars, role badges, action links, and status chips as MEDIUM, or HIGH when it weakens hierarchy on an operational page.
 - Treat components using Tailwind `dark:` variants as MEDIUM technical debt (prefer CSS variable pattern).
-- Require browser verification for frontend/full-stack tasks.
+- Require browser verification for frontend/full-stack tasks when the project has a browser E2E harness; otherwise require the `not verified: no E2E harness` disclosure.
 - Browser verification for UI tasks must include at least one desktop viewport and one mobile viewport, and must check both light and dark themes when the page is theme-aware.

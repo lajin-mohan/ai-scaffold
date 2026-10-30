@@ -33,7 +33,7 @@ Runs a full code review on the current feature branch or specified files. Invoke
    - Verify changed UI in desktop light, desktop dark, mobile light, and mobile dark states.
    - Mobile verification must include an approximately 390px-wide viewport and confirm the primary workflow remains usable.
    - Require Playwright failure artifacts (screenshots/traces/videos) to be preserved when tests fail.
-   - If browser verification is unavailable, report it as a BLOCK for frontend/full-stack tasks unless an explicit exception is approved.
+   - If the project has no browser E2E harness, report `not verified: no E2E harness` for these checks instead of a BLOCK (the DoD's rule). If it has one and it cannot run, that is a BLOCK unless an explicit exception is approved.
 5. **Run stack verification for changed backend/runtime files**:
    - For Go changes touching `cmd/`, `internal/`, `pkg/`, `go.mod`, or Go config, require `go vet ./...`, `go build ./...`, and `go test ./...`.
    - For Go integration-test changes, also run the configured integration command, commonly `go test -tags=integration ./...`.
@@ -119,7 +119,7 @@ Reviewers run: backend, frontend, security, qa, architect
 ### Browser Verification
 | Check | Status | Notes |
 |---|---|---|
-| Configured browser/e2e command | ✅ / ⚠ / ❌ | Required for frontend/full-stack tasks |
+| Configured browser/e2e command | ✅ / ⚠ / ❌ | Required for frontend/full-stack tasks when the project has a harness; otherwise `not verified: no E2E harness` |
 | Desktop light theme | ✅ / ⚠ / ❌ | Required for changed UI screens |
 | Desktop dark theme | ✅ / ⚠ / ❌ | Required for changed UI screens |
 | Mobile light theme (390px) | ✅ / ⚠ / ❌ | Required for changed UI screens |
@@ -152,8 +152,8 @@ Reviewers run: backend, frontend, security, qa, architect
 - QA findings appear whenever a spec is linked, even with `--backend-only` — AC compliance is independent of which layer changed.
 - SAST findings (Semgrep) are tagged `[SAST]` and always included — they are security-adjacent and may overlap with `security-reviewer`.
 - UX review is required before frontend/full-stack tasks can be marked `DONE`; missing `/ux-review` evidence is a BLOCK unless explicitly waived.
-- Browser verification is required before frontend/full-stack tasks can be marked `DONE`; missing configured browser/e2e evidence is a BLOCK unless explicitly waived.
-- Frontend/full-stack tasks cannot be marked `DONE` unless desktop light, desktop dark, mobile light, and mobile dark checks are passed or explicitly waived.
+- Browser verification is required before frontend/full-stack tasks can be marked `DONE` when the project has a browser E2E harness; missing evidence from that harness is a BLOCK unless explicitly waived. Without a harness, the report states `not verified: no E2E harness`.
+- Frontend/full-stack tasks cannot be marked `DONE` unless desktop light, desktop dark, mobile light, and mobile dark checks are passed, explicitly waived, or disclosed as `not verified: no E2E harness`.
 - Missing mobile workflow support at 390px is a BLOCK.
 - Missing light/dark theme support is a BLOCK for new pages and at least WARN for legacy pages touched by the change.
 - Hardcoded brand colors outside centralized token/default-branding definitions are a BLOCK when they prevent organization branding overrides.

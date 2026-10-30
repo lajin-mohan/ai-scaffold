@@ -70,7 +70,7 @@ All non-trivial code changes pass through this pipeline before merge:
 PR → merge
 ```
 
-**No step is skippable for production-bound changes.** Dev-only changes may bypass `/qa` at reviewer discretion.
+**No step is skippable for production-bound changes.** Dev-only changes may bypass `/qa` at reviewer discretion. When the project has no browser E2E harness, `/qa` reports `not verified: no E2E harness` instead of running; that disclosure satisfies the step, as the DoD allows.
 
 ---
 

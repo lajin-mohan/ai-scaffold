@@ -32,6 +32,19 @@ describe.each(SUPPORTED_PROFILES)('%s profile', (profile) => {
     expect(qa).toContain(NO_HARNESS);
   });
 
+  it.each([
+    '.claude/commands/review.md',
+    '.claude/commands/start-task.md',
+    '.claude/commands/debug-fix.md',
+    '.claude/commands/ux-review.md',
+    '.claude/agents/debugging-agent.md',
+    '.claude/skills/systematic-debugging/SKILL.md',
+    '.claude/skills/ux-review/SKILL.md',
+    '.claude/rules/governance.md',
+  ])('%s accepts the no-harness disclosure the DoD allows', (rel) => {
+    expect(fs.readFileSync(templatePath(profile, rel), 'utf-8')).toContain(NO_HARNESS);
+  });
+
   it('the DoD browser checks are conditional on an E2E harness', () => {
     const dod = fs.readFileSync(templatePath(profile, '.claude/rules/dod-rules.md'), 'utf-8');
     expect(dod).toContain(`Without one, the PR lists each as \`${NO_HARNESS}\``);

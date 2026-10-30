@@ -101,4 +101,4 @@ Recommended Next Step:
 - Silent assumptions.
 - Large unrelated cleanup.
 - Unverified code changes.
-- Marking frontend/full-stack bugs done without browser verification or an explicitly approved exception.
+- Marking frontend/full-stack bugs done without browser verification, an explicitly approved exception, or, when the project has no E2E harness, the `not verified: no E2E harness` disclosure.
