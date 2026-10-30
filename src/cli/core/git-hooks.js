@@ -9,6 +9,7 @@ import fs from 'fs';
 import path from 'path';
 import { spawnSync } from 'child_process';
 import { resolveOnPath } from './exec-path.js';
+import { GIT_TIMEOUT_MS, SAFE_GIT_OPTIONS } from './git-state.js';
 
 export const GIT_HOOKS = ['pre-commit', 'commit-msg'];
 const HOOK_DIR = '.claude/hooks';
@@ -35,12 +36,15 @@ export function readHookSources(root) {
 }
 
 function gitRunner(root) {
-  // Resolved from PATH, never from the project directory (item 94).
+  // Resolved from PATH, never from the project directory (item 94); with
+  // core.fsmonitor off, since the project's own git config may name a command.
   const git = resolveOnPath('git');
   if (!git) return null;
   const env = { ...process.env, GIT_CEILING_DIRECTORIES: path.dirname(path.resolve(root)) };
   return (args) => {
-    const result = spawnSync(git, args, { cwd: root, encoding: 'utf-8', stdio: ['ignore', 'pipe', 'ignore'], env });
+    const result = spawnSync(git, [...SAFE_GIT_OPTIONS, ...args], {
+      cwd: root, encoding: 'utf-8', stdio: ['ignore', 'pipe', 'ignore'], env, timeout: GIT_TIMEOUT_MS, windowsHide: true,
+    });
     return result.status === 0 ? result.stdout.trim() : null;
   };
 }
@@ -50,19 +54,53 @@ function samePath(a, b) {
   return process.platform === 'win32' ? norm(a).toLowerCase() === norm(b).toLowerCase() : norm(a) === norm(b);
 }
 
+function isLink(file) {
+  try {
+    return fs.lstatSync(file).isSymbolicLink();
+  } catch {
+    return false;
+  }
+}
+
+function realOrNull(file) {
+  try {
+    return fs.realpathSync.native(file);
+  } catch {
+    return null;
+  }
+}
+
+// Hooks are written only into the repository's own hooks directory: the one
+// under `git rev-parse --git-common-dir`, which is also where a linked
+// worktree's hooks live. A link, or a junction on Windows, that leads anywhere
+// else is refused, so activation never writes outside the repository.
+function hooksDirProblem(root, git, hooksDir) {
+  const common = git(['rev-parse', '--git-common-dir']);
+  const commonReal = common === null ? null : realOrNull(path.resolve(root, common));
+  if (!commonReal) return 'the repository directory could not be resolved';
+  if (isLink(hooksDir)) return `${hooksDir} is a link`;
+  const parentReal = realOrNull(path.dirname(hooksDir));
+  const actual = realOrNull(hooksDir) ?? (parentReal && path.join(parentReal, path.basename(hooksDir)));
+  return actual && samePath(actual, path.join(commonReal, 'hooks')) ? null : `${hooksDir} is not the repository's hooks directory`;
+}
+
 // One hook: install when missing, refresh a copy of the previous scaffold
 // version, leave anything else alone, since it is the project's own hook.
 function syncHook(root, hooksDir, hook, previous) {
-  const source = readOrNull(path.join(root, HOOK_DIR, hook));
-  if (!source) return null;
+  const sourcePath = path.join(root, HOOK_DIR, hook);
   const dest = path.join(hooksDir, hook);
+  if (isLink(sourcePath) || isLink(dest)) {
+    return `Left the ${hook} git hook alone: ${isLink(dest) ? dest : sourcePath} is a link. Install it by hand if you want it.`;
+  }
+  const source = readOrNull(sourcePath);
+  if (!source) return null;
   const current = readOrNull(dest);
   if (current && !current.equals(source) && !(previous && current.equals(previous))) {
     return `Left ${hook} in the git hooks directory unchanged: it differs from ${HOOK_DIR}/${hook}. Merge the two by hand if you want the scaffold version.`;
   }
   try {
     fs.mkdirSync(hooksDir, { recursive: true });
-    if (!current || !current.equals(source)) fs.copyFileSync(path.join(root, HOOK_DIR, hook), dest);
+    if (!current || !current.equals(source)) fs.writeFileSync(dest, source);
     fs.chmodSync(dest, 0o755);
   } catch (error) {
     return `Could not install the ${hook} git hook (${error.code ?? error.message}); copy ${HOOK_DIR}/${hook} into ${hooksDir} by hand.`;
@@ -112,6 +150,10 @@ export function activateGitHooks(root, previous) {
   if (samePath(hooksDir, path.join(root, HOOK_DIR))) return notices;
   if (git(['config', '--get', 'core.hooksPath'])) {
     return [`core.hooksPath is set to ${resolved}, so git ignores .git/hooks; copy ${GIT_HOOKS.map((h) => `${HOOK_DIR}/${h}`).join(' and ')} into that directory.`, ...notices];
+  }
+  const problem = hooksDirProblem(root, git, hooksDir);
+  if (problem) {
+    return [`Did not install git hooks: ${problem}. Copy ${GIT_HOOKS.map((h) => `${HOOK_DIR}/${h}`).join(' and ')} into the repository's hooks directory by hand.`, ...notices];
   }
   const synced = GIT_HOOKS.map((hook) => syncHook(root, hooksDir, hook, previous.get(hook)));
   return [...synced.filter(Boolean), ...notices];

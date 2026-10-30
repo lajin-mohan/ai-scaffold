@@ -11,5 +11,9 @@ export default defineConfig({
     // copies under .claude/worktrees/, and their nested templates + duplicate
     // suites would otherwise be scanned and fail `npm test` locally.
     exclude: [...configDefaults.exclude, '**/templates/**', '**/.claude/**'],
+    // Teardown removes temp directories holding generated projects and git
+    // repositories; on a loaded Windows runner that passed the 10s default
+    // (update-apply-run afterAll, #168 CI).
+    hookTimeout: 60_000,
   },
 });

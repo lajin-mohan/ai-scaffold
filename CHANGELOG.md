@@ -31,6 +31,12 @@ This file is configured with `merge=union` in `.gitattributes` so parallel addit
   browser, mobile and theme checks; the token rules still apply.
 
 ### Security
+- **Hook activation hardened (#168 review).** Its git calls disable
+  `core.fsmonitor`, as the update's other git calls do, so a command named in
+  the project's git config cannot run during `ais update --apply` or
+  `ais doctor`. Hooks are written only into the repository's own hooks
+  directory (a linked worktree's shared one included); a hooks directory or
+  hook file that is a link, or a junction on Windows, is refused with a note.
 - **The secret guard allowed everything on a stock Windows machine (item 81).**
   With no `jq`, the guards found the Microsoft Store `python3` alias, which
   fails and prints nothing, so `Read .env` was allowed. The secret,

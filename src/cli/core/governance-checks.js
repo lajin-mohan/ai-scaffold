@@ -24,6 +24,7 @@ import fs from 'fs-extra';
 import { toPosixPath } from './paths.js';
 import { resolveOnPath } from './exec-path.js';
 import { committedNonExecutable } from './git-hooks.js';
+import { SAFE_GIT_OPTIONS } from './git-state.js';
 import { REASONS, remedyFor } from './gh-runner.js';
 import { FIELD_ABSENT, pickReason } from './github-protection.js';
 import { NO_EVIDENCE } from './github-required-checks.js';
@@ -201,7 +202,7 @@ function resolveHooksDir(target) {
   // Resolved from PATH, never from the project directory (item 94).
   const git = resolveOnPath('git', { env });
   if (!git) return path.join(target, '.git', 'hooks');
-  const result = spawnSync(git, ['rev-parse', '--git-path', 'hooks'], {
+  const result = spawnSync(git, [...SAFE_GIT_OPTIONS, 'rev-parse', '--git-path', 'hooks'], {
     cwd: target,
     encoding: 'utf-8',
     stdio: ['ignore', 'pipe', 'ignore'],

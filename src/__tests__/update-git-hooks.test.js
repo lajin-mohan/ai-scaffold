@@ -15,7 +15,7 @@ import { templatePath } from '../cli/core/paths.js';
 import { resolveOnPath } from '../cli/core/exec-path.js';
 import { hashRaw } from '../cli/core/hashing.js';
 import { runApply } from '../cli/core/update-apply-run.js';
-import { isExecutableHook } from '../cli/core/git-hooks.js';
+import { activateGitHooks, committedNonExecutable, isExecutableHook, readHookSources } from '../cli/core/git-hooks.js';
 import { checkCommitMsgHook } from '../cli/core/governance-checks.js';
 
 const GIT = resolveOnPath('git');
@@ -169,5 +169,52 @@ describe.runIf(GIT)('ais update --apply activates delivered git hooks', { timeou
 
     git(target, 'update-index', '--chmod=+x', '.claude/hooks/commit-msg');
     expect((await checkCommitMsgHook(target)).state).toBe('pass');
+  });
+});
+
+describe.runIf(GIT)('hook activation cannot be turned against the machine (#168 review)', { timeout: 120_000 }, () => {
+  const posixPath = (p) => p.split(path.sep).join('/');
+
+  it('a core.fsmonitor command in the project repository never runs, in activation or in doctor', async () => {
+    const target = await install();
+    const marker = at(target, 'fsmonitor-ran');
+    const monitor = at(target, 'fsmonitor.sh');
+    fs.writeFileSync(monitor, `#!/bin/sh\ntouch "${posixPath(marker)}"\n`, { mode: 0o755 });
+    git(target, 'config', 'core.fsmonitor', posixPath(monitor));
+    git(target, 'status', '--short');
+    // Plain git runs the configured command (the positive control).
+    expect(fs.existsSync(marker)).toBe(true);
+    fs.rmSync(marker);
+
+    activateGitHooks(target, readHookSources(target));
+    committedNonExecutable(target, 'commit-msg');
+    await checkCommitMsgHook(target);
+
+    expect(fs.existsSync(marker)).toBe(false);
+  });
+
+  it('refuses a hooks directory that links outside the repository', async () => {
+    const target = await install();
+    const outside = fs.mkdtempSync(path.join(tmpDir, 'outside-'));
+    fs.writeFileSync(path.join(outside, 'pre-commit'), 'theirs\n');
+    fs.rmSync(at(target, '.git/hooks'), { recursive: true, force: true });
+    fs.symlinkSync(outside, at(target, '.git/hooks'), 'junction');
+
+    const notices = activateGitHooks(target, readHookSources(target));
+
+    expect(fs.readFileSync(path.join(outside, 'pre-commit'), 'utf-8')).toBe('theirs\n');
+    expect(fs.existsSync(path.join(outside, 'commit-msg'))).toBe(false);
+    expect(notices.some((n) => n.startsWith('Did not install git hooks:'))).toBe(true);
+  });
+
+  it('installs into the shared hooks directory from a linked worktree', async () => {
+    const target = await install();
+    const worktree = path.join(fs.mkdtempSync(path.join(tmpDir, 'wt-')), 'linked');
+    git(target, 'worktree', 'add', '-q', worktree);
+
+    const notices = activateGitHooks(worktree, readHookSources(worktree));
+
+    expect(notices).toContain('Installed the commit-msg git hook.');
+    expect(fs.readFileSync(at(target, '.git/hooks/commit-msg'), 'utf-8')).toBe(read(worktree, '.claude/hooks/commit-msg'));
   });
 });
