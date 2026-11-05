@@ -1,10 +1,97 @@
 # AI Scaffold — Backlog
 
-## Authoritative priority review — 2026-10-13
+## Authoritative priority review — 2026-11-05
+
+The maintainer requested this reorder after the
+[effectiveness review 2026-11-04](effectiveness-review-2026-11-04.md).
+**This section supersedes the 2026-10-13 execution order and delivery waves and
+the pending 2026-10-26 proposal.** The sections below stay as history; their
+item definitions, validation rules and research basis still apply unless a row
+here changes them. Ticket IDs are stable. New work still needs the normal
+design and estimate before implementation.
+
+### Where things stand (2026-11-05)
+
+- Published: **0.18.0** (`npm view`, 2026-10-30), released by the Release
+  Action; `main`, `dev` and tag `v0.18.0` at `31de786`. All five profiles were
+  generated from the published package and inspected.
+- Done since 2026-10-13: item 25 (`ais update`, 0.17.0/0.17.1); Wave A in
+  0.18.0 — pre-review removed for new and existing projects, guards fail closed
+  when they cannot parse input (Windows Store `python3`), Windows path
+  normalisation, git hooks activated on update, hook scripts committed
+  executable on Windows, honest E2E gates (102A, part of 87).
+- Unchanged: always-loaded instructions are about 37K est-tokens in a generated
+  project (template `CLAUDE.md` 475 lines plus 16 unscoped rules). No
+  measurement since the 2026-08-27 baseline: M-02 could start at 0.17.0 and has
+  not; M-01 is still null.
+- Subjective rating (2026-11-04 review, not a measurement): about **7/10**
+  overall. Codex/Cursor support 3.5, token effectiveness 4.5, day-to-day
+  experience 4.5, safety controls 6.5.
+
+### Execution order
+
+| Order | Tier | Items | Outcome | Acceptance (observable) |
+|---:|---|---|---|---|
+| 1 | P1 | **74 (M-08 fix)**; **99** lite | A trustworthy before-picture | `token-report` measures a generated profile, not the maintainer `CLAUDE.md`; the 2026-08-27 baseline gets a note. Snapshot #2 records M-02 from real updates. 3–5 fixed tasks with pass thresholds written before results |
+| 2 | P1 | **84**; **105 new**; 69 (UX aliases); follow-up C/D (76-D) | Lean core: always-loaded ≤ about 10K est-tokens; outdated rules removed | Template `CLAUDE.md` ≤ 200 lines; non-core rules scoped with `paths:`, loaded on use, or moved to packs; every rule has Prevents / Enforced by / Applies when; CI rejects stale references and model names; removals reach adopters via `ais update`; item 99 tasks do not regress |
+| 3 | P1 | **104 new**; 67; 98 | Native Codex and Cursor support from one core | `AGENTS.md` canonical core; `.cursor/rules/*.mdc` and `.cursor/hooks.json`; `.codex/config.toml` and `.codex/rules`; each verified in the tool on a packed project; unverified behaviour marked unverified |
+| 4 | P0 | **97**; 81; 86 (extended) | Safety controls that fail closed and reach every tool | Security hooks use `onFailure: "block"` (Claude ≥ 2.1.295) and `failClosed` (Cursor), tested for timeout and crash on Windows and WSL2; opt-in sandbox preset with secret `denyRead` for Linux/macOS/WSL2; native Windows documented as unsandboxed; same allow/block matrix per tool |
+| 5 | P1 | 87 (verify per profile); 90 (packs); proportional lanes | Day-to-day work proportional to the change | One `verify` script per profile shared by hook, CI and agent; about 8 core commands by default, process/UX/compliance as opt-in packs; `/review` picks reviewers from the diff; a routine fix runs no architecture/UX ceremony |
+| 6 | P1 | remaining 66; 77; 78; 92; 16 | Reliable `init` into existing repos | Existing README, hooks, config, tokens and custom commands survive; repeated init is safe; hooksPath and worktrees covered |
+| 7 | P1 | 34; 68 | Shared base and stack overlays | All five packed outputs keep intentional differences; shared-file drift checked |
+| 8 | P1 | 75; 70/71; 19 minimal CI; **103** | Server-side enforcement and non-GitHub hosts | Unchanged from 2026-10-13 rows 10 and 103 |
+| 9 | P1 | 73 → 72; 93; 100; remaining 15; 27; 17; 28; 21/22 | Minimal state, lifecycle and release hygiene | Unchanged from 2026-10-13 rows 4, 11 and 12 |
+| 10 | P2 | 91 + 102B; 51 → 52 → 53; T6; 48/49/50 | Optional extensions behind a benefit gate | Each needs the item 99 baseline and its own benefit evidence |
+| 11 | P3 | 30; 23; 31/32/33; 42/43; 102C | Demand-led | No automatic v1.0 requirement |
+
+**Why this order.** Measurement comes first so every cut in rows 2–5 can be
+shown not to hurt task quality. The lean core (row 2) gives the largest gain in
+token effectiveness and day-to-day experience, and it is what row 3 shares
+across tools: building Codex and Cursor adapters on a 37K-token core would copy
+the problem into two more formats. Safety (row 4) stays P0 but no known blocking
+defect remains on a supported platform after 0.18.0, so its validation runs in
+parallel with rows 2–3 rather than ahead of them.
+
+### Extensions to existing items (2026-11-05)
+
+- **74:** fix `scripts/token-report.js`, which builds from the repository root
+  and so counts the maintainer `CLAUDE.md` (about 2.4K est-tokens) instead of
+  the template one (about 6.9K). Without the fix, snapshot #2 shows a drop of
+  about 4.7K that adopters never get. Measure a generated profile.
+- **84:** target ≤ about 10K est-tokens always-loaded (the 2026-10-13 exit
+  criterion proposed ≤ 5K; set the number at estimate time). Multi-tenant and
+  compliance content conditional on bootstrap answers.
+- **86:** widen from WebFetch domain limits to an opt-in sandbox preset:
+  `sandbox.enabled` plus `filesystem.denyRead` for secret files. Claude Code's
+  sandbox has no built-in credential list, Read deny rules do not cover shell
+  subprocesses, and native Windows runs unsandboxed.
+- **97:** add hook failure modes: timeout, failure to start and crash, with and
+  without `onFailure: "block"` / `failClosed`; time each guard on Windows (the
+  shipped timeout is 5 s); check older Claude Code versions accept the field.
+- **69 / 90:** default command set of about 8; `/review` selects reviewers from
+  the diff instead of always running five.
+
+### Newly added work (2026-11-05)
+
+- **104 — Native Codex and Cursor adapters (P1):**
+  `tasks/todo/104-native-tool-adapters.md`.
+- **105 — Rule hygiene: provenance headers, stale-content check, outdated
+  removals (P1):** `tasks/todo/105-rule-hygiene.md`.
+
+### Next wave
+
+**Wave B — Lean core with proof** = rows 1 and 2. Expected result (forecast, not
+a measurement): token effectiveness 4.5 → about 7.5, day-to-day 4.5 → about 6,
+with no quality regression on the item 99 tasks. It needs no new
+infrastructure: `ais update` retirements already ship removals to adopters.
+**Wave C** = rows 3 and 4 (multi-tool and safety parity), forecast Codex/Cursor
+3.5 → about 6.5 and safety 6.5 → about 7.5.
+
+## Priority review — 2026-10-13 (execution order superseded 2026-11-05)
 
 The maintainer requested this reorder following a repository and primary-source
-review. **This section supersedes every historical ordering, priority label and
-rating forecast below.** Existing ticket IDs remain stable. This changes the
+review. **Its execution order and delivery waves are superseded by the
+2026-11-05 review above; its other content still applies.** Existing ticket IDs remain stable. This changes the
 backlog, not shipped governance or approved implementation specifications. New
 work is proposed and requires the normal design/implementation gates.
 
@@ -184,7 +271,10 @@ concise, applicable project requirements belong in the core; details load on dem
   `tasks/todo/103-host-and-branch-model.md`. Found upgrading adopter projects to
   0.17.1 (a GitLab project with a `qa → main` flow). Sits with row 10 (75).
 
-### Proposed revision — 2026-10-26 (pending maintainer acceptance)
+### Proposed revision — 2026-10-26 (superseded 2026-11-05)
+
+Items 1–2 shipped (0.17.0–0.18.0); items 3–5 are absorbed into the 2026-11-05
+order above.
 
 Evidence: [effectiveness review 2026-10-26](effectiveness-review-2026-10-26.md).
 The approved order above stands until accepted; ticket status is unchanged.
