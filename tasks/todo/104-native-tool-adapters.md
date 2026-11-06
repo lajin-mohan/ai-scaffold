@@ -24,7 +24,8 @@ A team mostly on Codex or Cursor gets little of the scaffold today:
 ## Scope
 
 1. **One canonical core.** `AGENTS.md` becomes the shared core (target about
-   150 lines, produced by item 84). Claude Code, Codex and Cursor all read
+   150 lines, produced by item 84; *moved into Wave B on 2026-11-06*, so this
+   item consumes the core rather than creating it). Claude Code, Codex and Cursor all read
    `AGENTS.md`; the exact Claude Code mechanism is verified in item 98 before
    `CLAUDE.md` is reduced to a pointer or import.
 2. **Cursor:** `.cursor/rules/core.mdc` (always applied) plus glob-scoped `.mdc`

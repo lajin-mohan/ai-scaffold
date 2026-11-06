@@ -23,6 +23,19 @@ Remaining: Phase B (report harness, 9.0 d) alongside Wave 1; M-04 at snapshot #2
 > structure — there is no new architecture to design. Recommend an ADR recording *why* architecture
 > was skipped, rather than skipping the gate silently.
 
+## M-08 per-tool extension (2026-11-06)
+
+`scripts/token-report.js` measures the repository root, so it counts the
+maintainer `CLAUDE.md`. Wave B row 1 fixes it to measure a project generated
+from the packed tarball, per tool/surface (Claude Code, Codex, Cursor,
+Copilot), against the budget defined in item 84. Every figure is labelled
+*static estimate*, *observed context* or *billed cost* (cached and uncached
+separately); tool version, settings, working directory and method are
+recorded, and unavailable measurements are marked unavailable. Bytes are
+reported beside tokens for Codex's `project_doc_max_bytes`. Fan-out (one
+orchestrator plus reviewers) is reported as context received, not assumed to
+be billed cost.
+
 ## Why this gates Wave 1
 
 The 2026-08-21 priority reset sequences Wave 0 (baseline) before Wave 1 (items

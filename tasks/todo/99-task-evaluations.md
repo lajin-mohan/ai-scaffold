@@ -6,6 +6,14 @@ Proposed, P1, 2026-10-13. Extends item 74B; does not duplicate its existing
 metric definitions. Define fixtures/baseline before changes, compare after the
 P0/P1 work under evaluation. Supplies item 51's filesystem-provider baseline.
 
+## Smoke subset first (amended 2026-11-06)
+
+Wave B row 1 starts with a 3–5 task smoke subset drawn from the set below, so
+the lean-core change has a before-picture. It does not replace the ≥ 10 tasks,
+repeated runs and broader outcome measures. Thresholds are written before any
+comparison runs, and results are reported as "no regression observed on these
+tasks" or the regression found, never as proof that none exists.
+
 ## Scope
 
 Version a representative set of at least ten tasks covering bug fixes, bounded
