@@ -135,7 +135,7 @@ When multiple AI tools work on the same project:
 
 1. **Claude owns the spec** — `/start-task` produces the plan; Codex/Cursor executes against it.
 2. **Codex/Cursor must verify** — before claiming done, it runs lint + tests. If they fail, it fixes before reporting.
-3. **CLAUDE.md is the authority** — any conflict between AI outputs is resolved by CLAUDE.md, not by assumption.
+3. **AGENTS.md is the shared authority** — conflicts between AI outputs are resolved by AGENTS.md and the precedence in constitution.md, not by assumption.
 4. **No AI merges without human approval** — even if lint and tests pass.
 
 ---

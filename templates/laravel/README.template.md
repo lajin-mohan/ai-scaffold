@@ -3,7 +3,7 @@
 {{PROJECT_DESCRIPTION}}
 
 > **Start here:** read [`constitution.md`](constitution.md) — the one-page source
-> of truth for how this project works — then `CLAUDE.md`, then run `/what-next`.
+> of truth for how this project works — then `AGENTS.md`, then run `/what-next`.
 
 ## Project Info
 
@@ -55,14 +55,14 @@
 {{PROJECT_NAME}}/
 +-- .claude/         # AI commands, agents, hooks, and rules
 +-- .ai-scaffold/    # Scaffold docs, templates, examples, and task records
-+-- AGENTS.md        # Cross-agent executor guide
-+-- CLAUDE.md        # Main AI operating guide
++-- AGENTS.md        # Shared AI instructions (every tool)
++-- CLAUDE.md        # Imports AGENTS.md, adds Claude Code notes
 +-- package.json     # Laravel/Vite frontend scripts when applicable
 ```
 
 ## AI Workflow
 
-Read [`constitution.md`](./constitution.md) first — it is the one-page source of truth for **governance order** (which rule wins on a conflict). Then read [CLAUDE.md](./CLAUDE.md) for the full operating guide: agent roles, workflow gates, coding standards, review rules, and verification expectations.
+Read [`constitution.md`](./constitution.md) first — it is the one-page source of truth for **governance order** (which rule wins on a conflict). Then read [AGENTS.md](./AGENTS.md), the shared instructions every AI assistant reads: commands, conventions, security boundaries and what needs approval. Detailed rules live in `.claude/rules/`; the staged delivery workflow is opt-in.
 
 Useful entry points:
 

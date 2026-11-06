@@ -37,7 +37,7 @@ Runs a full code review on the current feature branch or specified files. Invoke
 5. **Run stack verification for changed backend/runtime files**:
    - For Go changes touching `cmd/`, `internal/`, `pkg/`, `go.mod`, or Go config, require `go vet ./...`, `go build ./...`, and `go test ./...`.
    - For Go integration-test changes, also run the configured integration command, commonly `go test -tags=integration ./...`.
-   - For other stacks, run the lint/typecheck/test/build commands configured in `CLAUDE.md` or `.claude/settings-overrides.json`.
+   - For other stacks, run the lint/typecheck/test/build commands configured in `AGENTS.md` or `.claude/settings-overrides.json`.
 6. **Run the reviewers.** Default: the relevant subagents in parallel (below). Under `--lite`: skip the fan-out and run **one consolidated pass in this context** applying the essential lenses inline — correctness vs. spec, security (SAST + the security checklist), and test adequacy — but only after the escalation check in [Lite Review](#lite-review---lite) passes. The relevant subagents (reads `.claude/settings-overrides.json` for feature flags):
    - **`backend-reviewer`** — if any change to `apps/api/`, `cmd/`, `internal/`, `pkg/`, `packages/services/`, `packages/repositories/`, `packages/domain/`, migrations, or backend build config
    - **`frontend-reviewer`** — if any change to `apps/web/`, `packages/ui/`, components, styles
