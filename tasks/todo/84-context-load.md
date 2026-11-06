@@ -31,7 +31,15 @@ Not yet verified: a live Claude Code probe that the `@AGENTS.md` import loads
 (the session that built PR 3 could not authenticate a child `claude`). The
 command is in the PR. Observed context: unavailable.
 
-Still open in this ticket: rule relocation (PR 4), the ≤ 5K Claude Code budget
+**PR 4 — rule relocation (2026-11-06).** Code-area rules carry `paths:`;
+process documents moved to the opt-in delivery skill's `references/`;
+`token-usage-rules.md` deleted; tenant and compliance wording conditional.
+Static estimate after PR 4 (node): Claude Code ~5.4K, of which ~1.3K is the
+still-unscoped `ponytail-ladder.md` that PR 5 retires. Cursor/Copilot ~2.4K,
+Codex ~1.3K. Glob checks are static (`rule-scope.test.js`); runtime loading
+per tool remains item 98.
+
+Still open in this ticket: the ≤ 5K Claude Code budget
 and its enforcement (PR 5), Cursor/Copilot scoped rules, duplication and
 runtime loading checks (items 104, 98).
 

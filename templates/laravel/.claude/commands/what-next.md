@@ -407,7 +407,7 @@ Status: 🟢 READY TO PROCEED
 Begin implementation. Code against the approved LLD at docs/architecture/lld-billing.md
 and the API contract at docs/api/billing-api-contract.md.
 
-When complete, run the self-review checklist in .claude/rules/review-rules.md
+When complete, run the self-review checklist in .claude/skills/project-delivery-workflow/references/review-rules.md
 before proceeding to Stage 6.
 ```
 

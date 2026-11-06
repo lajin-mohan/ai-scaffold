@@ -36,7 +36,7 @@ The ladder is a reflex, not a research project. Two rungs work → take the high
 | Plan-and-confirm for tasks >3 steps | [ai-coding-rules.md §2](./ai-coding-rules.md) |
 | Layered architecture (routes → services → repositories → domain) | [coding-standards.md "Layer Architecture"](./coding-standards.md) |
 | Test pyramid (unit / integration / component / E2E) | [testing-rules.md](./testing-rules.md) |
-| Definition of Done (story / sprint / release) | [dod-rules.md](./dod-rules.md) |
+| Definition of Done (story / sprint / release) | [dod-rules.md](../skills/project-delivery-workflow/references/dod-rules.md) |
 | Input validation at trust boundaries | [security-rules.md "Input Validation"](./security-rules.md) |
 | Tenant scoping on every query | [security-rules.md "Tenant Isolation"](./security-rules.md) |
 | Audit log on every state change | [security-rules.md "A09 Logging"](./security-rules.md) |

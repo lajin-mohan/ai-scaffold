@@ -1,3 +1,23 @@
+---
+paths:
+  - "**/*.ts"
+  - "**/*.tsx"
+  - "**/*.js"
+  - "**/*.jsx"
+  - "**/*.mjs"
+  - "**/*.cjs"
+  - "**/*.py"
+  - "**/*.go"
+  - "**/*.php"
+  - "**/*.rb"
+  - "**/*.java"
+  - "**/*.kt"
+  - "**/*.cs"
+  - "**/*.rs"
+  - "**/*.cfc"
+  - "**/*.cfm"
+---
+
 # AI Coding Rules
 
 These rules govern how every AI tool (Claude, Codex, Cursor, Copilot, etc.) writes code in this project. They sit on top of [coding-standards.md](./coding-standards.md) and apply to every line of AI-assisted work.
@@ -374,8 +394,7 @@ Restate the rules above in one sentence to confirm context, then ask me what to 
 ## Cross-References
 
 - [coding-standards.md](./coding-standards.md) — universal correctness, structure, SOLID
-- [review-rules.md](./review-rules.md) — pre-review checklist, severity labels, merge rules
+- [review-rules.md](../skills/project-delivery-workflow/references/review-rules.md) — pre-review checklist, severity labels, merge rules
 - [testing-rules.md](./testing-rules.md) — coverage expectations, test pyramid
 - [security-rules.md](./security-rules.md) — non-negotiable security rules
-- [dod-rules.md](./dod-rules.md) — Definition of Done at story/sprint/release level
-- [token-usage-rules.md](./token-usage-rules.md) — when to use AI, model selection
+- [dod-rules.md](../skills/project-delivery-workflow/references/dod-rules.md) — Definition of Done at story/sprint/release level

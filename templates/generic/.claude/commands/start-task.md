@@ -58,7 +58,7 @@ The command runs in 5 phases. Phase 2/3 is the approval gate; after approval, co
 1. Read the linked spec / BRD / API contract / LLD if one is given. If not, ask the user for the source.
 2. Read adjacent code — the files in the same module, the same layer, neighbouring tests. Goal: understand local conventions before proposing changes.
 3. Read [ai-coding-rules.md](../rules/ai-coding-rules.md) hard-rule summary.
-4. Verify Definition of Ready criteria are met (see [definition-of-ready.md](../rules/definition-of-ready.md)). If not, **stop** and surface the missing items.
+4. If the project uses the delivery workflow, verify Definition of Ready criteria are met (see [definition-of-ready.md](../skills/project-delivery-workflow/references/definition-of-ready.md)). If not, **stop** and surface the missing items.
    For frontend/full-stack tasks: also verify UX handoff is complete (`docs/ux/<module>/tasks/<task-id>/06-dev-handoff.md` exists) — this is a **hard gate** before Stage 5 execution. See `.claude/rules/ux-rules.md`.
 
 ### Phase 2 — Plan

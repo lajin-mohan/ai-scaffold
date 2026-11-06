@@ -1,6 +1,7 @@
 ---
 name: project-delivery-workflow
 description: Apply the scaffold's gated project-delivery lifecycle from backlog and analysis through implementation, review, QA, deployment, and completion. Use for planning, status transitions, handoffs, or delivery governance.
+disable-model-invocation: true
 ---
 
 # Skill: project-delivery-workflow
@@ -8,6 +9,22 @@ description: Apply the scaffold's gated project-delivery lifecycle from backlog 
 Sprint delivery workflow for your organization engineering teams. Adapts to `{{PM_TOOL}}` (Jira, Linear, GitHub Projects).
 
 ---
+
+Opt-in: this skill runs only when the user invokes it or a delivery command
+names it. Ordinary changes follow `AGENTS.md` without it.
+
+## References
+
+Read these only when the delivery workflow is in use:
+
+| File | Covers |
+|---|---|
+| [references/definition-of-ready.md](references/definition-of-ready.md) | Gate from backlog to in progress |
+| [references/dod-rules.md](references/dod-rules.md) | Definition of Done: story, sprint, release |
+| [references/review-rules.md](references/review-rules.md) | Author self-review checklist, severity labels, merge rules |
+| [references/manual-review-checklist.md](references/manual-review-checklist.md) | Human reviewer questions |
+| [references/governance.md](references/governance.md) | Enforcement chain, approval gates, review pipeline |
+| [references/agent-handoff-protocol.md](references/agent-handoff-protocol.md) | Handoff format between agents |
 
 ## Workflow Overview
 
@@ -68,7 +85,7 @@ Developer picks up the ticket:
 - Daily standup update: what was done, what's planned, any blockers
 
 ### 6. In Review
-- Self-review checklist completed (`.claude/rules/review-rules.md`)
+- Self-review checklist completed (`.claude/skills/project-delivery-workflow/references/review-rules.md`)
 - PR opened with description, screenshots (if UI), and test plan
 - `/review` run — all BLOCK findings resolved
 - Human reviewer assigned

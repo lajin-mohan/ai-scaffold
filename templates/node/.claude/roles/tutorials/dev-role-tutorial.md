@@ -198,4 +198,4 @@ User: "Refactor UserService to use dependency injection"
 - Role config: [dev.yaml](../dev.yaml)
 - AI coding rules: [.claude/rules/ai-coding-rules.md](../../rules/ai-coding-rules.md)
 - Testing rules: [.claude/rules/testing-rules.md](../../rules/testing-rules.md)
-- DoD rules: [.claude/rules/dod-rules.md](../../rules/dod-rules.md)
+- DoD rules: [.claude/skills/project-delivery-workflow/references/dod-rules.md](../../skills/project-delivery-workflow/references/dod-rules.md)
