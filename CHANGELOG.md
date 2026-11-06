@@ -31,10 +31,28 @@ This file is configured with `merge=union` in `.gitattributes` so parallel addit
   pointer to `CLAUDE.md`; Cursor and Copilot loaded the full Claude operating
   guide. Commands, agents and rules that pointed at `CLAUDE.md` for identity or
   commands now point at `AGENTS.md`.
+- **Rules load when relevant instead of at every session start (item 84,
+  part 2).** Coding, security, compliance, testing, API, UX and branching rules
+  declare `paths:` and load in Claude Code when matching files are touched.
+  The Definition of Ready, Definition of Done, review rules, manual review
+  checklist, governance and agent handoff protocol moved into the
+  `project-delivery-workflow` skill's `references/`; the skill no longer
+  triggers on its own (`disable-model-invocation: true`). Tenant isolation and
+  compliance guidance now say when they apply. The governance token section
+  describes what `token-budget-guard.sh` actually does (warn at 300K, block at
+  500K) instead of an advisory process.
+- **Upgrading:** `ais update` removes the old rule files only where they are
+  unedited. An edited copy stays at `.claude/rules/` with a notice, still
+  without `paths:`, so it keeps loading at every session start. Reconcile it
+  by hand (move your edits into the relocated file, then delete the old one)
+  before relying on the smaller startup context or the opt-in delivery skill.
 
 ### Removed
 - **`.claude/AGENTS.md`**, a byte-identical copy of the old root pointer.
   `ais update` removes it when unedited and keeps an edited copy with a notice.
+- **`.claude/rules/token-usage-rules.md`.** Model-selection advice named
+  specific models and went stale; the token thresholds it described are
+  enforced by `token-budget-guard.sh`.
 
 ## [0.18.0] - 2026-10-30
 

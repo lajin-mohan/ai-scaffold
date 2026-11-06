@@ -6,7 +6,7 @@ Welcome. This project follows the AI Scaffold development workflow — every con
 1. [CLAUDE.md](./CLAUDE.md) — the master rules for AI collaboration and the 10-stage workflow
 2. [HOW-TO-USE.md](./HOW-TO-USE.md) — stage-by-stage guide for every role
 3. [.claude/rules/ai-coding-rules.md](./.claude/rules/ai-coding-rules.md) — non-negotiable rules for any AI tool generating code
-4. [.claude/rules/governance.md](./.claude/rules/governance.md) — enforcement chain, escalation paths, authority limits, and human-in-the-loop gates
+4. [.claude/skills/project-delivery-workflow/references/governance.md](.claude/skills/project-delivery-workflow/references/governance.md) — enforcement chain, escalation paths, authority limits, and human-in-the-loop gates
 5. [HOW-TO-USE.md Stage 4](./HOW-TO-USE.md#stage-4--ux-design) — UX task-based pipeline (`/ux-analysis` → `/ux-design-prompt` → manual Figma → `/ux-review` → `/ux-handoff`)
 
 ---
@@ -133,7 +133,7 @@ Types: `feat`, `fix`, `chore`, `docs`, `refactor`, `test`, `perf`, `ci`
 
 ## Pre-PR Checklist
 
-Before requesting any review, complete the self-review checklist in [.claude/rules/review-rules.md](./.claude/rules/review-rules.md). Specifically:
+Before requesting any review, complete the self-review checklist in [.claude/skills/project-delivery-workflow/references/review-rules.md](.claude/skills/project-delivery-workflow/references/review-rules.md). Specifically:
 
 - [ ] Self-review against own diff
 - [ ] No hardcoded secrets, no commented-out code, no TODOs without ticket reference
@@ -148,9 +148,9 @@ Before requesting any review, complete the self-review checklist in [.claude/rul
 
 ## Definition of Ready / Done
 
-A story can move to `IN PROGRESS` only when DoR criteria are met: [.claude/rules/definition-of-ready.md](./.claude/rules/definition-of-ready.md).
+A story can move to `IN PROGRESS` only when DoR criteria are met: [.claude/skills/project-delivery-workflow/references/definition-of-ready.md](.claude/skills/project-delivery-workflow/references/definition-of-ready.md).
 
-A story is `DONE` only when DoD criteria are met: [.claude/rules/dod-rules.md](./.claude/rules/dod-rules.md).
+A story is `DONE` only when DoD criteria are met: [.claude/skills/project-delivery-workflow/references/dod-rules.md](.claude/skills/project-delivery-workflow/references/dod-rules.md).
 
 Both are non-negotiable.
 

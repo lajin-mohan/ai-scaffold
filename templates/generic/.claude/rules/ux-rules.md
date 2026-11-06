@@ -1,3 +1,16 @@
+---
+paths:
+  - "**/*.tsx"
+  - "**/*.jsx"
+  - "**/*.vue"
+  - "**/*.svelte"
+  - "**/*.css"
+  - "**/*.scss"
+  - "**/*.html"
+  - "**/*.blade.php"
+  - "docs/ux/**"
+---
+
 # UX Rules
 
 Governs all UX work in this scaffold — agents, commands, and AI tools producing or reviewing UX artifacts.

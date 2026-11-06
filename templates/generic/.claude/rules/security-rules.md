@@ -1,3 +1,26 @@
+---
+paths:
+  - "**/*.ts"
+  - "**/*.tsx"
+  - "**/*.js"
+  - "**/*.jsx"
+  - "**/*.mjs"
+  - "**/*.cjs"
+  - "**/*.py"
+  - "**/*.go"
+  - "**/*.php"
+  - "**/*.rb"
+  - "**/*.java"
+  - "**/*.kt"
+  - "**/*.cs"
+  - "**/*.rs"
+  - "**/*.cfc"
+  - "**/*.cfm"
+  - "**/migrations/**"
+  - "**/*.sql"
+  - "**/.env.example"
+---
+
 # Security Rules
 
 These are non-negotiable. A security violation is a BLOCK — no exceptions.
@@ -19,7 +42,9 @@ db.query(`SELECT * FROM users WHERE id = ${userId}`)
 
 ---
 
-## Tenant Isolation *(SaaS / multi-tenant projects only — remove this section for single-tenant systems)*
+## Tenant Isolation
+
+This section applies if this project uses tenant isolation (the Multi-tenant row in `AGENTS.md` is `true`). Otherwise skip it.
 
 - Every mutable table has a `tenant_id UUID NOT NULL` column.
 - Every query that reads or writes tenant data includes `AND tenant_id = $n`.

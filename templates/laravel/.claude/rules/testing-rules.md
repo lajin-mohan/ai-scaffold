@@ -1,3 +1,16 @@
+---
+paths:
+  - "**/*.test.*"
+  - "**/*.spec.*"
+  - "**/test_*.py"
+  - "**/*_test.py"
+  - "**/*_test.go"
+  - "**/tests/**"
+  - "**/test/**"
+  - "**/__tests__/**"
+  - "**/phpunit.xml"
+---
+
 # Testing Rules
 
 Tests are not optional. Untested code is not done.
@@ -29,7 +42,7 @@ Tests are not optional. Untested code is not done.
 - Happy path for every user-facing feature
 - Auth failure (401) for every protected endpoint
 - Authorization failure (403) for every permission-gated action
-- Tenant isolation — a user cannot access another tenant's data
+- Tenant isolation, if this project uses it — a user cannot access another tenant's data
 - Invalid input rejection — 400 for each required field
 
 ### Usually (P1)

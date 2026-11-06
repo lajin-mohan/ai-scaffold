@@ -163,6 +163,6 @@ After the Critic Check, output the verdict:
 ## Related
 
 - [ai-coding-rules.md](../rules/ai-coding-rules.md) — H1-H8 and Decision Brief format
-- [governance.md](../rules/governance.md) — escalation paths when BLOCK findings cannot be resolved
-- [agent-handoff-protocol.md](../rules/agent-handoff-protocol.md) — handoff format when routing to another agent
+- [governance.md](../skills/project-delivery-workflow/references/governance.md) — escalation paths when BLOCK findings cannot be resolved
+- [agent-handoff-protocol.md](../skills/project-delivery-workflow/references/agent-handoff-protocol.md) — handoff format when routing to another agent
 - `@supervisor` — invoke when governance is violated beyond the Critic's scope
