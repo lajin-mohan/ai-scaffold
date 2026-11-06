@@ -642,7 +642,11 @@ describe('token-budget-guard.sh (item 64)', () => {
     }
   });
 
-  it('warns under the block threshold and blocks over it, verified by actually running the hook', () => {
+  // The hook reads transcript_path with jq or python3 and fails open without
+  // either; on such a machine there is nothing to assert about warn/block.
+  const hookCanParse = spawnSync('bash', ['-c', 'command -v jq >/dev/null 2>&1 || python3 -c "import json" >/dev/null 2>&1']).status === 0;
+
+  it.skipIf(!hookCanParse)('warns under the block threshold and blocks over it, verified by actually running the hook', () => {
     const hookPath = path.resolve(repoRoot, '.claude/hooks/token-budget-guard.sh');
     const tmpTranscript = path.join(os.tmpdir(), `token-budget-test-${Date.now()}.jsonl`);
 

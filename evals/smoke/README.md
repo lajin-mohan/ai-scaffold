@@ -18,6 +18,9 @@ node scripts/eval-smoke.js run --tarball ../ais-pack/lajin.m-ai-scaffold-<versio
 ```
 
 - `--model` is required and must be the same for before and after runs.
+- Run it from a terminal where `claude` is logged in. A shell started by the
+  Claude desktop app does not pass its login to a child `claude`; the runner
+  stops at the first run that reports "Not logged in".
 - On Windows, `claude` is a `.cmd` shim that the runner will not execute; pass
   the real binary, for example
   `--claude "%APPDATA%\npm\node_modules\@anthropic-ai\claude-code\bin\claude.exe"`.

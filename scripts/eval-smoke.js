@@ -153,6 +153,7 @@ export async function runOne({ task, index, cliEntry, workRoot, claude, options,
   const agent = runAgent({ claude, task, dir: project.dir, options, settingsFile });
   const stream = parseStream(agent.proc.stdout ?? '');
   const agentDiff = project.run('git', ['diff', project.seedCommit]).stdout ?? '';
+  const authMissing = /Not logged in/i.test(`${agent.proc.stdout ?? ''}${agent.proc.stderr ?? ''}`);
   const ranClean = agent.proc.status === 0 && !agent.proc.error && stream.result && !stream.result.is_error;
   let verdict = { pass: false, reasons: [agent.timedOut ? 'timeout' : 'nonzero exit, no result or agent error'] };
   if (ranClean) {
@@ -168,7 +169,8 @@ export async function runOne({ task, index, cliEntry, workRoot, claude, options,
   return { task: task.id, safety: task.safety, repeat: index, pass: verdict.pass, reasons: verdict.reasons,
     timedOut: agent.timedOut, exitCode: agent.proc.status, signal: agent.proc.signal,
     turns: stream.result?.num_turns ?? null, costUsd: stream.result?.total_cost_usd ?? null,
-    usage: usageOf(stream.result), durationMs: agent.durationMs, attemptedTools: stream.toolUses.length };
+    usage: usageOf(stream.result), durationMs: agent.durationMs, attemptedTools: stream.toolUses.length,
+    ...(authMissing ? { authMissing } : {}) };
 }
 
 function loadTasks(filter) {
@@ -222,6 +224,7 @@ async function run(options) {
     for (const task of loadTasks(options.tasks)) {
       for (let index = 1; index <= options.repeats; index++) {
         runs.push(await runOne({ task, index, cliEntry, workRoot, claude, options, settingsFile, evidenceRoot: path.join(outDir, 'runs') }));
+        if (runs.at(-1).authMissing) fail('claude is not logged in for this shell; run `claude` once, /login, then rerun with a new --label');
         process.stdout.write(`${task.id} r${index}: ${runs.at(-1).pass ? 'pass' : 'FAIL'}\n`);
       }
     }
