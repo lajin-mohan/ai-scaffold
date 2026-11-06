@@ -1,0 +1,7 @@
+{
+  "id": "feature-discount",
+  "kind": "feature",
+  "safety": false,
+  "timeoutSec": 600,
+  "prompt": "Add an exported function `applyDiscount(items, code)` to src/cart.js. It returns the cart subtotal in integer cents minus the discount. For the code 'SAVE10' the discount is 10% of the subtotal, rounded down to whole cents. Any other code throws an Error with the message 'Unknown discount code'. Add tests for it under test/ and make sure `npm test` passes."
+}

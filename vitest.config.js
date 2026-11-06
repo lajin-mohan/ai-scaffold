@@ -10,7 +10,9 @@ export default defineConfig({
     // the scaffold's own worktree feature (spawn_task) checks out full repo
     // copies under .claude/worktrees/, and their nested templates + duplicate
     // suites would otherwise be scanned and fail `npm test` locally.
-    exclude: [...configDefaults.exclude, '**/templates/**', '**/.claude/**'],
+    // evals/ holds smoke-task fixtures that fail until an agent fixes them;
+    // they run only inside disposable projects (scripts/eval-smoke.js).
+    exclude: [...configDefaults.exclude, '**/templates/**', '**/.claude/**', 'evals/**'],
     // Teardown removes temp directories holding generated projects and git
     // repositories; on a loaded Windows runner that passed the 10s default
     // (update-apply-run afterAll, #168 CI).
