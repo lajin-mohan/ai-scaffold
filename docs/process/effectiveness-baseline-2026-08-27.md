@@ -136,6 +136,11 @@ against it requires the definition to be frozen first.
 
 `npm run token-report`, run at this commit.
 
+> **Note added 2026-11-06.** These figures come from the report's repository-root mode (now
+> `npm run token-report -- --corpus`). It counts the maintainer `CLAUDE.md`, not the template one
+> adopters receive, so it is not a measure of adopter context. Snapshot #2 should compare corpus
+> to corpus, and report adopter startup context from the default per-tool mode.
+
 | Category | Files | Est tokens | Share | Loaded |
 |---|---:|---:|---:|---|
 | Always-loaded (`CLAUDE.md`) | 1 | 7,116 | 5% | every session |

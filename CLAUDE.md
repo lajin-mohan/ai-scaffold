@@ -93,7 +93,7 @@ npm run test:e2e      # tests/ only
 npm run lint          # eslint
 npm run typecheck     # JS syntax + gitleaks config validation
 npm run release:check # release readiness
-npm run token-report  # governance corpus size (T0 baseline)
+npm run token-report  # startup context per tool, generated profiles (--corpus: T0 corpus)
 ```
 
 Branches: `feature/*`, `fix/*`, `chore/*`, `docs/*` from `dev` → squash PR to
@@ -164,7 +164,8 @@ The corpus under `templates/*/.claude/` is the product. When changing it:
 - A new project placeholder needs a matching entry in `resolvePlaceholders`
   (`src/cli/core/content-templates.js`) or it ships unresolved to every adopter.
 - Governance surface has a running cost. Run `npm run token-report` before and
-  after — it reports the current corpus size by category. Do not quote a token
+  after — it reports each tool's startup context in generated projects against
+  the 5K budget (`--corpus` gives the old corpus table). Do not quote a token
   figure in prose; it goes stale within a commit or two.
 
 ---
