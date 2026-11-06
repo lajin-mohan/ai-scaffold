@@ -491,8 +491,9 @@ this constitution (order only)
 ## Start here
 
 1. Read this file.
-2. Read [CLAUDE.md](CLAUDE.md) — the full operating guide (workflow, agents,
-   commands, current state).
+2. Read [AGENTS.md](AGENTS.md) — the shared core every assistant reads
+   (commands, conventions, security boundaries). Claude Code reaches it
+   through [CLAUDE.md](CLAUDE.md).
 3. Run \`/what-next\`, or start work with \`/start-task --spec <requirements-path>\`.
 
 ---

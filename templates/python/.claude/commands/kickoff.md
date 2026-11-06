@@ -19,7 +19,7 @@ Run the Project Readiness Checklist before starting any project or major epic. P
 
 ## Process
 
-Read the current state of the project — CLAUDE.md current state section, docs/ folder, and any context provided — then evaluate each gate below.
+Read the current state of the project — the AGENTS.md Project table, docs/ folder, and any context provided — then evaluate each gate below.
 
 For each gate, mark:
 - ✅ PASS — artifact exists, is complete, and is approved
@@ -58,7 +58,7 @@ For each gate, mark:
 ## Gate 3 — Architecture
 
 - [ ] HLD (High-Level Design) produced (check `docs/architecture/`)
-- [ ] Tech stack confirmed and documented in CLAUDE.md
+- [ ] Tech stack confirmed and documented in AGENTS.md
 - [ ] API contracts defined (check `docs/api/`)
 - [ ] Database schema reviewed
 - [ ] Security and compliance requirements assessed

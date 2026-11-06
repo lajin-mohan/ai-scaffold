@@ -44,7 +44,7 @@ Ask one at a time. Confirm after each. Default shown in brackets.
    - `internal-tool` — preCommitFull on, compliance off by default
    - `public-api` — SAST, MFA, full CI/CD on by default
 5. **Multi-tenant?** `true` / `false` — drives tenant_id scoping in all queries
-6. **Owner email** — defaults to value in CLAUDE.md (just confirm)
+6. **Owner email** — defaults to value in AGENTS.md (just confirm)
 7. **First epic name** — the initial body of work (e.g. `Core application workflow`)
 
 ### Step 2 — Feature Flags Summary
@@ -91,7 +91,7 @@ Feature Flags:
   accessibility: off
 
 Files to write/modify:
-  - CLAUDE.md (project identity + tech stack placeholders resolved)
+  - AGENTS.md (project table placeholders resolved)
   - .cursorrules, .github/copilot-instructions.md, README.md
   - .claude/settings-overrides.json (identity + features)
   - .claude/MEMORY.md (initialized from MEMORY.template.md; no scaffold build history)
@@ -110,18 +110,7 @@ On `confirm`, write in this order:
 
 2. **`.claude/MEMORY.md`** — initialize from `.claude/MEMORY.template.md` and replace project snapshot placeholders. Do not copy ai-scaffold build history into the adopted application.
 
-3. **`CLAUDE.md`** — replace all `{{PLACEHOLDER}}` tokens with values from settings-overrides.json. Sections updated:
-   - Project Identity (name, display, purpose, type, status, owner, multi-tenant)
-   - Tech Stack (backend, frontend, DB, etc. — from techStack in settings-overrides.json)
-   - Current State (firstEpic)
-   - Remove the "TEMPLATE STATE" banner after all placeholders resolved
-   - **Applicable stack overlays** — append to the Coding Standards section:
-     ```
-     Applicable coding standards:
-     - .claude/rules/coding-standards.md
-     - .claude/rules/stacks/backend-<STACK>.md   ← based on detected backend
-     - .claude/rules/stacks/frontend-<STACK>.md  ← based on detected frontend
-     ```
+3. **`AGENTS.md`** — replace all `{{PLACEHOLDER}}` tokens with values from settings-overrides.json: the Project table (purpose, type, status, stack, multi-tenant, compliance, owner) and the Commands block. `CLAUDE.md` imports `AGENTS.md` and needs only the project name.
 
 4. **`HOW-TO-USE.md`** — replace runtime template tokens:
    - `{{PROJECT_NAME}}` → project name
@@ -237,7 +226,7 @@ No action needed. Run `/what-next` to begin Stage 1.
 ```
 ⚠ Bootstrap validation:  N issues found
    - .claude/settings-overrides.json missing techStack section
-   - CLAUDE.md contains 3 unresolved {{PLACEHOLDER}} tokens
+   - AGENTS.md contains 3 unresolved {{PLACEHOLDER}} tokens
 
 Run /bootstrap --resume to complete the bootstrap.
 ```
@@ -247,7 +236,7 @@ Run /bootstrap --resume to complete the bootstrap.
 ❌ Bootstrap validation failed: scaffold is in template state.
    - No settings-overrides.json found
    - package.json does not exist (no project stack configured)
-   - CLAUDE.md contains unresolved {{PLACEHOLDER}} tokens
+   - AGENTS.md contains unresolved {{PLACEHOLDER}} tokens
 
 Run /bootstrap to initialize the scaffold for a real project.
 ```
@@ -268,7 +257,7 @@ Run /bootstrap to initialize the scaffold for a real project.
 ```
 ## Bootstrap Complete
 
-✅ Project identity written: CLAUDE.md, .cursorrules, README.md
+✅ Project identity written: AGENTS.md, README.md
 ✅ Feature flags written: .claude/settings-overrides.json
 ✅ Gitignore updated: settings.local.json and local memory files gitignored
 ✅ Compliance docs created: [list, if any]
@@ -317,7 +306,7 @@ auditLog: false       asyncJobs: false
 
 ## Stack Overlay Mapping
 
-Based on the tech stack selected, write the corresponding overlay files into CLAUDE.md's "Coding Standards" section.
+Based on the tech stack selected, confirm the matching overlay files exist in `.claude/rules/stacks/`; they load by path.
 
 ### Backend stacks
 | Stack keyword | Overlay file |

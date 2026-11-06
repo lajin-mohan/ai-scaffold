@@ -9,6 +9,32 @@ Evidence: `docs/research/reports/AI repo instruction practices.md`. Depends on
 the row 1 measurement (item 74 M-08 per-tool fix and item 99 smoke subset)
 landing first. Design and estimate required before implementation.
 
+## Progress (Wave B)
+
+**PR 3 — shared core (2026-11-06).** `AGENTS.md` is the canonical core in all
+five profiles; `CLAUDE.md` imports it; `.claude/AGENTS.md` retired.
+`.cursorrules` and `.github/copilot-instructions.md` are not installed in
+generated projects (`EXCLUDED_DEFAULT_PATTERNS` in `file-plan.js`
+excludes `.github/**` and `.cursorrules`), so scope item 3 has nothing to generate today; native Cursor
+and Copilot files stay with item 104.
+
+Interim static estimate (`npm run token-report`, packed tree, all profiles):
+
+| Surface | Before (0.18.0, node) | After PR 3 (range over profiles) |
+|---|---|---|
+| Claude Code | ~39.7K | ~34.6K (unscoped rules unchanged; PR 4) |
+| Codex | ~0.6K, 2.3 KB | ~1.3K, 5.1–5.2 KB of 32 KiB |
+| Cursor | ~8.1K | ~2.4K |
+| Copilot CLI | ~8.1K | ~2.4K |
+
+Not yet verified: a live Claude Code probe that the `@AGENTS.md` import loads
+(the session that built PR 3 could not authenticate a child `claude`). The
+command is in the PR. Observed context: unavailable.
+
+Still open in this ticket: rule relocation (PR 4), the ≤ 5K Claude Code budget
+and its enforcement (PR 5), Cursor/Copilot scoped rules, duplication and
+runtime loading checks (items 104, 98).
+
 ## Problem
 
 A generated project loads roughly 37K est-tokens of scaffold instructions at

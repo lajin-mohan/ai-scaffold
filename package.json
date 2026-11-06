@@ -26,7 +26,6 @@
     "templates/*/.claude/rules/**",
     "templates/*/.claude/skills/**",
     "templates/*/.claude/templates/**",
-    "templates/*/.claude/AGENTS.md",
     "templates/*/.claude/MEMORY.template.md",
     "templates/*/.claude/settings-overrides.template.json",
     "templates/*/.claude/settings.json",

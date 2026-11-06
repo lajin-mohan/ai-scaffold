@@ -23,6 +23,18 @@ This file is configured with `merge=union` in `.gitattributes` so parallel addit
   maintainer repository root and counted the wrong `CLAUDE.md` (item 74,
   M-08). The old corpus table is `--corpus`; `--profile`, `--project` and
   `--json` are new.
+- **`AGENTS.md` is now the shared core every AI tool reads (item 84, part 1).**
+  It holds the project table, the profile's own commands, code conventions,
+  universal security boundaries, git rules and the actions that need approval.
+  `CLAUDE.md` imports it with `@AGENTS.md` and adds only Claude Code notes;
+  tenant isolation is worded conditionally. Codex previously saw a short
+  pointer to `CLAUDE.md`; Cursor and Copilot loaded the full Claude operating
+  guide. Commands, agents and rules that pointed at `CLAUDE.md` for identity or
+  commands now point at `AGENTS.md`.
+
+### Removed
+- **`.claude/AGENTS.md`**, a byte-identical copy of the old root pointer.
+  `ais update` removes it when unedited and keeps an edited copy with a notice.
 
 ## [0.18.0] - 2026-10-30
 

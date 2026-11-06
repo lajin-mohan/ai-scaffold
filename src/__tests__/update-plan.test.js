@@ -121,7 +121,7 @@ describe('buildUpdatePlan on generated projects', { timeout: 60_000 }, () => {
     const { by } = await preview(target, (m) => ({
       ...m,
       managedFiles: [
-        ...m.managedFiles.filter((r) => r.path !== '.claude/AGENTS.md'),
+        ...m.managedFiles.filter((r) => r.path !== '.claude/settings.local.example.json'),
         { path: fakeOld, ...recordFor('retired\n') },
       ],
     }));
@@ -129,7 +129,7 @@ describe('buildUpdatePlan on generated projects', { timeout: 60_000 }, () => {
     expect(by('AGENTS.md').action).toBe('replace');
     expect(by('constitution.md').action).toBe('user-deleted');
     expect(by(fakeOld).action).toBe('remove');
-    expect(by('.claude/AGENTS.md').action).toBe('unchanged');
+    expect(by('.claude/settings.local.example.json').action).toBe('unchanged');
   });
 
   it('init: the adopter CLAUDE.md is unowned and never read', async () => {

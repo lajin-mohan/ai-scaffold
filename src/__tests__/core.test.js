@@ -488,7 +488,7 @@ describe('python and golang profiles', () => {
     expect(localSettings.permissions.allow).toContain('Bash(go build*)');
 
     const startTask = readFileSync(templatePath('generic', '.claude/commands/start-task.md'), 'utf-8');
-    expect(startTask).toContain('Project lint command from `CLAUDE.md`');
+    expect(startTask).toContain('Project lint command from `AGENTS.md`');
     expect(startTask).toContain('`package.json`, `composer.json`, `pyproject.toml`, `requirements.txt`, `go.mod`, etc.');
     expect(startTask).not.toContain('npm run test:e2e');
 
