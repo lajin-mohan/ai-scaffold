@@ -32,8 +32,8 @@ design and estimate before implementation.
 
 | Order | Tier | Items | Outcome | Acceptance (observable) |
 |---:|---|---|---|---|
-| 1 | P1 | **74 (M-08 fix)**; **99** lite | A trustworthy before-picture | `token-report` measures a generated profile, not the maintainer `CLAUDE.md`; the 2026-08-27 baseline gets a note. Snapshot #2 records M-02 from real updates. 3–5 fixed tasks with pass thresholds written before results |
-| 2 | P1 | **84**; **105 new**; 69 (UX aliases); follow-up C/D (76-D) | Lean core: always-loaded ≤ about 10K est-tokens; outdated rules removed | Template `CLAUDE.md` ≤ 200 lines; non-core rules scoped with `paths:`, loaded on use, or moved to packs; every rule has Prevents / Enforced by / Applies when; CI rejects stale references and model names; removals reach adopters via `ais update`; item 99 tasks do not regress |
+| 1 | P1 | **74 (M-08 fix, per tool)**; **99** smoke subset | A trustworthy before-picture | `token-report` measures a generated profile per tool/surface (Claude Code, Codex, Cursor, Copilot), not the maintainer `CLAUDE.md`, and labels each figure as static estimate, observed context or billed cost; the 2026-08-27 baseline gets a note. Snapshot #2 records M-02 from real updates. A 3–5 task smoke subset of item 99's ≥10, thresholds written before results |
+| 2 | P1 | **84** (incl. shared `AGENTS.md` core); **105**; 69 (UX aliases); follow-up C/D (76-D) | Lean core read by every tool: scaffold-controlled startup context ≤ 5K est-tokens per tool/surface; outdated rules removed | `AGENTS.md` is the canonical core; `CLAUDE.md` imports it; non-core rules scoped per tool (`paths:` / `.mdc` globs / `applyTo`) with positive and negative loading checks in all five profiles; the 10-stage process becomes opt-in; every rule has a provenance entry in a manifest outside auto-loaded folders; CI rejects stale references and model names in shipped artifacts; removals reach adopters via `ais update`; no regression observed on the item 99 smoke tasks |
 | 3 | P1 | **104 new**; 67; 98 | Native Codex and Cursor support from one core | `AGENTS.md` canonical core; `.cursor/rules/*.mdc` and `.cursor/hooks.json`; `.codex/config.toml` and `.codex/rules`; each verified in the tool on a packed project; unverified behaviour marked unverified |
 | 4 | P0 | **97**; 81; 86 (extended) | Safety controls that fail closed and reach every tool | Security hooks use `onFailure: "block"` (Claude ≥ 2.1.295) and `failClosed` (Cursor), tested for timeout and crash on Windows and WSL2; opt-in sandbox preset with secret `denyRead` for Linux/macOS/WSL2; native Windows documented as unsandboxed; same allow/block matrix per tool |
 | 5 | P1 | 87 (verify per profile); 90 (packs); proportional lanes | Day-to-day work proportional to the change | One `verify` script per profile shared by hook, CI and agent; about 8 core commands by default, process/UX/compliance as opt-in packs; `/review` picks reviewers from the diff; a routine fix runs no architecture/UX ceremony |
@@ -60,7 +60,8 @@ parallel with rows 2–3 rather than ahead of them.
   about 4.7K that adopters never get. Measure a generated profile.
 - **84:** target ≤ about 10K est-tokens always-loaded (the 2026-10-13 exit
   criterion proposed ≤ 5K; set the number at estimate time). Multi-tenant and
-  compliance content conditional on bootstrap answers.
+  compliance content conditional on bootstrap answers. **Superseded
+  2026-11-06:** ≤ 5K, defined in the amendments below.
 - **86:** widen from WebFetch domain limits to an opt-in sandbox preset:
   `sandbox.enabled` plus `filesystem.denyRead` for secret files. Claude Code's
   sandbox has no built-in credential list, Read deny rules do not cover shell
@@ -75,17 +76,77 @@ parallel with rows 2–3 rather than ahead of them.
 
 - **104 — Native Codex and Cursor adapters (P1):**
   `tasks/todo/104-native-tool-adapters.md`.
-- **105 — Rule hygiene: provenance headers, stale-content check, outdated
+- **105 — Rule hygiene: provenance manifest, stale-content check, outdated
   removals (P1):** `tasks/todo/105-rule-hygiene.md`.
 
 ### Next wave
 
 **Wave B — Lean core with proof** = rows 1 and 2. Expected result (forecast, not
 a measurement): token effectiveness 4.5 → about 7.5, day-to-day 4.5 → about 6,
-with no quality regression on the item 99 tasks. It needs no new
-infrastructure: `ais update` retirements already ship removals to adopters.
-**Wave C** = rows 3 and 4 (multi-tool and safety parity), forecast Codex/Cursor
-3.5 → about 6.5 and safety 6.5 → about 7.5.
+with no regression observed on the item 99 smoke tasks. Delivery is three PRs:
+measure (row 1), core and procedures (84), enforcement and adopter upgrade
+(105). **Wave C** = rows 3 and 4 (multi-tool and safety parity), forecast
+Codex/Cursor 3.5 → about 6.5 and safety 6.5 → about 7.5.
+
+### Wave B amendments (2026-11-06)
+
+Evidence: `docs/research/reports/AI repo instruction practices.md` (primary
+sources retrieved 2026-11-06; each claim labelled documented, measured,
+observed or inference). Maintainer decisions and review corrections:
+
+1. **Budget, reconciled.** The 2026-10-13 exit criterion already proposed
+   ≤ 5K; the 2026-11-05 row loosened it to about 10K. **Decision: ≤ 5K
+   est-tokens.** It applies to the *scaffold-controlled startup context* of
+   each supported tool/surface, counted separately: the root instruction file
+   and its imports, unscoped rules, skill/command/agent descriptions loaded at
+   start, and any duplication where a surface loads more than one of our files
+   (for example `AGENTS.md` and `.github/copilot-instructions.md`). Bytes are
+   reported separately: Codex's `project_doc_max_bytes` (32 KiB default) is a
+   configurable byte limit on all instruction files it concatenates, not a
+   token limit or a root-file limit, so the core leaves headroom for nested
+   files.
+2. **Measurement honesty (row 1).** Each figure is labelled *static estimate*
+   (chars/4 over files we ship), *observed context* (what a tool reports it
+   loaded, e.g. `/context`) or *billed cost* (provider usage, cached and
+   uncached separately). Record tool version, settings, working directory and
+   method; mark unavailable measurements as unavailable. Fan-out (one
+   orchestrator plus five reviewers) multiplies context received, not
+   necessarily billed cost, because of caching.
+3. **Shared core moves into Wave B.** `AGENTS.md` becomes the canonical core in
+   item 84; `CLAUDE.md` imports it plus Claude-only lines. Cursor and Copilot
+   already read `AGENTS.md`, so slimming `CLAUDE.md` alone would leave
+   duplicates. Item 104 keeps the native Codex/Cursor configuration, rules and
+   hooks (Wave C).
+4. **Tool-native scoping.** `paths:` scopes Claude rules only. Cursor needs
+   `.mdc` `globs`/`alwaysApply`; Copilot needs `.instructions.md` `applyTo`.
+   Each scoped rule gets positive and negative loading checks in all five
+   profiles. Universal security boundaries stay in the core; stack- or
+   architecture-specific detail is scoped.
+5. **The 10-stage process becomes opt-in.** First as an on-demand delivery
+   skill (no infrastructure needed); the full `ais add process` pack remains
+   item 90.
+6. **Provenance outside the loaded context.** Item 105's Prevents / Enforced by
+   / Applies when move from in-file headers to a manifest outside
+   auto-loaded folders. Whether Claude Code strips HTML comments from rule
+   files is unverified; do not rely on it without an experiment.
+7. **Mechanical vs human enforcement.** "Enforced by hook/CI" requires an
+   executable check with allowed and blocked probes. Judgement gates (business
+   correctness, UX fit) stay explicitly human-reviewed and are not counted as
+   automatic. Placeholder and model-name checks run on shipped artifacts only,
+   so research notes, history and legitimate authoring slots stay valid.
+8. **Evaluation scope.** The 3–5 tasks are a smoke subset; item 99's ≥ 10
+   tasks, repeated runs and broader outcomes stay committed. Thresholds are
+   written before comparisons; results are reported as "no regression observed
+   on these tasks", not as proof.
+9. **Adopter migration.** `ais update` on `dev` removes a retired managed file
+   when it is pristine and keeps an edited copy as an orphan with a notice
+   (`src/cli/core/update-plan.js:46`); settings entries retire through
+   `RETIRED_SETTINGS`. A rule that moves (rule → skill) is a remove plus an
+   add. Limits: installs without recorded `managedFiles` hashes get no removals
+   (`update-plan.js:100`), and each removal still needs a packed-tarball
+   apply from 0.18.0 as evidence. (A checkout of the pre-0.17.0 branch
+   `feature/25-slice2-foundations` still prints "not implemented yet"; that
+   text is not on `dev`.)
 
 ## Priority review — 2026-10-13 (execution order superseded 2026-11-05)
 

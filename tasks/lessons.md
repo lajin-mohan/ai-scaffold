@@ -380,3 +380,26 @@ This file records patterns from mistakes and corrections. Claude reads this at t
     not evidence.
   - A claim about what past releases did is checked by installing them
     from npm, and states which versions were inspected.
+
+## 2026-11-06 — A plan stated as fact what its own research marked unverified (Wave B)
+
+- **What happened:** The revised Wave B plan said provenance metadata in HTML
+  comments would "cost nothing". The research report written the same day
+  documents comment stripping for `CLAUDE.md` only and leaves rule files
+  unverified. The maintainer's review also corrected four looser claims: a
+  token budget with no defined scope, "five reviewers cost six times" (context
+  received is not billed cost under caching), `paths:` as if it scoped every
+  tool, and 3–5 tasks presented as the item 99 evaluation.
+- **Why:** The plan was condensed from the report, and the report's labels
+  (documented / measured / inference) were dropped when compressing.
+  Inferences reached the plan as facts.
+- **Rule:**
+  - A plan or summary keeps the evidence label of each claim it carries over;
+    anything not documented or measured is written as an inference or
+    dropped.
+  - A budget or limit states its scope (which tool, which files, tokens or
+    bytes) and its measurement method before it becomes an acceptance target.
+  - Cost claims distinguish context received from billed cost.
+  - A check of the code is made on `origin/dev`, not on whichever branch the
+    main checkout holds: the review read `update.js` from a pre-0.17.0 branch
+    and concluded `ais update` was unimplemented.

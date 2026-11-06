@@ -1,4 +1,4 @@
-# 105 — Rule hygiene: provenance headers, stale-content check, outdated removals
+# 105 — Rule hygiene: provenance manifest, stale-content check, outdated removals
 
 ## Status
 
@@ -28,13 +28,25 @@ prevents, so nothing qualifies for removal. Outdated content found on `dev` at
 
 ## Scope
 
-1. Every shipped rule file gets three header lines: **Prevents** (the failure),
-   **Enforced by** (hook / CI / instruction only), **Applies when** (always, a
-   file pattern, or a pack). A rule that cannot fill them in is removed or
-   moved to docs.
-2. A CI check over `templates/*` fails on: a rule without the header; a
-   reference to a command, agent, hook or skill that does not ship; a model
-   name; and a live project placeholder in an always-loaded file after create.
+1. Every shipped rule has a provenance entry: **Prevents** (the failure),
+   **Enforced by** (an executable hook/CI check, a human review gate, or
+   instruction only) and **Applies when** (always, or a scope expressed in each
+   tool's native format: `paths:`, `.mdc` `globs`, `applyTo`). *Amended
+   2026-11-06:* entries live in a manifest outside auto-loaded folders, not in
+   rule headers, so they cost no context. HTML-comment stripping in rule files
+   is unverified and not relied on. A rule that cannot fill its entry is
+   removed or moved to docs.
+2. A CI check fails on: a shipped rule without a manifest entry; a reference
+   to a command, agent, hook or skill that does not ship; a model name; and a
+   live project placeholder in an always-loaded file after create. Placeholder
+   and model-name checks cover shipped artifacts only, so research, history
+   (`CHANGELOG.md`, `tasks/done/`) and authoring slots (`{{FEATURE_NAME}}`)
+   stay valid.
+2a. **Mechanical vs human enforcement.** An entry claiming "Enforced by hook"
+   or "CI" names the check and ships allowed and blocked probes that prove it.
+   Judgement gates (business correctness, UX fit, architecture direction) are
+   recorded as human-reviewed and never counted as automatic. A `BLOCK` label
+   alone is not an enforcement claim.
 3. Remove or rewrite the outdated content above. Make multi-tenant and
    compliance content conditional on the bootstrap answers (item 84 / 90).
 4. Ship removals to existing adopters through `ais update` retirements, with a
@@ -42,8 +54,10 @@ prevents, so nothing qualifies for removal. Outdated content found on `dev` at
 
 ## Acceptance and validation
 
-- [ ] The CI check fails on a fixture rule missing its header and on a fixture
-  reference to a non-shipping command; it passes on the cleaned templates.
+- [ ] The CI check fails on a fixture rule missing its manifest entry, on a
+  fixture reference to a non-shipping command, and on an automatic-enforcement
+  claim with no probe; it passes on the cleaned templates and ignores
+  research/history files and authoring slots.
 - [ ] All five profiles carry the same shared rule set (shared change, item 34
   rule), with stack-specific files untouched.
 - [ ] A packed-artifact project generated after the change contains none of the
