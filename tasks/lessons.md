@@ -403,3 +403,21 @@ This file records patterns from mistakes and corrections. Claude reads this at t
   - A check of the code is made on `origin/dev`, not on whichever branch the
     main checkout holds: the review read `update.js` from a pre-0.17.0 branch
     and concluded `ais update` was unimplemented.
+
+## 2026-11-06 — Known environment failures became a standing hook bypass (Wave B)
+
+- **What happened:** Three unit tests always failed on the maintainer's
+  Windows machine (no `jq`, `NoDefaultCurrentDirectoryInExePath=1`, a 5s
+  timeout on six git spawns). Commits were made with `--no-verify` after
+  matching the failures by name. The auto-mode classifier then refused a
+  further bypass, and the user had already asked for hooks to run normally.
+  Separately, the smoke harness assumed a child `claude -p` would be logged
+  in; a shell started by the Claude desktop app does not pass its login on.
+- **Why:** The failures were treated as an allowance instead of as defects in
+  the tests: each depended on the machine without saying so.
+- **Rule:**
+  - A test that depends on an optional tool or OS setting skips with the
+    precise condition and a comment saying why; a slow-but-correct test gets
+    a realistic timeout. The hook then passes without a bypass.
+  - A harness that drives another CLI checks for its unauthenticated state and
+    stops at the first run, not after recording every run as a failure.

@@ -14,6 +14,14 @@ repeated runs and broader outcome measures. Thresholds are written before any
 comparison runs, and results are reported as "no regression observed on these
 tasks" or the regression found, never as proof that none exists.
 
+### Smoke harness status (2026-11-06)
+
+Built: `evals/smoke/` (4 tasks, thresholds in `THRESHOLDS.md`, written before
+any run) and `scripts/eval-smoke.js`. Self-tested with a stub agent against a
+packed tarball. **Baseline not yet run** — the maintainer runs it before the
+item 84 core change lands, then the after-run on the final Wave B branch.
+Conclusions are limited to Claude Code and these four tasks.
+
 ## Scope
 
 Version a representative set of at least ten tasks covering bug fixes, bounded
