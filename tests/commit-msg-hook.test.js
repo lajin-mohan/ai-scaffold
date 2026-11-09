@@ -86,7 +86,8 @@ describe('commit-msg hook: rejects attribution trailers', () => {
     expect(git(['commit', '-q', '--amend', '-m', 'feat: amended', '-m', TRAILER]).status).not.toBe(0);
   });
 
-  it('on a merge commit', () => {
+  // Six git processes; on Windows they exceed vitest's 5s default under load.
+  it('on a merge commit', { timeout: 30_000 }, () => {
     git(['checkout', '-q', '-b', 'side']);
     fs.writeFileSync(path.join(repo, 's'), 's\n');
     git(['add', 's']);

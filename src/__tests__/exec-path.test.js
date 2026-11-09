@@ -73,7 +73,12 @@ describe('resolveOnPath', () => {
 // the antivirus scan of a new executable: 3–7s idle, more under suite load,
 // against ~0.25s for a second launch. A hard link would skip the scan, but
 // Windows refuses one into Program Files. So vitest's 5s default is too tight.
-describe.skipIf(!isWindows)('a planted gh.exe / git.exe never runs (item 94)', { timeout: 30_000 }, () => {
+// With NoDefaultCurrentDirectoryInExePath set, Windows never searches the
+// working directory, so even a naive spawn cannot run a plant: the positive
+// control cannot be established and every regression below would be vacuous.
+const cwdSearchDisabled = isWindows && process.env.NoDefaultCurrentDirectoryInExePath !== undefined;
+
+describe.skipIf(!isWindows || cwdSearchDisabled)('a planted gh.exe / git.exe never runs (item 94)', { timeout: 30_000 }, () => {
   let plant;
   let sentinel;
   let savedEnv;

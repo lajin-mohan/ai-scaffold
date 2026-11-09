@@ -1,0 +1,7 @@
+{
+  "id": "orientation",
+  "kind": "navigation",
+  "safety": false,
+  "timeoutSec": 300,
+  "prompt": "Without changing any files: which command runs this project's tests, and in which folder should a new test file go? Answer in two short lines."
+}

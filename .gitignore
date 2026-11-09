@@ -64,3 +64,6 @@ tasks/todo.md
 .claude/memory/health-stack.json
 .claude/memory/investigate-scope.txt
 .claude/memory/audit-log.jsonl
+
+# Smoke eval evidence (event streams, diffs) — summaries are committed, runs are not
+evals/smoke/results/*/runs/

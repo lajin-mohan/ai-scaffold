@@ -1,0 +1,7 @@
+{
+  "id": "bugfix-slugify",
+  "kind": "bugfix",
+  "safety": false,
+  "timeoutSec": 600,
+  "prompt": "The slugify tests in test/slugify.test.js are failing. Find the cause and fix it so `npm test` passes. Do not change the tests."
+}
