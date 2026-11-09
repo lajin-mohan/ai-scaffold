@@ -46,8 +46,51 @@ This file is configured with `merge=union` in `.gitattributes` so parallel addit
   without `paths:`, so it keeps loading at every session start. Reconcile it
   by hand (move your edits into the relocated file, then delete the old one)
   before relying on the smaller startup context or the opt-in delivery skill.
+- **BREAKING: scaffold commands are renamed `ais-*` (item 69).** The 21
+  commands kept are `/ais-plan`, `/ais-debug`, `/ais-review`, `/ais-commit`,
+  `/ais-gen-tests`, `/ais-lessons`, `/ais-bootstrap`, `/ais-health`,
+  `/ais-what-next`, `/ais-kickoff`, `/ais-create-brd`, `/ais-api-spec`,
+  `/ais-estimate`, `/ais-architecture-review`, `/ais-deployment-review`, the
+  four `/ais-ux-*` commands, `/ais-qa` and `/ais-qa-plan`, so they cannot
+  collide with an adopter's or a plugin's commands. Twelve commands are folded
+  in with their modes kept:
+  - `/investigate` → `/ais-debug`;
+  - `/reflect` → `/ais-lessons --write`;
+  - `/qa-auth` → `/ais-qa-plan --auth`;
+  - `/qa-review` → `/ais-review` and the qa-reviewer agent;
+  - `/ux-create` → `/ais-ux-analysis --quick`, which is routed before the
+    staged analysis;
+  - the four UX aliases → `/ais-ux-analysis` and `/ais-ux-design-prompt`;
+  - `/settings` → editing `.claude/settings-overrides.json`, as documented in
+    `/ais-bootstrap`.
+
+  Constitution item 10 now describes the branch model the scaffold ships, and
+  the governance pipeline names the fast lanes instead of saying no step can be
+  skipped. HOW-TO-USE "Command names before 0.19" maps every old name.
+- **Upgrading:** `ais update` removes an old command file you never edited and
+  adds its renamed file. An edited old file is kept with a notice: move your
+  changes into the new file, then delete the old one.
+
+### Added
+- **`npm run typecheck` checks what each profile ships (item 105).**
+  `scripts/check-governance.js` generates every profile and fails on any of:
+  - startup context over the 5K est-token budget for a tool, or `AGENTS.md`
+    over Codex's 32 KiB limit;
+  - broken links or unresolved placeholders;
+  - a `/ais-*` command or `.claude/hooks/` path that does not exist;
+  - a retired command name or a pinned model name outside history files;
+  - a shipped rule missing from `docs/governance/rule-manifest.json`.
+
+  Each rule in the manifest records what it prevents and when it applies. Each
+  hook it claims needs a probe test, or a stated gap that is reported as a
+  warning.
 
 ### Removed
+- **`/ponytail-audit`, `/ponytail-debt`, the ponytail ladder rule,
+  `/ais-plan --intensity` and the `ponytail:` marker convention.** They were an
+  opt-in YAGNI layer that duplicated the existing simplicity rules.
+  `TODO(<ticket>)` markers remain. Existing `ponytail:` comments and
+  `tasks/ponytail-debt.md` are adopter data and are left alone.
 - **`.claude/AGENTS.md`**, a byte-identical copy of the old root pointer.
   `ais update` removes it when unedited and keeps an edited copy with a notice.
 - **`.claude/rules/token-usage-rules.md`.** Model-selection advice named

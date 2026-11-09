@@ -91,7 +91,7 @@ npm test              # vitest, full suite
 npm run test:unit     # src/ only
 npm run test:e2e      # tests/ only
 npm run lint          # eslint
-npm run typecheck     # JS syntax + gitleaks config validation
+npm run typecheck     # JS syntax, gitleaks config, governance checks on generated profiles
 npm run release:check # release readiness
 npm run token-report  # startup context per tool, generated profiles (--corpus: T0 corpus)
 ```

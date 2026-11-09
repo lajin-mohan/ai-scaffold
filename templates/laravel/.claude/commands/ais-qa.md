@@ -84,7 +84,7 @@ This opens a browser window to authenticate, then captures the session so subseq
 ```
 Phase 1 — Navigate
   $B opens the target URL
-  Walk the feature flow step by step (e.g. /login → /dashboard → /settings)
+  Walk the feature flow step by step (e.g. /login → /dashboard → /account)
 
 Phase 2 — Detect
   For each step, capture:

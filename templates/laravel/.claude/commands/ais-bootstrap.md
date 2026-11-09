@@ -332,7 +332,7 @@ Write only the overlays that match the selected stack. Do not reference absent s
 
 ## Changing feature flags later
 
-Feature flags live in `.claude/settings-overrides.json` (generated, gitignored). Edit that file directly to turn a feature on or off; defaults for future installs come from `.claude/settings-overrides.template.json`, and personal overrides go in `.claude/settings.local.json`. This replaces the former `/settings` command; the flags and the commands that read them are unchanged.
+Feature flags live in `.claude/settings-overrides.json` (generated, gitignored). Edit that file directly to turn a feature on or off; defaults for future installs come from `.claude/settings-overrides.template.json`, and personal overrides go in `.claude/settings.local.json`.
 
 ### Features Reference
 
