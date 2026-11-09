@@ -15,10 +15,11 @@ import process from 'node:process';
 import { fileURLToPath } from 'node:url';
 import semver from 'semver';
 import {
-  check, conflictKept, idempotent, managedParity, manifestAfter, outcomes, unchanged, writeScope, byAction, list,
+  check, conflictKept, explainSidecar, idempotent, managedParity, manifestAfter, outcomes, unchanged, writeScope,
+  byAction, list, UNFLAGGED_COMMANDS,
 } from './update-compat/checks.js';
 import {
-  commitAll, git, installCandidate, installPublished, readJson, runCli, runJson, snapshot, writeClock,
+  commitAll, git, installCandidate, installPublished, readJson, renderWith, runCli, runJson, snapshot, writeClock,
 } from './update-compat/lib.js';
 import { renderReport } from './update-compat/report.js';
 import { runCrlf, runHashless, runLegacy070 } from './update-compat/special-cases.js';
@@ -53,9 +54,6 @@ const ctx = {};
 // Recorded answers a fresh install can be given by flag. Update renders from
 // the project's recorded answers, so the reference must use the same ones.
 const ANSWER_FLAGS = [['test', '--test-command'], ['lint', '--lint-command'], ['typecheck', '--typecheck-command'], ['build', '--build-command']];
-// Commands a fresh install cannot be given (no flag in any version).
-const UNFLAGGED_COMMANDS = ['dev', 'install', 'migration'];
-
 function answerArgs(manifest) {
   const args = manifest.risk?.multiTenant === true ? ['--multi-tenant'] : [];
   for (const [key, flag] of ANSWER_FLAGS) {
@@ -130,6 +128,14 @@ function explainer(mode, applied, freshManifest) {
   };
 }
 
+/** Explains a sidecar difference against the candidate's render of the recorded answers. */
+function sidecarExplainer(recorded, freshManifest) {
+  const render = (manifest) => renderWith({ bin: ctx.candidate, clock: ctx.clock, manifest, rel: CONFLICT });
+  return (sidecar, fresh) => explainSidecar({
+    sidecar, fresh, recorded, freshManifest, freshRender: render(freshManifest), recordedRender: render(recorded),
+  });
+}
+
 const update = (parent, ...flags) => runJson({ bin: ctx.candidate, clock: ctx.clock, cwd: parent, args: ['update', NAME, ...flags] });
 
 /** Preview, apply, then a second apply and a preview on the committed result. */
@@ -176,12 +182,15 @@ function runCase(spec) {
   const parity = managedParity({
     project, fresh, applied: run.applied.doc ?? {}, freshManifest, explain: explainer(spec.mode, appliedManifest, freshManifest),
   });
+  const conflict = conflictKept({
+    project, fresh, before: run.before, after: run.after, rel: CONFLICT, explain: sidecarExplainer(appliedManifest, freshManifest),
+  });
   const checks = [
     ...outcomes({ preview: run.preview, applied: run.applied, expectExit: 2 }),
     writeScope({ before: run.before, after: run.after, applied: run.applied.doc ?? {} }),
     unchanged('user data byte-identical', userData, run),
     unchanged('application files byte-identical', appPaths, run),
-    ...conflictKept({ project, fresh, before: run.before, after: run.after, rel: CONFLICT }),
+    ...conflict.checks,
     ...parity.checks,
     ...manifestAfter({ project, version: CANDIDATE }),
     ...extras(spec, project, run),
@@ -189,7 +198,7 @@ function runCase(spec) {
   ];
   return {
     id, kind: '5A', counts: run.applied.doc?.counts ?? null, checks,
-    differing: parity.differing, explained: parity.explained, answers: answerArgs(appliedManifest).join(' ') || '(defaults)',
+    differing: parity.differing, explained: [...parity.explained, ...conflict.explained], answers: answerArgs(appliedManifest).join(' ') || '(defaults)',
   };
 }
 
@@ -232,7 +241,7 @@ function runMatrix() {
     { version, mode: 'init', profile: 'node' },
   ]);
   const env = {
-    ctx, NAME, CONFLICT, install, adopt, update, updateTwice, freshInstall, answerArgs,
+    ctx, NAME, CONFLICT, install, adopt, update, updateTwice, freshInstall, answerArgs, sidecarExplainer,
     cli: (parent, args) => runJson({ bin: ctx.candidate, clock: ctx.clock, cwd: parent, args }),
   };
   const cases = [

@@ -123,17 +123,21 @@ export function runLegacy070(env) {
   const legacy = byAction(run.preview.doc, 'skip-unowned');
   const manifest = readJson(project, '.ai-scaffold.json');
   const fresh = env.freshInstall('create', 'node', env.answerArgs(manifest));
+  const conflict = conflictKept({
+    project, fresh, before: run.before, after: run.after, rel: env.CONFLICT,
+    explain: env.sidecarExplainer(manifest, readJson(fresh, '.ai-scaffold.json')),
+  });
   const checks = [
     ...outcomes({ preview: run.preview, applied: run.applied, expectExit: 2 }),
     check('the legacy doc the adopter edited is outside current ownership', legacy.includes(legacyDoc), `not skip-unowned: ${legacyDoc}`),
     writeScope({ before: run.before, after: run.after, applied: run.applied.doc ?? {} }),
     unchanged('legacy application, documentation and pack files untouched', legacy, run),
     unchanged('user data byte-identical', touched.userData, run),
-    ...conflictKept({ project, fresh, before: run.before, after: run.after, rel: env.CONFLICT }),
+    ...conflict.checks,
     ...disownChecks(manifest, legacy),
     ...classChecks(manifest, readJson(fresh, '.ai-scaffold.json')),
     ...doctorChecks(env, parent),
     ...idempotent({ second: run.second, preview: run.previewAgain, before: run.settled, after: run.final }),
   ];
-  return { id: `0.7.0 create node, ownership re-baseline (${legacy.length} legacy files left alone)`, kind: 'ADR-002', counts: run.applied.doc?.counts ?? null, checks, differing: [] };
+  return { id: `0.7.0 create node, ownership re-baseline (${legacy.length} legacy files left alone)`, kind: 'ADR-002', counts: run.applied.doc?.counts ?? null, checks, differing: [], explained: conflict.explained };
 }
