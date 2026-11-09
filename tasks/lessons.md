@@ -447,8 +447,11 @@ This file records patterns from mistakes and corrections. Claude reads this at t
   - Repeated on PR #175 the same day: only the matrix ran before push, and
     a unit test that compared the shipped profiles with the root `.claude/`
     copy failed once CI ran. Before pushing any stacked PR, run the whole
-    CI set locally (`npm test`, `npm run lint`, `npm run typecheck` and the
-    matrix), not only the check the change seems to touch.
+    CI set locally (`npm test`, `npm run lint`, `npm run typecheck`,
+    `bash scripts/pre-publish-smoke.sh` and the matrix), not only the check
+    the change seems to touch. PR #176 then failed on the smoke gates, which
+    the first version of this list left out: a renamed command was still
+    named in `pre-publish-smoke.sh`.
   - An accepted difference must be reproduced exactly: render the expected
     bytes from the recorded answers with the candidate's own renderer, prove
     that renderer reproduces the fresh install, and compare byte for byte.
