@@ -8,7 +8,7 @@ Effort estimates for features, epics, and SOW preparation.
 
 ## Process
 
-1. Run `/estimate "feature description"` or `/estimate docs/brd/feature.md`
+1. Run `/ais-estimate "feature description"` or `/ais-estimate docs/brd/feature.md`
 2. Review assumptions and risk register with team lead
 3. Get acceptance before sprint commitment
 4. Update if scope changes significantly (>20% deviation)

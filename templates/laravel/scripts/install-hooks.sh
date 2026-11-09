@@ -30,5 +30,5 @@ for hook in "$HOOKS_DIR"/*; do
 done
 
 echo ""
-echo "Git hooks installed. Run /bootstrap to configure stack-specific checks."
+echo "Git hooks installed. Run /ais-bootstrap to configure stack-specific checks."
 echo "To bypass hooks: git commit --no-verify"

@@ -46,14 +46,14 @@ Complete this before requesting any review. Do not open a PR without it.
 - [ ] Desktop light and dark theme states are verified
 - [ ] Mobile light and dark theme states are verified
 - [ ] No hardcoded colors prevent theme switching or organization branding overrides
-- [ ] `/ux-review` evidence is attached for frontend/full-stack changes
+- [ ] `/ais-ux-review` evidence is attached for frontend/full-stack changes
 - [ ] Browser verification evidence is attached for frontend/full-stack changes, or the PR states `not verified: no E2E harness`
 
 ---
 
 ## AI Review (Claude)
 
-Run `/review` before requesting human review. Address all BLOCK findings before proceeding.
+Run `/ais-review` before requesting human review. Address all BLOCK findings before proceeding.
 
 Claude reviews for:
 - Logic correctness against spec

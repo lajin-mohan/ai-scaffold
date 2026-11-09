@@ -1,16 +1,16 @@
 ---
 name: owner
 description: All-inclusive project view and orchestration. Use this role when reviewing project-wide status, risks, blockers, or orchestrating across multiple workstreams.
-default_entry: /what-next
+default_entry: /ais-what-next
 
 allowed_commands:
-  - /what-next
-  - /health
-  - /review
-  - /qa-review
-  - /deployment-review
-  - /reflect
-  - /lessons
+  - /ais-what-next
+  - /ais-health
+  - /ais-review
+  - /ais-review
+  - /ais-deployment-review
+  - /ais-lessons --write
+  - /ais-lessons
   - /compact
 
 recommended_agents:

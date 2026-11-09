@@ -197,7 +197,7 @@ feature work.
 Use:
 
 \`\`\`text
-/start-task --spec <requirements-or-task-path>
+/ais-plan --spec <requirements-or-task-path>
 \`\`\`
 
 ## Default Install Surface
@@ -338,11 +338,11 @@ Living index for project memory and session compactions.
 At the start of every session:
 1. Read \`.claude/MEMORY.md\` to orient to active state and recent changes.
 2. Read \`.claude/memory/project-context.md\` for sprint/work status.
-3. Run \`/lessons --recent 3\` when lessons exist.
+3. Run \`/ais-lessons --recent 3\` when lessons exist.
 
 Before planning or architecture work:
 - Read the linked BRD/FRD/ticket path from this file or \`.ai-scaffold/context.md\`.
-- Start implementation tasks with \`/start-task --spec <requirements-or-task-path>\`.
+- Start implementation tasks with \`/ais-plan --spec <requirements-or-task-path>\`.
 - Read \`.claude/memory/architecture-decisions.md\`.
 - Read \`.claude/memory/business-rules.md\`.
 
@@ -390,7 +390,7 @@ Root-cause and process lessons for ${values.displayName}. Append an entry after
 every user correction or non-obvious bug fix: what failed, why it happened, and
 the rule that prevents it recurring.
 
-Queried by \`/lessons\`. Read at the start of every session before doing anything else.
+Queried by \`/ais-lessons\`. Read at the start of every session before doing anything else.
 
 ---
 `;
@@ -469,9 +469,10 @@ Each line is a summary; the linked file is authoritative for the detail.
 8. **Tests are required** — happy path plus at least two edge/failure cases plus
    an auth-failure case. — [testing-rules.md](.claude/rules/testing-rules.md)
 ${tenantLine}
-10. **Branch discipline.** \`feature\`/\`fix\`/\`chore\`/\`docs\` -> \`dev\` (squash);
-    \`release\` -> \`main\` (squash + tag); a \`main\`->\`dev\` sync uses a **merge
-    commit**, never a squash. — [branching-rules.md](.claude/rules/branching-rules.md)
+10. **Branch discipline.** \`feature\`/\`fix\`/\`chore\`/\`docs\` -> \`dev\` by pull
+    request; \`dev\` -> \`main\` by pull request, tagged on release; a \`hotfix\`
+    goes to \`main\` and is back-merged to \`dev\` at once. Never commit on \`dev\`
+    or \`main\`. — [branching-rules.md](.claude/rules/branching-rules.md)
 
 ## Governance order (the tie-breaker)
 
@@ -495,7 +496,7 @@ this constitution (order only)
 2. Read [AGENTS.md](AGENTS.md) — the shared core every assistant reads
    (commands, conventions, security boundaries). Claude Code reaches it
    through [CLAUDE.md](CLAUDE.md).
-3. Run \`/what-next\`, or start work with \`/start-task --spec <requirements-path>\`.
+3. Run \`/ais-what-next\`, or start work with \`/ais-plan --spec <requirements-path>\`.
 
 ---
 

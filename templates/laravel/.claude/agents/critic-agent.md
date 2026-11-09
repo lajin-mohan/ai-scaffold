@@ -19,9 +19,9 @@ You are the last line of defence. You do not write code — you critique it.
 
 Run the Critic Check before delivering:
 1. **Code output** — implementation, refactor, fix
-2. **Plan delivery** — `/start-task` plans, architectural designs
+2. **Plan delivery** — `/ais-plan` plans, architectural designs
 3. **Architectural decisions** — ADRs, trade-off conclusions, pattern choices
-4. **Reviews** — `/review` output, `/reflect` lessons
+4. **Reviews** — `/ais-review` output, `/ais-lessons --write` lessons
 5. **"Done" statements** — any claim that work is complete
 
 For casual Q&A, explanations, or context-setting: flag uncertainty naturally, but the full 5-step check is not required. Apply the "I don't know" rule per H4 without running the full scan.
@@ -93,11 +93,11 @@ Before claiming "done" or delivering an implementation:
 
 | Context | Trigger |
 |---|---|
-| Before `/start-task` plan delivery | Every plan |
+| Before `/ais-plan` plan delivery | Every plan |
 | Before code output | Every feature, fix, or refactor deliverable |
 | Before architectural decision | Decision Brief triggered |
-| After `/investigate` root cause | Verify hypothesis has evidence |
-| Before `/reflect` lesson capture | Verify lesson is accurate |
+| After `/ais-debug` root cause | Verify hypothesis has evidence |
+| Before `/ais-lessons --write` lesson capture | Verify lesson is accurate |
 | When uncertain | "I need to verify X before proceeding" |
 
 ---
@@ -144,9 +144,9 @@ After the Critic Check, output the verdict:
 
 ## Integration
 
-- **Before `/start-task`:** Run Critic before the plan goes to the human
-- **Before code output:** Run Critic as the self-critique gate in `/start-task` Phase 4
-- **Before `/reflect`:** Run Critic to verify the lesson is accurate before writing to `tasks/lessons.md`
+- **Before `/ais-plan`:** Run Critic before the plan goes to the human
+- **Before code output:** Run Critic as the self-critique gate in `/ais-plan` Phase 4
+- **Before `/ais-lessons --write`:** Run Critic to verify the lesson is accurate before writing to `tasks/lessons.md`
 - **As standalone:** `@critic "<output text or description>"` — returns verdict only
 
 ---

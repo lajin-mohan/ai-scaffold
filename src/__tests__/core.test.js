@@ -379,9 +379,11 @@ describe('Claude Code skill packaging', () => {
     }
   });
 
-  it('keeps converted skills identical across the root and every shipped profile', () => {
+  // Root .claude/ is the scaffold's own governance, not the product (CLAUDE.md),
+  // so the shipped profiles are compared with each other, not with it.
+  it('keeps converted skills identical across every shipped profile', () => {
     for (const skill of convertedSkills) {
-      const canonical = readFileSync(path.join(repoRoot, '.claude/skills', skill, 'SKILL.md'), 'utf-8');
+      const canonical = readFileSync(path.join(repoRoot, 'templates', 'generic', '.claude/skills', skill, 'SKILL.md'), 'utf-8');
       for (const profile of SUPPORTED_PROFILES) {
         const shipped = readFileSync(
           path.join(repoRoot, 'templates', profile, '.claude/skills', skill, 'SKILL.md'),
@@ -455,8 +457,8 @@ describe('python and golang profiles', () => {
       '.claude/hooks/pre-commit',
       '.claude/settings.json',
       '.claude/settings.local.example.json',
-      '.claude/commands/start-task.md',
-      '.claude/commands/review.md',
+      '.claude/commands/ais-plan.md',
+      '.claude/commands/ais-review.md',
       '.github/workflows/ci.yml',
     ];
 
@@ -487,12 +489,12 @@ describe('python and golang profiles', () => {
     expect(localSettings.permissions.allow).toContain('Bash(go vet*)');
     expect(localSettings.permissions.allow).toContain('Bash(go build*)');
 
-    const startTask = readFileSync(templatePath('generic', '.claude/commands/start-task.md'), 'utf-8');
+    const startTask = readFileSync(templatePath('generic', '.claude/commands/ais-plan.md'), 'utf-8');
     expect(startTask).toContain('Project lint command from `AGENTS.md`');
     expect(startTask).toContain('`package.json`, `composer.json`, `pyproject.toml`, `requirements.txt`, `go.mod`, etc.');
     expect(startTask).not.toContain('npm run test:e2e');
 
-    const review = readFileSync(templatePath('generic', '.claude/commands/review.md'), 'utf-8');
+    const review = readFileSync(templatePath('generic', '.claude/commands/ais-review.md'), 'utf-8');
     expect(review).toContain('Semgrep, gosec');
     expect(review).toContain('For Go changes touching `cmd/`, `internal/`, `pkg/`, `go.mod`, or Go config');
     expect(review).not.toContain('`npm run test:e2e`');
@@ -759,8 +761,8 @@ describe('buildTokenReport', () => {
     }
   });
 
-  it('measures the /review fan-out from the five reviewers in review.md', () => {
-    // Must match the five reviewers /review actually fans out to — NOT critic.
+  it('measures the /ais-review fan-out from the five reviewers in review.md', () => {
+    // Must match the five reviewers /ais-review actually fans out to — NOT critic.
     expect(report.reviewFanout.agents).toEqual([
       'backend-reviewer',
       'frontend-reviewer',
@@ -846,7 +848,7 @@ describe('placeholder gaps (item 77)', () => {
   // check would misfire in every generated project (0.16.0 shipped exactly that).
   it('ships what-next.md with nothing placeholder substitution would change', () => {
     for (const profile of SUPPORTED_PROFILES) {
-      const text = readFileSync(templatePath(profile, '.claude/commands/what-next.md'), 'utf-8');
+      const text = readFileSync(templatePath(profile, '.claude/commands/ais-what-next.md'), 'utf-8');
       expect(resolvePlaceholders(text, values)).toBe(text);
     }
   });

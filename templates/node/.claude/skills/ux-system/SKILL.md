@@ -115,4 +115,4 @@ docs/ux/<phase-or-feature>/
 - Design for keyboard and screen-reader access.
 - Use semantic color, not decoration.
 - Dashboards must support filtering, scanning, and drill-down.
-- Frontend work must pass `/ux-review` before DONE.
+- Frontend work must pass `/ais-ux-review` before DONE.

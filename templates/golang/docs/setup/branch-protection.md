@@ -11,7 +11,7 @@ The single source of truth for what gets enforced lives in [`.claude/rules/branc
 ## When to apply
 
 - **Day 1** — apply both `main` and `dev` protections immediately after creating the repo.
-- **After bootstrap** — re-check; `/bootstrap` may have added new required CI status checks (e.g., `ci-passed`) that need to be wired into the protection.
+- **After bootstrap** — re-check; `/ais-bootstrap` may have added new required CI status checks (e.g., `ci-passed`) that need to be wired into the protection.
 - **On any change to branching-rules.md** — bring the GitHub-side config into agreement.
 
 ---

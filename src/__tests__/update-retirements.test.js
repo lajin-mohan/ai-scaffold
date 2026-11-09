@@ -41,7 +41,7 @@ async function olderInstall() {
   fs.writeFileSync(at(target, PRE_REVIEW), script);
   const settings = readJson(target, '.claude/settings.json');
   settings.hooks = {
-    UserPromptSubmit: [{ matcher: '/review', hooks: [{ type: 'command', command: `PRE_REVIEW_ALLOW_UNCONFIGURED=1 bash ${PRE_REVIEW}`, timeout: 300 }] }],
+    UserPromptSubmit: [{ matcher: '/ais-review', hooks: [{ type: 'command', command: `PRE_REVIEW_ALLOW_UNCONFIGURED=1 bash ${PRE_REVIEW}`, timeout: 300 }] }],
     ...settings.hooks,
   };
   settings.permissions.allow.push(`Bash(${PRE_REVIEW})`);

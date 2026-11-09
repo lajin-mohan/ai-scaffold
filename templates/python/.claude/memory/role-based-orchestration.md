@@ -13,11 +13,11 @@ Captured from `docs/brd/role-based-orchestration-brd.md` v1.1 (2026-05-28).
 
 | Role | Purpose | Default Entry |
 |---|---|---|
-| `dev` | Feature implementation, bug fixing, review fixes, commits | `/start-task` |
-| `qa` | Test planning, test generation, QA review, live verification | `/qa-plan` |
-| `architect` | Architecture, API contracts, code review, system risk | `/architecture-review` |
-| `ux` | UX creation, UX review, accessibility, responsive behavior | `/ux-analyze` |
-| `owner` | All-inclusive project view and orchestration | `/what-next` |
+| `dev` | Feature implementation, bug fixing, review fixes, commits | `/ais-plan` |
+| `qa` | Test planning, test generation, QA review, live verification | `/ais-qa-plan` |
+| `architect` | Architecture, API contracts, code review, system risk | `/ais-architecture-review` |
+| `ux` | UX creation, UX review, accessibility, responsive behavior | `/ais-ux-analysis` |
+| `owner` | All-inclusive project view and orchestration | `/ais-what-next` |
 
 ## V2 Roles (documented, not yet routed)
 
@@ -26,7 +26,7 @@ Captured from `docs/brd/role-based-orchestration-brd.md` v1.1 (2026-05-28).
 ## Key Decisions
 
 - **DEC-01:** Use "AI role" in documentation for AI workflow mode — avoids conflict with product user roles in BRDs, UX specs, and permission docs
-- **DEC-02:** Use existing `qa-reviewer` for QA planning/review; keep `/gen-tests` responsible for generation — no new wrapper agents
+- **DEC-02:** Use existing `qa-reviewer` for QA planning/review; keep `/ais-gen-tests` responsible for generation — no new wrapper agents
 - **DEC-03:** Persist AI role locally in `.claude/settings.local.json` as `role` key — gitignored, per-user
 - **DEC-04:** Defer graph orchestration to advisory phase — role config must prove useful first
 - **DEC-05:** V1 = 5 roles, V2 = 4 roles — keeps first rollout small
@@ -46,7 +46,7 @@ Every QA plan must cover or explicitly mark N/A:
 
 | Role | Required Evidence |
 |---|---|
-| `dev` | Lint/typecheck/test/build, /review BLOCKs resolved, task ACs satisfied |
+| `dev` | Lint/typecheck/test/build, /ais-review BLOCKs resolved, task ACs satisfied |
 | `qa` | All 7 categories above |
 | `architect` | Architecture decisions, API contract alignment, data model, security/performance/dependency risk |
 | `ux` | Accessibility, responsiveness, light/dark theme, state coverage, design-system consistency |

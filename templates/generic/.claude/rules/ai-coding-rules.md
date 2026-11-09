@@ -83,7 +83,7 @@ enforcement layer.
 | `.claude/hooks/pre-bash-quality-gate.sh` | PreToolUse on Bash | Runs `.claude/hooks/pre-commit` inline before `git commit` / `git push` lands. Blocks the commit if pre-commit fails. Respects `--no-verify`. | coding-standards "lint + typecheck pass before any review" |
 
 All three hooks **fail open** in template state — they exit 0 when the
-scaffold itself is being worked on before `/bootstrap` configures the stack.
+scaffold itself is being worked on before `/ais-bootstrap` configures the stack.
 This keeps the scaffold working in CI; downstream projects must keep their own
 pre-commit hooks and gate configuration up to date.
 

@@ -44,7 +44,7 @@ A story can move from `BACKLOG` to `IN PROGRESS` only if all of the following ar
 - [ ] Architectural decisions recorded as ADRs where significant
 
 ### Estimation & sizing
-- [ ] Estimated using three-point method (`/estimate`)
+- [ ] Estimated using three-point method (`/ais-estimate`)
 - [ ] Estimate confidence is **HIGH** or **MEDIUM**. LOW confidence → spike first
 - [ ] Effort fits within one sprint — if not, split
 
@@ -75,16 +75,16 @@ A sprint can be **committed** when:
 
 ## Feature-Level DoR
 
-Before any new feature begins, **all six gates** of `/kickoff` return PASS:
+Before any new feature begins, **all six gates** of `/ais-kickoff` return PASS:
 
 1. Requirements (BRD approved)
 2. UX (wireframes approved)
 3. Architecture (HLD + API + LLD approved)
-4. Estimation (effort signed off) — invoke `/estimate` for the feature
+4. Estimation (effort signed off) — invoke `/ais-estimate` for the feature
 5. QA strategy (test plan defined)
 6. Governance (DoD agreed, CR process in place)
 
-If `/kickoff` returns CONDITIONAL GO, every conditional item must have a named owner and a resolution date before the feature starts.
+If `/ais-kickoff` returns CONDITIONAL GO, every conditional item must have a named owner and a resolution date before the feature starts.
 
 ---
 
@@ -131,7 +131,7 @@ Waiving Acceptance Criteria, BRD link, or test strategy is **not allowed** — t
 |---|---|
 | Story | Problem clear + ACs binary/testable + spec linked + estimated + test strategy noted |
 | Sprint | All stories meet Story DoR + capacity ≤ 70% + sprint goal stated |
-| Feature | All 6 `/kickoff` gates return PASS |
+| Feature | All 6 `/ais-kickoff` gates return PASS |
 | **Phase** | **BRD approved + ADRs accepted + Estimate signed off by Tech Lead** |
 
 ---

@@ -5,24 +5,24 @@ UX work follows a staged workflow. Each command gates the next — no skipping:
 ```
 BRD approved
   ↓
-/ux-analyze     → 01-requirements.md   (user roles, screen inventory, risks, open questions)
+/ais-ux-analysis     → 01-requirements.md   (user roles, screen inventory, risks, open questions)
   ↓
-/ux-flow        → 02-flows.md           (happy path, error/empty/permission paths, screen transitions)
+/ais-ux-analysis        → 02-flows.md           (happy path, error/empty/permission paths, screen transitions)
   ↓
-/ux-screen-spec → 05-screen-specs.md     (one screen at a time)
+/ais-ux-design-prompt → 05-screen-specs.md     (one screen at a time)
   ↓
-/ux-figma-spec  → 04-design-system-notes.md + 06-figma-spec.md
+/ais-ux-design-prompt  → 04-design-system-notes.md + 06-figma-spec.md
   ↓
 Human review    → designer approves Figma frames
   ↓
-/ux-review      → 07-review.md          (32-item check + 4-viewport browser verification)
+/ais-ux-review      → 07-review.md          (32-item check + 4-viewport browser verification)
   ↓
-/ux-handoff     → 08-dev-handoff.md     (hard gate before Stage 5)
+/ais-ux-handoff     → 08-dev-handoff.md     (hard gate before Stage 5)
   ↓
 Stage 5 execution
 ```
 
-**Quick fixes and spikes:** Use `/ux-create` directly — single screen, color/spacing changes, UX exploration. Bypasses the staged path.
+**Quick fixes and spikes:** Use `/ais-ux-analysis --quick` directly — single screen, color/spacing changes, UX exploration. Bypasses the staged path.
 
 **Rules:** See `.claude/rules/ux-rules.md` for all 10 hard gates (GH-01 through GH-10).
 
@@ -32,26 +32,26 @@ Stage 5 execution
 docs/ux/
 ├── README.md              ← this file
 └── <feature>/
-    ├── 01-requirements.md      ← /ux-analyze output
-    ├── 02-flows.md             ← /ux-flow output
-    ├── 03-screen-inventory.md  ← /ux-analyze output (screen quick-reference)
-    ├── 04-design-system-notes.md ← /ux-figma-spec output
-    ├── 05-screen-specs.md      ← /ux-screen-spec output (one section per screen)
-    ├── 06-figma-spec.md        ← /ux-figma-spec output
-    ├── 07-review.md           ← /ux-review output
-    └── 08-dev-handoff.md       ← /ux-handoff output (hard gate before coding)
+    ├── 01-requirements.md      ← /ais-ux-analysis output
+    ├── 02-flows.md             ← /ais-ux-analysis output
+    ├── 03-screen-inventory.md  ← /ais-ux-analysis output (screen quick-reference)
+    ├── 04-design-system-notes.md ← /ais-ux-design-prompt output
+    ├── 05-screen-specs.md      ← /ais-ux-design-prompt output (one section per screen)
+    ├── 06-figma-spec.md        ← /ais-ux-design-prompt output
+    ├── 07-review.md           ← /ais-ux-review output
+    └── 08-dev-handoff.md       ← /ais-ux-handoff output (hard gate before coding)
 ```
 
 ## Who Does What
 
 | Command | Who runs it |
 |---|---|
-| `/ux-analyze` | UX Designer / BA |
-| `/ux-flow` | UX Designer |
-| `/ux-screen-spec` | UX Designer (one screen at a time) |
-| `/ux-figma-spec` | UX Designer |
-| `/ux-review` | UX Designer / Tech Lead |
-| `/ux-handoff` | UX Designer |
+| `/ais-ux-analysis` | UX Designer / BA |
+| `/ais-ux-analysis` | UX Designer |
+| `/ais-ux-design-prompt` | UX Designer (one screen at a time) |
+| `/ais-ux-design-prompt` | UX Designer |
+| `/ais-ux-review` | UX Designer / Tech Lead |
+| `/ais-ux-handoff` | UX Designer |
 
 PM and stakeholder approval required at each gate before proceeding.
 

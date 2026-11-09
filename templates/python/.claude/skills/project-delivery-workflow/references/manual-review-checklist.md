@@ -1,6 +1,6 @@
 # Manual Review Checklist (Stage 7)
 
-What human reviewers look for that AI reviewers can't reliably catch. Used at Stage 7 (Manual Review), after Stage 6 (`/review` AI parallel review) has passed.
+What human reviewers look for that AI reviewers can't reliably catch. Used at Stage 7 (Manual Review), after Stage 6 (`/ais-review` AI parallel review) has passed.
 
 > **AI vs human:** AI is excellent at correctness, security checklist application, pattern matching, and naming consistency. AI is **weak** at business intent, UX coherence, team-knowledge transfer, and "does this actually solve the user's problem". Stage 7 covers the latter.
 
@@ -103,7 +103,7 @@ Do not:
 Manual Review — [PR title]
 Reviewer: [Name]
 Date: [date]
-AI review: [link to /review output]
+AI review: [link to /ais-review output]
 
 Q1 (product fit):       ✅ / ⚠ / ❌
 Q2 (user fit):          ✅ / ⚠ / ❌

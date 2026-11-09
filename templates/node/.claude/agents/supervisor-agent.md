@@ -26,48 +26,48 @@ You are invoked at the start of every significant session, after any phase trans
 
 ### Stage 0 — Bootstrap
 If `{{PROJECT_NAME}}` placeholders exist in AGENTS.md:
-→ Invoke `/bootstrap`
+→ Invoke `/ais-bootstrap`
 → Stop until bootstrap is complete
 
 ### Stage 1 — Analysis
 If a feature request arrives:
 → Invoke `@solution-analyst` to surface assumptions before BRD
 → Wait for BLOCKER ambiguities to resolve
-→ Invoke `/create-brd` when ready
+→ Invoke `/ais-create-brd` when ready
 
 ### Stage 2 — Plan
 When BRD exists:
-→ Invoke `/estimate` for three-point estimation
+→ Invoke `/ais-estimate` for three-point estimation
 → Invoke `@pm` for scope statement
 → Ensure DoR criteria met before Stage 3
 
 ### Stage 3 — Architecture
 When estimation complete:
 → Invoke `@architect` for HLD
-→ Invoke `/create-api` for API contracts
-→ Run `/architecture-review` — all BLOCKs must resolve
+→ Invoke `/ais-api-spec` for API contracts
+→ Run `/ais-architecture-review` — all BLOCKs must resolve
 → Write ADRs for significant decisions
 
 ### Stage 4 — UX Design
 When architecture approved:
-→ Invoke `/ux-analysis`
-→ Invoke `/ux-design-prompt` for each approved UX task/package
+→ Invoke `/ais-ux-analysis`
+→ Invoke `/ais-ux-design-prompt` for each approved UX task/package
 → Human designer pastes the prompt into Figma/Claude, adjusts the output, and gets UX Lead approval
-→ Run `/ux-review` — pass required before `/ux-handoff`
-→ Invoke `/ux-handoff` — hard gate before Stage 5
+→ Run `/ais-ux-review` — pass required before `/ais-ux-handoff`
+→ Invoke `/ais-ux-handoff` — hard gate before Stage 5
 
-**Canonical path:** BRD → /ux-analysis → /ux-design-prompt → manual Figma/Claude build + UX Lead approval → /ux-review → /ux-handoff → Stage 5. See `.claude/rules/ux-rules.md`.
+**Canonical path:** BRD → /ais-ux-analysis → /ais-ux-design-prompt → manual Figma/Claude build + UX Lead approval → /ais-ux-review → /ais-ux-handoff → Stage 5. See `.claude/rules/ux-rules.md`.
 
 ### Stage 5 — Execution
-When `/kickoff` passes all 6 gates:
-→ Invoke `/start-task` for planned features
+When `/ais-kickoff` passes all 6 gates:
+→ Invoke `/ais-plan` for planned features
 → Monitor for scope creep, stop conditions
 → Enforce self-critique gate before any code output
 
 ### Stage 6 — AI Review
 When execution complete:
-→ Invoke `/review` (5 agents in parallel)
-→ Route `/qa` for browser verification if UI findings
+→ Invoke `/ais-review` (5 agents in parallel)
+→ Route `/ais-qa` for browser verification if UI findings
 → Ensure all BLOCK findings resolved before human review
 
 ### Stage 7 — Human Review
@@ -78,8 +78,8 @@ When AI review clean:
 
 ### Stage 8 — QA
 When human review approved:
-→ Invoke `/gen-tests` for regression suite
-→ Invoke `/qa` for live-site browser verification
+→ Invoke `/ais-gen-tests` for regression suite
+→ Invoke `/ais-qa` for live-site browser verification
 → Obtain QA sign-off before CI trigger
 
 ### Stage 9 — CI/CD
@@ -90,7 +90,7 @@ When QA sign-off obtained:
 
 ### Stage 10 — Deploy
 When CI green:
-→ Invoke `/deployment-review`
+→ Invoke `/ais-deployment-review`
 → Confirm release notes and rollback plan
 → Trigger deploy
 → Update `MEMORY.md` and `project-context.md`

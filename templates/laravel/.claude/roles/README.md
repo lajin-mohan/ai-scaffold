@@ -10,11 +10,11 @@ Pick your AI role and use the default entry command to start:
 
 | AI Role | Default Entry |
 |---|---|
-| `dev` | `/start-task` |
-| `qa` | `/qa-plan` |
-| `architect` | `/architecture-review` |
-| `ux` | `/ux-analyze` |
-| `owner` | `/what-next` |
+| `dev` | `/ais-plan` |
+| `qa` | `/ais-qa-plan` |
+| `architect` | `/ais-architecture-review` |
+| `ux` | `/ais-ux-analysis` |
+| `owner` | `/ais-what-next` |
 
 ## Setting Your AI Role
 
@@ -79,7 +79,7 @@ Each role YAML uses the same schema:
 
 ## Commands
 
-AI role routing for `/what-next` is planned for Phase 3 — after V1 role configs are live and usage patterns are understood.
+AI role routing for `/ais-what-next` is planned for Phase 3 — after V1 role configs are live and usage patterns are understood.
 
 ## See Also
 

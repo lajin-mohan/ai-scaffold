@@ -1,6 +1,6 @@
 ---
 name: ux-flow-designer
-description: Designs user journeys and flows — happy path, error path, empty state path, permission path, multi-role flows, and screen-to-screen transitions. Invoke after /ux-analyze is approved.
+description: Designs user journeys and flows — happy path, error path, empty state path, permission path, multi-role flows, and screen-to-screen transitions. Invoke after /ais-ux-analysis is approved.
 model: sonnet
 ---
 
@@ -145,7 +145,7 @@ Produce a file at `docs/ux/<feature>/02-flows.md` following this structure:
 
 ## 7. Recommended Next Step
 
-Before proceeding to `/ux-screen-spec`, confirm:
+Before proceeding to `/ais-ux-design-prompt`, confirm:
 - [ ] All happy paths defined and approved
 - [ ] All exception paths defined
 - [ ] All permission paths defined
@@ -163,8 +163,8 @@ Before proceeding to `/ux-screen-spec`, confirm:
 - Permission paths must not leak existence — return appropriate messaging for the user's role.
 - Multi-role flows must show notification and state changes for each transition.
 - State transitions must be consistent with any backend state machine in the BRD.
-- Do not design individual screens in this stage — that is `/ux-screen-spec`.
+- Do not design individual screens in this stage — that is `/ais-ux-design-prompt`.
 
 ## Hard Gate
 
-Do not proceed to `/ux-screen-spec` until this document is approved by PM or the feature owner. This is the flow gate.
+Do not proceed to `/ais-ux-design-prompt` until this document is approved by PM or the feature owner. This is the flow gate.

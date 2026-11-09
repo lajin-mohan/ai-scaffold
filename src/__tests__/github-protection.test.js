@@ -500,7 +500,7 @@ describe('mergeBranch is pure', () => {
   });
 });
 
-// ------------------------------------------------- regressions from /review
+// ------------------------------------------------- regressions from /ais-review
 
 describe('regressions found by adversarial review', () => {
   it('will not report a branch unprotected when a ruleset could not be read', async () => {

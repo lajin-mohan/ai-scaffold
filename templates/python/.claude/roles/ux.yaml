@@ -1,21 +1,21 @@
 ---
 name: ux
 description: UX creation, UX review, accessibility, and responsive behavior. Use this role when designing screens, reviewing UX artifacts, or verifying frontend implementation.
-default_entry: /ux-analysis
+default_entry: /ais-ux-analysis
 
 allowed_commands:
-  - /ux-create
-  - /ux-analysis
-  - /ux-design-prompt
-  - /ux-analyze
-  - /ux-flow
-  - /ux-screen-spec
-  - /ux-figma-spec
-  - /ux-handoff
-  - /ux-review
-  - /qa
-  - /lessons
-  - /reflect
+  - /ais-ux-analysis --quick
+  - /ais-ux-analysis
+  - /ais-ux-design-prompt
+  - /ais-ux-analysis
+  - /ais-ux-analysis
+  - /ais-ux-design-prompt
+  - /ais-ux-design-prompt
+  - /ais-ux-handoff
+  - /ais-ux-review
+  - /ais-qa
+  - /ais-lessons
+  - /ais-lessons --write
 
 recommended_agents:
   - ux-requirement-analyst

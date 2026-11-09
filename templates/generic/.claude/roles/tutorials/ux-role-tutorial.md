@@ -1,9 +1,9 @@
 # UX Role Tutorial
 
-**Role:** `ux` | **Default command:** `/ux-analysis` | **Purpose:** UX creation, review, accessibility, and responsive behavior verification
+**Role:** `ux` | **Default command:** `/ais-ux-analysis` | **Purpose:** UX creation, review, accessibility, and responsive behavior verification
 
-> Workflow update: the canonical UX flow is now `/ux-analysis` → `/ux-design-prompt` → manual Figma/Claude build + UX Lead approval → `/ux-review` → `/ux-handoff`.
-> Older references in this tutorial to `/ux-analyze`, `/ux-flow`, `/ux-screen-spec`, and `/ux-figma-spec` are legacy command aliases.
+> Workflow update: the canonical UX flow is now `/ais-ux-analysis` → `/ais-ux-design-prompt` → manual Figma/Claude build + UX Lead approval → `/ais-ux-review` → `/ais-ux-handoff`.
+> Older references in this tutorial to `/ais-ux-analysis`, `/ais-ux-analysis`, `/ais-ux-design-prompt`, and `/ais-ux-design-prompt` are legacy command aliases.
 
 ---
 
@@ -35,7 +35,7 @@ You are the **ux** when you need to:
 ### 2. Begin with UX analysis
 
 ```bash
-/ux-analyze
+/ais-ux-analysis
 ```
 
 This analyzes a feature's UX requirements, user roles, information architecture, and identifies design decisions needed.
@@ -46,14 +46,14 @@ This analyzes a feature's UX requirements, user roles, information architecture,
 
 | Command | When to Use | Output |
 |---|---|---|
-| `/ux-analysis` | Stage 4 — task-based UX requirements | `tasks/<MODULE>-<NNN>/01-requirements.md` + `02-open-questions.md` |
-| `/ux-design-prompt` | Stage 4 — Figma/Claude prompt | `tasks/<MODULE>-<NNN>/03-design-prompt.md` (self-contained) + `04-figma-build-notes.md` |
-| `/ux-create` | Stage 4 — quick fixes/spikes | Single-screen UX improvements, color/spacing changes, UX exploration (not the primary path) |
-| `/ux-review` | Stage 4/6 — UX verification | 32-item check + 4-viewport browser verification (desktop L/D + mobile L/D at 390px) |
-| `/ux-handoff` | Stage 4 — dev handoff | Developer-ready checklist: components, state matrix, tokens, responsive, Figma link (hard gate before Stage 5) |
-| `/qa` | Stage 8 — live browser QA | Rendering, interaction, console issue detection |
-| `/lessons` | Record a UX decision or mistake | Saved to `tasks/lessons.md` |
-| `/reflect` | Review UX session outcome | Saved to memory |
+| `/ais-ux-analysis` | Stage 4 — task-based UX requirements | `tasks/<MODULE>-<NNN>/01-requirements.md` + `02-open-questions.md` |
+| `/ais-ux-design-prompt` | Stage 4 — Figma/Claude prompt | `tasks/<MODULE>-<NNN>/03-design-prompt.md` (self-contained) + `04-figma-build-notes.md` |
+| `/ais-ux-analysis --quick` | Stage 4 — quick fixes/spikes | Single-screen UX improvements, color/spacing changes, UX exploration (not the primary path) |
+| `/ais-ux-review` | Stage 4/6 — UX verification | 32-item check + 4-viewport browser verification (desktop L/D + mobile L/D at 390px) |
+| `/ais-ux-handoff` | Stage 4 — dev handoff | Developer-ready checklist: components, state matrix, tokens, responsive, Figma link (hard gate before Stage 5) |
+| `/ais-qa` | Stage 8 — live browser QA | Rendering, interaction, console issue detection |
+| `/ais-lessons` | Record a UX decision or mistake | Saved to `tasks/lessons.md` |
+| `/ais-lessons --write` | Review UX session outcome | Saved to memory |
 
 ---
 
@@ -64,7 +64,7 @@ This analyzes a feature's UX requirements, user roles, information architecture,
 The UX workflow is **task-based** — one UX task = one UX deliverable. See `docs/ux/` for the UX module folder structure and task artifact conventions.
 
 ```
-1. UX Analysis: /ux-analysis <MODULE>-<NNN>
+1. UX Analysis: /ais-ux-analysis <MODULE>-<NNN>
    → Creates tasks/<MODULE>-<NNN>-<slug>/ folder
    → 01-task-index.md (stage tracker for this task)
    → 01-requirements.md (user roles, screen inventory, risks)
@@ -72,7 +72,7 @@ The UX workflow is **task-based** — one UX task = one UX deliverable. See `doc
    → module.json + state.json updated to track the task
    → Ends with summary, unresolved OQs, and the recommended next command
 
-2. Design Prompt: /ux-design-prompt <MODULE>-<NNN>
+2. Design Prompt: /ais-ux-design-prompt <MODULE>-<NNN>
    → 03-design-prompt.md — self-contained Figma/Claude prompt
        * Inlines all design tokens, states, viewports, exclusions
        * Lists hard rules (token hygiene GH-11, accessibility, responsive)
@@ -88,15 +88,15 @@ The UX workflow is **task-based** — one UX task = one UX deliverable. See `doc
    → Adjusts layout, spacing, density, token use, variants, states, responsive
    → Tracks progress in 04-figma-build-notes.md (Variables → leaves → composites → frames → verify)
    → UX Lead approves
-   → Only after approval do /ux-review and /ux-handoff run
+   → Only after approval do /ais-ux-review and /ais-ux-handoff run
 
-4. Implementation Review: /ux-review <MODULE>-<NNN>
+4. Implementation Review: /ais-ux-review <MODULE>-<NNN>
    → 32-item check (severity BLOCK | HIGH | MEDIUM | LOW | NIT)
    → 4-viewport browser verification (desktop L/D + mobile L/D at 390px)
    → All 7 states verified per data-rendering screen
    → Token-only colors enforced as BLOCK (GH-11)
 
-5. Handoff: /ux-handoff <MODULE>-<NNN>
+5. Handoff: /ais-ux-handoff <MODULE>-<NNN>
    → 05-dev-handoff.md — developer-ready checklist
    → Components, state matrix, token references, responsive rules, Figma link
    → Hard gate before Stage 5 (no coding without this)
@@ -168,7 +168,7 @@ Every data-rendering component must handle all **seven** states (per `.claude/ru
 7. Mobile                → Adapted layout at 390px (not desktop squished)
 ```
 
-The legacy "4 states" (loading, error, empty, populated) is **insufficient** and is now a BLOCK finding in `/ux-review`.
+The legacy "4 states" (loading, error, empty, populated) is **insufficient** and is now a BLOCK finding in `/ais-ux-review`.
 
 ---
 
@@ -191,14 +191,14 @@ At 390px, primary workflows must remain complete. Create, edit, submit, approve,
 ```
 User: "Design the Reporting Main Table"
 
-1. /ux-analysis UX-REP-001-main-table
+1. /ais-ux-analysis UX-REP-001-main-table
    → Creates tasks/UX-REP-001-main-table/ with 01-task-index.md
    → 01-requirements.md: user roles (Convener/Admin/Hotel Partner),
      screen inventory (Main Table + More Filters Modal),
-     14 OQs (6 original + 8 surfaced by /ux-flow)
+     14 OQs (6 original + 8 surfaced by /ais-ux-analysis)
    → state.json: status = requirements_ready
 
-2. /ux-design-prompt UX-REP-001-main-table
+2. /ais-ux-design-prompt UX-REP-001-main-table
    → 03-design-prompt.md: self-contained Figma prompt with all tokens,
      all 7 states, 4 viewports, 2 themes, hard rules, OQ defaults
    → 04-figma-build-notes.md: blank build tracker
@@ -210,12 +210,12 @@ User: "Design the Reporting Main Table"
    → Tracks progress in 04-figma-build-notes.md
    → UX Lead approves
 
-4. /ux-review UX-REP-001-main-table
+4. /ais-ux-review UX-REP-001-main-table
    → 32-item check + 4-viewport browser verification
    → Token hygiene (GH-11) enforced as BLOCK
    → All 7 states verified
 
-5. /ux-handoff UX-REP-001-main-table
+5. /ais-ux-handoff UX-REP-001-main-table
    → 05-dev-handoff.md generated
    → Hard gate before Stage 5 begins
 ```
@@ -225,17 +225,17 @@ User: "Design the Reporting Main Table"
 ```
 User: "Design the project creation form"
 
-1. /ux-analysis UX-FORM-001-create-project
+1. /ais-ux-analysis UX-FORM-001-create-project
    → 01-requirements.md: form fields, validation rules, success/error
    → 02-open-questions.md: max file size? draft autosave? cancellation policy?
 
-2. /ux-design-prompt UX-FORM-001-create-project
+2. /ais-ux-design-prompt UX-FORM-001-create-project
    → 03-design-prompt.md includes:
      - Per-field: label, helper text, placeholder, validation rules, error messages
      - All 7 states including form-validation state (field default, focus, error, disabled)
      - Accessibility: labels, aria-describedby for errors, focus order
 
-3. /ux-review (after implementation)
+3. /ais-ux-review (after implementation)
    → Form validation displays inline errors
    → Submit button shows loading state
    → Success redirects to project detail
@@ -247,7 +247,7 @@ User: "Design the project creation form"
 ```
 User: "Verify dark mode on the dashboard"
 
-1. /qa (with role set to ux)
+1. /ais-qa (with role set to ux)
    → Toggle dark mode
    → Verify: surface colors invert, text remains readable
    → Verify: no hardcoded hex values break theme
@@ -274,7 +274,7 @@ Invoke these for deep analysis:
 
 | Problem | Solution |
 |---|---|
-| No spec exists | Run `/ux-analysis <MODULE>-<NNN>` to create `01-requirements.md` before implementation |
+| No spec exists | Run `/ais-ux-analysis <MODULE>-<NNN>` to create `01-requirements.md` before implementation |
 | Hardcoded colors found | Flag as BLOCK (GH-11 — Token Hygiene Reference-Only Rule) — must use design tokens only |
 | Missing states | Component must handle all **7** states: loading, empty, error, permission-denied, success, form-validation, mobile |
 | Mobile actions hidden | Ensure primary workflow is complete at 390px |

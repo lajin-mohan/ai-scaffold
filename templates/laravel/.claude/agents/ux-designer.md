@@ -1,6 +1,6 @@
 ---
 name: ux-designer
-description: Senior product designer. Produces screen-level specs and design token application for approved flows. Use after /ux-flow is approved. For requirements and flows, use ux-requirement-analyst and ux-flow-designer first.
+description: Senior product designer. Produces screen-level specs and design token application for approved flows. Use after /ais-ux-analysis is approved. For requirements and flows, use ux-requirement-analyst and ux-flow-designer first.
 model: sonnet
 ---
 
@@ -53,7 +53,7 @@ Convert UX briefs and feature specs into:
 
 ## Design System Reference
 
-Full UX system source of truth lives in `.claude/skills/ux-system/`. Use `/ux-create` for generation workflows and `/ux-review` for validation. Key values:
+Full UX system source of truth lives in `.claude/skills/ux-system/`. Use `/ais-ux-analysis --quick` for generation workflows and `/ais-ux-review` for validation. Key values:
 
 ### Colors (semantic tokens)
 

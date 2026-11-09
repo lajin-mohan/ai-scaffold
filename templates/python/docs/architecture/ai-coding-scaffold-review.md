@@ -71,7 +71,7 @@ Thin routes → Services (business logic) → Repositories (SQL only) → Domain
 ### Multi-Agent Review Matrix
 
 - 11 specialized agents cover every architectural layer
-- `/review` runs 5 reviewers in parallel (backend, frontend, security, QA, architect)
+- `/ais-review` runs 5 reviewers in parallel (backend, frontend, security, QA, architect)
 - Security reviewer always runs — not bypassable even with `--backend-only`
 
 ### Stage-Gated Workflow
@@ -108,7 +108,7 @@ Referrer-Policy: strict-origin-when-cross-origin
 
 ### Gap 2: No Pre-Commit Hook
 
-`pre-review.sh` runs on `/review` but not on `git commit`. Enterprise teams need pre-commit enforcement.
+`pre-review.sh` runs on `/ais-review` but not on `git commit`. Enterprise teams need pre-commit enforcement.
 
 **Fix:** Add `.claude/hooks/pre-commit.sh` that runs lint + typecheck on every commit.
 
@@ -287,8 +287,8 @@ No enterprise-grade accessibility standard document for government/healthcare cl
 |---|---|
 | `.claude/rules/security-rules.md` | Add OWASP Top 10 mapping, CSP configuration |
 | `.claude/rules/compliance-rules.md` | Add data retention enforcement template |
-| `.claude/commands/review.md` | Add secrets scanning to pre-review |
-| `.claude/commands/bootstrap.md` | Ensure middleware files are created during bootstrap |
+| `.claude/commands/ais-review.md` | Add secrets scanning to pre-review |
+| `.claude/commands/ais-bootstrap.md` | Ensure middleware files are created during bootstrap |
 | `apps/api/src/README.md` | Add reading order for new middleware files |
 | `.env.example` | Add CORS configuration |
 | `.github/workflows/ci.yml` | Add SAST, DAST, secrets scanning |

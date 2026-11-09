@@ -60,15 +60,15 @@ Before a ticket can be specced:
 - [ ] Open questions identified and assigned
 - [ ] Stakeholder sign-off on scope
 
-Use `/create-brd` for features, direct ticket refinement for bugs.
+Use `/ais-create-brd` for features, direct ticket refinement for bugs.
 
 ### 3. Spec (SPEC)
 Before a ticket is READY:
-- [ ] API contract written and reviewed (`/create-api`)
-- [ ] UX spec approved (`/ux-create` artifacts, wireframes, component spec, `/ux-review` pass)
+- [ ] API contract written and reviewed (`/ais-api-spec`)
+- [ ] UX spec approved (`/ais-ux-analysis --quick` artifacts, wireframes, component spec, `/ais-ux-review` pass)
 - [ ] Database migration plan reviewed
-- [ ] Estimate completed (`/estimate`)
-- [ ] Architecture decision recorded if needed (`/architecture-review`)
+- [ ] Estimate completed (`/ais-estimate`)
+- [ ] Architecture decision recorded if needed (`/ais-architecture-review`)
 
 ### 4. Ready
 Ticket is ready when:
@@ -87,13 +87,13 @@ Developer picks up the ticket:
 ### 6. In Review
 - Self-review checklist completed (`.claude/skills/project-delivery-workflow/references/review-rules.md`)
 - PR opened with description, screenshots (if UI), and test plan
-- `/review` run — all BLOCK findings resolved
+- `/ais-review` run — all BLOCK findings resolved
 - Human reviewer assigned
 - QA environment up-to-date
 
 ### 7. QA
 - Feature tested on staging by QA or developer
-- `/gen-tests` run and verified
+- `/ais-gen-tests` run and verified
 - Regression scope identified and tested
 - Sign-off recorded on ticket
 
@@ -137,7 +137,7 @@ No problem-solving in standup — take it offline.
 
 - Estimate in story points or days — be consistent within the team
 - Include analysis, implementation, review, QA, deployment — not just coding
-- Use `/estimate` for features > 1 day of effort
+- Use `/ais-estimate` for features > 1 day of effort
 - P0 bugs are never estimated — fix immediately
 - Spikes are time-boxed: 1-2 days max, output is a decision or proof-of-concept
 
@@ -174,7 +174,7 @@ What user or business problem does this solve?
 
 ## Technical Notes
 - API contract: link to docs/api/
-- UX spec: link to docs/ux/ and `/ux-review` output
+- UX spec: link to docs/ux/ and `/ais-ux-review` output
 - Migrations required: Yes / No
 
 ## Definition of Done

@@ -121,7 +121,7 @@ serious feature work:
 ais init --profile node --requirements-source create-later
 ```
 
-Then use `/create-brd` or your normal product process to create the BRD/FRD.
+Then use `/ais-create-brd` or your normal product process to create the BRD/FRD.
 Keep it in the repo location your team prefers, for example
 `docs/requirements/frd.md`. AI Scaffold does not create root `docs/` by default
 for existing projects; create that folder only when your project needs it.
@@ -183,10 +183,10 @@ Use the BRD/FRD or task spec as the source of truth.
 1. Run `ais doctor`.
 2. Open the BRD/FRD and identify the task ID.
 3. Confirm acceptance criteria and verification commands are clear.
-4. Start work with `/start-task --spec <path>`.
+4. Start work with `/ais-plan --spec <path>`.
 5. Review the plan and say `go` once.
 6. Let the AI implement only the approved scope.
-7. Run `/review`.
+7. Run `/ais-review`.
 8. Run QA or manual verification.
 9. Open PR for human review.
 ```
@@ -194,10 +194,10 @@ Use the BRD/FRD or task spec as the source of truth.
 Example:
 
 ```bash
-/start-task --spec docs/requirements/tasks/TASK-001-user-export.md
+/ais-plan --spec docs/requirements/tasks/TASK-001-user-export.md
 ```
 
-`/start-task` reads the spec, project memory, lessons, rules, agents, and role
+`/ais-plan` reads the spec, project memory, lessons, rules, agents, and role
 guidance. It then produces a plan with files, risks, acceptance criteria, and
 verification steps. It must wait for explicit approval before implementation.
 
@@ -209,12 +209,53 @@ You do not need every command on day one. Start here:
 
 | Command | Use it to |
 |---|---|
-| `/what-next` | Ask what the next project action should be |
-| `/start-task` | Plan, approve, implement, and verify a task |
-| `/debug-fix` | Reproduce and root-cause a bug before changing code |
-| `/review` | Run parallel AI review before human PR review |
-| `/commit-changes` | Commit with branch and verification checks |
-| `/lessons` | Query or record lessons so mistakes do not repeat |
+| `/ais-what-next` | Ask what the next project action should be |
+| `/ais-plan` | Plan, approve, implement, and verify a task |
+| `/ais-debug` | Reproduce and root-cause a bug before changing code |
+| `/ais-review` | Run parallel AI review before human PR review |
+| `/ais-commit` | Commit with branch and verification checks |
+| `/ais-lessons` | Query or record lessons so mistakes do not repeat |
+
+### Command names before 0.19
+
+Every scaffold command now starts with `ais-`, so it does not collide with your
+own or a plugin's commands. Twelve commands were folded into others.
+
+| Old | Now |
+|---|---|
+| `/start-task` | `/ais-plan` (an approved plan continues through implementation and verification) |
+| `/debug-fix` | `/ais-debug` |
+| `/investigate` | `/ais-debug` (the root-cause investigation section) |
+| `/review` | `/ais-review` |
+| `/qa-review` | `/ais-review` (the test-suite quality section) |
+| `/commit-changes` | `/ais-commit` |
+| `/gen-tests` | `/ais-gen-tests` |
+| `/lessons` | `/ais-lessons` |
+| `/reflect` | `/ais-lessons --write` |
+| `/bootstrap` | `/ais-bootstrap` |
+| `/settings` | edit `.claude/settings-overrides.json` directly (see `/ais-bootstrap`) |
+| `/health` | `/ais-health` |
+| `/what-next` | `/ais-what-next` |
+| `/kickoff` | `/ais-kickoff` |
+| `/create-brd` | `/ais-create-brd` |
+| `/create-api` | `/ais-api-spec` |
+| `/estimate` | `/ais-estimate` |
+| `/architecture-review` | `/ais-architecture-review` |
+| `/deployment-review` | `/ais-deployment-review` |
+| `/ux-analysis`, `/ux-analyze`, `/ux-flow` | `/ais-ux-analysis` |
+| `/ux-create` | `/ais-ux-analysis --quick` |
+| `/ux-design-prompt`, `/ux-screen-spec`, `/ux-figma-spec` | `/ais-ux-design-prompt` |
+| `/ux-handoff` | `/ais-ux-handoff` |
+| `/ux-review` | `/ais-ux-review` |
+| `/qa` | `/ais-qa` |
+| `/qa-plan` | `/ais-qa-plan` |
+| `/qa-auth` | `/ais-qa-plan --auth` |
+| `/ponytail-audit`, `/ponytail-debt`, `/ais-plan --intensity` | removed; `TODO(<ticket>)` markers remain the way to record deferred work |
+
+On `ais update --apply`, an old command file you never edited is removed and
+its new file added. One you edited is kept beside the new file with a notice:
+move your changes into the new file, then delete the old one. Existing
+`ponytail:` comments and `tasks/ponytail-debt.md` are yours and are left alone.
 
 Inspect what is installed:
 
@@ -237,8 +278,8 @@ Use the full workflow for product features and epics:
 2. Plan          - estimate, split tasks, identify risks
 3. Architecture  - HLD, API contracts, ADRs, LLD when needed
 4. UX            - UX requirements, design prompt, review, handoff
-5. Execution     - /start-task against approved spec
-6. AI Review     - /review
+5. Execution     - /ais-plan against approved spec
+6. AI Review     - /ais-review
 7. Manual Review - human PR review
 8. QA            - tests, traceability, UAT when needed
 9. CI/CD         - lint, typecheck, test, build, audit

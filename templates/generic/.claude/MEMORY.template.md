@@ -2,7 +2,7 @@
 
 Living index for project memory and session compactions.
 
-Copy this file to `.claude/MEMORY.md` during `/bootstrap`, then replace the bracketed values with the adopting application's real context. Do not copy ai-scaffold build history into application repositories.
+Copy this file to `.claude/MEMORY.md` during `/ais-bootstrap`, then replace the bracketed values with the adopting application's real context. Do not copy ai-scaffold build history into application repositories.
 
 ---
 
@@ -60,7 +60,7 @@ Append-only log of session compactions. Each entry captures: stage, decisions ma
 At the start of every session:
 1. Read `.claude/MEMORY.md` to orient to active state and recent changes.
 2. Read `.claude/memory/project-context.md` for sprint/work status.
-3. Run `/lessons --recent 3` when lessons exist.
+3. Run `/ais-lessons --recent 3` when lessons exist.
 
 Before planning or architecture work:
 - Read `.claude/memory/architecture-decisions.md`.

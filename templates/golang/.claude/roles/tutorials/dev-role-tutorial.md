@@ -1,6 +1,6 @@
 # Developer Role Tutorial
 
-**Role:** `dev` | **Default command:** `/start-task` | **Purpose:** Feature implementation, bug fixing, and production code quality
+**Role:** `dev` | **Default command:** `/ais-plan` | **Purpose:** Feature implementation, bug fixing, and production code quality
 
 ---
 
@@ -31,7 +31,7 @@ You are the **dev** when you need to:
 ### 2. Pick up a task
 
 ```bash
-/start-task
+/ais-plan
 ```
 
 This reads the ticket spec, proposes a numbered plan, waits for your "go", then executes and verifies.
@@ -42,15 +42,15 @@ This reads the ticket spec, proposes a numbered plan, waits for your "go", then 
 
 | Command | When to Use | Output |
 |---|---|---|
-| `/start-task` | Begin any implementation task | Numbered plan, approval gate, execution |
-| `/gen-tests` | Write tests for a feature | Runnable test files with assertions |
-| `/review` | Run AI review before human review | BLOCK/WARN/QUESTION findings |
-| `/debug-fix` | Investigate and fix a bug | Root cause + minimal fix + regression test |
-| `/investigate` | Root cause analysis when error is reported | Evidence → hypothesis → test → fix |
-| `/commit-changes` | Stage, commit, and optionally push changes | Git commit with correct identity |
-| `/health` | Check code quality (lint, typecheck, tests) | Composite score dashboard |
-| `/lessons` | Record a mistake pattern after correction | Saved to `tasks/lessons.md` |
-| `/reflect` | Review session outcome, log decisions | Saved to memory |
+| `/ais-plan` | Begin any implementation task | Numbered plan, approval gate, execution |
+| `/ais-gen-tests` | Write tests for a feature | Runnable test files with assertions |
+| `/ais-review` | Run AI review before human review | BLOCK/WARN/QUESTION findings |
+| `/ais-debug` | Investigate and fix a bug | Root cause + minimal fix + regression test |
+| `/ais-debug` | Root cause analysis when error is reported | Evidence → hypothesis → test → fix |
+| `/ais-commit` | Stage, commit, and optionally push changes | Git commit with correct identity |
+| `/ais-health` | Check code quality (lint, typecheck, tests) | Composite score dashboard |
+| `/ais-lessons` | Record a mistake pattern after correction | Saved to `tasks/lessons.md` |
+| `/ais-lessons --write` | Review session outcome, log decisions | Saved to memory |
 
 ---
 
@@ -60,7 +60,7 @@ This reads the ticket spec, proposes a numbered plan, waits for your "go", then 
 
 ```
 1. Set role → "dev" in settings.local.json
-2. Run /start-task
+2. Run /ais-plan
    → Claude reads the ticket spec
    → Proposes a numbered plan (route → service → repo → tests)
    → Waits for "go"
@@ -68,10 +68,10 @@ This reads the ticket spec, proposes a numbered plan, waits for your "go", then 
    → Write code per the spec
    → Write tests (happy path + 2 edge cases)
    → Run lint + typecheck + tests
-4. Run /review
+4. Run /ais-review
    → Address all BLOCK findings
    → Acknowledge WARN findings in PR
-5. Run /commit-changes
+5. Run /ais-commit
    → Stage and commit with correct identity
    → Push to remote (if authorized)
 ```
@@ -79,19 +79,19 @@ This reads the ticket spec, proposes a numbered plan, waits for your "go", then 
 ### Bug Fix
 
 ```
-1. Run /debug-fix
+1. Run /ais-debug
    → Claude investigates the error
    → Gathers evidence, forms hypothesis
    → Identifies root cause (not symptom)
 2. Fix is applied with regression test
 3. Verify fix works: tests pass, original repro no longer triggers
-4. Run /commit-changes
+4. Run /ais-commit
 ```
 
 ### Test Writing
 
 ```
-1. Run /gen-tests
+1. Run /ais-gen-tests
    → Specify the feature or file to cover
    → Claude generates unit + integration tests
    → Tests cover happy path + edge cases + auth/tenant isolation
@@ -109,7 +109,7 @@ Before claiming "done", all of these must pass:
 - [ ] `typecheck_pass` — TypeScript/PHPStan/Pyright has zero errors
 - [ ] `tests_pass` — all tests pass (new + existing)
 - [ ] `build_pass` — project builds without errors
-- [ ] `review_blocks_resolved` — all `/review` BLOCK findings fixed
+- [ ] `review_blocks_resolved` — all `/ais-review` BLOCK findings fixed
 
 ---
 
@@ -146,11 +146,11 @@ When work gets complex, invoke a specialist:
 User: "Add a DELETE /api/v1/projects/:id endpoint"
 
 1. Claude checks: is there a spec/BRD? → If not, asks for it
-2. Runs /start-task with the spec
+2. Runs /ais-plan with the spec
 3. Plan includes: route handler → service → repository → migration → tests
 4. Executes, runs lint/tests, fixes BLOCK findings
-5. Runs /review, resolves BLOCKs
-6. Runs /commit-changes
+5. Runs /ais-review, resolves BLOCKs
+6. Runs /ais-commit
 ```
 
 ### Scenario 2: Fix a failing test
@@ -158,7 +158,7 @@ User: "Add a DELETE /api/v1/projects/:id endpoint"
 ```
 User: "TestCandidateRepository::testFindById is failing"
 
-1. Claude runs /debug-fix
+1. Claude runs /ais-debug
 2. Reads the test, runs it, identifies root cause
 3. Fixes the minimal cause (not the symptom)
 4. Re-runs test → passes
@@ -171,10 +171,10 @@ User: "TestCandidateRepository::testFindById is failing"
 ```
 User: "Refactor UserService to use dependency injection"
 
-1. Claude runs /start-task with the refactor spec
+1. Claude runs /ais-plan with the refactor spec
 2. Plan: identify constructor deps → inject via constructor → update callers → tests still pass
 3. No new features — pure refactor
-4. Runs /review (same evidence gates apply)
+4. Runs /ais-review (same evidence gates apply)
 5. Commits with "refactor(scope): description" format
 ```
 
@@ -184,10 +184,10 @@ User: "Refactor UserService to use dependency injection"
 
 | Problem | Solution |
 |---|---|
-| `/start-task` says no spec found | Create ticket file in `tasks/todo/<TICKET-ID>.md` or link to Jira ticket |
+| `/ais-plan` says no spec found | Create ticket file in `tasks/todo/<TICKET-ID>.md` or link to Jira ticket |
 | Tests fail after implementation | Re-read spec — implementation may have drifted from spec |
-| `/review` has many BLOCKs | Address them one by one, don't skip — each BLOCK is a real issue |
-| "No tests exist" | Run `/gen-tests` to generate them before implementing |
+| `/ais-review` has many BLOCKs | Address them one by one, don't skip — each BLOCK is a real issue |
+| "No tests exist" | Run `/ais-gen-tests` to generate them before implementing |
 | Stale memory conflicts with code | Code wins. Update memory. Don't act on stale memory. |
 | "I don't know" response | This is correct. Ask the user or run a search to find out. |
 

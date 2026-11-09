@@ -1,6 +1,6 @@
 # QA Role Tutorial
 
-**Role:** `qa` | **Default command:** `/qa-plan` | **Purpose:** Test planning, test generation, QA review, and live browser verification
+**Role:** `qa` | **Default command:** `/ais-qa-plan` | **Purpose:** Test planning, test generation, QA review, and live browser verification
 
 ---
 
@@ -31,7 +31,7 @@ You are the **qa** when you need to:
 ### 2. Begin with QA planning
 
 ```bash
-/qa-plan
+/ais-qa-plan
 ```
 
 This reads the feature spec, designs a test approach (unit/integration/E2E), identifies test data requirements, and surfaces edge cases.
@@ -42,13 +42,13 @@ This reads the feature spec, designs a test approach (unit/integration/E2E), ide
 
 | Command | When to Use | Output |
 |---|---|---|
-| `/qa-plan` | Design test strategy for a feature | Test matrix, test types, edge cases, data requirements |
-| `/gen-tests` | Generate runnable test files | Unit + integration tests with assertions |
-| `/qa-review` | Review implementation for correctness | BLOCK/WARN/QUESTION findings on business rules |
-| `/qa-auth` | QA sign-off with auth verification | Auth flow + permission gate verification |
-| `/qa` | Live browser QA with headless browser | Rendering, interaction, console issue detection |
-| `/lessons` | Record a test gap or mistake pattern | Saved to `tasks/lessons.md` |
-| `/reflect` | Review QA session outcome | Saved to memory |
+| `/ais-qa-plan` | Design test strategy for a feature | Test matrix, test types, edge cases, data requirements |
+| `/ais-gen-tests` | Generate runnable test files | Unit + integration tests with assertions |
+| `/ais-review` | Review implementation for correctness | BLOCK/WARN/QUESTION findings on business rules |
+| `/ais-qa-plan --auth` | QA sign-off with auth verification | Auth flow + permission gate verification |
+| `/ais-qa` | Live browser QA with headless browser | Rendering, interaction, console issue detection |
+| `/ais-lessons` | Record a test gap or mistake pattern | Saved to `tasks/lessons.md` |
+| `/ais-lessons --write` | Review QA session outcome | Saved to memory |
 
 ---
 
@@ -57,25 +57,25 @@ This reads the feature spec, designs a test approach (unit/integration/E2E), ide
 ### Feature QA from Spec
 
 ```
-1. Run /qa-plan
+1. Run /ais-qa-plan
    → Read the feature spec
    → Identify test types: unit / integration / E2E
    → List edge cases: empty, max, null, concurrent, auth failure
    → Identify test data requirements
 
-2. Generate tests: /gen-tests
+2. Generate tests: /ais-gen-tests
    → Happy path test
    → 2+ edge/failure case tests
    → Auth failure (401) test
    → Permission failure (403) test
    → Tenant isolation test (for multi-tenant)
 
-3. Run /qa-review
+3. Run /ais-review
    → Business rule validation
    → Schema correctness
    → Response contract verification
 
-4. Live browser QA: /qa
+4. Live browser QA: /ais-qa
    → Desktop light, desktop dark
    → Mobile (~390px) light, mobile dark
    → Verify all states: loading, error, empty, populated
@@ -84,11 +84,11 @@ This reads the feature spec, designs a test approach (unit/integration/E2E), ide
 ### Regression Testing
 
 ```
-1. Run /qa-review on changed files
+1. Run /ais-review on changed files
    → Identify test paths that could break
    → Run relevant test suites
 
-2. Run /qa for UI changes
+2. Run /ais-qa for UI changes
    → Walk the feature flow end-to-end
    → Verify no console errors
 ```
@@ -161,19 +161,19 @@ Coverage is a minimum bar, not a goal.
 ```
 User: "Add GET /api/v1/projects and test it"
 
-1. /qa-plan
+1. /ais-qa-plan
    → Happy path: returns 200 with paginated list
    → Empty state: returns 200 with empty array
    → Auth failure: returns 401 without token
    → Permission failure: returns 403 without permission
    → Pagination: page boundaries, total counts
 
-2. /gen-tests
+2. /ais-gen-tests
    → Integration tests for the endpoint
    → Auth/permission tests
    → Pagination tests
 
-3. /qa-review
+3. /ais-review
    → Business rule validation
    → Response contract verification
 ```
@@ -183,17 +183,17 @@ User: "Add GET /api/v1/projects and test it"
 ```
 User: "Add a project creation form"
 
-1. /qa-plan
+1. /ais-qa-plan
    → Happy path: form submits, project created
    → Validation: required fields, email format, max length
    → Error state: API returns 400 with field errors
    → Loading state: submit shows spinner, disables button
 
-2. /gen-tests
+2. /ais-gen-tests
    → Frontend: form validation, submission handling
    → Backend: API validation, entity creation
 
-3. /qa (live browser)
+3. /ais-qa (live browser)
    → Desktop + mobile
    → Light + dark theme
    → All states: loading, error, success
@@ -204,12 +204,12 @@ User: "Add a project creation form"
 ```
 User: "Verify tenant isolation for projects"
 
-1. /qa-review
+1. /ais-review
    → Tenant A cannot access Tenant B projects
    → Repository layer enforces tenant_id scoping
    → Returns 404 (not 403) for cross-tenant access
 
-2. /gen-tests
+2. /ais-gen-tests
    → Tenant isolation test (CROSS_TENANT = 404)
    → Auth failure test (NO_TOKEN = 401)
    → Permission failure test (NO_PERM = 403)
@@ -234,7 +234,7 @@ Invoke these for deep analysis:
 
 | Problem | Solution |
 |---|---|
-| No tests exist for a feature | Run `/gen-tests` — don't skip this |
+| No tests exist for a feature | Run `/ais-gen-tests` — don't skip this |
 | Tests fail on first run | Expected — implementation may not be complete yet |
 | "I don't know" response | This is correct. Ask or research — don't guess at expected behavior |
 | Edge case not covered | Add it to the test plan, generate new test, add regression test |

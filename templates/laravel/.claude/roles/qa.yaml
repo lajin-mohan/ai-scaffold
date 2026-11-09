@@ -1,16 +1,16 @@
 ---
 name: qa
 description: Test planning, test generation, QA review, and live browser verification. Use this role when designing, executing, or signing off on quality assurance work.
-default_entry: /qa-plan
+default_entry: /ais-qa-plan
 
 allowed_commands:
-  - /qa-plan
-  - /gen-tests
-  - /qa-review
-  - /qa-auth
-  - /qa
-  - /lessons
-  - /reflect
+  - /ais-qa-plan
+  - /ais-gen-tests
+  - /ais-review
+  - /ais-qa-plan --auth
+  - /ais-qa
+  - /ais-lessons
+  - /ais-lessons --write
 
 recommended_agents:
   - qa-reviewer

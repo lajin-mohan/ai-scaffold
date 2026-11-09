@@ -7,17 +7,17 @@ This guide explains how every role can use the AI tools in this template — in 
 ## The Workflow at a Glance
 
 ```
-Stage 1: Analysis          -> solution-analyst agent + /create-brd
-Stage 2: Plan              -> estimator agent + /estimate
-Stage 3: Arch Design       -> architect agent + /create-api + /architecture-review + LLD template
+Stage 1: Analysis          -> solution-analyst agent + /ais-create-brd
+Stage 2: Plan              -> estimator agent + /ais-estimate
+Stage 3: Arch Design       -> architect agent + /ais-api-spec + /ais-architecture-review + LLD template
 Stage 4: UX Design         -> ux-designer agent
-         ---- /kickoff ---------------------------------- Gate: GO before any code
+         ---- /ais-kickoff ---------------------------------- Gate: GO before any code
 Stage 5: Execution         -> coding against approved spec
-Stage 6: AI Review         -> /review (runs backend + frontend + security reviewers)
+Stage 6: AI Review         -> /ais-review (runs backend + frontend + security reviewers)
 Stage 7: Manual Review     -> peer review against review-rules.md
-Stage 8: QA                -> /gen-tests + qa-reviewer agent + UAT template
+Stage 8: QA                -> /ais-gen-tests + qa-reviewer agent + UAT template
 Stage 9: CI/CD             -> automated (lint, typecheck, tests, build)
-Stage 10: Deploy           -> /deployment-review + release-notes template
+Stage 10: Deploy           -> /ais-deployment-review + release-notes template
 ```
 
 **Gate rule:** Each stage gates the next. No skipping.
@@ -28,11 +28,11 @@ Not sure where to begin? Pick your AI role and use the default entry:
 
 | AI Role | Default Entry | When to use |
 |---|---|---|
-| **dev** | `/start-task` | Building features, fixing bugs, committing code |
-| **qa** | `/qa-plan` | Planning tests, reviewing coverage, verifying releases |
-| **architect** | `/architecture-review` | Designing systems, reviewing APIs, evaluating trade-offs |
-| **ux** | `/ux-analyze` | Creating full UX flows, reviewing UX, checking accessibility |
-| **owner** | `/what-next` | Project status, orchestration, cross-cutting view |
+| **dev** | `/ais-plan` | Building features, fixing bugs, committing code |
+| **qa** | `/ais-qa-plan` | Planning tests, reviewing coverage, verifying releases |
+| **architect** | `/ais-architecture-review` | Designing systems, reviewing APIs, evaluating trade-offs |
+| **ux** | `/ais-ux-analysis` | Creating full UX flows, reviewing UX, checking accessibility |
+| **owner** | `/ais-what-next` | Project status, orchestration, cross-cutting view |
 
 Set your active AI role in `.claude/settings.local.json` as `{"role": "dev"}`. Role tutorials: `.claude/roles/tutorials/`. Human overview: `docs/ai-os/`.
 
@@ -43,14 +43,14 @@ Set your active AI role in `.claude/settings.local.json` as `{"role": "dev"}`. R
 | Role | Primary Stages | Key Tools |
 |---|---|---|
 | **BA / Solution Analyst** | 1 | `solution-analyst` agent |
-| **PM** | 1, 2, cross-cutting | `pm` agent, `/create-brd`, CR template |
-| **Tech Lead / Architect** | 3 | `architect` agent, `/create-api`, `/architecture-review`, LLD template |
+| **PM** | 1, 2, cross-cutting | `pm` agent, `/ais-create-brd`, CR template |
+| **Tech Lead / Architect** | 3 | `architect` agent, `/ais-api-spec`, `/ais-architecture-review`, LLD template |
 | **UX Designer** | 4 | `ux-designer` agent |
 | **Developer** | 5 | Coding against approved spec |
-| **Any (self-review)** | 6 | `/review` |
+| **Any (self-review)** | 6 | `/ais-review` |
 | **Peer Reviewer** | 7 | `review-rules.md` checklist |
-| **QA Engineer** | 8 | `qa-reviewer` agent, `/gen-tests`, UAT template |
-| **DevOps / Tech Lead** | 9, 10 | `devops-engineer` agent, `/deployment-review` |
+| **QA Engineer** | 8 | `qa-reviewer` agent, `/ais-gen-tests`, UAT template |
+| **DevOps / Tech Lead** | 9, 10 | `devops-engineer` agent, `/ais-deployment-review` |
 
 ---
 
@@ -82,7 +82,7 @@ This produces a report with:
 Once assumptions are confirmed, generate the BRD.
 
 ```
-/create-brd
+/ais-create-brd
 ```
 
 Provide: feature description, user personas, business objective, acceptance criteria.
@@ -101,7 +101,7 @@ Output goes to `docs/brd/brd-{{feature}}.md`.
 #### Step 2.1 — Estimate the Feature
 
 ```
-/estimate
+/ais-estimate
 ```
 
 Provide: feature scope from the BRD, tech stack, team size.
@@ -136,7 +136,7 @@ Produces: component design, data model, trade-offs, ADRs. Store in `docs/archite
 #### Step 3.2 — API Contracts
 
 ```
-/create-api
+/ais-api-spec
 ```
 
 Provide: feature scope, entities involved, required endpoints.
@@ -156,7 +156,7 @@ Store in `docs/architecture/lld-{{feature}}.md`.
 #### Step 3.4 — Architecture Review
 
 ```
-/architecture-review
+/ais-architecture-review
 ```
 
 Validates the design against project invariants. Address all BLOCK findings before proceeding.
@@ -167,40 +167,40 @@ Validates the design against project invariants. Address all BLOCK findings befo
 
 ### Stage 4 — UX Design
 
-**Goal:** Requirements → Figma/Claude build prompt → manual Figma build → review → handoff. No coding until UX is approved and `/ux-handoff` exists.
+**Goal:** Requirements → Figma/Claude build prompt → manual Figma build → review → handoff. No coding until UX is approved and `/ais-ux-handoff` exists.
 **Who:** UX Designer / PM
 
 UX work follows a staged, task-based path. Each command gates the next — no skipping:
 
 ```
-1. /ux-analysis       → tasks/<MODULE>-<NNN>/01-requirements.md + 01-task-index.md + 02-open-questions.md
-2. /ux-design-prompt  → tasks/<MODULE>-<NNN>/03-design-prompt.md  (self-contained, Figma/Claude-ready)
+1. /ais-ux-analysis       → tasks/<MODULE>-<NNN>/01-requirements.md + 01-task-index.md + 02-open-questions.md
+2. /ais-ux-design-prompt  → tasks/<MODULE>-<NNN>/03-design-prompt.md  (self-contained, Figma/Claude-ready)
                        + tasks/<MODULE>-<NNN>/04-figma-build-notes.md
 3. Manual Figma build → designer pastes prompt into Figma Make / Claude Design, adjusts, gets UX Lead approval
-4. /ux-review         → 32-item check + 4-viewport browser verification (desktop L/D + mobile L/D at 390px)
-5. /ux-handoff        → tasks/<MODULE>-<NNN>/05-dev-handoff.md  (hard gate before Stage 5)
+4. /ais-ux-review         → 32-item check + 4-viewport browser verification (desktop L/D + mobile L/D at 390px)
+5. /ais-ux-handoff        → tasks/<MODULE>-<NNN>/05-dev-handoff.md  (hard gate before Stage 5)
 ```
 
 **Module-level structure:** one folder per UX module under `docs/ux/<module>/` with `module.json`, `state.json`, `00-index.md`, and a `tasks/<MODULE>-<NNN>-<slug>/` subfolder per task.
 
 **UX module structure is the live reference:** see `docs/ux/` for the UX module folder conventions and task artifacts.
 
-**For quick fixes and spikes** (single screen, color/spacing), use `/ux-create` directly — bypasses the staged path.
+**For quick fixes and spikes** (single screen, color/spacing), use `/ais-ux-analysis --quick` directly — bypasses the staged path.
 
 **State coverage requirement (hard gate):** every data-rendering screen must cover all 7 states: loading, empty, error, permission-denied, success, form-validation, mobile. Not 4.
 
 **See also:** `.claude/rules/ux-rules.md` for the full 10 hard gates. UX role tutorial: `.claude/roles/tutorials/ux-role-tutorial.md`. UX workflow skill: `.claude/skills/ux-workflow/SKILL.md`.
 
-**Gate 4 exit:** `/ux-handoff` exists + `/ux-review` passed + PM/stakeholder approved.
+**Gate 4 exit:** `/ais-ux-handoff` exists + `/ais-ux-review` passed + PM/stakeholder approved.
 
 ---
 
-### Gate Check — Run /kickoff Before Writing Any Code
+### Gate Check — Run /ais-kickoff Before Writing Any Code
 
 Before any developer starts work, run the project readiness check:
 
 ```
-/kickoff "{{feature or sprint name}}"
+/ais-kickoff "{{feature or sprint name}}"
 ```
 
 This checks all six gates:
@@ -234,7 +234,7 @@ Rules during execution:
 **Who:** Developer (self-initiated)
 
 ```
-/review
+/ais-review
 ```
 
 This runs backend-reviewer + frontend-reviewer + security-reviewer in parallel.
@@ -242,7 +242,7 @@ This runs backend-reviewer + frontend-reviewer + security-reviewer in parallel.
 - **BLOCK** findings must be fixed before opening a PR
 - **WARN** findings must be acknowledged in the PR description
 - **NIT** findings are optional
-- **UI / Component / UX findings:** After all BLOCK findings are resolved, run `/qa` for live-site verification before handing to human review
+- **UI / Component / UX findings:** After all BLOCK findings are resolved, run `/ais-qa` for live-site verification before handing to human review
 
 ---
 
@@ -265,7 +265,7 @@ Two approvals required for production-bound changes: AI review + human review.
 #### Step 8.1 — Generate Test Cases
 
 ```
-/gen-tests
+/ais-gen-tests
 ```
 
 Provide: feature spec, acceptance criteria.
@@ -304,7 +304,7 @@ Required gates: lint, typecheck, unit tests, integration tests, build, dependenc
 #### Step 10.1 — Deployment Review
 
 ```
-/deployment-review
+/ais-deployment-review
 ```
 
 Produces: go/no-go decision, migration plan, smoke test table, rollback procedure.
@@ -334,10 +334,10 @@ Not every change needs the full 10-stage workflow. Use the fast lane for:
 ### Fast Lane Rules
 
 - **Fast lane only applies when the scope truly fits.** If you start a "bug fix" and discover it requires a new API endpoint or schema change, escalate to the full workflow.
-- **Hotfixes still require AI review** (`/review`) before deploy — speed does not waive security.
+- **Hotfixes still require AI review** (`/ais-review`) before deploy — speed does not waive security.
 - **Spikes never merge to `dev` or `main`.** Output is a written summary or PoC — not production code.
 - **Any fast-lane change that touches auth, payments, or data access** automatically escalates to the full security review (Stage 6).
-- **Run `/what-next`** if you are unsure which lane applies.
+- **Run `/ais-what-next`** if you are unsure which lane applies.
 
 ### Fast Lane: Bug Fix
 
@@ -345,11 +345,11 @@ Not every change needs the full 10-stage workflow. Use the fast lane for:
 1. Reproduce the bug and identify root cause
 2. Branch: fix/{{ticket-id}}-description from dev
 3. Implement fix (Stage 5)
-4. Run /review — address all BLOCK findings (Stage 6)
+4. Run /ais-review — address all BLOCK findings (Stage 6)
 5. Open PR — one human reviewer (Stage 7)
 6. QA: verify fix + regression check for the affected flow (Stage 8)
 7. CI must be green (Stage 9)
-8. Deploy via /deployment-review (Stage 10)
+8. Deploy via /ais-deployment-review (Stage 10)
 ```
 
 ### Fast Lane: Hotfix (Production Incident)
@@ -357,9 +357,9 @@ Not every change needs the full 10-stage workflow. Use the fast lane for:
 ```
 1. Branch: hotfix/description from main
 2. Implement fix (Stage 5)
-3. Run /review — address all BLOCK findings (Stage 6)
+3. Run /ais-review — address all BLOCK findings (Stage 6)
 4. Tech Lead approval (expedited Stage 7)
-5. Run /deployment-review — deploy to production (Stage 10)
+5. Run /ais-deployment-review — deploy to production (Stage 10)
 6. Cherry-pick or merge back to dev
 ```
 
@@ -406,31 +406,31 @@ For escalations:
 
 | Command | When | Output |
 |---|---|---|
-| `/bootstrap` | First-time use of this scaffold (Stage 0) | Fills project identity, tech stack, tenancy, and compliance placeholders interactively |
-| `/what-next` | Any time — when unsure what to do next | Current stage (including Stage 0), blockers, single next action |
-| `/kickoff` | Before any execution begins | Go/no-go across 6 readiness gates |
-| `/create-brd` | Stage 1 — requirements | BRD document |
-| `/create-api` | Stage 3 — architecture | Full REST API contract including async operations pattern |
-| `/architecture-review` | Stage 3 — after HLD | Architecture critique + compliance check + ADR recommendations |
-| `/estimate` | Stage 2/3 — planning | Three-point estimate + risk register + phasing |
-| `/start-task` | Stage 5 — any non-trivial task | Plan-and-confirm ritual with mandatory self-critique gate before code output |
-| `/review` | Stage 6 — before PR | Parallel BLOCK/WARN/NIT findings: backend + frontend + security + qa + architect |
-| `/gen-tests` | Stage 5/8 — QA prep | Complete runnable test files: unit, integration, component, snapshot |
-| `/deployment-review` | Stage 10 — pre-deploy | Go/no-go + migration plan + smoke tests + rollback procedure |
-| `/investigate` | Any time a bug or error is reported | Systematic debugging: gather evidence → form root cause hypothesis → test → fix. Iron law: no fix without investigation. |
-| `/debug-fix` | Pre-fix — bug fix work | Root-cause-first: plan → reproduce → analyze → implement → verify → report. 5-status model. |
-| `/health` | Any time (weekly recommended) | Code quality dashboard with hallucination guard sub-score. HARD GATE: show only, never fix. |
-| `/lessons` | Any time — query past mistakes | Search `tasks/lessons.md` by keyword or tag. Read-only. |
-| `/qa` | Stage 8 — live-site QA | Live browser testing: walk feature flow, find rendering/interaction issues, fix and re-verify. |
-| `/qa-plan` | Stage 8 — QA automation planning | Traceability matrix (Requirement → Scenario → Test → Result) via qa-reviewer agent |
-| `/qa-review` | Stage 8 — QA coverage review | Validates traceability, independence, data isolation, CI commands. Severity: BLOCK/HIGH/MEDIUM/LOW |
-| `/qa-auth` | Stage 8 — auth-specific test planning | Auth test matrix for login, logout, session, token, protected routes, tenant isolation |
-| `/commit-changes` | Any time — before commit/merge | Branch safety check, unrelated-changes detection, verification evidence requirement, optional dev/main promotion |
-| `/ux-create` | Stage 4 — quick fixes/spikes | Single-screen UX improvements, color/spacing changes, UX exploration (not the primary path) |
-| `/ux-analysis` | Stage 4 — UX requirements | Extracts UX requirements from BRD into `tasks/<MODULE>-<NNN>/01-requirements.md`. Task-based; one UX task = one UX deliverable. |
-| `/ux-design-prompt` | Stage 4 — design prompt | Self-contained Figma/Claude design prompt at `tasks/<MODULE>-<NNN>/03-design-prompt.md` + build notes at `04-figma-build-notes.md`. Inlines tokens, states, viewports, exclusions, defaults. |
-| `/ux-review` | Stage 4/6 — UX verification | 32-item check + 4-viewport browser verification (desktop L/D + mobile L/D at 390px) |
-| `/ux-handoff` | Stage 4 — dev handoff | Developer-ready checklist: components, state matrix, tokens, responsive, Figma link (hard gate before Stage 5) |
+| `/ais-bootstrap` | First-time use of this scaffold (Stage 0) | Fills project identity, tech stack, tenancy, and compliance placeholders interactively |
+| `/ais-what-next` | Any time — when unsure what to do next | Current stage (including Stage 0), blockers, single next action |
+| `/ais-kickoff` | Before any execution begins | Go/no-go across 6 readiness gates |
+| `/ais-create-brd` | Stage 1 — requirements | BRD document |
+| `/ais-api-spec` | Stage 3 — architecture | Full REST API contract including async operations pattern |
+| `/ais-architecture-review` | Stage 3 — after HLD | Architecture critique + compliance check + ADR recommendations |
+| `/ais-estimate` | Stage 2/3 — planning | Three-point estimate + risk register + phasing |
+| `/ais-plan` | Stage 5 — any non-trivial task | Plan-and-confirm ritual with mandatory self-critique gate before code output |
+| `/ais-review` | Stage 6 — before PR | Parallel BLOCK/WARN/NIT findings: backend + frontend + security + qa + architect |
+| `/ais-gen-tests` | Stage 5/8 — QA prep | Complete runnable test files: unit, integration, component, snapshot |
+| `/ais-deployment-review` | Stage 10 — pre-deploy | Go/no-go + migration plan + smoke tests + rollback procedure |
+| `/ais-debug` | Any time a bug or error is reported | Systematic debugging: gather evidence → form root cause hypothesis → test → fix. Iron law: no fix without investigation. |
+| `/ais-debug` | Pre-fix — bug fix work | Root-cause-first: plan → reproduce → analyze → implement → verify → report. 5-status model. |
+| `/ais-health` | Any time (weekly recommended) | Code quality dashboard with hallucination guard sub-score. HARD GATE: show only, never fix. |
+| `/ais-lessons` | Any time — query past mistakes | Search `tasks/lessons.md` by keyword or tag. Read-only. |
+| `/ais-qa` | Stage 8 — live-site QA | Live browser testing: walk feature flow, find rendering/interaction issues, fix and re-verify. |
+| `/ais-qa-plan` | Stage 8 — QA automation planning | Traceability matrix (Requirement → Scenario → Test → Result) via qa-reviewer agent |
+| `/ais-review` | Stage 8 — QA coverage review | Validates traceability, independence, data isolation, CI commands. Severity: BLOCK/HIGH/MEDIUM/LOW |
+| `/ais-qa-plan --auth` | Stage 8 — auth-specific test planning | Auth test matrix for login, logout, session, token, protected routes, tenant isolation |
+| `/ais-commit` | Any time — before commit/merge | Branch safety check, unrelated-changes detection, verification evidence requirement, optional dev/main promotion |
+| `/ais-ux-analysis --quick` | Stage 4 — quick fixes/spikes | Single-screen UX improvements, color/spacing changes, UX exploration (not the primary path) |
+| `/ais-ux-analysis` | Stage 4 — UX requirements | Extracts UX requirements from BRD into `tasks/<MODULE>-<NNN>/01-requirements.md`. Task-based; one UX task = one UX deliverable. |
+| `/ais-ux-design-prompt` | Stage 4 — design prompt | Self-contained Figma/Claude design prompt at `tasks/<MODULE>-<NNN>/03-design-prompt.md` + build notes at `04-figma-build-notes.md`. Inlines tokens, states, viewports, exclusions, defaults. |
+| `/ais-ux-review` | Stage 4/6 — UX verification | 32-item check + 4-viewport browser verification (desktop L/D + mobile L/D at 390px) |
+| `/ais-ux-handoff` | Stage 4 — dev handoff | Developer-ready checklist: components, state matrix, tokens, responsive, Figma link (hard gate before Stage 5) |
 | `/ponytail-audit` | Any time — periodic YAGNI pressure | Whole-repo over-engineering scan. Tags: delete / stdlib / native / yagni / shrink. Report only, never modifies. |
 | `/ponytail-debt` | Any time — periodic debt sweep | Harvest `ponytail:` shortcut markers into `tasks/ponytail-debt.md`. Flags `no-trigger` markers. Read-only by default. |
 
@@ -448,7 +448,7 @@ A curated set of rules and commands adapted from [DietrichGebert/ponytail](https
 | The `ponytail:` shortcut-marker convention | [`.claude/rules/coding-standards.md` "Shortcut Markers"](.claude/rules/coding-standards.md) | Inline self-documentation for deliberate simplifications with a known ceiling and a named upgrade trigger |
 | `/ponytail-audit` (whole-repo over-engineering scan) | [`.claude/commands/ponytail-audit.md`](.claude/commands/ponytail-audit.md) | Periodic YAGNI pressure. Tag taxonomy preserved from upstream; severity labels (BLOCK/WARN/NIT) added to match this scaffold's review system |
 | `/ponytail-debt` (shortcut debt ledger) | [`.claude/commands/ponytail-debt.md`](.claude/commands/ponytail-debt.md) | Harvests `ponytail:` comments into `tasks/ponytail-debt.md`. Flags `no-trigger` markers |
-| `--intensity lite\|full\|ultra` flag on `/start-task` | [`.claude/commands/start-task.md`](.claude/commands/start-task.md) | Per-call opt-in to the ladder. Does not persist across sessions |
+| `--intensity lite\|full\|ultra` flag on `/ais-plan` | [`.claude/commands/ais-plan.md`](.claude/commands/ais-plan.md) | Per-call opt-in to the ladder. Does not persist across sessions |
 
 ### What was explicitly NOT taken
 
@@ -463,7 +463,7 @@ A curated set of rules and commands adapted from [DietrichGebert/ponytail](https
 The ladder is **off by default**. To apply it for a specific task:
 
 ```bash
-/start-task --intensity ultra "rewrite the user-search endpoint"
+/ais-plan --intensity ultra "rewrite the user-search endpoint"
 ```
 
 For an on-demand repo scan:
@@ -496,10 +496,10 @@ Ponytail philosophy, ladder structure, tag taxonomy, and `ponytail:` marker conv
 | `ux-designer` | Stage 4 — screen specs | `@ux-designer [screen]` — produces screen-level layout, state matrix, Figma notes |
 | `estimator` | Stage 2/3 — sizing | `@estimator [scope]` |
 | `pm` | Cross-cutting — comms, CRs, sprint health | `@pm [task]` |
-| `backend-reviewer` | Stage 6 — code review | via `/review` or `@backend-reviewer` |
-| `frontend-reviewer` | Stage 6 — UI review | via `/review` or `@frontend-reviewer` |
+| `backend-reviewer` | Stage 6 — code review | via `/ais-review` or `@backend-reviewer` |
+| `frontend-reviewer` | Stage 6 — UI review | via `/ais-review` or `@frontend-reviewer` |
 | `qa-reviewer` | Stage 8 — QA sign-off | `@qa-reviewer [feature]` |
-| `security-reviewer` | Stage 6 — auth/data changes | via `/review` or `@security-reviewer` |
+| `security-reviewer` | Stage 6 — auth/data changes | via `/ais-review` or `@security-reviewer` |
 | `devops-engineer` | Stage 9/10 — infra/CI changes | `@devops-engineer [change]` |
 | `documentation-writer` | Post-implementation | `@documentation-writer [target]` |
 
@@ -562,9 +562,9 @@ This configures git to use a commit template with no `Co-Authored-By` block. You
 ### Project Setup
 
 1. Copy the entire `.claude/` folder and root AI guidance files (`CLAUDE.md`, `.cursorrules`, `.github/copilot-instructions.md`, `README.md`, `_ai/`) into the new project repo
-2. Run `/bootstrap` — it walks through identity, stack, tenancy, and compliance one decision at a time and fills every placeholder across all files. Do not edit `{{PLACEHOLDERS}}` by hand; the bootstrap command keeps the files in sync.
-3. Run `/what-next` — it should now report Stage 1 (Analysis) ready to start
-4. Run `/kickoff` at the start of every epic to verify all gates are met
+2. Run `/ais-bootstrap` — it walks through identity, stack, tenancy, and compliance one decision at a time and fills every placeholder across all files. Do not edit `{{PLACEHOLDERS}}` by hand; the bootstrap command keeps the files in sync.
+3. Run `/ais-what-next` — it should now report Stage 1 (Analysis) ready to start
+4. Run `/ais-kickoff` at the start of every epic to verify all gates are met
 5. Follow the 10-stage workflow — no skipping gates
 
 ---
@@ -573,9 +573,9 @@ This configures git to use a commit template with no `Co-Authored-By` block. You
 
 | Mistake | Consequence | Correct Approach |
 |---|---|---|
-| Starting code before BRD is approved | Rework when requirements change | Run `/kickoff` — it blocks you if BRD isn't ready |
+| Starting code before BRD is approved | Rework when requirements change | Run `/ais-kickoff` — it blocks you if BRD isn't ready |
 | Skipping solution analysis | Hidden assumptions cause mid-sprint pivots | Always run `@solution-analyst` first |
 | Changing requirements without a CR | Scope creep, broken estimates | Fill `cr-template.md`, get three approvals |
 | Marking a story Done without tests passing | Defect leakage to production | Check `dod-rules.md` before marking Done |
-| Deploying without a deployment review | No rollback plan, no smoke test | Always run `/deployment-review` first |
+| Deploying without a deployment review | No rollback plan, no smoke test | Always run `/ais-deployment-review` first |
 | Using AI for architecture decisions without review | AI can be wrong on business logic | AI drafts, human (Tech Lead) approves |

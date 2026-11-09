@@ -15,7 +15,7 @@ deployment/
 
 ## Deployment Process
 
-1. Run `/deployment-review` — get go/no-go
+1. Run `/ais-deployment-review` — get go/no-go
 2. Deploy to staging — smoke test
 3. Get QA sign-off on staging
 4. Deploy to production (manual approval gate in CI)

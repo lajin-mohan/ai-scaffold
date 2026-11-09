@@ -17,7 +17,7 @@
 #
 # Fail-open in template state: if .claude/hooks/pre-commit doesn't exist or
 # isn't executable, exit 0. This keeps the scaffold itself working before
-# /bootstrap configures the stack.
+# /ais-bootstrap configures the stack.
 #
 # Configuration:
 #   ECC_PRE_COMMIT_GATE_DISABLED=1 → exit 0 immediately

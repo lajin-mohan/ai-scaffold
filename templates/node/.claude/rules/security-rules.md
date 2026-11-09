@@ -144,7 +144,7 @@ Each OWASP Top 10 category maps to specific rules and implementations:
 | **A01 — Broken Access Control** | `tenant_id` scoping at repository layer; permission-based auth (`permissions.includes()`); 404 vs 403 distinction hides existence of hidden resources |
 | **A02 — Cryptographic Failures** | bcrypt ≥12 for passwords; AES-256 at rest (DB-level); TLS 1.2+ in transit; opaque session tokens (no JWT embedded claims) |
 | **A03 — Injection** | Parameterized SQL only (`$1`, `?` placeholders); input validation at every API boundary (Zod schemas); no string interpolation in queries |
-| **A04 — Insecure Design** | Threat modeling in BRD; security review at Stage 6; architectural review gate; `/architecture-review` command |
+| **A04 — Insecure Design** | Threat modeling in BRD; security review at Stage 6; architectural review gate; `/ais-architecture-review` command |
 | **A05 — Security Misconfiguration** | Security headers middleware (HSTS, CSP, X-Frame-Options); CORS middleware with origin allowlist; explicit opt-out documentation for unauth routes |
 | **A06 — Vulnerable Components** | `npm audit --audit-level=high` in CI; Semgrep SAST (`p/owasp-top-10` rule); monthly outdated-package review |
 | **A07 — Auth Failures** | Opaque session tokens with absolute + inactivity timeouts; 5-failure login lockout; MFA requirement documented for privileged access (ISO 27001) |

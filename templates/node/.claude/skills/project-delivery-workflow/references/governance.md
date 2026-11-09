@@ -22,7 +22,7 @@ This file is the **enforcement layer** — it tells you *what happens when rules
 
 | Rule | Enforcement Method | Who Catches It |
 |---|---|---|
-| H1-H8 (hallucination) | `ai-coding-rules.md` H1-H8 + PreToolUse/PostToolUse hooks | **PreToolUse hooks** (`pre-write-fact-check.sh`) fire deterministically before Edit/Write on cited-but-unread files. **PostToolUse hooks** (`post-write-console-warn.sh`) flag new debug-log statements at write time. **PreToolUse hooks** (`pre-bash-quality-gate.sh`) run the project's pre-commit inline before `git commit` / `git push` lands. **AI self-check** still applies for cases the hooks can't see. **`/review`** catches any residual issues. |
+| H1-H8 (hallucination) | `ai-coding-rules.md` H1-H8 + PreToolUse/PostToolUse hooks | **PreToolUse hooks** (`pre-write-fact-check.sh`) fire deterministically before Edit/Write on cited-but-unread files. **PostToolUse hooks** (`post-write-console-warn.sh`) flag new debug-log statements at write time. **PreToolUse hooks** (`pre-bash-quality-gate.sh`) run the project's pre-commit inline before `git commit` / `git push` lands. **AI self-check** still applies for cases the hooks can't see. **`/ais-review`** catches any residual issues. |
 | Plan-and-confirm skipped | `ai-coding-rules.md` §2 | BLOCK in any review |
 | Missing verification | `ai-coding-rules.md` §5 | BLOCK — cannot claim done without evidence |
 | Half-implementation | `ai-coding-rules.md` P1-P8 | BLOCK — no stubs, no TODOs without tickets |
@@ -53,24 +53,24 @@ This escalation is documented in `ai-coding-rules.md` §7 ("Severity for AI Rule
 All non-trivial code changes pass through this pipeline before merge:
 
 ```
-/start-task (with self-critique gate)
+/ais-plan (with self-critique gate)
     ↓ write code
-/review  ← runs 5 agents in parallel
+/ais-review  ← runs 5 agents in parallel
     ├── backend-reviewer    (logic, security, SQL, performance)
     ├── frontend-reviewer   (UI, design tokens, a11y, mobile)
     ├── security-reviewer   (OWASP, auth, tenant isolation)
     ├── qa-reviewer         (test coverage, traceability)
     └── architect           (architecture fit, ADRs)
     ↓ BLOCK findings resolved
-/gen-tests  ← implements regression tests
+/ais-gen-tests  ← implements regression tests
     ↓ tests pass
-/qa  ← browser verification (live-site)
-/commit-changes  ← git workflow enforcement
+/ais-qa  ← browser verification (live-site)
+/ais-commit  ← git workflow enforcement
     ↓ human approval
 PR → merge
 ```
 
-**No step is skippable for production-bound changes.** Dev-only changes may bypass `/qa` at reviewer discretion. When the project has no browser E2E harness, `/qa` reports `not verified: no E2E harness` instead of running; that disclosure satisfies the step, as the DoD allows.
+**Production-bound feature work runs every step.** The fast lanes in `/ais-what-next` (bug fix, hotfix, UI micro-change, internal tooling) define the reduced paths, and dev-only changes may bypass `/ais-qa` at reviewer discretion. When the project has no browser E2E harness, `/ais-qa` reports `not verified: no E2E harness` instead of running; that disclosure satisfies the step, as the DoD allows.
 
 ---
 
@@ -102,18 +102,18 @@ These actions require **explicit human approval** — "go", "yes", "approved", o
 - Write or edit files in `apps/`, `packages/`, `docs/`, `tasks/` (tracked workspace)
 - Run lint, typecheck, and test commands
 - Use `git add`, `git commit`, `git branch`, `git status`, `git diff`
-- Invoke any command in the Custom Commands table (`/start-task`, `/review`, `/gen-tests`, etc.)
+- Invoke any command in the Custom Commands table (`/ais-plan`, `/ais-review`, `/ais-gen-tests`, etc.)
 - Invoke any agent in the Custom Agents table
 - Read and write to `.claude/memory/` and `.claude/work/`
 
 ### What the AI Cannot Do Without Asking
 
-- Run `git push`, `git merge`, `git pull`, or `git rebase` (use `/commit-changes` instead)
+- Run `git push`, `git merge`, `git pull`, or `git rebase` (use `/ais-commit` instead)
 - Delete files or branches
 - Overwrite files outside `apps/`, `packages/`, `docs/`, `tasks/` without explicit permission
 - Run shell commands that modify system state outside the project
 - Access `.env`, production config, or any file containing secrets
-- Modify `.claude/settings.json` directly (use `/settings` command)
+- Modify `.claude/settings.json` (ask the user first)
 - Override branch protection rules
 
 ---
@@ -133,7 +133,7 @@ Thresholds are set by `ECC_TOKEN_BUDGET_WARN_TOKENS` and `ECC_TOKEN_BUDGET_BLOCK
 
 When multiple AI tools work on the same project:
 
-1. **Claude owns the spec** — `/start-task` produces the plan; Codex/Cursor executes against it.
+1. **Claude owns the spec** — `/ais-plan` produces the plan; Codex/Cursor executes against it.
 2. **Codex/Cursor must verify** — before claiming done, it runs lint + tests. If they fail, it fixes before reporting.
 3. **AGENTS.md is the shared authority** — conflicts between AI outputs are resolved by AGENTS.md and the precedence in constitution.md, not by assumption.
 4. **No AI merges without human approval** — even if lint and tests pass.
@@ -148,6 +148,6 @@ When multiple AI tools work on the same project:
 | `security-rules.md` | SQL injection, tenant isolation, auth, secrets |
 | `dod-rules.md` | Story/sprint/release-level DoD |
 | `review-rules.md` | Pre-review checklist, severity labels, merge rules |
-| `/review` | The 5-agent parallel verification pipeline |
-| `/start-task` | Self-critique gate + plan-and-confirm enforcement |
-| `/health` | Composite score including hallucination guard sub-score |
+| `/ais-review` | The 5-agent parallel verification pipeline |
+| `/ais-plan` | Self-critique gate + plan-and-confirm enforcement |
+| `/ais-health` | Composite score including hallucination guard sub-score |

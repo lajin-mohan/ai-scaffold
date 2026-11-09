@@ -1,6 +1,6 @@
 # Architect Role Tutorial
 
-**Role:** `architect` | **Default command:** `/architecture-review` | **Purpose:** System design, API contracts, architectural decisions, and technical risk assessment
+**Role:** `architect` | **Default command:** `/ais-architecture-review` | **Purpose:** System design, API contracts, architectural decisions, and technical risk assessment
 
 ---
 
@@ -32,7 +32,7 @@ You are the **architect** when you need to:
 ### 2. Begin with architecture review
 
 ```bash
-/architecture-review
+/ais-architecture-review
 ```
 
 This reviews the current system against project invariants and compliance rules, surfaces design issues before coding begins.
@@ -43,13 +43,13 @@ This reviews the current system against project invariants and compliance rules,
 
 | Command | When to Use | Output |
 |---|---|---|
-| `/architecture-review` | Review current architecture or proposed design | Architecture report with BLOCK/WARN/INFO findings |
-| `/create-api` | Design a full REST API contract | Endpoints, request/response shapes, errors, migrations |
-| `/estimate` | Effort estimation for a feature | Three-point estimate with risk weights |
-| `/review` | Code review at the implementation stage | BLOCK/WARN/QUESTION findings |
-| `/health` | Check project-level code quality | Composite score dashboard |
-| `/lessons` | Record a decision or mistake pattern | Saved to `tasks/lessons.md` |
-| `/reflect` | Review architectural decisions made | Saved to memory |
+| `/ais-architecture-review` | Review current architecture or proposed design | Architecture report with BLOCK/WARN/INFO findings |
+| `/ais-api-spec` | Design a full REST API contract | Endpoints, request/response shapes, errors, migrations |
+| `/ais-estimate` | Effort estimation for a feature | Three-point estimate with risk weights |
+| `/ais-review` | Code review at the implementation stage | BLOCK/WARN/QUESTION findings |
+| `/ais-health` | Check project-level code quality | Composite score dashboard |
+| `/ais-lessons` | Record a decision or mistake pattern | Saved to `tasks/lessons.md` |
+| `/ais-lessons --write` | Review architectural decisions made | Saved to memory |
 
 ---
 
@@ -59,9 +59,9 @@ This reviews the current system against project invariants and compliance rules,
 
 ```
 1. Before any code is written:
-   → Run /architecture-review to validate the approach
-   → Run /create-api to define the API contract
-   → Run /estimate to get effort/sizing
+   → Run /ais-architecture-review to validate the approach
+   → Run /ais-api-spec to define the API contract
+   → Run /ais-estimate to get effort/sizing
 
 2. Architecture review output:
    → HLD (High-Level Design) approval
@@ -78,7 +78,7 @@ This reviews the current system against project invariants and compliance rules,
 ### API Contract Design
 
 ```
-1. Run /create-api
+1. Run /ais-api-spec
    → Specify: resource, operations, auth requirements
    → Claude generates: endpoints, request/response shapes, error taxonomy
    → Async patterns handled for long-running operations
@@ -118,7 +118,7 @@ When a decision has multiple valid options with different trade-offs:
 Before claiming "architectural approval":
 
 - [ ] `architecture_decision_recorded` — ADR filed for any significant choice
-- [ ] `api_contract_approved` — `/create-api` output reviewed and signed off
+- [ ] `api_contract_approved` — `/ais-api-spec` output reviewed and signed off
 - [ ] `data_model_reviewed` — schema design validated
 - [ ] `security_risk_assessed` — OWASP top 10, tenant isolation reviewed
 - [ ] `performance_risk_assessed` — NFRs defined and validated
@@ -178,13 +178,13 @@ User: "We need a notification service"
 ```
 User: "We need to add a soft-delete pattern to all entities"
 
-1. Run /architecture-review
+1. Run /ais-architecture-review
    → Review: every table gets deleted_at column
    → Review: repository layer enforces soft delete
    → Review: no hard deletes in business logic
    → ADR: soft delete policy
 
-2. Run /estimate
+2. Run /ais-estimate
    → Effort estimate for all affected repositories
    → Migration sequencing plan
 ```
@@ -194,7 +194,7 @@ User: "We need to add a soft-delete pattern to all entities"
 ```
 User: "We need to integrate Stripe for payments"
 
-1. Run /architecture-review
+1. Run /ais-architecture-review
    → Security: PCI-DSS compliance, no card data stored
    → API contract: Stripe webhooks vs our polling
    → Error handling: idempotency, retry, reconciliation
@@ -209,9 +209,9 @@ User: "We need to integrate Stripe for payments"
 
 | Output | Format | Severity model |
 |---|---|---|
-| `/architecture-review` | Architecture report | BLOCK_HIGH_MEDIUM |
-| `/create-api` | API contract document | BLOCK_HIGH |
-| `/estimate` | Estimation spreadsheet | BLOCK_HIGH |
+| `/ais-architecture-review` | Architecture report | BLOCK_HIGH_MEDIUM |
+| `/ais-api-spec` | API contract document | BLOCK_HIGH |
+| `/ais-estimate` | Estimation spreadsheet | BLOCK_HIGH |
 
 ---
 

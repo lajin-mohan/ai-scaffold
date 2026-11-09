@@ -14,10 +14,10 @@ cover only what is specific to Claude Code.
 - **Hooks are gates.** `.claude/settings.json` runs `.claude/hooks/pre-commit`
   before `git commit` and `git push`, and warns on edits to files you cited but
   did not read. When a hook blocks, report or fix the cause; do not bypass it.
-- **Commands.** `/start-task` plans and executes multi-step work after
-  approval; `/debug-fix` handles bugs root cause first; `/review` runs the
-  reviewer agents before a pull request; `/commit-changes` checks the branch and
-  evidence before committing; `/what-next` reports where the work stands.
+- **Commands.** `/ais-plan` plans and executes multi-step work after
+  approval; `/ais-debug` handles bugs root cause first; `/ais-review` runs the
+  reviewer agents before a pull request; `/ais-commit` checks the branch and
+  evidence before committing; `/ais-what-next` reports where the work stands.
 - **Delivery workflow.** The staged process (analysis, design, review, QA,
   release) is the `project-delivery-workflow` skill. Use it only when the user
   asks for that workflow or a command that depends on it.
