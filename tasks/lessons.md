@@ -462,3 +462,23 @@ This file records patterns from mistakes and corrections. Claude reads this at t
     `displayName`, `purpose`, `owner`, `stack.backend`), so `update` already
     replaces a pristine `CLAUDE.md` on `dev` with those fields blank. Tracked
     separately; the harness now names it instead of hiding it.
+
+## 2026-11-09 — Stripping one variable does not detach a child `claude` from the desktop session's login
+
+- **What happened:** The signed-in checks for Wave B were run from the Claude
+  desktop app's shell. Child `claude` runs had `ANTHROPIC_AUTH_TOKEN`
+  removed, and `claude auth status` still reported `loggedIn: true`, which
+  was read as the CLI's own login. It was not: the desktop app also passes
+  its sign-in through `CLAUDE_CODE_*` variables (messaging socket and token,
+  host auth refresh, account and organization IDs). The `@AGENTS.md` import
+  probe therefore most likely ran on the session's credentials, against the
+  standing rule. The smoke harness scrubs `*TOKEN*` variables more widely, so
+  its runs failed with "Not logged in" and produced no comparison.
+- **Why:** "logged in" was checked with a command that sees the same
+  inherited environment, and only one known variable was removed.
+- **Rule:** Signed-in checks (`eval-smoke.js`, import probes) run from the
+  maintainer's own terminal, never from an agent session's shell. An agent
+  hands over the exact commands instead. `--claude` must point at
+  `claude.exe` on Windows; the npm `claude.cmd` shim cannot be spawned
+  without a shell and fails with an unclear `trim` error.
+
