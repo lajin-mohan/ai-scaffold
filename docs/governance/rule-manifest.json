@@ -1,0 +1,64 @@
+{
+  "$comment": "Item 105. One entry per rule file shipped under .claude/rules/. 'enforcedBy' lists shipped hooks that back the rule; each needs a 'probe' (a test in this repository that exercises the hook) or an explicit 'gap' saying why not yet. Rules with no hook are enforced by instruction and review only. Checked by scripts/check-governance.js.",
+  "rules": {
+    "ai-coding-rules.md": {
+      "prevents": "Unverified claims about code, skipped plans for multi-step work, unverified 'done', stubs and half-implementations",
+      "appliesWhen": "Editing source code (paths: frontmatter)",
+      "enforcedBy": [
+        { "hook": "pre-write-fact-check.sh", "gap": "No test exercises this hook yet (item 98)" },
+        { "hook": "post-write-console-warn.sh", "gap": "No test exercises this hook yet (item 98)" },
+        { "hook": "pre-bash-quality-gate.sh", "gap": "No test exercises this hook yet (item 98)" }
+      ]
+    },
+    "api-standards.md": {
+      "prevents": "Inconsistent endpoints, envelopes, status codes, pagination and async job contracts",
+      "appliesWhen": "Editing routes, controllers, handlers or OpenAPI files",
+      "enforcedBy": []
+    },
+    "branching-rules.md": {
+      "prevents": "Commits on dev or main, illegal merge paths, AI attribution trailers",
+      "appliesWhen": "Editing CI, hooks, branch-protection setup or .gitattributes",
+      "enforcedBy": [
+        { "hook": "pre-commit", "probe": "src/__tests__/governance-checks.test.js" },
+        { "hook": "commit-msg", "probe": "tests/commit-msg-hook.test.js" }
+      ]
+    },
+    "coding-standards.md": {
+      "prevents": "Layer violations, hidden dependencies, magic values and silent failures",
+      "appliesWhen": "Editing source code",
+      "enforcedBy": []
+    },
+    "compliance-rules.md": {
+      "prevents": "Personal-data processing without lawful basis, retention or protection, when a compliance scope applies",
+      "appliesWhen": "Editing source or migrations in a project whose compliance scope is not N/A",
+      "enforcedBy": []
+    },
+    "security-rules.md": {
+      "prevents": "SQL injection, secrets in code, PII leaks, missing authentication or authorization, cross-tenant access",
+      "appliesWhen": "Editing source, migrations, SQL or .env.example",
+      "enforcedBy": [
+        { "hook": "pre-secret-guard.sh", "probe": "src/__tests__/guard-portability.test.js" },
+        { "hook": "pre-dangerous-bash-guard.sh", "probe": "src/__tests__/guard-portability.test.js" },
+        { "hook": "governance-file-guard.sh", "probe": "src/__tests__/guard-portability.test.js" }
+      ]
+    },
+    "testing-rules.md": {
+      "prevents": "Untested changes, missing failure and authorization cases, flaky tests",
+      "appliesWhen": "Editing test files or test configuration",
+      "enforcedBy": []
+    },
+    "ux-rules.md": {
+      "prevents": "Hardcoded colours, undefined states, desktop-only workflows",
+      "appliesWhen": "Editing UI files or docs/ux/",
+      "enforcedBy": []
+    },
+    "stacks/backend-coldfusion.md": { "prevents": "Stack-specific defects in ColdFusion code", "appliesWhen": "Editing .cfc/.cfm files", "enforcedBy": [] },
+    "stacks/backend-dotnet.md": { "prevents": "Stack-specific defects in .NET code", "appliesWhen": "Editing C# files", "enforcedBy": [] },
+    "stacks/backend-golang.md": { "prevents": "Stack-specific defects in Go code", "appliesWhen": "Editing Go files", "enforcedBy": [] },
+    "stacks/backend-java.md": { "prevents": "Stack-specific defects in Java code", "appliesWhen": "Editing Java files", "enforcedBy": [] },
+    "stacks/backend-node.md": { "prevents": "Stack-specific defects in Node.js and TypeScript code", "appliesWhen": "Editing JavaScript or TypeScript files", "enforcedBy": [] },
+    "stacks/backend-php.md": { "prevents": "Stack-specific defects in PHP code", "appliesWhen": "Editing PHP files", "enforcedBy": [] },
+    "stacks/backend-python.md": { "prevents": "Stack-specific defects in Python code", "appliesWhen": "Editing Python files", "enforcedBy": [] },
+    "stacks/frontend-react.md": { "prevents": "Component, state and accessibility defects in React code", "appliesWhen": "Editing JSX or TSX files", "enforcedBy": [] }
+  }
+}

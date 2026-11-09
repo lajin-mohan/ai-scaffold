@@ -487,7 +487,7 @@ describe('unavailable is never counted as failed', () => {
   });
 });
 
-// ------------------------------------------------- regressions from /review
+// ------------------------------------------------- regressions from /ais-review
 
 describe('regressions found by adversarial review', () => {
   it('does not print a green bypass tick for a branch nobody protects', () => {

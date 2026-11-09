@@ -358,7 +358,7 @@ describe('C-02 verdict', () => {
   });
 });
 
-// ------------------------------------------------- regressions from /review
+// ------------------------------------------------- regressions from /ais-review
 
 describe('regressions found by adversarial review', () => {
   it('marks the scan truncated when the page budget runs out and total_count is absent', async () => {

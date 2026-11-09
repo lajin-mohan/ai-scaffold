@@ -85,30 +85,21 @@ Use the simplified task-based workflow:
 
 ```text
 BRD / Feature Spec
-  -> /ux-analysis
-  -> /ux-design-prompt
+  -> /ais-ux-analysis
+  -> /ais-ux-design-prompt
   -> manual Figma/Claude build + human adjustment + UX Lead approval
-  -> /ux-review
-  -> /ux-handoff
+  -> /ais-ux-review
+  -> /ais-ux-handoff
   -> implementation
-```
-
-Legacy command mapping:
-
-```text
-/ux-analyze      -> /ux-analysis
-/ux-flow         -> included in /ux-analysis
-/ux-screen-spec  -> included in /ux-design-prompt
-/ux-figma-spec   -> included in /ux-design-prompt
 ```
 
 Stage outputs:
 
-- `/ux-analysis`: requirements, assumptions, open questions, scope, roles, permissions, flows, task/screen candidates, risks.
-- `/ux-design-prompt`: complete Figma/Claude prompt with context, tokens, components, states, responsive behavior, exclusions, and review checklist.
+- `/ais-ux-analysis`: requirements, assumptions, open questions, scope, roles, permissions, flows, task/screen candidates, risks.
+- `/ais-ux-design-prompt`: complete Figma/Claude prompt with context, tokens, components, states, responsive behavior, exclusions, and review checklist.
 - Manual Figma stage: paste prompt, generate design, human adjust, record build notes, UX Lead approval.
-- `/ux-review`: validates design artifacts or implementation.
-- `/ux-handoff`: final developer-ready package.
+- `/ais-ux-review`: validates design artifacts or implementation.
+- `/ais-ux-handoff`: final developer-ready package.
 
 Every UX command must end with:
 
@@ -189,7 +180,7 @@ Before writing a design prompt or handoff:
 
 ### Handoff Checklist
 
-`/ux-handoff` produces a developer checklist. Every item must be addressed:
+`/ais-ux-handoff` produces a developer checklist. Every item must be addressed:
 
 ```
 ## Developer Handoff — {{Feature}}
@@ -225,11 +216,11 @@ Before writing a design prompt or handoff:
 
 ### No Implementation Without Handoff
 
-Frontend implementation of a UX feature **requires** `/ux-handoff` to exist before Stage 5 work begins. This is a hard gate in `/kickoff`.
+Frontend implementation of a UX feature **requires** `/ais-ux-handoff` to exist before Stage 5 work begins. This is a hard gate in `/ais-kickoff`.
 
 ### Token Enforcement
 
-All colors in implementation must come from CSS tokens. No hardcoded page or brand hex values. Violations are BLOCK in `/ux-review`.
+All colors in implementation must come from CSS tokens. No hardcoded page or brand hex values. Violations are BLOCK in `/ais-ux-review`.
 
 ---
 
@@ -237,15 +228,15 @@ All colors in implementation must come from CSS tokens. No hardcoded page or bra
 
 | Gate | Rule | Severity |
 |---|---|---|
-| GH-01 | No `/ux-design-prompt` before `/ux-analysis` exists | BLOCK |
+| GH-01 | No `/ais-ux-design-prompt` before `/ais-ux-analysis` exists | BLOCK |
 | GH-02 | Blocking open questions must be resolved or explicitly defaulted before design prompting | BLOCK |
 | GH-03 | Every relevant state must be covered or marked N/A | BLOCK |
 | GH-04 | Every form must define validation and feedback behavior | BLOCK |
 | GH-05 | Every table/list must define search/filter/sort/pagination/empty behavior or mark N/A | BLOCK |
 | GH-06 | Every primary workflow must define mobile behavior at 375/390px | BLOCK |
-| GH-07 | Manual Figma/design adjustment and UX Lead approval are required before `/ux-review` | BLOCK |
-| GH-08 | `/ux-review` required before `/ux-handoff` | BLOCK |
-| GH-09 | `/ux-handoff` required before Stage 5 implementation | BLOCK |
+| GH-07 | Manual Figma/design adjustment and UX Lead approval are required before `/ais-ux-review` | BLOCK |
+| GH-08 | `/ais-ux-review` required before `/ais-ux-handoff` | BLOCK |
+| GH-09 | `/ais-ux-handoff` required before Stage 5 implementation | BLOCK |
 | GH-10 | All colors must use defined CSS/design tokens | BLOCK |
 | GH-11 | UX artifacts must not reference undefined tokens | BLOCK |
 
@@ -253,9 +244,9 @@ All colors in implementation must come from CSS tokens. No hardcoded page or bra
 
 ## Related
 
-- `/ux-analysis`
-- `/ux-design-prompt`
-- `/ux-review`
-- `/ux-handoff`
+- `/ais-ux-analysis`
+- `/ais-ux-design-prompt`
+- `/ais-ux-review`
+- `/ais-ux-handoff`
 - `.claude/skills/ux-workflow/SKILL.md`
 - `.claude/skills/ux-system/`

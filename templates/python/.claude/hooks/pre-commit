@@ -81,7 +81,7 @@ if [ ! -f package.json ] && [ ! -f composer.json ] && [ ! -f pyproject.toml ] &&
     echo "For emergency commits, use: git commit --no-verify"
     exit 1
   fi
-  echo "Template validation passed. Run /bootstrap to configure checks."
+  echo "Template validation passed. Run /ais-bootstrap to configure checks."
   exit 0
 fi
 

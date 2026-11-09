@@ -94,7 +94,7 @@ Produce a file at `docs/ux/<feature>/01-requirements.md` following this structur
 
 ## 7. Recommended Next Step
 
-Before proceeding to `/ux-flow`, confirm:
+Before proceeding to `/ais-ux-analysis`, confirm:
 - [ ] All user roles identified
 - [ ] All screens listed
 - [ ] All flows identified
@@ -112,4 +112,4 @@ Before proceeding to `/ux-flow`, confirm:
 
 ## Hard Gate
 
-Do not proceed to `/ux-flow` until this document is approved by PM or the feature owner. This is the requirements gate.
+Do not proceed to `/ais-ux-analysis` until this document is approved by PM or the feature owner. This is the requirements gate.

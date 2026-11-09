@@ -28,7 +28,7 @@ Without a scaffold, AI-assisted development usually breaks down in predictable w
 | Problem | What happens without structure | What this scaffold adds |
 |---|---|---|
 | Context resets | Every session starts cold and repeats discovery | project memory, lessons, role tutorials, and stable source-of-truth files |
-| Fast code, slow trust | AI generates output quickly, but review and validation become the bottleneck | `/review`, QA workflow, security checks, DoD, and verification gates |
+| Fast code, slow trust | AI generates output quickly, but review and validation become the bottleneck | `/ais-review`, QA workflow, security checks, DoD, and verification gates |
 | Inconsistent assistants | Claude, Codex, Cursor, and Copilot follow different assumptions | shared `AGENTS.md`, `CLAUDE.md`, rules, commands, and profile metadata |
 | Hidden assumptions | Requirements, architecture, and UX gaps appear during implementation | analysis, BRD, estimate, architecture, UX, and kickoff gates |
 | Unsafe repo adoption | A scaffold pollutes an existing application with generic folders | isolated init strategy and protected-file handling |
@@ -39,7 +39,7 @@ Without a scaffold, AI-assisted development usually breaks down in predictable w
 
 - **Faster onboarding:** new contributors and AI tools get the same rules, commands, role guides, and workflow from day one.
 - **More useful AI output:** assistants receive project identity, stack, rules, memory, and task context before generating plans or code.
-- **Better review quality:** `/review`, QA, security, frontend, backend, and architecture reviewers use one shared severity model.
+- **Better review quality:** `/ais-review`, QA, security, frontend, backend, and architecture reviewers use one shared severity model.
 - **Less context loss:** `.claude/MEMORY.md`, lessons, and project-context files give AI assistants a durable starting point.
 - **Safer execution:** the scaffold separates requirements, architecture, UX, implementation, review, QA, and deployment.
 - **Cleaner existing-repo adoption:** `init` is designed to protect application files and keep scaffold-owned material separate.
@@ -51,11 +51,11 @@ Without a scaffold, AI-assisted development usually breaks down in predictable w
 
 | Role | How it helps |
 |---|---|
-| Developers | Start work with `/start-task`, follow coding/security rules, reuse lessons, and get a clear verification checklist before review |
+| Developers | Start work with `/ais-plan`, follow coding/security rules, reuse lessons, and get a clear verification checklist before review |
 | QA engineers | Generate test plans, trace requirements to scenarios, review coverage, and keep UAT/release evidence consistent |
 | Architects / tech leads | Force architectural thinking before implementation, record ADRs, review API contracts, and check risk/invariants |
 | UX designers | Convert requirements into UX analysis, design prompts, viewport/state checks, accessibility review, and dev handoff |
-| PMs / owners | Use `/what-next`, BRDs, estimates, scope summaries, status updates, blockers, and release readiness views |
+| PMs / owners | Use `/ais-what-next`, BRDs, estimates, scope summaries, status updates, blockers, and release readiness views |
 | Reviewers | Review against the same BLOCK/WARN/NIT model, manual checklist, security rules, and DoD expectations |
 | New joiners | Learn how the team works by reading one operating manual instead of reverse-engineering habits from old PRs |
 | Client-facing teams | Produce clearer scope, change-request, UAT, and release-note artifacts with less reinvention |
@@ -111,13 +111,13 @@ npx @lajin.m/ai-scaffold init --profile node --dry-run
 npx @lajin.m/ai-scaffold init --profile node
 
 # Let QA create a traceable test plan
-/qa-plan
+/ais-qa-plan
 
 # Ask for a release readiness view
-/what-next
+/ais-what-next
 
 # Run AI review before human PR review
-/review
+/ais-review
 ```
 
 ## Research Context
@@ -155,13 +155,13 @@ AI Scaffold works best when the project has a clear BRD or FRD and each task
 points back to it. The scaffold does not make vague requirements safe; it makes
 good requirements easier to execute, review, test, and hand off.
 
-When you run `/start-task`, the command reads the linked spec, project memory,
+When you run `/ais-plan`, the command reads the linked spec, project memory,
 rules, lessons, and role guidance before it proposes a plan. After one explicit
 approval, implementation runs inside that approved scope. Hooks guard dangerous
-tool use, verification proves the result, and `/review` gives the work a second
+tool use, verification proves the result, and `/ais-review` gives the work a second
 AI review before human PR review.
 
-![AI Scaffold flow — spec and context inputs (BRD / FRD / ticket spec, .ai-scaffold/context.md, .claude/MEMORY.md + tasks/lessons.md, .claude/rules, .claude/roles + agents + skills) feed /start-task; it produces a plan, files, and verification; after one human "go", AI implementation runs under runtime guards (settings.json-wired hooks: secret/path guard, dangerous-bash guard, governance-file guard); then verify (lint / typecheck / tests / AC checks), /review by backend + frontend + security + QA + architecture, and finally human PR review / merge decision](docs/assets/ai-scaffold-flow.png)
+![AI Scaffold flow — spec and context inputs (BRD / FRD / ticket spec, .ai-scaffold/context.md, .claude/MEMORY.md + tasks/lessons.md, .claude/rules, .claude/roles + agents + skills) feed /ais-plan; it produces a plan, files, and verification; after one human "go", AI implementation runs under runtime guards (settings.json-wired hooks: secret/path guard, dangerous-bash guard, governance-file guard); then verify (lint / typecheck / tests / AC checks), /ais-review by backend + frontend + security + QA + architecture, and finally human PR review / merge decision](docs/assets/ai-scaffold-flow.png)
 
 ## Requirements First
 
@@ -182,10 +182,10 @@ and create the document before serious feature work:
 1. Run `ais doctor` to confirm the scaffold is healthy.
 2. Create or link the BRD/FRD.
 3. Break the BRD/FRD into task IDs and acceptance criteria.
-4. Start each task with `/start-task --spec <requirements-or-task-path>`.
+4. Start each task with `/ais-plan --spec <requirements-or-task-path>`.
 5. Approve the plan once.
 6. Let the AI implement only the approved scope.
-7. Run `/review`, then QA and human PR review.
+7. Run `/ais-review`, then QA and human PR review.
 ```
 
 After initialization, update project context manually here when reality changes:
@@ -239,12 +239,12 @@ opt-in as the work calls for it. Run `ais list` in a scaffolded project to see t
 
 | Command | Use it to |
 |---|---|
-| `/what-next` | Get the exact next action for the current project state |
-| `/start-task` | Plan → confirm → implement → verify a change |
-| `/review` | Run the parallel AI review before a PR |
-| `/debug-fix` | Root-cause a bug before touching code |
-| `/commit-changes` | Commit with the project's git rules enforced |
-| `/lessons` | Recall past root causes so mistakes do not repeat |
+| `/ais-what-next` | Get the exact next action for the current project state |
+| `/ais-plan` | Plan → confirm → implement → verify a change |
+| `/ais-review` | Run the parallel AI review before a PR |
+| `/ais-debug` | Root-cause a bug before touching code |
+| `/ais-commit` | Commit with the project's git rules enforced |
+| `/ais-lessons` | Recall past root causes so mistakes do not repeat |
 
 ## Install And Use
 

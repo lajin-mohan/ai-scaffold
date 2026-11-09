@@ -1,16 +1,16 @@
 ---
 name: architect
 description: Architecture, API contracts, code review, and system risk assessment. Use this role when designing systems, reviewing architectural decisions, or evaluating technical trade-offs.
-default_entry: /architecture-review
+default_entry: /ais-architecture-review
 
 allowed_commands:
-  - /architecture-review
-  - /create-api
-  - /review
-  - /estimate
-  - /health
-  - /lessons
-  - /reflect
+  - /ais-architecture-review
+  - /ais-api-spec
+  - /ais-review
+  - /ais-estimate
+  - /ais-health
+  - /ais-lessons
+  - /ais-lessons --write
 
 recommended_agents:
   - architect

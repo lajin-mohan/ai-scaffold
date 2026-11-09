@@ -74,3 +74,28 @@ prevents, so nothing qualifies for removal. Outdated content found on `dev` at
 
 No shipped rule lacks a stated purpose, and CI prevents stale references and
 model names from shipping again.
+
+## Progress (Wave B, PR 5)
+
+- `docs/governance/rule-manifest.json`: every shipped rule records what it
+  prevents, when it applies, and the hooks that back it, each with a probe
+  test or a stated gap.
+- `scripts/check-governance.js`, run by `npm run typecheck`, generates all five
+  profiles and fails on:
+  - a tool's startup context over 5K est-tokens, or Codex bytes over 32 KiB;
+  - broken links or unresolved placeholders;
+  - a missing `/ais-*` command or `.claude/hooks/` path;
+  - retired command names or pinned model names outside history files;
+  - manifest drift.
+
+  Tests: `tests/check-governance.test.js`.
+- Outdated content listed above is resolved:
+  - `token-usage-rules.md` removed and the tenant wording made conditional
+    (PR 4);
+  - UX alias block, ponytail ladder and the "no step is skippable" claim
+    (PR 5).
+- **Open:** three hook claims in `ai-coding-rules.md`
+  (`pre-write-fact-check.sh`, `post-write-console-warn.sh`,
+  `pre-bash-quality-gate.sh`) have no test. They are recorded as gaps (item 98)
+  and reported as warnings. Close this ticket when PR 5 merges, leaving those
+  gaps to item 98.

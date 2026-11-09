@@ -106,7 +106,7 @@ describe('hooks', () => {
   });
 
   it('a retired hook is removed, dropping its empty group and event', () => {
-    const local = settings({ hooks: { UserPromptSubmit: [hook('bash .claude/hooks/pre-review.sh', '/review')] } });
+    const local = settings({ hooks: { UserPromptSubmit: [hook('bash .claude/hooks/pre-review.sh', '/ais-review')] } });
     const oldBase = scaffoldSubset(local);
     const { merged } = merge({ local, scaffold: settings(), base: oldBase, retired: { hooks: ['UserPromptSubmit .claude/hooks/pre-review.sh'] } });
     expect(merged.hooks).toEqual({});

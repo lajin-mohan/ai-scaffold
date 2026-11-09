@@ -54,15 +54,15 @@ Review implementations and test plans for:
 
 ### Live-Site Verification
 
-For frontend or UI-heavy features, `/review` catches code-level issues but cannot verify rendering or interaction. After resolving all BLOCK findings from `/review`, run `/qa` for live-site verification:
+For frontend or UI-heavy features, `/ais-review` catches code-level issues but cannot verify rendering or interaction. After resolving all BLOCK findings from `/ais-review`, run `/ais-qa` for live-site verification:
 
 ```
-/qa "{{feature or flow description}}"
+/ais-qa "{{feature or flow description}}"
 ```
 
-`/qa` opens a headless browser and walks the feature flow — detecting broken renders, unresponsive buttons, console errors, and failed network requests. Run `/qa` before QA sign-off on any feature with a user-facing UI.
+`/ais-qa` opens a headless browser and walks the feature flow — detecting broken renders, unresponsive buttons, console errors, and failed network requests. Run `/ais-qa` before QA sign-off on any feature with a user-facing UI.
 
-**Flow:** `/review` → `/qa` (if UI findings) → `/gen-tests` (codify as automated tests) → QA sign-off
+**Flow:** `/ais-review` → `/ais-qa` (if UI findings) → `/ais-gen-tests` (codify as automated tests) → QA sign-off
 
 ### Release Readiness
 - [ ] All BLOCK findings from code review addressed
@@ -94,3 +94,7 @@ For frontend or UI-heavy features, `/review` catches code-level issues but canno
 ### Recommendation
 RELEASE BLOCKED / RELEASE WITH CAUTION / READY TO RELEASE
 ```
+
+## Test-suite quality
+
+When reviewing tests, also report on traceability (each acceptance criterion maps to a test), independence (no shared mutable state or ordering), data isolation (fixtures and tenant data reset), CI command correctness (the commands CI runs exist and cover the suite) and edge-case coverage. The full dimensions and severity model are in the "Test-suite quality review" section of `/ais-review`.

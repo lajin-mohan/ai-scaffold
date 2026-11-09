@@ -1,6 +1,6 @@
 # Release Notes Template
 
-Produced as part of the release process. Generated with help from the `documentation-writer` agent and reviewed as part of `/deployment-review`. Store in `docs/deployment/release-notes-{{version}}.md`.
+Produced as part of the release process. Generated with help from the `documentation-writer` agent and reviewed as part of `/ais-deployment-review`. Store in `docs/deployment/release-notes-{{version}}.md`.
 
 ---
 
@@ -111,7 +111,7 @@ If issues are detected post-deployment, follow these steps to roll back:
 
 ## Deployment Checklist
 
-- [ ] Deployment review completed via `/deployment-review`
+- [ ] Deployment review completed via `/ais-deployment-review`
 - [ ] UAT sign-off obtained (see `docs/qa/uat-{{version}}.md`)
 - [ ] Database migrations tested in staging
 - [ ] Rollback procedure tested or reviewed

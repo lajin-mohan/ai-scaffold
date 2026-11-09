@@ -26,17 +26,17 @@ describe.each(SUPPORTED_PROFILES)('%s profile', (profile) => {
     expect(unconditional).toEqual([]);
   });
 
-  it('/qa checks for its browser daemon before walking a flow', () => {
-    const qa = fs.readFileSync(templatePath(profile, '.claude/commands/qa.md'), 'utf-8');
+  it('/ais-qa checks for its browser daemon before walking a flow', () => {
+    const qa = fs.readFileSync(templatePath(profile, '.claude/commands/ais-qa.md'), 'utf-8');
     expect(qa).toContain('command -v gstack-browse');
     expect(qa).toContain(NO_HARNESS);
   });
 
   it.each([
-    '.claude/commands/review.md',
-    '.claude/commands/start-task.md',
-    '.claude/commands/debug-fix.md',
-    '.claude/commands/ux-review.md',
+    '.claude/commands/ais-review.md',
+    '.claude/commands/ais-plan.md',
+    '.claude/commands/ais-debug.md',
+    '.claude/commands/ais-ux-review.md',
     '.claude/agents/debugging-agent.md',
     '.claude/skills/systematic-debugging/SKILL.md',
     '.claude/skills/ux-review/SKILL.md',

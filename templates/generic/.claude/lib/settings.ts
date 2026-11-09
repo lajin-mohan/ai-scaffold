@@ -218,7 +218,7 @@ export function getProjectType(): ProjectType {
   return getSettings().project.type
 }
 
-// Display helpers for /settings command
+// Display helpers for feature flags
 export function listFeaturesWithDefaults(): Array<{ key: keyof FeatureFlags; current: boolean | string; default: boolean | string; overridden: boolean }> {
   const settings = getSettings()
   const defaults = FEATURE_DEFAULTS[settings.project.type]

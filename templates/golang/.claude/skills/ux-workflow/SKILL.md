@@ -11,21 +11,21 @@ The canonical workflow is task-based:
 
 ```text
 BRD / Feature Spec
-  -> /ux-analysis
-  -> /ux-design-prompt
+  -> /ais-ux-analysis
+  -> /ais-ux-design-prompt
   -> manual Figma/Claude build + human adjustment + UX Lead approval
-  -> /ux-review
-  -> /ux-handoff
+  -> /ais-ux-review
+  -> /ais-ux-handoff
   -> implementation
 ```
 
 Legacy command mapping:
 
 ```text
-/ux-analyze      -> /ux-analysis
-/ux-flow         -> included in /ux-analysis
-/ux-screen-spec  -> included in /ux-design-prompt
-/ux-figma-spec   -> included in /ux-design-prompt
+/ais-ux-analysis      -> /ais-ux-analysis
+/ais-ux-analysis         -> included in /ais-ux-analysis
+/ais-ux-design-prompt  -> included in /ais-ux-design-prompt
+/ais-ux-design-prompt   -> included in /ais-ux-design-prompt
 ```
 
 ## Folder Model
@@ -47,7 +47,7 @@ docs/ux/<module>/
   archive/
 ```
 
-## Stage 1 - /ux-analysis
+## Stage 1 - /ais-ux-analysis
 
 Output:
 
@@ -69,9 +69,9 @@ Produce:
 - UX risks and ambiguity
 - recommended next command
 
-This stage includes the old flow work. Do not route the user to `/ux-flow`.
+This stage includes the old flow work. Do not route the user to `/ais-ux-analysis`.
 
-## Stage 2 - /ux-design-prompt
+## Stage 2 - /ais-ux-design-prompt
 
 Output:
 
@@ -94,7 +94,7 @@ Produce a self-contained Figma Make / Claude Design prompt with:
 - explicit exclusions
 - acceptance/review checklist
 
-This stage includes the old screen-spec and Figma-spec work. Do not route the user to `/ux-screen-spec` or `/ux-figma-spec`.
+This stage includes the old screen-spec and Figma-spec work. Do not route the user to `/ais-ux-design-prompt` or `/ais-ux-design-prompt`.
 
 ## Manual Figma Stage
 
@@ -102,9 +102,9 @@ This stage includes the old screen-spec and Figma-spec work. Do not route the us
 2. Generate the first design.
 3. Human designer adjusts layout, spacing, density, tokens, components, states, and responsive behavior.
 4. Record the Figma link and manual changes in `04-figma-build-notes.md`.
-5. UX Lead approves before `/ux-review`.
+5. UX Lead approves before `/ais-ux-review`.
 
-## Stage 3 - /ux-review
+## Stage 3 - /ais-ux-review
 
 Output:
 
@@ -114,9 +114,9 @@ docs/ux/<module>/tasks/<task-id>/05-ux-review.md
 
 Check hierarchy, accessibility, responsive behavior, mobile behavior, light/dark theme support, state coverage, token usage, component consistency, and interaction clarity.
 
-All BLOCK findings must be resolved before `/ux-handoff`.
+All BLOCK findings must be resolved before `/ais-ux-handoff`.
 
-## Stage 4 - /ux-handoff
+## Stage 4 - /ais-ux-handoff
 
 Output:
 
@@ -138,7 +138,7 @@ Produce the final developer package:
 - open questions that still affect dev
 - explicit out-of-scope items
 
-`/ux-handoff` is not a Figma prompt command.
+`/ais-ux-handoff` is not a Figma prompt command.
 
 ## End-Of-Stage Contract
 
@@ -157,7 +157,7 @@ Proceed? yes/no
 
 ## Hard Gates
 
-- No `/ux-design-prompt` until `/ux-analysis` exists and blocking questions are resolved or defaulted.
-- No `/ux-review` until manual Figma/design adjustment is done and UX Lead is ready for review.
-- No `/ux-handoff` until `/ux-review` passes with all BLOCK findings resolved.
-- No frontend implementation without `/ux-handoff`.
+- No `/ais-ux-design-prompt` until `/ais-ux-analysis` exists and blocking questions are resolved or defaulted.
+- No `/ais-ux-review` until manual Figma/design adjustment is done and UX Lead is ready for review.
+- No `/ais-ux-handoff` until `/ais-ux-review` passes with all BLOCK findings resolved.
+- No frontend implementation without `/ais-ux-handoff`.

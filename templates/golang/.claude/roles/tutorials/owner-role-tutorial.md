@@ -1,6 +1,6 @@
 # Owner Role Tutorial
 
-**Role:** `owner` | **Default command:** `/what-next` | **Purpose:** Project orchestration, gate management, blocker resolution, and cross-workstream visibility
+**Role:** `owner` | **Default command:** `/ais-what-next` | **Purpose:** Project orchestration, gate management, blocker resolution, and cross-workstream visibility
 
 ---
 
@@ -32,7 +32,7 @@ You are the **owner** when you need to:
 ### 2. Get project overview
 
 ```bash
-/what-next
+/ais-what-next
 ```
 
 This reads project state, identifies the current stage, surfaces blockers, and outputs the exact next action with blockers.
@@ -43,14 +43,14 @@ This reads project state, identifies the current stage, surfaces blockers, and o
 
 | Command | When to Use | Output |
 |---|---|---|
-| `/what-next` | Project status overview and next action | Current stage, blockers, exact next action |
-| `/health` | Code quality dashboard | Composite score, lint/typecheck/test status |
-| `/review` | Parallel AI review status | All reviewer findings (backend, frontend, security, QA, architect) |
-| `/qa-review` | QA readiness status | Test coverage, edge cases, sign-off readiness |
-| `/deployment-review` | Deploy readiness checklist | Migration plan, smoke tests, rollback procedure |
+| `/ais-what-next` | Project status overview and next action | Current stage, blockers, exact next action |
+| `/ais-health` | Code quality dashboard | Composite score, lint/typecheck/test status |
+| `/ais-review` | Parallel AI review status | All reviewer findings (backend, frontend, security, QA, architect) |
+| `/ais-review` | QA readiness status | Test coverage, edge cases, sign-off readiness |
+| `/ais-deployment-review` | Deploy readiness checklist | Migration plan, smoke tests, rollback procedure |
 | `/loop` | Recurring project health check | Periodic status update |
-| `/reflect` | Review sprint/phase outcome | Decisions logged, risks surfaced |
-| `/lessons` | Record patterns from reviews/sprints | Saved to `tasks/lessons.md` |
+| `/ais-lessons --write` | Review sprint/phase outcome | Decisions logged, risks surfaced |
+| `/ais-lessons` | Record patterns from reviews/sprints | Saved to `tasks/lessons.md` |
 | `/compact` | Compress conversation for long sessions | Session summary for next turn |
 
 ---
@@ -60,21 +60,21 @@ This reads project state, identifies the current stage, surfaces blockers, and o
 ### Sprint Planning
 
 ```
-1. Run /what-next
+1. Run /ais-what-next
    → Current stage for all active features
    → Blockers surfaced
    → Next action per feature
 
-2. Run /health
+2. Run /ais-health
    → Overall code quality score
    → Lint/typecheck/test status
    → CI health
 
-3. Run /review (summary)
+3. Run /ais-review (summary)
    → How many open BLOCK findings?
    → What's blocking PRs?
 
-4. Run /qa-review (summary)
+4. Run /ais-review (summary)
    → Test coverage status
    → QA sign-offs pending
 
@@ -89,7 +89,7 @@ This reads project state, identifies the current stage, surfaces blockers, and o
 ```
 Before any feature moves to the next stage:
 
-1. Check gate status with /what-next
+1. Check gate status with /ais-what-next
    → Architecture gate: approved?
    → UX gate: wireframes approved?
    → QA gate: tests written?
@@ -107,10 +107,10 @@ Before any feature moves to the next stage:
 ### Milestone Review
 
 ```
-1. Run /health for each active project
-2. Run /review summary for each feature
-3. Run /qa-review summary for each feature
-4. Run /reflect to document decisions
+1. Run /ais-health for each active project
+2. Run /ais-review summary for each feature
+3. Run /ais-review summary for each feature
+4. Run /ais-lessons --write to document decisions
 5. Output milestone summary:
    → What's done
    → What's in progress
@@ -159,9 +159,9 @@ Owner surfaces:
   → "PR Y has 3 BLOCK findings"
 
 Specialist executes:
-  → @architect runs /create-api → delivers contract
-  → @architect runs /architecture-review → clears gate
-  → @dev resolves BLOCK findings → re-runs /review
+  → @architect runs /ais-api-spec → delivers contract
+  → @architect runs /ais-architecture-review → clears gate
+  → @dev resolves BLOCK findings → re-runs /ais-review
 
 Owner monitors:
   → Gate status updated
@@ -178,13 +178,13 @@ Owner monitors:
 ```
 User: "Sprint is blocked on the user authentication feature"
 
-1. /what-next
+1. /ais-what-next
    → Current stage: Stage 3 (Architecture)
    → Gate: API contract not approved
    → Blocker: Auth pattern decision not made
 
 2. Action: Assign @architect to resolve
-   → Architect runs /create-api for auth endpoints
+   → Architect runs /ais-api-spec for auth endpoints
    → Decision brief: session tokens vs JWT vs OAuth2
    → ADR filed for chosen approach
    → API contract approved
@@ -199,12 +199,12 @@ User: "Sprint is blocked on the user authentication feature"
 ```
 User: "A PR has been in review for 2 days with no action"
 
-1. /what-next
+1. /ais-what-next
    → PR: feature/project-settings
    → Age: 2 days
    → BLOCK findings: 2 (resolved), 3 (open)
 
-2. Run /review on the PR
+2. Run /ais-review on the PR
    → Surface BLOCK findings to reviewer
 
 3. Action: Assign developer to fix BLOCKs
@@ -220,19 +220,19 @@ User: "A PR has been in review for 2 days with no action"
 ```
 User: "Prepare v1.2.0 release for next week"
 
-1. /health
+1. /ais-health
    → Code quality score: 8/10
    → CI: 3 failing tests on main — must resolve
 
-2. /review (summary on all features)
+2. /ais-review (summary on all features)
    → All BLOCKs resolved?
    → Human reviews approved?
 
-3. /qa-review (summary)
+3. /ais-review (summary)
    → All QA sign-offs obtained?
    → Regression tests pass?
 
-4. /deployment-review
+4. /ais-deployment-review
    → Migration plan: v1.2.0 has 1 migration
    → Smoke tests defined
    → Rollback procedure documented
@@ -247,16 +247,16 @@ User: "Prepare v1.2.0 release for next week"
 ```
 User: "Run sprint retrospective"
 
-1. /reflect
+1. /ais-lessons --write
    → What went well: architecture review early prevented mid-sprint pivots
    → What didn't: QA found gaps in auth tests
    → Decisions: use session tokens, not JWT
 
-2. /lessons
+2. /ais-lessons
    → "QA must review auth flows before implementation starts"
    → "Architecture review must include threat model"
 
-3. /what-next
+3. /ais-what-next
    → Next sprint: auth feature phase 2
    → Blockers: none yet
    → Risks: third-party API access pending
@@ -285,7 +285,7 @@ Invoke these for deep analysis:
 | Blocker is a human decision (not technical) | Surface to PM/Tech Lead, set deadline |
 | CI is red | Assign to @dev immediately — no feature ships with red CI |
 | "I don't know" response | This is correct. Surface the knowledge gap as a blocker |
-| Multiple high-priority items | Use `/what-next` to get clear ordering — don't guess |
+| Multiple high-priority items | Use `/ais-what-next` to get clear ordering — don't guess |
 
 ---
 

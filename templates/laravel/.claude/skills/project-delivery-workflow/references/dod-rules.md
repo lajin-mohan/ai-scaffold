@@ -36,14 +36,14 @@ Every user story must satisfy all of the following before being marked Done in J
 
 ### Review
 - [ ] Self-review checklist in `review-rules.md` completed by the author
-- [ ] AI review (`/review`) run and all BLOCK findings resolved
+- [ ] AI review (`/ais-review`) run and all BLOCK findings resolved
 - [ ] Human peer review approved
 
 ### Frontend / UX
 
-The browser checks below (`/ux-review` viewports, mobile and theme) apply when the project has a browser E2E harness such as Playwright. Without one, the PR lists each as `not verified: no E2E harness` instead of claiming it. The token rules apply either way.
+The browser checks below (`/ais-ux-review` viewports, mobile and theme) apply when the project has a browser E2E harness such as Playwright. Without one, the PR lists each as `not verified: no E2E harness` instead of claiming it. The token rules apply either way.
 
-- [ ] **BLOCK** Changed frontend screens/components pass `/ux-review`
+- [ ] **BLOCK** Changed frontend screens/components pass `/ais-ux-review`
 - [ ] **BLOCK** Mobile workflow verified at approximately 390px width
 - [ ] **BLOCK** Desktop light theme verified
 - [ ] **BLOCK** Desktop dark theme verified
@@ -82,7 +82,7 @@ A release is Done when:
 - [ ] Security review completed for any auth, data, or permission changes
 - [ ] Rollback plan documented and tested
 - [ ] Release notes produced (see `release-notes-template.md`)
-- [ ] Deployment review approved via `/deployment-review`
+- [ ] Deployment review approved via `/ais-deployment-review`
 - [ ] Smoke test passed in the target environment post-deploy
 
 ---

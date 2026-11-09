@@ -8,7 +8,7 @@
 # publishes stack outputs based on package.json / composer.json / go.mod.
 # Every other job depends on those outputs.
 # On a fresh template (no stack files), all stack jobs SKIP and `ci-passed`
-# still succeeds. Once /bootstrap creates a real stack, the gates flip and
+# still succeeds. Once /ais-bootstrap creates a real stack, the gates flip and
 # the real pipeline runs.
 #
 # Layout hints:
@@ -424,7 +424,7 @@ jobs:
         id: result
         run: |
           if [ "${{ needs.detect-stack.outputs.template-mode }}" == "true" ]; then
-            echo "message=Template validation passed — no project stack detected. Run /bootstrap to configure the stack." >> "$GITHUB_OUTPUT"
+            echo "message=Template validation passed — no project stack detected. Run /ais-bootstrap to configure the stack." >> "$GITHUB_OUTPUT"
           else
             fail=0
             for job in "detect-stack:${{ needs.detect-stack.result }}" \

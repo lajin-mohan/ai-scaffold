@@ -29,11 +29,11 @@ const CASES = {
 };
 
 describe('rule relocation: scoped rules load by path (item 84)', () => {
-  it('leaves only the rules retired in PR 5 unscoped, in every profile', () => {
+  it('scopes every rule by path, in every profile', () => {
     for (const profile of SUPPORTED_PROFILES) {
       const unscoped = readdirSync(rulesDir(profile)).filter((f) => f.endsWith('.md'))
         .filter((f) => pathsOf(readFileSync(path.join(rulesDir(profile), f), 'utf-8')) === null);
-      expect(unscoped).toEqual(['ponytail-ladder.md']);
+      expect(unscoped).toEqual([]);
     }
   });
 
@@ -76,7 +76,7 @@ describe('delivery workflow is opt-in (item 84)', () => {
   });
 
   it('start-task reads the Definition of Ready only when the delivery workflow is in use', () => {
-    const text = readFileSync(templatePath('generic', '.claude/commands/start-task.md'), 'utf-8');
+    const text = readFileSync(templatePath('generic', '.claude/commands/ais-plan.md'), 'utf-8');
     expect(text).toMatch(/If the project uses the delivery workflow, verify Definition of Ready/);
   });
 });

@@ -103,7 +103,7 @@ These patterns break the protocol and must not be used:
 
 ### Governance
 - All fixes require regression test before claiming done (ai-coding-rules.md §8)
-- No direct commits to dev — use `/commit-changes` (branching-rules.md)
+- No direct commits to dev — use `/ais-commit` (branching-rules.md)
 
 ### Stop Condition
 None — proceed to completion (regression test + commit). Stop only if verification fails.
@@ -118,7 +118,7 @@ None — proceed to completion (regression test + commit). Stop only if verifica
 
 1. **Never handoff mid-thought.** Complete your current unit of work before handing off.
 2. **Be explicit about what you don't know.** State uncertainty, don't hide it.
-3. **Cross-reference past lessons.** Use `/lessons` to find related patterns before handoff.
+3. **Cross-reference past lessons.** Use `/ais-lessons` to find related patterns before handoff.
 4. **The sending agent owns the handoff quality.** If the receiving agent is confused, the sender failed.
 5. **Handoffs are synchronous.** Wait for acknowledgment before assuming the receiving agent has context.
 

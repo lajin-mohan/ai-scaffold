@@ -302,6 +302,6 @@ turn an unavailable GitHub check into exit `1`.
 
 - [README](../README.md) — install, quick start, "Before You Reinstall"
 - [README.scaffold.md](../README.scaffold.md) — scaffold platform internals
-- In-project slash commands (`/start-task`, `/review`, `/what-next`, …) are
+- In-project slash commands (`/ais-plan`, `/ais-review`, `/ais-what-next`, …) are
   documented inside each generated project: run `ais list commands` or read the
   generated `CLAUDE.md`.

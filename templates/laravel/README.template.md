@@ -3,7 +3,7 @@
 {{PROJECT_DESCRIPTION}}
 
 > **Start here:** read [`constitution.md`](constitution.md) — the one-page source
-> of truth for how this project works — then `AGENTS.md`, then run `/what-next`.
+> of truth for how this project works — then `AGENTS.md`, then run `/ais-what-next`.
 
 ## Project Info
 

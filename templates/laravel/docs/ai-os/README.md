@@ -8,11 +8,11 @@ AI roles are not product user roles. Product user roles belong in BRDs, UX specs
 
 | AI Role | Start Here | Use For |
 |---|---|---|
-| `dev` | `/start-task` | implementation, bug fixes, review fixes, commits |
-| `qa` | `/qa-plan` | test planning, test generation, QA review, browser verification |
-| `architect` | `/architecture-review` | architecture, API contracts, system risk, technical trade-offs |
-| `ux` | `/ux-analyze` | UX requirements, flows, screen specs, Figma specs, handoff |
-| `owner` | `/what-next` | project status, orchestration, blockers, release readiness |
+| `dev` | `/ais-plan` | implementation, bug fixes, review fixes, commits |
+| `qa` | `/ais-qa-plan` | test planning, test generation, QA review, browser verification |
+| `architect` | `/ais-architecture-review` | architecture, API contracts, system risk, technical trade-offs |
+| `ux` | `/ais-ux-analysis` | UX requirements, flows, screen specs, Figma specs, handoff |
+| `owner` | `/ais-what-next` | project status, orchestration, blockers, release readiness |
 
 ## Local Setting
 

@@ -16,8 +16,8 @@ import { toPosixPath } from './paths.js';
 const CHARS_PER_TOKEN = 4;
 const TOP_FILES_LIMIT = 10;
 
-// The five reviewers that fan out on a full `/review` (T1 targets this),
-// per .claude/commands/review.md: backend, frontend, security, qa, architect.
+// The five reviewers that fan out on a full `/ais-review` (T1 targets this),
+// per .claude/commands/ais-review.md: backend, frontend, security, qa, architect.
 const REVIEW_FANOUT_AGENTS = [
   'backend-reviewer',
   'frontend-reviewer',

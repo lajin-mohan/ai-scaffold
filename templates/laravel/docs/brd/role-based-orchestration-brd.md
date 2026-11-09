@@ -36,20 +36,20 @@ This is a routing/configuration layer over existing agents and commands. It is n
 
 | Role | Purpose | Default Entry |
 |---|---|---|
-| `dev` | Feature implementation, bug fixing, review fixes, commits | `/start-task` |
-| `qa` | Test planning, test generation, QA review, live verification | `/qa-plan` |
-| `architect` | Architecture, API contracts, code review, system risk | `/architecture-review` |
-| `ux` | UX creation, UX review, accessibility, responsive behavior | `/ux-analyze` |
-| `owner` | All-inclusive project view and orchestration | `/what-next` |
+| `dev` | Feature implementation, bug fixing, review fixes, commits | `/ais-plan` |
+| `qa` | Test planning, test generation, QA review, live verification | `/ais-qa-plan` |
+| `architect` | Architecture, API contracts, code review, system risk | `/ais-architecture-review` |
+| `ux` | UX creation, UX review, accessibility, responsive behavior | `/ais-ux-analysis` |
+| `owner` | All-inclusive project view and orchestration | `/ais-what-next` |
 
 ### V2 Roles
 
 | Role | Purpose | Default Entry |
 |---|---|---|
-| `pm` | Scope, blockers, delivery tracking, estimates | `/what-next` |
-| `ba` | Requirements, BRD, acceptance criteria, assumptions | `/create-brd` |
-| `security` | Threat review, auth/data/compliance risk | `/review --security-only` |
-| `devops` | CI/CD, deployment, rollback, smoke tests | `/deployment-review` |
+| `pm` | Scope, blockers, delivery tracking, estimates | `/ais-what-next` |
+| `ba` | Requirements, BRD, acceptance criteria, assumptions | `/ais-create-brd` |
+| `security` | Threat review, auth/data/compliance risk | `/ais-review --security-only` |
+| `devops` | CI/CD, deployment, rollback, smoke tests | `/ais-deployment-review` |
 
 ### In Scope
 
@@ -57,7 +57,7 @@ This is a routing/configuration layer over existing agents and commands. It is n
 |---|---|
 | S-01 | Add V1 AI role configuration files under `.claude/roles/` |
 | S-02 | Document local AI role persistence through `.claude/settings.local.json` |
-| S-03 | Update `/what-next` and `/loop` guidance to respect active AI role |
+| S-03 | Update `/ais-what-next` and `/loop` guidance to respect active AI role |
 | S-04 | Update QA AI role to require schema validation, response contract, DB validation, business rules, timing/performance, idempotency, and security evidence |
 | S-05 | Update `CLAUDE.md`, `HOW-TO-USE.md`, and `CONTRIBUTING.md` so team members know how to use AI roles |
 | S-06 | Defer graph/orchestration implementation to a later phase while keeping AI role config graph-compatible |
@@ -93,7 +93,7 @@ This is a routing/configuration layer over existing agents and commands. It is n
 | FR-11 | `.claude/settings.local.json` SHALL remain gitignored and per-user | Must Have |
 | FR-12 | If no local AI role is configured, commands SHALL default to `dev` for implementation contexts and `owner` for project-status contexts | Should Have |
 | FR-13 | A later `/ai-role {{name}}` command MAY update the local AI role setting | Nice to Have |
-| FR-14 | A per-command/session override MAY be supported later, e.g. `/what-next --role qa` | Nice to Have |
+| FR-14 | A per-command/session override MAY be supported later, e.g. `/ais-what-next --role qa` | Nice to Have |
 
 Example local settings:
 
@@ -107,16 +107,16 @@ Example local settings:
 
 | ID | Requirement | Priority |
 |---|---|---|
-| FR-20 | `/what-next` SHALL show AI-role-relevant next actions once AI role routing is implemented | Must Have |
+| FR-20 | `/ais-what-next` SHALL show AI-role-relevant next actions once AI role routing is implemented | Must Have |
 | FR-21 | Supervisor/orchestration guidance SHALL use the active AI role when routing work across existing commands and agents | Must Have |
 | FR-22 | `/loop` SHALL respect AI-role-specific blocked actions and stop conditions | Must Have |
-| FR-23 | `/commit-changes` SHALL ask for verification evidence appropriate to the active AI role | Should Have |
+| FR-23 | `/ais-commit` SHALL ask for verification evidence appropriate to the active AI role | Should Have |
 
 ### 4.4 Role Evidence
 
 | ID | Role | Required Evidence |
 |---|---|---|
-| FR-30 | `dev` | Lint/typecheck/test/build evidence before claiming done; `/review` BLOCK findings resolved |
+| FR-30 | `dev` | Lint/typecheck/test/build evidence before claiming done; `/ais-review` BLOCK findings resolved |
 | FR-31 | `qa` | Schema validation, response contract, DB validation, business rule validation, timing/performance, idempotency, and security test evidence |
 | FR-32 | `architect` | Architecture decision evidence, API contract alignment, data model review, security/performance risk review, dependency-boundary review |
 | FR-33 | `ux` | Accessibility, responsiveness, light/dark theme, state coverage, design-system consistency, and primary workflow verification |
@@ -160,7 +160,7 @@ Example local settings:
 | ID | Decision | Status | Rationale |
 |---|---|---|---|
 | DEC-01 | Use "AI role" in documentation for the AI workflow mode; keep the local settings key as `role` | Accepted | Avoids conflict with product user roles in BRDs, UX specs, and permission docs without changing the existing settings shape |
-| DEC-02 | Use `qa-reviewer` for QA planning/review in V1; keep `/gen-tests` responsible for generation | Accepted | Avoids duplicate `qa-automation-engineer` wrapper agent |
+| DEC-02 | Use `qa-reviewer` for QA planning/review in V1; keep `/ais-gen-tests` responsible for generation | Accepted | Avoids duplicate `qa-automation-engineer` wrapper agent |
 | DEC-03 | Persist AI role locally in `.claude/settings.local.json` as `role` | Accepted | Useful per-user default without team-wide coupling |
 | DEC-04 | Defer graph orchestration to a later advisory phase | Accepted | Role config must prove useful before graph execution |
 | DEC-05 | V1 supports `dev`, `qa`, `architect`, `ux`, `owner`; V2 documents `pm`, `ba`, `security`, `devops` | Accepted | Keeps first rollout small while preserving the larger model |
@@ -173,8 +173,8 @@ Example local settings:
 |---|---|---|
 | AC-01 | V1 role configs exist for `dev`, `qa`, `architect`, `ux`, and `owner` | Inspect `.claude/roles/*.yaml` |
 | AC-02 | Local AI role setting is documented as `.claude/settings.local.json` with key `role` | Inspect docs and settings example |
-| AC-03 | `/qa-plan` references `qa-reviewer`, not a missing `qa-automation-engineer` agent | Search repo for stale active references |
-| AC-04 | QA evidence categories are present in QA command/rule/template docs | Inspect `/qa-plan`, `/gen-tests`, `/qa-review`, `qa-reviewer`, `testing-rules`, `test-case-template` |
+| AC-03 | `/ais-qa-plan` references `qa-reviewer`, not a missing `qa-automation-engineer` agent | Search repo for stale active references |
+| AC-04 | QA evidence categories are present in QA command/rule/template docs | Inspect `/ais-qa-plan`, `/ais-gen-tests`, `/ais-review`, `qa-reviewer`, `testing-rules`, `test-case-template` |
 | AC-05 | Public docs explain role-based usage without repeating the full workflow in every file | Inspect `CLAUDE.md`, `HOW-TO-USE.md`, `CONTRIBUTING.md` |
 | AC-06 | No Git-tracked `.Claude/` files exist | `git ls-files | grep '^\.Claude/'` returns nothing |
 

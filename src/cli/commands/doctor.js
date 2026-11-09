@@ -425,7 +425,7 @@ function checkVerificationConfigured(manifestData) {
     passed: !flagged,
     severity: 'medium',
     message: flagged
-      ? 'Bootstrapped but test/lint/typecheck/build are all "none" — configure them so /review and verification gates work.'
+      ? 'Bootstrapped but test/lint/typecheck/build are all "none" — configure them so /ais-review and verification gates work.'
       : undefined,
   };
 }

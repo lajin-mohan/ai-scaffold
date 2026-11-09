@@ -26,7 +26,7 @@ For every deployment to staging or production. Run through before smoke testing.
 
 ### Health Check Endpoint
 ```
-[ ] GET /health returns 200 with JSON: { status: 'ok', version: '<app-version>', uptime: <seconds> }
+[ ] GET /ais-health returns 200 with JSON: { status: 'ok', version: '<app-version>', uptime: <seconds> }
 [ ] GET /health/db checks DB connectivity (if database is a dependency)
 [ ] GET /health/ready returns 503 if the service is starting up or draining
 [ ] Health endpoints are unauthenticated (they are for load balancers and orchestrators)
@@ -137,7 +137,7 @@ Run these immediately after deploy, before handing off:
 |---|---|
 | Config | App starts without missing-var crash |
 | Logging | JSON output, no PII in any log line |
-| Health | `/health` → 200, `/health/ready` → 200 when ready |
+| Health | `/ais-health` → 200, `/health/ready` → 200 when ready |
 | Errors | 4xx = no internals, 5xx = correlation ID |
 | Migration | Tested in staging, reversible, no lock |
 | Rollback | Previous image available, tested |

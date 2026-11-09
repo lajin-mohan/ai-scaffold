@@ -213,14 +213,14 @@ else
   fail "generated settings do not wire starter safety hooks"
 fi
 
-# Item 77: a fresh project must not trip /what-next's bootstrap check. The
+# Item 77: a fresh project must not trip /ais-what-next's bootstrap check. The
 # project-context Epic/Sprint lines resolve, and what-next.md is not rewritten
 # by placeholder substitution (0.16.0 shipped it with its own signals replaced).
 if ! grep -q "{{" <(grep -E '^\*\*(Epic|Sprint):\*\*' "$SMOKE_DIR/smoke-project/.claude/memory/project-context.md") \
-  && cmp -s "$SMOKE_DIR/smoke-project/.claude/commands/what-next.md" "templates/generic/.claude/commands/what-next.md"; then
+  && cmp -s "$SMOKE_DIR/smoke-project/.claude/commands/ais-what-next.md" "templates/generic/.claude/commands/ais-what-next.md"; then
   pass "fresh project has resolved Epic/Sprint and an unmodified what-next.md"
 else
-  fail "fresh project still trips /what-next Stage 0 (unresolved Epic/Sprint or substituted what-next.md)"
+  fail "fresh project still trips /ais-what-next Stage 0 (unresolved Epic/Sprint or substituted ais-what-next.md)"
 fi
 
 # Item 54: create wires .claude/hooks/pre-commit into .git/hooks/ so commits
@@ -343,7 +343,7 @@ done
 
 # ais list surfaces the installed assets in a generated project
 LIST_JSON=$(node bin/ai-scaffold.js list commands "$SMOKE_DIR/smoke-project" --json 2>/dev/null)
-if echo "$LIST_JSON" | grep -q '"start-task"'; then
+if echo "$LIST_JSON" | grep -q '"ais-plan"'; then
   pass "ais list surfaces installed commands"
 else
   fail "ais list did not surface installed commands"
