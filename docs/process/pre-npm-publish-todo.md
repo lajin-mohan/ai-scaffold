@@ -79,6 +79,43 @@ parallel with rows 2–3 rather than ahead of them.
 - **105 — Rule hygiene: provenance manifest, stale-content check, outdated
   removals (P1):** `tasks/todo/105-rule-hygiene.md`.
 
+### Newly added work (2026-11-09) — delivery measurement split with Engyne
+
+From a gap review of the Techversant research report "AI and the Software
+Development Lifecycle" (9 November 2026) against the scaffold and Engyne 1.0
+(`D:\Apps\engyne1.0\docs\brd`). The report's main gap is evidence that AI
+improves delivery. **Engyne owns measurement; the scaffold standardizes what
+each repository emits.** The scaffold builds no metrics or dashboards.
+
+- **106 — Engyne signal contract (P1):** `tasks/todo/106-engyne-signal-contract.md`.
+  Governance version, work type and "gate ran" as documented signals; parent
+  of 107 and 108.
+- **107 — Defect-linkage convention (P1):** `tasks/todo/107-defect-linkage-convention.md`.
+  Unblocks Engyne decision D-28 (escaped-defect rate).
+- **108 — Estimate records (P2):** `tasks/todo/108-estimate-records.md`.
+  Forecast versus actual, readable by Engyne.
+- **109 — Test quality beyond coverage (P2):** `tasks/todo/109-test-quality-guidance.md`.
+  Not covered by Engyne.
+- **110 — COE rule packs, ColdFusion first (P2):** `tasks/todo/110-coe-rule-packs.md`.
+  Engyne's technology slice picks the next pack.
+- **111 — Maintenance/migration lane; acceptable-use pointer (P2):**
+  `tasks/todo/111-maintenance-lane-and-aup-pointer.md`. The pointer is blocked
+  on Techversant publishing its AI acceptable-use standard.
+
+**Owned outside the scaffold (recorded so they are not lost):**
+
+| Gap | Owner |
+|---|---|
+| Lead time, PR cycle time, review latency, PR size as Phase 1 outputs | Engyne |
+| Change failure and time to restore (no deployment or incident source yet) | Engyne, as a named gap |
+| Governance version and work type as dimensions | Engyne (fed by 106) |
+| Delivery pilot with baseline and matched work, after Engyne's collection pilot | Engineering leadership / COE |
+| AI acceptable-use standard | Leadership, Legal, COE |
+| Customer outcome and engineer experience survey | Undecided: Engyne Phase 2 or a separate survey |
+
+Do not claim "AI made us X% faster" until delivery outcomes, flow metrics and
+a baseline exist. That is the report's bar and Engyne's.
+
 ### Next wave
 
 **Wave B — Lean core with proof** = rows 1 and 2. Expected result (forecast, not
