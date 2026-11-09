@@ -1,3 +1,25 @@
+---
+paths:
+  - "**/*.ts"
+  - "**/*.tsx"
+  - "**/*.js"
+  - "**/*.jsx"
+  - "**/*.mjs"
+  - "**/*.cjs"
+  - "**/*.py"
+  - "**/*.go"
+  - "**/*.php"
+  - "**/*.rb"
+  - "**/*.java"
+  - "**/*.kt"
+  - "**/*.cs"
+  - "**/*.rs"
+  - "**/*.cfc"
+  - "**/*.cfm"
+  - "**/migrations/**"
+  - "**/*.sql"
+---
+
 # Compliance Rules
 
 GDPR and ISO 27001 requirements for projects at your organization. These rules are checked by the `security-reviewer` agent and apply to any feature that handles personal data or operates under a compliance obligation.
@@ -5,6 +27,8 @@ GDPR and ISO 27001 requirements for projects at your organization. These rules a
 ---
 
 ## Applicability
+
+If the Compliance scope in `AGENTS.md` is `N/A`, these rules do not apply; skip this file.
 
 Apply these rules when the project:
 - Processes personal data of EU/UK residents (GDPR)

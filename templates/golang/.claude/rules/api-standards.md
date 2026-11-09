@@ -1,3 +1,17 @@
+---
+paths:
+  - "**/routes/**"
+  - "**/controllers/**"
+  - "**/Controllers/**"
+  - "**/handlers/**"
+  - "**/api/**"
+  - "**/*.route.*"
+  - "**/*.controller.*"
+  - "**/openapi*.yaml"
+  - "**/openapi*.yml"
+  - "**/openapi*.json"
+---
+
 # API Standards
 
 Rules for designing and implementing HTTP APIs in this project.

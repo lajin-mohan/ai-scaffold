@@ -1,3 +1,12 @@
+---
+paths:
+  - ".github/**"
+  - ".claude/hooks/**"
+  - ".ai-scaffold/setup/**"
+  - ".ai-scaffold/ci/**"
+  - ".gitattributes"
+---
+
 # Branching Rules
 
 Git workflow for all projects at your organization.

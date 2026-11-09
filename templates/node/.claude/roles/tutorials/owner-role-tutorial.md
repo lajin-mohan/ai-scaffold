@@ -292,6 +292,6 @@ Invoke these for deep analysis:
 ## Related Files
 
 - Role config: [owner.yaml](../owner.yaml)
-- Governance: [.claude/rules/governance.md](../../rules/governance.md)
-- DoD rules: [.claude/rules/dod-rules.md](../../rules/dod-rules.md)
-- DoR rules: [.claude/rules/definition-of-ready.md](../../rules/definition-of-ready.md)
+- Governance: [.claude/skills/project-delivery-workflow/references/governance.md](../../skills/project-delivery-workflow/references/governance.md)
+- DoD rules: [.claude/skills/project-delivery-workflow/references/dod-rules.md](../../skills/project-delivery-workflow/references/dod-rules.md)
+- DoR rules: [.claude/skills/project-delivery-workflow/references/definition-of-ready.md](../../skills/project-delivery-workflow/references/definition-of-ready.md)

@@ -84,7 +84,7 @@ For each gate, mark:
 
 - [ ] Change Request (CR) process explained to all stakeholders
 - [ ] Escalation path documented
-- [ ] Definition of Done agreed with the team (see `.claude/rules/dod-rules.md`)
+- [ ] Definition of Done agreed with the team (see `.claude/skills/project-delivery-workflow/references/dod-rules.md`)
 - [ ] RACI confirmed (who is responsible, accountable, consulted, informed)
 
 ---

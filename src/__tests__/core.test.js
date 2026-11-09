@@ -379,9 +379,11 @@ describe('Claude Code skill packaging', () => {
     }
   });
 
-  it('keeps converted skills identical across the root and every shipped profile', () => {
+  // Root .claude/ is the scaffold's own governance, not the product (CLAUDE.md),
+  // so the shipped profiles are compared with each other, not with it.
+  it('keeps converted skills identical across every shipped profile', () => {
     for (const skill of convertedSkills) {
-      const canonical = readFileSync(path.join(repoRoot, '.claude/skills', skill, 'SKILL.md'), 'utf-8');
+      const canonical = readFileSync(path.join(repoRoot, 'templates', 'generic', '.claude/skills', skill, 'SKILL.md'), 'utf-8');
       for (const profile of SUPPORTED_PROFILES) {
         const shipped = readFileSync(
           path.join(repoRoot, 'templates', profile, '.claude/skills', skill, 'SKILL.md'),

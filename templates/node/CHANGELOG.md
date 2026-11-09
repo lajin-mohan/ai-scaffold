@@ -59,9 +59,9 @@ Pre-CHANGELOG history captured retroactively. Detailed merge log below.
 - `.claude/hooks/pre-review.sh` wired into `.claude/settings.json` as `UserPromptSubmit` hook for `/review`
 
 ### Phase 3 (chore/productivity, commit `bab1aa6`) — Productivity gaps
-- `.claude/rules/definition-of-ready.md` — gates `BACKLOG -> IN PROGRESS`
+- `.claude/skills/project-delivery-workflow/references/definition-of-ready.md` — gates `BACKLOG -> IN PROGRESS`
 - `.claude/commands/start-task.md` — 5-phase plan-and-confirm execution ritual
-- `.claude/rules/manual-review-checklist.md` — Stage 7 four-question framework for human reviewers
+- `.claude/skills/project-delivery-workflow/references/manual-review-checklist.md` — Stage 7 four-question framework for human reviewers
 - `.claude/commands/review.md` — extended from 3 to 5 reviewers (added qa-reviewer + architect)
 
 ### Phase 2 (chore/ai-coding-rules, commit `7893590`) — AI coding rules

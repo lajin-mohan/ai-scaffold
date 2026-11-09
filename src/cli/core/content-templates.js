@@ -484,8 +484,9 @@ this constitution (order only)
   -> security-rules.md     (never negotiable)
   -> coding-standards.md   (structure, correctness)
   -> testing-rules.md      (what "tested" means)
-  -> dod-rules.md          (what "done" means)
   -> the remaining files in .claude/rules/
+  -> the delivery workflow references, when that workflow is in use
+     (.claude/skills/project-delivery-workflow/references/)
 \`\`\`
 
 ## Start here

@@ -1,3 +1,23 @@
+---
+paths:
+  - "**/*.ts"
+  - "**/*.tsx"
+  - "**/*.js"
+  - "**/*.jsx"
+  - "**/*.mjs"
+  - "**/*.cjs"
+  - "**/*.py"
+  - "**/*.go"
+  - "**/*.php"
+  - "**/*.rb"
+  - "**/*.java"
+  - "**/*.kt"
+  - "**/*.cs"
+  - "**/*.rs"
+  - "**/*.cfc"
+  - "**/*.cfm"
+---
+
 # Coding Standards
 
 These rules apply to **all code** regardless of language or framework. Stack-specific rules live in `.claude/rules/stacks/`. Read this file first, then the relevant stack overlay(s).

@@ -251,7 +251,7 @@ This runs backend-reviewer + frontend-reviewer + security-reviewer in parallel.
 **Goal:** Domain correctness, business logic, team knowledge transfer.
 **Who:** Peer reviewer
 
-Reviewer follows the checklist in `.claude/rules/review-rules.md`.
+Reviewer follows the checklist in `.claude/skills/project-delivery-workflow/references/review-rules.md`.
 
 Two approvals required for production-bound changes: AI review + human review.
 

@@ -40,13 +40,13 @@ describe.each(SUPPORTED_PROFILES)('%s profile', (profile) => {
     '.claude/agents/debugging-agent.md',
     '.claude/skills/systematic-debugging/SKILL.md',
     '.claude/skills/ux-review/SKILL.md',
-    '.claude/rules/governance.md',
+    '.claude/skills/project-delivery-workflow/references/governance.md',
   ])('%s accepts the no-harness disclosure the DoD allows', (rel) => {
     expect(fs.readFileSync(templatePath(profile, rel), 'utf-8')).toContain(NO_HARNESS);
   });
 
   it('the DoD browser checks are conditional on an E2E harness', () => {
-    const dod = fs.readFileSync(templatePath(profile, '.claude/rules/dod-rules.md'), 'utf-8');
+    const dod = fs.readFileSync(templatePath(profile, '.claude/skills/project-delivery-workflow/references/dod-rules.md'), 'utf-8');
     expect(dod).toContain(`Without one, the PR lists each as \`${NO_HARNESS}\``);
   });
 });
