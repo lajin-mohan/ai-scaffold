@@ -481,4 +481,11 @@ This file records patterns from mistakes and corrections. Claude reads this at t
   hands over the exact commands instead. `--claude` must point at
   `claude.exe` on Windows; the npm `claude.cmd` shim cannot be spawned
   without a shell and fails with an unclear `trim` error.
+  - Found next, from the maintainer's own terminal: the harness runs the
+    agent with `--setting-sources project`, so a CLI login defined in the
+    `env` block of `~/.claude/settings.json` never reaches it, while
+    `claude auth status` (which reads user settings) still says logged in.
+    Export those variables into the shell first; the harness keeps
+    `CLAUDE_*` and `ANTHROPIC_*`. The harness's "not logged in" message
+    should say this.
 
