@@ -86,6 +86,24 @@ export function installCandidate(root, repo, version) {
   return { bin: binOf(dir), tarball };
 }
 
+/**
+ * Render one managed file from a manifest with the candidate package's own
+ * renderer (the one `ais update` uses), under the fixed clock. Returns the
+ * bytes, or null when the manifest renders no such file.
+ */
+export function renderWith({ bin, clock, manifest, rel }) {
+  const module = pathToFileURL(path.join(path.dirname(bin), '..', 'src', 'cli', 'core', 'update-render.js')).href;
+  const script = `const { renderManagedSet } = await import(${JSON.stringify(module)});
+const { renders } = await renderManagedSet(JSON.parse(process.env.AIS_MANIFEST), process.cwd());
+const bytes = renders.get(${JSON.stringify(rel)});
+process.stdout.write(bytes ? Buffer.from(bytes).toString('base64') : '');`;
+  const result = spawnSync(process.execPath, ['--import', clock, '--input-type=module', '-e', script], {
+    encoding: 'utf-8', timeout: TIMEOUT_MS, env: { ...process.env, AIS_MANIFEST: JSON.stringify(manifest) },
+  });
+  if (result.status !== 0) throw new Error(`renderWith failed: ${result.stderr}`);
+  return result.stdout ? Buffer.from(result.stdout, 'base64') : null;
+}
+
 /** Run a CLI under the fixed clock. */
 export function runCli({ bin, clock, cwd, args }) {
   return spawnSync(process.execPath, ['--import', clock, bin, ...args], { cwd, encoding: 'utf-8', timeout: TIMEOUT_MS });

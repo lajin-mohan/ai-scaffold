@@ -67,14 +67,66 @@ export function managedParity({ project, fresh, applied, freshManifest, explain 
   };
 }
 
-/** The adopter's edit is kept and the sidecar holds exactly the fresh render (AC-02). */
-export function conflictKept({ project, fresh, before, after, rel }) {
+// Recorded answers no install flag can give a fresh reference: commands with
+// no flag in any version, and the project identity a 0.7.x manifest never
+// recorded (schema-2 does not default it).
+export const UNFLAGGED_COMMANDS = ['dev', 'install', 'migration'];
+const IDENTITY_FIELDS = [['project', 'slug'], ['project', 'displayName'], ['project', 'purpose'], ['project', 'owner'], ['stack', 'backend']];
+
+/** Recorded answers that differ from the fresh reference's and cannot be passed to it. */
+export function unflaggedDrift(recorded, freshManifest) {
+  const commands = UNFLAGGED_COMMANDS.filter((key) => recorded.commands?.[key] !== freshManifest.commands?.[key])
+    .map((key) => ({ label: key, value: recorded.commands?.[key], command: true }));
+  const identity = IDENTITY_FIELDS.filter(([section, key]) => recorded[section]?.[key] !== freshManifest[section]?.[key])
+    .map(([section, key]) => ({ label: `${section}.${key}`, value: recorded[section]?.[key], command: false }));
+  return [...commands, ...identity];
+}
+
+const sameBytes = (a, b) => Buffer.isBuffer(a) && Buffer.isBuffer(b) && a.equals(b);
+
+/**
+ * Explains a sidecar that differs from the fresh install. It passes only when
+ * every condition holds:
+ * - the recorded answers differ from the fresh reference's in a field no flag sets;
+ * - the candidate's renderer reproduces the fresh install from the fresh manifest
+ *   (`freshRender`), so it is a faithful stand-in for `create`;
+ * - the sidecar equals that renderer's output for the recorded manifest
+ *   (`recordedRender`), byte for byte;
+ * - each drifted recorded command is present as its own line in the sidecar.
+ * Returns the reason, or null.
+ */
+export function explainSidecar({ sidecar, fresh, freshRender, recordedRender, recorded, freshManifest }) {
+  const drift = unflaggedDrift(recorded, freshManifest);
+  if (drift.length === 0) return null;
+  if (!sameBytes(freshRender, fresh) || !sameBytes(recordedRender, sidecar)) return null;
+  const lines = new Set(sidecar.toString('utf-8').split(/\r?\n/).map((line) => line.trim()));
+  const missing = drift.filter((d) => d.command && typeof d.value === 'string' && d.value !== 'none' && !lines.has(d.value));
+  if (missing.length > 0) return null;
+  const shown = (value) => (value === undefined ? 'unrecorded' : `"${value}"`);
+  return `renders recorded answers no install flag can set: ${drift.map((d) => `${d.label} ${shown(d.value)}`).join(', ')}`;
+}
+
+/**
+ * The adopter's edit is kept and the sidecar holds the fresh render (AC-02).
+ * A difference passes only when `explain(sidecarBytes, freshBytes)` names a
+ * verified reason; it is returned for the report.
+ */
+export function conflictKept({ project, fresh, before, after, rel, explain = () => null }) {
   const sidecar = `${rel}${SIDECAR}`;
-  const sidecarOk = exists(project, sidecar) && hashOf(readFile(project, sidecar)) === hashOf(readFile(fresh, rel));
-  return [
-    check(`${rel} keeps the adopter's edit`, before.get(rel) === after.get(rel), 'the edited file changed'),
-    check(`${sidecar} equals the fresh render`, sidecarOk, 'sidecar missing or different'),
-  ];
+  const explained = [];
+  let sidecarOk = exists(project, sidecar);
+  if (sidecarOk && hashOf(readFile(project, sidecar)) !== hashOf(readFile(fresh, rel))) {
+    const reason = explain(readFile(project, sidecar), readFile(fresh, rel));
+    if (reason) explained.push({ rel: sidecar, reason });
+    else sidecarOk = false;
+  }
+  return {
+    checks: [
+      check(`${rel} keeps the adopter's edit`, before.get(rel) === after.get(rel), 'the edited file changed'),
+      check(`${sidecar} equals the fresh render`, sidecarOk, 'sidecar missing or different'),
+    ],
+    explained,
+  };
 }
 
 /** The manifest an apply writes (criterion 5.2). */
