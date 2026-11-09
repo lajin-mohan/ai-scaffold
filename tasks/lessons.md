@@ -421,3 +421,36 @@ This file records patterns from mistakes and corrections. Claude reads this at t
     a realistic timeout. The hook then passes without a bypass.
   - A harness that drives another CLI checks for its unauthenticated state and
     stops at the first run, not after recording every run as a failure.
+
+## 2026-11-09 — A line-filtering "explanation" could have hidden real regressions (Wave B, PR #174)
+
+- **What happened:** PR #174 moved the project table and command block from
+  `CLAUDE.md` into `AGENTS.md`. Both update-compatibility jobs then failed on
+  `AGENTS.md.ais-new` for 0.14.0 and 0.7.0 installs: `update` renders the
+  adopter's recorded `dev`/`install`/`migration` commands (no install flag can
+  give them to the fresh reference) and, for 0.7.0, a project identity the
+  manifest never recorded. The first fix stripped command lines and every
+  "This project does not define" sentence before comparing. Review showed it
+  would also accept a missing or wrong command and an unrelated sentence
+  change.
+- **Why:**
+  - The PR was stacked on another feature branch, and CI only runs for pull
+    requests targeting `dev` or `main`, so the matrix first ran after
+    retargeting. Moving placeholders into the one file the harness compares
+    byte for byte was never run through the matrix locally.
+  - The explanation was written to make the known difference disappear, not
+    to prove the output was right.
+- **Rule:**
+  - Any change that moves placeholders between managed files runs
+    `node scripts/update-compat-matrix.js` locally before push. A stacked PR
+    has no CI until it targets `dev`; no checks is not a pass.
+  - An accepted difference must be reproduced exactly: render the expected
+    bytes from the recorded answers with the candidate's own renderer, prove
+    that renderer reproduces the fresh install, and compare byte for byte.
+    Never filter lines out of both sides.
+  - Every explanation ships with negative tests: missing value, wrong value,
+    unrelated change.
+  - Found while doing it: a 0.7.x manifest records no identity (`slug`,
+    `displayName`, `purpose`, `owner`, `stack.backend`), so `update` already
+    replaces a pristine `CLAUDE.md` on `dev` with those fields blank. Tracked
+    separately; the harness now names it instead of hiding it.
