@@ -444,6 +444,11 @@ This file records patterns from mistakes and corrections. Claude reads this at t
   - Any change that moves placeholders between managed files runs
     `node scripts/update-compat-matrix.js` locally before push. A stacked PR
     has no CI until it targets `dev`; no checks is not a pass.
+  - Repeated on PR #175 the same day: only the matrix ran before push, and
+    a unit test that compared the shipped profiles with the root `.claude/`
+    copy failed once CI ran. Before pushing any stacked PR, run the whole
+    CI set locally (`npm test`, `npm run lint`, `npm run typecheck` and the
+    matrix), not only the check the change seems to touch.
   - An accepted difference must be reproduced exactly: render the expected
     bytes from the recorded answers with the candidate's own renderer, prove
     that renderer reproduces the fresh install, and compare byte for byte.
