@@ -162,7 +162,7 @@ This codebase is not MVP. Code that lands in `apps/` or `packages/` runs in prod
 ### What "production-grade" means concretely
 
 - Input validated at boundaries (see [security-rules.md](./security-rules.md))
-- Tenant isolation enforced (where applicable, see CLAUDE.md `IS_MULTI_TENANT`)
+- Tenant isolation enforced (where applicable, see the Multi-tenant row in AGENTS.md)
 - Audit log entries for state changes
 - Idempotency keys for write retries
 - Background jobs for >200ms operations

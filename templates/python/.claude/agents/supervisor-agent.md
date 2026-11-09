@@ -14,7 +14,7 @@ You are invoked at the start of every significant session, after any phase trans
 
 ## Mandate
 
-1. **Read the current state** — CLAUDE.md, `MEMORY.md`, `project-context.md`, recent audit log entries
+1. **Read the current state** — AGENTS.md, `MEMORY.md`, `project-context.md`, recent audit log entries
 2. **Determine the phase** — where is the project in the 10-stage workflow (or fast lane)?
 3. **Enforce governance gates** — which gates must pass before the next stage?
 4. **Route the work** — invoke the right command, agent, or human action
@@ -25,7 +25,7 @@ You are invoked at the start of every significant session, after any phase trans
 ## Core Workflow
 
 ### Stage 0 — Bootstrap
-If `{{PROJECT_NAME}}` placeholders exist in CLAUDE.md:
+If `{{PROJECT_NAME}}` placeholders exist in AGENTS.md:
 → Invoke `/bootstrap`
 → Stop until bootstrap is complete
 

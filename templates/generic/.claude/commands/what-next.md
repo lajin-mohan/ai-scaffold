@@ -36,7 +36,7 @@ When token count ≥ `tokenBudget.warningThreshold` (from `settings.json`), appe
 
 ## How It Works
 
-1. Read `CLAUDE.md` current state section, `tasks/todo.md`, `docs/` folder structure, and `.claude/memory/project-context.md`
+1. Read the `AGENTS.md` Project table, `tasks/todo.md`, `docs/` folder structure, and `.claude/memory/project-context.md`
 2. Read `.claude/settings-overrides.json` to determine which features are active (see [Settings Reference](#settings-reference))
 3. **Run Stage 0 — Bootstrap detection first.** If the scaffold is uninitialized, output the bootstrap instruction and stop. No other stage is meaningful until Stage 0 is complete.
 4. Otherwise, determine which stage the project or feature is currently in
@@ -56,9 +56,9 @@ A fresh copy of this scaffold has no project identity, no chosen stack, and no r
 
 | Signal | Where to check |
 |---|---|
-| A Project Identity row still holds an unresolved placeholder (text inside `{{…}}`) | `CLAUDE.md` Project Identity table |
-| A Tech Stack row still holds an unresolved placeholder | `CLAUDE.md` Tech Stack table |
-| Multi-tenancy or compliance scope is not set to a concrete value | `CLAUDE.md` Project Identity table |
+| A Project Identity row still holds an unresolved placeholder (text inside `{{…}}`) | `AGENTS.md` Project table |
+| A Tech Stack row still holds an unresolved placeholder | `AGENTS.md` Project table |
+| Multi-tenancy or compliance scope is not set to a concrete value | `AGENTS.md` Project table |
 | The Epic line still holds an unresolved placeholder | `.claude/memory/project-context.md` |
 | Repository is not a git repo (no `.git/`) | Repo root |
 | `apps/` and `packages/` are empty (no real source) | Repo root |
@@ -77,7 +77,7 @@ If Stage 0 fires, output the **Stage 0 instruction** below and stop. Do not eval
 ---
 
 ### What's missing
-- ❌ Project name, purpose, type still placeholders in CLAUDE.md
+- ❌ Project name, purpose, type still placeholders in AGENTS.md
 - ❌ Tech stack rows still {{...}} placeholders
 - ❌ Multi-tenancy and compliance scope not declared
 - ❌ Memory files (project-context.md) still scaffold defaults
@@ -89,7 +89,7 @@ If Stage 0 fires, output the **Stage 0 instruction** below and stop. Do not eval
 2. **No git repository** — branching rules, PR workflow, commit conventions are inert without `git init`.
 
 ### ⚡ Next Action
-Run the interactive bootstrap command. It walks you through naming, stack, tenancy, compliance, and initial memory state — one decision at a time — and writes the answers into CLAUDE.md, .cursorrules, .github/copilot-instructions.md, README.md, and the memory files.
+Run the interactive bootstrap command. It walks you through naming, stack, tenancy, compliance, and initial memory state — one decision at a time — and writes the answers into AGENTS.md, README.md, and the memory files.
 
 **Command to run:**
 `/bootstrap`
@@ -422,7 +422,7 @@ before proceeding to Stage 6.
 - If an artifact exists but appears incomplete or has open questions, mark it ⚠️ not ✅
 - The "Next Action" must be a single, concrete instruction — not a list of options
 - `--brief` output is for quick orientation only — use the full output for planning or detailed blockers
-- `--brief` mode skips all artifact validation; it reads only the current stage and blockers from CLAUDE.md and memory files
+- `--brief` mode skips all artifact validation; it reads only the current stage and blockers from AGENTS.md and memory files
 
 ---
 

@@ -90,8 +90,8 @@ Produce a plan in the exact format below. **Do not write any code yet.**
 - `path/to/shared-code/...` — no shared utility changes needed
 
 ### Verification I will run
-- Project lint command from `CLAUDE.md` / `.claude/settings-overrides.json` — must pass
-- Project typecheck/static-analysis command from `CLAUDE.md` / `.claude/settings-overrides.json` — must pass
+- Project lint command from `AGENTS.md` / `.claude/settings-overrides.json` — must pass
+- Project typecheck/static-analysis command from `AGENTS.md` / `.claude/settings-overrides.json` — must pass
 - Project test command covering the changed feature — must pass
 - Project build command, when configured — must pass
 - `/ux-review` — required for frontend/full-stack tasks; include result or approved exception

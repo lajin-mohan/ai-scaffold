@@ -14,7 +14,7 @@ A bug is not fixed until it is reproduced or clearly simulated, root-caused, cor
 
 ## Project Context
 
-Stack-agnostic debugging framework. The specific tools and paths depend on the project configuration. Start by reading `CLAUDE.md` to understand the actual stack (backend, frontend, database, test tooling) before beginning.
+Stack-agnostic debugging framework. The specific tools and paths depend on the project configuration. Start by reading `AGENTS.md` to understand the actual stack (backend, frontend, database, test tooling) before beginning.
 
 ## Required Workflow
 
