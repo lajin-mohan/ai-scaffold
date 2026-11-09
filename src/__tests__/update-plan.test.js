@@ -41,6 +41,11 @@ describe('managedAction: HLD §4 rows', () => {
     expect(managedAction({ current: B('old\n'), record: R, render: undefined }).recordAfter).toBe('drop');
   });
 
+  it('says why an edited file the scaffold no longer ships is kept', () => {
+    expect(managedAction({ current: B('edited\n'), record: R, render: undefined }).reason).toBe('retired-but-edited');
+    expect(managedAction({ current: B('old\n'), record: R, render: undefined }).reason).toBeUndefined();
+  });
+
   it('explains a legacy CRLF record that cannot prove the LF direction', () => {
     const legacy = { hash: hashRaw('a\r\n') };
     expect(managedAction({ current: B('a\n'), record: legacy, render: B('b\r\n') }).reason).toBe('legacy-crlf-unprovable');

@@ -43,7 +43,8 @@ export function managedAction({ current, record, render }) {
     return { action: 'conflict', recordAfter: hashRaw(N), reason: conflictReason(current, record, N) };
   }
   if (!current) return { action: 'drop-record', recordAfter: 'drop' };
-  return { action: isPristine(current, record) ? 'remove' : 'orphan-kept', recordAfter: 'drop' };
+  if (isPristine(current, record)) return { action: 'remove', recordAfter: 'drop' };
+  return { action: 'orphan-kept', recordAfter: 'drop', reason: 'retired-but-edited' };
 }
 
 // A record without hashLf cannot prove the CRLF-to-LF direction; when the
