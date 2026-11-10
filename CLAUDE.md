@@ -176,6 +176,7 @@ The corpus under `templates/*/.claude/` is the product. When changing it:
 |---|---|
 | Roadmap, priorities, waves | `docs/process/pre-npm-publish-todo.md` |
 | What already went wrong | `tasks/lessons.md` |
+| Recurring effectiveness and harness audit (maintainer only) | `/ais-effectiveness` in `.claude/commands/ais-effectiveness.md` |
 | Release procedure | `docs/setup/release-flow.md` |
 | Task sizing and fast lanes | `docs/process/task-size-policy.md` |
 | Architecture decisions | `docs/architecture/adr/` |

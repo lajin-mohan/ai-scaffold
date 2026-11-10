@@ -13,6 +13,12 @@ This file is configured with `merge=union` in `.gitattributes` so parallel addit
 
 ## [Unreleased]
 
+### Added
+- Maintainer-only `/ais-effectiveness` command (repository root only) for
+  recurring, evidence-backed audits of outdated guidance, harness controls,
+  adoption friction and process weight. It is not part of the npm package and
+  is never installed into generated projects.
+
 ## [0.19.0] - 2026-11-10
 
 ### Changed
