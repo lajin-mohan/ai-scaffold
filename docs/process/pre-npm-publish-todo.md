@@ -1,6 +1,86 @@
 # AI Scaffold — Backlog
 
-## Authoritative priority review — 2026-11-05
+## Authoritative wave plan — 2026-11-10 (after 0.19.0)
+
+**This section sets the order from here.** It continues the 2026-11-05 review
+below: that table's item definitions and acceptance criteria still apply, rows 1
+and 2 are done, and its "Next wave" paragraph is superseded. Maintainer inputs
+on 2026-11-10: order by value to the team, and pick the release that makes the
+scaffold ready for a team to adopt.
+
+### Where things stand (2026-11-10)
+
+- Published: **0.19.0** (`npm view`, 2026-11-10), cut by the Release Action;
+  `main`, `dev` and tag `v0.19.0` at `d1db839`.
+- **Wave B done** (rows 1–2): item 74 M-08 per-tool `token-report`; item 84
+  parts 1–2 (`AGENTS.md` shared core, `paths:`-scoped rules, opt-in delivery
+  skill); item 69 (`ais-*` commands, 12 folded in; `tasks/done/69-command-surface.md`);
+  item 105 (`check-governance` on every typecheck; `tasks/done/`).
+- Smoke subset (item 99, Claude Code only, 3 repeats): **no regression
+  observed**; uncached input fell on all four tasks. `feature-discount` failed
+  0/3 before and after because the agent never writes a test for the new
+  function.
+- Not done: M-02 snapshot #2 (two live projects updated to 0.19.0, reports
+  pending); live check that Claude Code loads `AGENTS.md` through the import.
+
+### Team-ready bar (target: 0.21.0)
+
+The scaffold is ready for a team when all of these hold on projects generated
+from the packed tarball:
+
+1. Security guards fail closed on timeout, crash and missing script, on
+   Windows and WSL/Linux, and `ais doctor` warns on a Claude Code version too
+   old to honour that (97, 81).
+2. `ais init` into an existing repository loads the shared core (84 C2).
+3. Day-to-day work is light: one `verify` command per profile, about 8 default
+   commands, and a routine fix runs no architecture/UX ceremony (87, 90).
+4. The agent writes a test for new behaviour: `feature-discount` passes at
+   least 2/3 with no regression on the other smoke tasks (109, 87).
+5. M-02 recorded from at least two live updates (74).
+
+Native Codex/Cursor adapters (104) join the bar only if the team works in
+those tools day to day; otherwise they follow in 0.22.0.
+
+### Wave C — "Fail closed, proven" (0.20.0)
+
+| PR | Items | Content | Acceptance |
+|---|---|---|---|
+| 0 | 100 | This backlog sync; smoke summaries committed; items 106–111 merged | Roadmap and tickets match 0.19.0 |
+| C1 | **97**; 81; 98 (the three untested hooks) | Design and probe matrix first (ticket gate). Then `onFailure: "block"` on the security guards, probes for timeout, crash and missing script | Allow/block probes pass on Windows and WSL on a packed project, Claude Code 2.1.319, positive controls included; the three hooks have tests; unsupported cases say unsupported |
+| C2 | 84 remainder | `ais init` adds the `@AGENTS.md` import without overwriting an existing `CLAUDE.md` | Packed `init` into fixtures with and without `CLAUDE.md`; repeat `init` adds nothing |
+| M | 74 | Snapshot #2 from the maintainer's `ais update` reports | M-02 recorded with method and versions |
+
+**Decision (2026-11-10): minimum Claude Code version, not a variant.** If the
+probe shows an older Claude Code rejects or ignores `onFailure`, the scaffold
+states a minimum version and `ais doctor` warns below it. It does not ship a
+second settings variant. The probe runs first to learn what older versions do.
+
+### Wave D — "Light by default" (0.21.0, team-ready)
+
+| Items | Content |
+|---|---|
+| **87** | One `verify` script per profile, shared by hook, CI and agent |
+| **90** | About 8 default commands; process, UX and compliance as opt-in packs; `/ais-review` picks reviewers from the diff |
+| **109** | Test-quality guidance aimed at the smoke finding, judged by `feature-discount` |
+| 86 | Opt-in sandbox preset with secret `denyRead` (Linux/macOS/WSL2); native Windows documented as unsandboxed |
+
+### After the team-ready release
+
+- 0.22.0: 104 native Codex/Cursor adapters, 67, the rest of 98 (unless pulled
+  into the bar above).
+- Then the 2026-11-05 rows 6–11 in order (66 remaining slices, 77, 34/68,
+  103, …).
+- 106–111 (Engyne signals) keep the tiers in their tickets and are scheduled
+  after Wave D. 107 moves earlier if Engyne needs decision D-28 sooner.
+
+**Why this order.** The 2026-11-04 review scored safety 6.5 and day-to-day
+experience 4.5. A team will not trust guards that are not proven, and every
+developer pays the day-to-day cost on every task, so Waves C and D go first.
+Native adapters help only Codex and Cursor users. Measurement keeps running
+alongside each wave; no wave claims an improvement the smoke tasks do not
+show.
+
+## Priority review — 2026-11-05 (rows 1–2 done; order continued above)
 
 The maintainer requested this reorder after the
 [effectiveness review 2026-11-04](effectiveness-review-2026-11-04.md).
@@ -79,7 +159,44 @@ parallel with rows 2–3 rather than ahead of them.
 - **105 — Rule hygiene: provenance manifest, stale-content check, outdated
   removals (P1):** `tasks/todo/105-rule-hygiene.md`.
 
-### Next wave
+### Newly added work (2026-11-09) — delivery measurement split with Engyne
+
+From a gap review of the Techversant research report "AI and the Software
+Development Lifecycle" (9 November 2026) against the scaffold and Engyne 1.0
+(`D:\Apps\engyne1.0\docs\brd`). The report's main gap is evidence that AI
+improves delivery. **Engyne owns measurement; the scaffold standardizes what
+each repository emits.** The scaffold builds no metrics or dashboards.
+
+- **106 — Engyne signal contract (P1):** `tasks/todo/106-engyne-signal-contract.md`.
+  Governance version, work type and "gate ran" as documented signals; parent
+  of 107 and 108.
+- **107 — Defect-linkage convention (P1):** `tasks/todo/107-defect-linkage-convention.md`.
+  Unblocks Engyne decision D-28 (escaped-defect rate).
+- **108 — Estimate records (P2):** `tasks/todo/108-estimate-records.md`.
+  Forecast versus actual, readable by Engyne.
+- **109 — Test quality beyond coverage (P2):** `tasks/todo/109-test-quality-guidance.md`.
+  Not covered by Engyne.
+- **110 — COE rule packs, ColdFusion first (P2):** `tasks/todo/110-coe-rule-packs.md`.
+  Engyne's technology slice picks the next pack.
+- **111 — Maintenance/migration lane; acceptable-use pointer (P2):**
+  `tasks/todo/111-maintenance-lane-and-aup-pointer.md`. The pointer is blocked
+  on Techversant publishing its AI acceptable-use standard.
+
+**Owned outside the scaffold (recorded so they are not lost):**
+
+| Gap | Owner |
+|---|---|
+| Lead time, PR cycle time, review latency, PR size as Phase 1 outputs | Engyne |
+| Change failure and time to restore (no deployment or incident source yet) | Engyne, as a named gap |
+| Governance version and work type as dimensions | Engyne (fed by 106) |
+| Delivery pilot with baseline and matched work, after Engyne's collection pilot | Engineering leadership / COE |
+| AI acceptable-use standard | Leadership, Legal, COE |
+| Customer outcome and engineer experience survey | Undecided: Engyne Phase 2 or a separate survey |
+
+Do not claim "AI made us X% faster" until delivery outcomes, flow metrics and
+a baseline exist. That is the report's bar and Engyne's.
+
+### Next wave (superseded 2026-11-10 by the wave plan above)
 
 **Wave B — Lean core with proof** = rows 1 and 2. Expected result (forecast, not
 a measurement): token effectiveness 4.5 → about 7.5, day-to-day 4.5 → about 6,
@@ -1217,3 +1334,7 @@ branch, promotion PR or post-release sync is part of this flow.
   Action after release/protection configuration changes.
 - [ ] Tag identifies the exact promoted commit; Publish succeeds; npm version
   and provenance match. Follow recovery policy; never move an existing tag.
+- [ ] After `npm view` confirms the version: sync the backlog before planning
+  the next wave. Update the authoritative section, close or re-status every
+  ticket the CHANGELOG names, and commit the evidence the release relied on
+  (lesson 2026-11-10; item 100 automates it).

@@ -2,7 +2,9 @@
 
 ## Status
 
-Proposed, P1, 2026-11-05. Added by the maintainer-requested reprioritization
+**Done in 0.19.0 (2026-11-10).** Closed as its PR 5 note says: the three
+untested hook claims stay with item 98; runtime loading checks and
+Cursor/Copilot scoping stay with items 98 and 104. Proposed, P1, 2026-11-05. Added by the maintainer-requested reprioritization
 after the 2026-11-04 effectiveness review
 (`docs/process/effectiveness-review-2026-11-04.md`). Companion to item 84
 (context load) and item 69 (command surface); it supplies the removal rule and

@@ -2,6 +2,12 @@
 
 ## Status
 
+**Update 2026-11-10:** item 25 shipped in 0.17.0, so adopter removals no
+longer wait on it; 0.19.0 used them to retire rules and commands. Still open
+here: 81 timeout probes and Windows runner evidence (Wave C, PR C1, via item
+97), 86's sandbox preset and 87's `verify` script (Wave D). The paragraph below
+is the 2026-10 status, kept as history.
+
 **C0 shipped; adopter removals in C1–C4 wait on item 25.** The maintainer's
 2026-10-13 roadmap reorder permits independently safe additive security fixes
 and validation before item 25; it does not authorize removal migrations early.

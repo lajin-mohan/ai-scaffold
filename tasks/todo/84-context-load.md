@@ -2,7 +2,9 @@
 
 ## Status
 
-Proposed, P1. Listed in the corrective phase (C3) since 2026-10-09; ticket file
+**Parts 1 and 2 shipped in 0.19.0 (2026-11-10).** Open, P1, for the remainder
+below (Wave C, PR C2, and items 104/98). Listed in the corrective phase (C3)
+since 2026-10-09; ticket file
 created 2026-11-06 when Wave B was amended
 (`docs/process/pre-npm-publish-todo.md`, "Wave B amendments (2026-11-06)").
 Evidence: `docs/research/reports/AI repo instruction practices.md`. Depends on
@@ -39,9 +41,21 @@ still-unscoped `ponytail-ladder.md` that PR 5 retires. Cursor/Copilot ~2.4K,
 Codex ~1.3K. Glob checks are static (`rule-scope.test.js`); runtime loading
 per tool remains item 98.
 
-Still open in this ticket: the ≤ 5K Claude Code budget
-and its enforcement (PR 5), Cursor/Copilot scoped rules, duplication and
-runtime loading checks (items 104, 98).
+The ≤ 5K budget and its enforcement shipped in 0.19.0 (PR 5,
+`scripts/check-governance.js`, item 105).
+
+**Still open (2026-11-10):**
+
+- **`ais init` and the `@AGENTS.md` import (Wave C, PR C2).** `ais create`
+  writes a `CLAUDE.md` that imports `AGENTS.md`. `ais init` into a repository
+  that already has its own `CLAUDE.md` keeps that file, so nothing imports the
+  core and Claude Code never loads it. Fix: add the import line without
+  overwriting the adopter's file, idempotently, and say so in the init report.
+  Acceptance: packed-tarball `init` into a fixture with an existing
+  `CLAUDE.md` and one without; a second `init` adds nothing.
+- Live check that Claude Code loads `AGENTS.md` through the import (signed-in
+  terminal; observed context).
+- Cursor/Copilot scoped rules and runtime loading checks (items 104, 98).
 
 ## Problem
 
