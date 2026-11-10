@@ -489,3 +489,21 @@ This file records patterns from mistakes and corrections. Claude reads this at t
     `CLAUDE_*` and `ANTHROPIC_*`. The harness's "not logged in" message
     should say this.
 
+
+## 2026-11-10 — A release that ships items does not update the backlog by itself
+
+- **What happened:** 0.19.0 shipped items 74 (M-08), 84 parts 1–2, 69 and
+  105. A day later the roadmap still said "Published: 0.18.0" with Wave B as
+  next; tickets 84, 105, 74 and 99 still said Proposed or carried pre-release
+  status; item 69 had no ticket at all; 79 still waited on item 25, which had
+  shipped in 0.17.0; and the smoke results that justified the release existed
+  only as uncommitted files in a worktree. The next wave could not be planned
+  from the repository.
+- **Why:** each Wave B PR updated its own ticket's progress notes, but nothing
+  in the release flow closes tickets, moves them to `done/` or rewrites the
+  authoritative "Where things stand". CHANGELOG became the only true record.
+- **Rule:** after `npm view` confirms a release, run a backlog sync before
+  planning the next wave: update the authoritative roadmap section, close or
+  re-status every ticket the CHANGELOG names, add a `done/` record for any item
+  without a ticket, and commit the evidence (smoke summaries) the release
+  relied on. It is a release-checklist step. Item 100 makes it mechanical.

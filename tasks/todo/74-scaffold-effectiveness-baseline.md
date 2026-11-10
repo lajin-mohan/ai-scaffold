@@ -23,6 +23,16 @@ Remaining: Phase B (report harness, 9.0 d) alongside Wave 1; M-04 at snapshot #2
 > structure — there is no new architecture to design. Recommend an ADR recording *why* architecture
 > was skipped, rather than skipping the gate silently.
 
+## Status update (2026-11-10)
+
+- **M-08 per-tool fix shipped in 0.19.0**: `npm run token-report` measures
+  projects generated from the packed tarball, per tool, labelled static
+  estimate (CHANGELOG 0.19.0).
+- **Snapshot #2 is still not taken.** The maintainer updated two live projects
+  to 0.19.0 on 2026-11-10; their `ais update` reports are the M-02 input
+  (Wave C, PR M). M-01 is still null.
+- Phase B (report harness) not started.
+
 ## M-08 per-tool extension (2026-11-06)
 
 `scripts/token-report.js` measures the repository root, so it counts the
