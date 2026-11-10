@@ -2,7 +2,9 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { checkBudget, checkObsoleteNames, checkReferences, checkRuleManifest } from '../scripts/governance/checks.js';
+import {
+  checkBudget, checkCommandGuide, checkObsoleteNames, checkReferences, checkRuleManifest, checkUserDocs,
+} from '../scripts/governance/checks.js';
 
 let dir;
 const write = (rel, text) => {
@@ -55,6 +57,39 @@ describe('checkObsoleteNames', () => {
     write('tasks/lessons.md', 'We used /reflect then.\n');
     write('.claude/rules/x.md', 'Edit `.claude/settings-overrides.json`; see docs/qa/ and `/ais-review`.\n');
     expect(checkObsoleteNames(dir).errors).toEqual([]);
+  });
+});
+
+describe('checkCommandGuide', () => {
+  it('passes when every installed command is in the guide', () => {
+    write('.ai-scaffold/commands.md', '# Commands\n\n### `/ais-plan`\n');
+    expect(checkCommandGuide(dir).errors).toEqual([]);
+  });
+
+  it('fails when the guide is missing', () => {
+    expect(checkCommandGuide(dir).errors).toEqual(['.ai-scaffold/commands.md is not installed']);
+  });
+
+  it('fails when an installed command is not documented', () => {
+    write('.claude/commands/ais-ship.md', '# /ais-ship\n');
+    write('.ai-scaffold/commands.md', '# Commands\n\n### `/ais-plan`\n');
+    expect(checkCommandGuide(dir).errors).toEqual(['.ai-scaffold/commands.md: /ais-ship is installed but not documented']);
+  });
+});
+
+describe('checkUserDocs', () => {
+  it('fails on an old-name table in a user doc and on a missing doc', () => {
+    write('README.md', '| Old | Now |\n|---|---|\n| `/start-task` | `/ais-plan` |\n');
+    expect(checkUserDocs(dir, ['README.md', 'docs/commands.md']).errors).toEqual([
+      'README.md: retired command /start-task',
+      'docs/commands.md: user doc is missing',
+    ]);
+  });
+
+  it('passes on current names and leaves the CHANGELOG alone', () => {
+    write('README.md', 'Run `/ais-plan`; see the CHANGELOG for renamed commands.\n');
+    write('CHANGELOG.md', 'Renamed /start-task to /ais-plan.\n');
+    expect(checkUserDocs(dir, ['README.md']).errors).toEqual([]);
   });
 });
 

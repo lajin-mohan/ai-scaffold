@@ -826,6 +826,23 @@ describe('generated CLI reference', () => {
   });
 });
 
+describe('generated command guide', () => {
+  it('is planned on create AND on init', async () => {
+    for (const existingTarget of [false, true]) {
+      const plan = await buildFilePlan(templatePath('generic'), '/tmp/out', { existingTarget });
+      expect(plan.generate.map((f) => f.rel)).toContain('.ai-scaffold/commands.md');
+    }
+  });
+
+  it('renders docs/commands.md byte for byte, LF only', async () => {
+    const { renderPlannedFile } = await import('../cli/core/render.js');
+    const rendered = await renderPlannedFile({ src: null, rel: '.ai-scaffold/commands.md' }, {}, { kind: 'generate' });
+    const source = readFileSync(new URL('../../docs/commands.md', import.meta.url), 'utf-8').replace(/\r\n/g, '\n');
+    expect(rendered.toString('utf-8')).toBe(source);
+    expect(rendered.includes(13)).toBe(false);
+  });
+});
+
 describe('placeholder gaps (item 77)', () => {
   const values = resolveWithDefaults({ projectName: 'acme-billing', profile: 'node', lifecycleStage: 'production' }).resolved;
 

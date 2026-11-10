@@ -64,10 +64,22 @@
 
 Read [`constitution.md`](./constitution.md) first — it is the one-page source of truth for **governance order** (which rule wins on a conflict). Then read [AGENTS.md](./AGENTS.md), the shared instructions every AI assistant reads: commands, conventions, security boundaries and what needs approval. Detailed rules live in `.claude/rules/`; the staged delivery workflow is opt-in.
 
-Useful entry points:
+### AI commands
 
-- [AGENTS.md](./AGENTS.md)
-- [.claude/rules/ai-coding-rules.md](./.claude/rules/ai-coding-rules.md)
+Type these in Claude Code. Start with the six everyday ones:
+
+| Command | Use it to | Example |
+|---|---|---|
+| `/ais-what-next` | See the next action and what blocks it | `/ais-what-next --brief` |
+| `/ais-plan` | Plan a change, approve it, then let the AI build and verify it | `/ais-plan "Add CSV export to invoices"` |
+| `/ais-debug` | Fix a bug from its root cause, with a regression test | `/ais-debug "Login loops back to /login"` |
+| `/ais-review` | Get an AI review before opening a pull request | `/ais-review` (or `--lite` for small changes) |
+| `/ais-commit` | Commit with the project's git rules checked | `/ais-commit` |
+| `/ais-lessons` | Find or record past root causes | `/ais-lessons "session"` |
+
+Every command, with usage and examples: `.ai-scaffold/commands.md` (from the
+project root). In Codex, Cursor or Copilot, ask the assistant to read and follow
+the matching file in `.claude/commands/`.
 
 ## License
 

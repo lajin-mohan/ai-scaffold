@@ -9,7 +9,7 @@ import { measureStartupContext } from '../../src/cli/core/startup-context.js';
 
 // History files may name retired commands; they record what happened.
 const HISTORY = new Set(['CHANGELOG.md', 'tasks/lessons.md']);
-// Retired before 0.19 (HOW-TO-USE "Command names before 0.19").
+// Retired in 0.19.0 (see the CHANGELOG entry for their replacements).
 export const RETIRED_COMMANDS = [
   'start-task', 'debug-fix', 'review', 'commit-changes', 'gen-tests', 'lessons', 'bootstrap', 'health',
   'what-next', 'kickoff', 'create-brd', 'create-api', 'estimate', 'architecture-review', 'deployment-review',
@@ -65,14 +65,48 @@ export function checkReferences(projectDir) {
   return out;
 }
 
-/** No retired command name or pinned model name outside history files. */
-export function checkObsoleteNames(projectDir) {
+function obsoleteNamesIn(rootDir, rels) {
   const out = result();
-  for (const rel of shippedTextFiles(projectDir).filter((r) => !HISTORY.has(r))) {
-    const text = read(projectDir, rel);
+  for (const rel of rels) {
+    const text = read(rootDir, rel);
     for (const name of new Set(matches(RETIRED_RE, text))) out.errors.push(`${rel}: retired command /${name}`);
     for (const model of new Set(matches(MODEL_RE, text))) out.errors.push(`${rel}: pinned model name "${model}" (goes stale; describe the capability instead)`);
   }
+  return out;
+}
+
+/** No retired command name or pinned model name outside history files. */
+export function checkObsoleteNames(projectDir) {
+  return obsoleteNamesIn(projectDir, shippedTextFiles(projectDir).filter((r) => !HISTORY.has(r)));
+}
+
+// What a newcomer reads in this repository; the CHANGELOG stays history.
+export const USER_DOCS = ['README.md', 'HOW-TO-USE.md', 'docs/commands.md', 'docs/setup/getting-started.md', 'docs/cli-reference.md'];
+
+/** The repository's user docs name no retired command or pinned model; a missing doc is an error. */
+export function checkUserDocs(repoRoot, rels = USER_DOCS) {
+  const missing = rels.filter((rel) => !fs.existsSync(path.join(repoRoot, ...rel.split('/'))));
+  const out = obsoleteNamesIn(repoRoot, rels.filter((rel) => !missing.includes(rel)));
+  for (const rel of missing) out.errors.push(`${rel}: user doc is missing`);
+  return out;
+}
+
+const GUIDE = '.ai-scaffold/commands.md';
+
+/** Every installed /ais-* command appears in the command guide adopters get. */
+export function checkCommandGuide(projectDir) {
+  const out = result();
+  const guidePath = path.join(projectDir, ...GUIDE.split('/'));
+  if (!fs.existsSync(guidePath)) {
+    out.errors.push(`${GUIDE} is not installed`);
+    return out;
+  }
+  const documented = new Set(matches(AIS_RE, fs.readFileSync(guidePath, 'utf-8')));
+  const commandsDir = path.join(projectDir, '.claude', 'commands');
+  const installed = fs.existsSync(commandsDir)
+    ? fs.readdirSync(commandsDir).filter((f) => /^ais-.+\.md$/.test(f)).map((f) => f.slice(0, -3))
+    : [];
+  for (const name of installed) if (!documented.has(name)) out.errors.push(`${GUIDE}: /${name} is installed but not documented`);
   return out;
 }
 
