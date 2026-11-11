@@ -1,10 +1,14 @@
 ---
-description: Live-site QA with headless browser: walk the feature flow, detect rendering/interaction/console issues, fix and re-verify.
+description: Live-site QA in a headless browser - walk the feature, report every issue with severity, priority, root cause and a fix plan, then fix only what the human approves, re-test and hand back for review.
 ---
 
 # /ais-qa
 
-Browser-based QA: open a real browser, walk the feature flow, find what breaks, fix it, re-verify.
+Browser-based QA: open a real browser, walk the feature flow, and report
+**everything** you find, ranked, with a root cause and a fix plan for each.
+**Nothing is changed until the human chooses what to fix.** After fixing, test
+again and hand back for the human to review and commit, like a normal
+development change.
 
 Requires gstack's browse daemon (`$B`), which the scaffold does not install. **Check first:** run `command -v gstack-browse` (or the `$B` helper). If it is not available, stop before Phase 1 and report `not verified: no E2E harness`; do not walk the flow by guesswork. See [Prerequisites](#prerequisites) for installing it, or use the project's own Playwright tests if it has them.
 
@@ -13,16 +17,23 @@ Requires gstack's browse daemon (`$B`), which the scaffold does not install. **C
 ## Usage
 
 ```
-/ais-qa                         # interactive — prompted for feature scope
+/ais-qa                         # interactive - prompted for feature scope
 /ais-qa "login flow"            # pre-described scope
-/qa-only                    # same methodology, report only — no code changes
+```
+
+After the report, reply with one of:
+
+```
+fix all                         # fix every finding
+fix QA-1, QA-3                  # fix only the findings you choose
+none                            # keep the report, change nothing
 ```
 
 ---
 
 ## When to Run
 
-**/`review` does static analysis.** It cannot see:
+`/ais-review` does static analysis. It cannot see:
 - Whether a page renders at all
 - Whether a button click actually works
 - Whether a form submission completes
@@ -31,14 +42,10 @@ Requires gstack's browse daemon (`$B`), which the scaffold does not install. **C
 
 **Run `/ais-qa`** when:
 - `/ais-review` flagged a UI feature (Component, Frontend, or UX finding)
-- A feature has a human-verifyable flow (login, form submit, multi-step wizard)
+- A feature has a human-verifiable flow (login, form submit, multi-step wizard)
 - QA sign-off is needed and a real browser is the fastest way
 - You want to catch rendering or interaction bugs before a human tester does
-
-**Run `/qa-only`** when:
-- You just need a report, not a fix
-- You are handing off to a human QA engineer
-- The feature touches third-party integrations that should be tested live
+- You are handing off to a QA engineer: the report is the handoff
 
 ---
 
@@ -65,111 +72,169 @@ $B click "#login-btn"
 $B wait for ".dashboard"
 ```
 
-### Browser cookies (optional, for authenticated testing)
+### Testing behind a login
 
-If testing behind a login wall, import cookies from your real browser:
-
-```
-/setup-browser-cookies
-```
-
-This opens a browser window to authenticate, then captures the session so subsequent `/ais-qa` runs are logged in automatically.
+Sign in with a test account in the browser session first. If your browser
+tool can import cookies from your own browser, follow its documentation. Never
+put real credentials in the report.
 
 ---
 
 ## How It Works
 
-### `/ais-qa` — find and fix
-
 ```
-Phase 1 — Navigate
+Phase 1 - Navigate                                      (read-only)
   $B opens the target URL
-  Walk the feature flow step by step (e.g. /login → /dashboard → /account)
+  Walk the feature flow step by step (e.g. /login -> /dashboard -> /account)
 
-Phase 2 — Detect
+Phase 2 - Detect                                        (read-only)
   For each step, capture:
     - Rendering: are all elements visible and correctly sized?
     - Interaction: do buttons, forms, modals respond correctly?
     - Console: any errors or warnings?
     - Network: any failed requests?
+  Record steps to reproduce, expected vs actual, and the evidence.
 
-Phase 3 — Report
-  Present findings grouped by severity:
-    - CRITICAL: feature is broken or data loss risk
-    - HIGH: major flow broken, fallback available
-    - MEDIUM: cosmetic or degraded experience
-    - LOW: minor friction
+Phase 3 - Diagnose                                      (read-only)
+  Trace each finding from the symptom into the code.
+    - Confirmed root cause: traced to file:line AND reproduced
+    - Suspected root cause: a stated hypothesis, not yet proven
+  If the cause cannot be traced, say so and recommend /ais-debug for it.
 
-Phase 4 — Fix
-  Fix the highest-severity issues one at a time
-  After each fix: re-verify with $B to confirm the fix works
-  Commit fix atomically (one fix per commit, descriptive message)
+Phase 4 - Report, plan, and STOP                        (read-only)
+  Report all findings at once, ranked (see Output Format).
+  3 or more findings: also save the report to
+    docs/qa/qa-report-<feature>-<YYYY-MM-DD>.md (no need to ask).
+  1-2 findings: the report stays in the conversation.
+  Ask: "Reply `fix all`, `fix QA-1, QA-3`, or `none`."
+  Stop here. Do not edit code until the human replies.
 
-Phase 5 — Final verify
-  Run the full flow again: confirm all issues resolved, no regressions
-  Present summary: what broke, what was fixed, what remains
+Phase 5 - Fix the approved findings only
+  One fix per finding, following its plan.
+  Add a regression test for each fix where the project has a test setup.
+  A finding outside the approved IDs is not touched, even if it looks easy.
+
+Phase 6 - Re-test and hand back
+  Run the browser flow again, including the approved findings' steps.
+  Report each fixed finding's status, the files changed and what remains.
+  Update the saved report file, if there is one.
+  Do not commit. The human reviews the diff, approves, and commits
+  with /ais-commit.
 ```
 
-### `/qa-only` — report only
+---
 
-Same as Phase 1–3 above, but stops after reporting. No fixes applied.
+## Severity and priority
+
+Severity is the impact. Priority is the suggested fix order. A Critical issue on
+a page nobody uses yet can be P2; a Medium issue on the checkout page can be P1.
+
+| Severity | Meaning |
+|---|---|
+| Critical | Feature broken, data loss or security risk |
+| High | Major flow broken; a workaround exists |
+| Medium | Degraded experience or accessibility problem |
+| Low | Minor friction or cosmetic |
+
+| Priority | Meaning |
+|---|---|
+| P1 | Fix before this change merges |
+| P2 | Fix soon (this sprint) |
+| P3 | Fix later or accept |
 
 ---
 
 ## Output Format
 
+### Phase 4 report (before any fix)
+
 ```
-QA REPORT — [feature]
-────────────────────────────────────────
-URL:           https://...
-Tester:        gstack / browser
-Date:          YYYY-MM-DD
+QA REPORT - [feature]
+------------------------------------------------------------
+URL:      https://...
+Tester:   gstack / browser
+Date:     YYYY-MM-DD
+Saved to: docs/qa/qa-report-login-flow-YYYY-MM-DD.md   (3+ findings only)
 
-Findings (4 total)
-────────────────────────────────────────
-[CRITICAL] Login button unresponsive
-  URL: /login
-  Element: #login-btn
-  Expected: clicking navigates to /dashboard
-  Actual: nothing happens (no network request, no JS error)
-  Severity: CRITICAL — blocks all users
+Summary: 3 findings - 1 Critical, 1 Medium, 1 Low
 
-[MEDIUM] Modal missing close on Escape key
-  URL: /dashboard
-  Element: .modal-overlay
-  Expected: Escape key dismisses modal
-  Actual: no response
-  Severity: MEDIUM — accessibility violation
+| ID   | Severity | Priority | Finding                          | Root cause            |
+|------|----------|----------|----------------------------------|-----------------------|
+| QA-1 | Critical | P1       | Login button does nothing        | Confirmed - auth.ts:24 |
+| QA-2 | Medium   | P2       | Escape does not close the modal  | Suspected - modal.tsx |
+| QA-3 | Low      | P3       | Footer link underline missing    | Confirmed - footer.css:8 |
 
-────────────────────────────────────────
-FIXED during session:
-  [CRITICAL] Login button unresponsive — fixed in auth.ts:24 (missing event.preventDefault)
+QA-1  Login button does nothing                        Critical / P1
+  Steps:      open /login, enter valid details, click "Sign in"
+  Expected:   navigates to /dashboard
+  Actual:     nothing happens; no network request, no console error
+  Root cause: Confirmed - submit handler at auth.ts:24 never calls the API
+              because the form's default submit reloads the page first
+  Fix plan:   call event.preventDefault() in the handler; add a regression
+              test that submitting calls the login API; re-check in browser
+  Risk:       low - one handler
 
-REMAINING:
-  [MEDIUM] Modal Escape key — fix in modal.tsx:12
+(QA-2 and QA-3 in the same format)
 
-Status: FIXED — 1/4 issues resolved, 3 remaining
+Reply `fix all`, `fix QA-1, QA-3`, or `none`.
 ```
+
+### Phase 6 hand-back (after approved fixes)
+
+```
+QA RE-TEST - [feature]
+------------------------------------------------------------
+Approved: QA-1, QA-3
+
+| ID   | Status          | Change                         | Re-test  |
+|------|-----------------|--------------------------------|----------|
+| QA-1 | CONFIRMED FIXED | auth.ts:24 + auth.test.ts      | passes   |
+| QA-3 | CONFIRMED FIXED | footer.css:8                   | passes   |
+
+Not fixed (not approved): QA-2
+Regressions found in re-test: none
+
+Files changed (uncommitted):
+  src/auth.ts
+  src/auth.test.ts
+  src/footer.css
+
+Next: review the diff, then commit with /ais-commit.
+```
+
+Status is one of `CONFIRMED FIXED`, `LIKELY FIXED`, `PARTIALLY FIXED` or
+`NOT FIXED`. Use `CONFIRMED FIXED` only when the re-test passed in the browser.
 
 ---
 
 ## Rules
 
-- **Atomic commits.** One fix per commit. Never bundle multiple bug fixes into one commit.
-- **Reproduce before fixing.** If you cannot trigger the bug in the browser, you cannot confirm the fix.
-- **Re-verify after fix.** Always re-run the affected step with `$B` before claiming the fix works.
-- **Scope lock applies.** `/ais-qa` runs within the same scope-locking mechanism as `/ais-debug` — if an investigation is in progress, edits are restricted to the affected module only.
-- **Report what you cannot fix.** If a finding requires business logic decisions, surface it in the report and stop — do not invent a solution.
+- **Report first, fix only on approval.** Phases 1-4 change no files except the
+  saved report. A finding the human did not approve is never fixed.
+- **Never commit.** Leave changes uncommitted for the human to review and commit
+  with `/ais-commit`.
+- **Reproduce before fixing.** If you cannot trigger the bug in the browser, you
+  cannot confirm the fix; say so in the report.
+- **Re-test after fixing.** Always re-run the affected steps with `$B` before
+  reporting a status.
+- **Label root causes honestly.** Confirmed means traced and reproduced;
+  anything else is Suspected.
+- **Scope lock applies.** `/ais-qa` runs within the same scope-locking mechanism
+  as `/ais-debug`: if an investigation is in progress, edits are restricted to
+  the affected module only.
+- **Report what you cannot fix.** If a finding needs a business decision, surface
+  it in the report and do not invent a solution.
 
 ---
 
 ## Related Commands
 
-- `/ais-review` — static analysis (code correctness, security, performance). Run `/ais-review` first, `/ais-qa` after for UI features.
-- `/ais-debug` — root cause debugging for bugs. Run `/ais-debug` when the bug's cause is unknown; `/ais-qa` when the symptom is visible in the browser.
-- `/ais-gen-tests` — generates automated test suites. `/ais-qa` is for live-site verification; `/ais-gen-tests` creates tests that run in CI.
+- `/ais-review` - static analysis (code correctness, security, performance). Run `/ais-review` first, `/ais-qa` after for UI features.
+- `/ais-debug` - root cause debugging. Use it for a finding whose cause `/ais-qa` could not trace.
+- `/ais-gen-tests` - generates automated test suites. `/ais-qa` is for live-site verification; `/ais-gen-tests` creates tests that run in CI.
+- `/ais-commit` - commit the approved, re-tested fixes after your review.
 
-**Flow:** `/ais-review` → if UI findings, run `/ais-qa` → fix → `/ais-gen-tests` to codify the fix as an automated test.
+**Flow:** `/ais-review` -> `/ais-qa` (report) -> you choose -> fixes + re-test -> you review -> `/ais-commit`.
 
 ---
 
@@ -179,3 +244,4 @@ Status: FIXED — 1/4 issues resolved, 3 remaining
 - Currently supports Chromium-based browsers only.
 - Testing across browsers (Firefox, Safari) requires manual testing or a CI service like BrowserStack.
 - File downloads and uploads have limited automation support.
+- The stop before fixing is an instruction to the AI, not a mechanical gate. Claude Code's own permission prompts still apply to every edit.

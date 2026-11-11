@@ -32,6 +32,19 @@ describe.each(SUPPORTED_PROFILES)('%s profile', (profile) => {
     expect(qa).toContain(NO_HARNESS);
   });
 
+  it('/ais-qa reports and stops for the human before fixing, and never commits', () => {
+    const qa = fs.readFileSync(templatePath(profile, '.claude/commands/ais-qa.md'), 'utf-8');
+    const stop = qa.indexOf('Do not edit code until the human replies');
+    const fix = qa.indexOf('Phase 5 - Fix the approved findings only');
+    expect(stop).toBeGreaterThan(-1);
+    expect(fix).toBeGreaterThan(stop);
+    for (const reply of ['fix all', 'fix QA-1, QA-3', 'none']) expect(qa).toContain(reply);
+    expect(qa).toContain('docs/qa/qa-report-<feature>-<YYYY-MM-DD>.md');
+    expect(qa).toContain('3 or more findings');
+    expect(qa).toContain('**Never commit.**');
+    expect(qa).not.toMatch(/commit (each )?fix atomically|one fix per commit/i);
+  });
+
   it.each([
     '.claude/commands/ais-review.md',
     '.claude/commands/ais-plan.md',

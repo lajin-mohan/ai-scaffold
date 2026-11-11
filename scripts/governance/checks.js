@@ -9,13 +9,14 @@ import { measureStartupContext } from '../../src/cli/core/startup-context.js';
 
 // History files may name retired commands; they record what happened.
 const HISTORY = new Set(['CHANGELOG.md', 'tasks/lessons.md']);
-// Retired in 0.19.0 (see the CHANGELOG entry for their replacements).
+// Retired in 0.19.0 (see the CHANGELOG entry for their replacements), plus two
+// names /ais-qa presented as commands that never existed (removed in 0.20.0).
 export const RETIRED_COMMANDS = [
   'start-task', 'debug-fix', 'review', 'commit-changes', 'gen-tests', 'lessons', 'bootstrap', 'health',
   'what-next', 'kickoff', 'create-brd', 'create-api', 'estimate', 'architecture-review', 'deployment-review',
   'ux-analysis', 'ux-design-prompt', 'ux-handoff', 'ux-review', 'qa', 'qa-plan', 'investigate', 'reflect',
   'settings', 'ux-create', 'ux-analyze', 'ux-flow', 'ux-screen-spec', 'ux-figma-spec', 'qa-review', 'qa-auth',
-  'ponytail-audit', 'ponytail-debt',
+  'ponytail-audit', 'ponytail-debt', 'qa-only', 'setup-browser-cookies',
 ];
 // A slash command: not part of a path or URL, not followed by a path or extension.
 const commandRe = (names) => new RegExp(`(?<![A-Za-z0-9_./*~@-])/(${names})(?![A-Za-z0-9_./-])`, 'g');

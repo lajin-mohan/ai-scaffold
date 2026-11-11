@@ -176,17 +176,30 @@ Produces a coverage matrix: requirement → scenario → test → result.
 
 ### `/ais-qa` — test a feature in a real browser
 
-Walks the feature in a headless browser, finds rendering, interaction and
-console problems, fixes them and checks again. Use it after `/ais-review`
-flags UI issues.
+Walks the feature in a headless browser and reports **every** rendering,
+interaction, console and network problem at once. Each finding gets an ID,
+a severity (impact), a priority (fix order), a root cause (Confirmed or
+Suspected, with `file:line`) and a fix plan. **It changes nothing until you
+choose.** Use it after `/ais-review` flags UI issues, or to hand a report to a
+QA engineer.
 
 ```text
 /ais-qa "checkout flow"
 /ais-qa                    # it asks what to test
 ```
 
-To get a report without fixes (for example, to hand to a QA engineer), say so
-in the request: `/ais-qa "checkout flow" — report only, no fixes`.
+Then reply with what to fix:
+
+```text
+fix all                    # every finding
+fix QA-1, QA-3             # only the ones you choose
+none                       # keep the report, change nothing
+```
+
+It fixes only what you chose, tests again in the browser, and hands back the
+results with the changed files **uncommitted**. Review the diff, then commit with
+`/ais-commit`. With three or more findings the report is also saved to
+`docs/qa/qa-report-<feature>-<date>.md`.
 
 ---
 
