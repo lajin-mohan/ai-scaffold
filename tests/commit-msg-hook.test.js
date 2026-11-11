@@ -61,7 +61,8 @@ describe('commit-msg hook: shipping', () => {
   });
 });
 
-describe('commit-msg hook: rejects attribution trailers', () => {
+// Each case runs a real git commit; a loaded Windows runner exceeds 5 s.
+describe('commit-msg hook: rejects attribution trailers', { timeout: 30_000 }, () => {
   it.each([
     ['-m', ['-m', 'feat: x', '-m', TRAILER]],
     ['lowercase', ['-m', 'feat: x', '-m', TRAILER.toLowerCase()]],
@@ -100,7 +101,8 @@ describe('commit-msg hook: rejects attribution trailers', () => {
   });
 });
 
-describe('commit-msg hook: does not reject legitimate messages', () => {
+// Each case runs a real git commit; a loaded Windows runner exceeds 5 s.
+describe('commit-msg hook: does not reject legitimate messages', { timeout: 30_000 }, () => {
   it('accepts a plain message', () => {
     expect(commit(['-m', 'feat: add thing']).status).toBe(0);
   });

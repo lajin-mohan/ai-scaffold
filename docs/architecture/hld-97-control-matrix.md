@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | Item | 97 (with 81 and part of 98) |
-| Status | **Proposed**, awaiting maintainer approval. No implementation until approved. |
+| Status | **Approved** 2026-11-11 (answers at the end of section 7). Implementation in C1b. |
 | Date | 2026-11-11 |
 | Release target | 0.20.0 (Wave C, PR C1b) |
 
@@ -235,13 +235,13 @@ did not modify).
 
 **Acceptance:**
 
-- [ ] L1 passes on the Ubuntu and Windows CI runners, including the latency check.
-- [ ] Every L1 negative case has a passing positive control.
-- [ ] L2 passes on Windows from the packed tarball; Linux recorded as verified or unverified.
-- [ ] L3 result recorded, with versions.
-- [ ] `ais update --apply` from 0.19.0 adds `onFailure` and the new timeouts; a second run changes nothing.
-- [ ] `ais doctor` reports the Claude Code version against the minimum.
-- [ ] Docs say what is and is not protected, including shell reads (D6).
+- [ ] L1 passes on the Ubuntu and Windows CI runners, including the latency check. *(Passes locally on Windows on all three parser paths; CI pending on the PR.)*
+- [x] Every L1 negative case has a passing positive control.
+- [x] L2 passes on Windows from the packed tarball; Linux recorded as unverified.
+- [x] L3 result recorded, with versions.
+- [x] `ais update --apply` from 0.19.0 adds `onFailure` and the new timeouts; a second run changes nothing.
+- [x] `ais doctor` reports the Claude Code version against the minimum.
+- [x] Docs say what is and is not protected, including shell reads (D6).
 
 **Out of scope:** Cursor `failClosed` and Codex rules (item 104), the sandbox
 preset (item 86), tests for the three warn-only hooks beyond D1 (item 98).
@@ -255,3 +255,92 @@ preset (item 86), tests for the three warn-only hooks beyond D1 (item 98).
 4. Linux L2: accept "unverified" for 0.20.0, or install a WSL Ubuntu
    distribution with Claude Code so L2 can run there.
 5. L2/L3 cost: up to about $2 of maintainer-run probes, from your terminal.
+
+### Maintainer answers (2026-11-11)
+
+1. D1 approved: `"block"` on the secret and dangerous guards only.
+2. D2 approved: latency first, timeout 15 s.
+3. D4 direction approved; the exact lists are the fixtures in
+   `tests/fixtures/guards/`, one test per entry. D3 stands as designed.
+4. Linux L2: accepted as **unverified** for 0.20.0.
+5. L2/L3: up to about $2 of maintainer-run probes is approved.
+6. D5 explained and accepted.
+
+## 8. C1b results (Windows, this machine, 2026-11-11)
+
+| Measure | Before | After |
+|---|---|---|
+| Secret guard, harmless call, p95 of 20 | 3.1–4.8 s | 0.53 s with Python, 0.83 s with no parser |
+| Dangerous guard, harmless call, p95 of 20 | not measured | 0.74 s with Python, 0.73 s with no parser |
+| Empty, non-JSON or tool-less input | allowed | blocked by both guards |
+| `git push origin +main`, a download piped into `bash` | allowed | blocked |
+| Recursive forced delete of `node_modules` | blocked | allowed |
+
+**How the latency was fixed.** Each process start costs about 0.2 s in Git
+Bash. The guards now pick an interpreter with `command -v` (no process), try
+`python` before `python3` on Windows (where `python3` is often the Store stub),
+parse once in that same process, and use bash builtins for matching. With no
+parser at all they read values with `[[ =~ ]]` alone. Found during the work:
+Windows Python prints CRLF, so every parsed tool name carried a `\r` and
+matched nothing; the shared reader strips it.
+
+**D6, found in C1b.** The secret guard had a Bash branch, and its tests and
+smoke check asserted that `cat .env` was blocked, but `settings.json` has never
+run the guard on Bash calls, so the branch never ran in a real session. The
+maintainer chose to keep D6 (2026-11-11): the branch is removed; a test pins
+that the guard does not check Bash; the smoke check now tests D3 instead; and
+the setup guide, `claude-permissions.md` and the shipped `security-rules.md`
+say shell reads are not covered.
+
+**D1 and D5.** All five `settings.json` files set `"timeout": 15` and
+`"onFailure": "block"` on the two security guards only. `ais update --apply`
+replaces an unmodified guard entry with the new one, reports a locally modified
+entry instead, and a second run changes nothing
+(`src/__tests__/settings-apply.test.js`). `ais doctor` reports the Claude Code
+version: medium failure below 2.1.295. Changed from the D5 wording at the
+maintainer's request (2026-11-11): when `claude` is not installed doctor shows
+no line, because the scaffold must not depend on one agent; `claude` found but
+reporting no version is `unavailable`.
+
+**L2 and L3.** `scripts/probe-hook-failure.sh` runs the probes in section 5
+from the maintainer's own terminal.
+
+L2, 2026-11-11 11:20 UTC, Claude Code 2.1.319, Windows 11, Git Bash,
+`--with-user-settings`, tarball packed from this branch:
+
+| Probe | With `onFailure: "block"` | Control (no `onFailure`) |
+|---|---|---|
+| Hook times out (2 s) | not read: "hook timed out and blocked execution" | read |
+| Hook exits 1 | not read: "blocked by the pre-tool hook" | read |
+| Hook script missing | not read: "blocking hook error (`no-such-hook.sh` not found)" | read |
+| Shipped secret guard, Read `.env` | not read: "secret-path guard blocked access to `.env`" | n/a |
+
+The reasons are quoted from each run's `agent.log`, so every block is shown
+to come from the intended cause, not from a user-level rule. A first run
+without `--with-user-settings` was not logged in: every probe reported "not
+read" and the three controls failed, which is how it was caught. The script
+now stops with ERROR on a run that is not logged in.
+
+**Linux L2: unverified** (maintainer decision 4).
+
+L3, 2026-11-11 11:23 UTC, Claude Code 2.1.294 via `npx`, same machine, timeout
+probe only: 2.1.294 **starts normally with the field present and ignores it**.
+With `onFailure: "block"` the hook timed out and the read still happened (the
+sentinel reached `out.txt`), the same as the control. So on versions before
+2.1.295 the guards still block by their own exit code 2, including D3's
+unreadable input (script logic, L1), but a guard that times out, crashes or
+is missing does not block. The CHANGELOG upgrade note and `ais doctor`'s
+version warning say this. (The script's first `--version` call through `npx`
+printed an npm `ENOENT` while downloading; the summary line from the same
+command reports 2.1.294.)
+
+**Known limits.**
+- The dangerous guard drops quote marks before splitting a command, so a
+  blocked pattern quoted as data (for example in a commit message) is still
+  blocked. That keeps `bash -c "…"` covered.
+- `--force-with-lease` is allowed: without a refspec the guard cannot tell
+  which branch is pushed.
+- With no JSON parser installed, input that names a tool and is shaped like
+  an object is read by pattern, not validated as JSON.
+- The fixtures are tested on Windows here; the Ubuntu run (with `jq`) happens
+  in CI.

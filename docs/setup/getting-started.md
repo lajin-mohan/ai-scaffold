@@ -91,6 +91,24 @@ Common findings:
 
 Full details: `.ai-scaffold/cli-reference.md` in your project.
 
+### What the safety hooks cover
+
+In Claude Code, two hooks run before tool calls and block what they match. If
+they cannot read the tool call, they block it rather than letting it through.
+
+- **Secret guard:** stops Claude's file tools (Read, Grep, Glob, Edit, Write)
+  from opening `.env` files, private keys, cloud credentials and similar. It
+  does **not** check shell commands: `cat .env` run through Bash is not
+  blocked. To keep shell commands away from secrets, use Claude Code's
+  [sandboxing](https://code.claude.com/docs/en/sandboxing), or keep real
+  secrets out of the working copy.
+- **Dangerous-command guard:** stops destructive shell commands such as
+  `git reset --hard`, force pushes, recursive forced deletes outside build
+  folders, and downloads piped into a shell.
+
+Both guards are pattern checks, not a security boundary. They catch mistakes;
+they do not stop a determined attempt.
+
 ## 5. Fill in the project details
 
 Open the project in Claude Code and run:

@@ -99,7 +99,8 @@
           {
             "type": "command",
             "command": "bash \"${CLAUDE_PROJECT_DIR}/.claude/hooks/pre-secret-guard.sh\"",
-            "timeout": 5
+            "timeout": 15,
+            "onFailure": "block"
           },
           {
             "type": "command",
@@ -124,7 +125,8 @@
           {
             "type": "command",
             "command": "bash \"${CLAUDE_PROJECT_DIR}/.claude/hooks/pre-dangerous-bash-guard.sh\"",
-            "timeout": 5
+            "timeout": 15,
+            "onFailure": "block"
           },
           {
             "type": "command",
