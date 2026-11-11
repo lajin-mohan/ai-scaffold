@@ -115,7 +115,7 @@ fixture_pair() {
     if [ "$mode" = block ]; then
       on_failure=block; expected="not read"; label="onFailure block"
     else
-      on_failure=''; expected=read; label="no onFailure (control)"
+      on_failure=''; expected="read"; label="no onFailure (control)"
     fi
     write_settings "$dir" "$command" 2 "$on_failure"
     probe "$name, $label" "$expected" "$dir" sentinel.txt

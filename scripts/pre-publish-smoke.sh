@@ -789,8 +789,11 @@ fi
 echo
 
 echo ">> Gate 7: Hook Simulations"
+# The guards a generated project ships, not this repository's own .claude copy:
+# this gate ran from the repository root until item 97, so it probed the wrong file.
+GATE7_HOOKS="$SMOKE_DIR/smoke-project/.claude/hooks"
 
-SECRET_ENV_OUT=$(printf '%s' '{"tool_name":"Read","tool_input":{"file_path":".env"}}' | bash .claude/hooks/pre-secret-guard.sh 2>&1)
+SECRET_ENV_OUT=$(printf '%s' '{"tool_name":"Read","tool_input":{"file_path":".env"}}' | bash "$GATE7_HOOKS/pre-secret-guard.sh" 2>&1)
 SECRET_ENV_STATUS=$?
 if [ "$SECRET_ENV_STATUS" -eq 2 ] && echo "$SECRET_ENV_OUT" | grep -q "BLOCK:"; then
   pass "secret guard blocks .env"
@@ -799,7 +802,7 @@ else
   echo "  Exit: $SECRET_ENV_STATUS Output: $SECRET_ENV_OUT"
 fi
 
-SECRET_TEMPLATE_OUT=$(printf '%s' '{"tool_name":"Read","tool_input":{"file_path":".env.example"}}' | bash .claude/hooks/pre-secret-guard.sh 2>&1)
+SECRET_TEMPLATE_OUT=$(printf '%s' '{"tool_name":"Read","tool_input":{"file_path":".env.example"}}' | bash "$GATE7_HOOKS/pre-secret-guard.sh" 2>&1)
 SECRET_TEMPLATE_STATUS=$?
 if [ "$SECRET_TEMPLATE_STATUS" -eq 0 ]; then
   pass "secret guard allows .env.example"
@@ -810,7 +813,7 @@ fi
 
 # Item 97 D3: a tool call the guard cannot read is blocked, not allowed.
 # (Shell reads such as `cat .env` are a documented gap, D6, so not checked.)
-SECRET_UNREADABLE_OUT=$(printf '%s' 'not json' | bash .claude/hooks/pre-secret-guard.sh 2>&1)
+SECRET_UNREADABLE_OUT=$(printf '%s' 'not json' | bash "$GATE7_HOOKS/pre-secret-guard.sh" 2>&1)
 SECRET_UNREADABLE_STATUS=$?
 if [ "$SECRET_UNREADABLE_STATUS" -eq 2 ] && echo "$SECRET_UNREADABLE_OUT" | grep -q "BLOCK:"; then
   pass "secret guard blocks input it cannot read"
@@ -819,7 +822,7 @@ else
   echo "  Exit: $SECRET_UNREADABLE_STATUS Output: $SECRET_UNREADABLE_OUT"
 fi
 
-DANGER_OUT=$(printf '%s' '{"tool_name":"Bash","tool_input":{"command":"git reset --hard"}}' | bash .claude/hooks/pre-dangerous-bash-guard.sh 2>&1)
+DANGER_OUT=$(printf '%s' '{"tool_name":"Bash","tool_input":{"command":"git reset --hard"}}' | bash "$GATE7_HOOKS/pre-dangerous-bash-guard.sh" 2>&1)
 DANGER_STATUS=$?
 if [ "$DANGER_STATUS" -eq 2 ] && echo "$DANGER_OUT" | grep -q "BLOCK:"; then
   pass "dangerous bash guard blocks git reset --hard"
@@ -828,7 +831,7 @@ else
   echo "  Exit: $DANGER_STATUS Output: $DANGER_OUT"
 fi
 
-SAFE_BASH_OUT=$(printf '%s' '{"tool_name":"Bash","tool_input":{"command":"npm test"}}' | bash .claude/hooks/pre-dangerous-bash-guard.sh 2>&1)
+SAFE_BASH_OUT=$(printf '%s' '{"tool_name":"Bash","tool_input":{"command":"npm test"}}' | bash "$GATE7_HOOKS/pre-dangerous-bash-guard.sh" 2>&1)
 SAFE_BASH_STATUS=$?
 if [ "$SAFE_BASH_STATUS" -eq 0 ]; then
   pass "dangerous bash guard allows safe command"
@@ -837,7 +840,7 @@ else
   echo "  Exit: $SAFE_BASH_STATUS Output: $SAFE_BASH_OUT"
 fi
 
-GOV_OUT=$(printf '%s' '{"tool_name":"Edit","tool_input":{"file_path":"CLAUDE.md"}}' | bash .claude/hooks/governance-file-guard.sh 2>&1)
+GOV_OUT=$(printf '%s' '{"tool_name":"Edit","tool_input":{"file_path":"CLAUDE.md"}}' | bash "$GATE7_HOOKS/governance-file-guard.sh" 2>&1)
 GOV_STATUS=$?
 # Known Windows defect, not fixed here: on windows-latest the guard emits no
 # WARN even with jq installed. Probable cause (unverified): jq on Windows prints
