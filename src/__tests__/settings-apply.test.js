@@ -2,12 +2,14 @@
  * Item 25 slice 4, S5: the settings write (criterion 5.1) and the manifest
  * after apply (criterion 5.2).
  */
+import fs from 'fs';
 import { describe, expect, it } from 'vitest';
 import { decideSettingsMerge, scaffoldSubset } from '../cli/core/settings-merge.js';
 import { applySettingsChanges, serializeSettings } from '../cli/core/settings-apply.js';
 import { buildManifestAfter } from '../cli/core/update-manifest-after.js';
 import { hashRaw, recordFor } from '../cli/core/hashing.js';
 import { extractHooks } from '../cli/core/settings-hooks.js';
+import { templatePath } from '../cli/core/paths.js';
 
 const GUARD = 'bash .claude/hooks/guard.sh';
 const hook = (command, matcher) => ({ ...(matcher === undefined ? {} : { matcher }), hooks: [{ type: 'command', command, timeout: 10 }] });
@@ -162,5 +164,50 @@ describe('buildManifestAfter (5.2)', () => {
   it('lists records sorted by path', () => {
     const paths = manifest.managedFiles.map((r) => r.path);
     expect(paths).toEqual([...paths].sort());
+  });
+});
+
+// Item 97 D1: `ais update` carries `onFailure: "block"` and the 15 s timeout to
+// projects whose two security hooks are still as 0.19.0 shipped them.
+describe('security guards gain onFailure on update (item 97)', () => {
+  const SECURITY = ['pre-secret-guard.sh', 'pre-dangerous-bash-guard.sh'];
+  const shipped = JSON.parse(fs.readFileSync(templatePath('node', '.claude/settings.json'), 'utf-8'));
+  const asShippedIn019 = () => {
+    const old = JSON.parse(JSON.stringify(shipped));
+    for (const group of Object.values(old.hooks).flat()) {
+      for (const inner of group.hooks) {
+        if (SECURITY.some((g) => inner.command.includes(g))) {
+          delete inner.onFailure;
+          inner.timeout = 5;
+        }
+      }
+    }
+    return old;
+  };
+  const securityHooks = (s) => extractHooks(s).filter((h) => SECURITY.includes(h.script.split('/').pop()));
+
+  it('the shipped settings block on failure for the two security guards only', () => {
+    const blocking = extractHooks(shipped).filter((h) => h.entry.onFailure === 'block').map((h) => h.script).sort();
+    expect(blocking).toEqual(SECURITY.map((g) => `.claude/hooks/${g}`).sort());
+    expect(securityHooks(shipped).map((h) => h.entry.timeout)).toEqual([15, 15]);
+  });
+
+  it('replaces both unmodified hooks, then a second run changes nothing', () => {
+    const local = asShippedIn019();
+    const first = merge({ local, scaffold: shipped, base: scaffoldSubset(local) });
+    expect(first.groups.replaced).toEqual(SECURITY.map((g) => `hook: PreToolUse .claude/hooks/${g}`).sort());
+    expect(securityHooks(first.merged).map((h) => h.entry.onFailure)).toEqual(['block', 'block']);
+    const second = merge({ local: first.merged, scaffold: shipped, base: scaffoldSubset(first.merged) });
+    expect(second.changes).toEqual([]);
+  });
+
+  it('reports a locally modified security hook instead of overwriting it', () => {
+    const local = asShippedIn019();
+    const base = scaffoldSubset(local);
+    const secret = Object.values(local.hooks).flat().flatMap((g) => g.hooks).find((h) => h.command.includes(SECURITY[0]));
+    secret.timeout = 30;
+    const { groups, merged } = merge({ local, scaffold: shipped, base });
+    expect(groups.reported).toContain(`hook: PreToolUse .claude/hooks/${SECURITY[0]} (locally modified)`);
+    expect(securityHooks(merged).find((h) => h.script.endsWith(SECURITY[0])).entry.timeout).toBe(30);
   });
 });

@@ -292,6 +292,16 @@ that the guard does not check Bash; the smoke check now tests D3 instead; and
 the setup guide, `claude-permissions.md` and the shipped `security-rules.md`
 say shell reads are not covered.
 
+**D1 and D5.** All five `settings.json` files set `"timeout": 15` and
+`"onFailure": "block"` on the two security guards only. `ais update --apply`
+replaces an unmodified guard entry with the new one, reports a locally modified
+entry instead, and a second run changes nothing
+(`src/__tests__/settings-apply.test.js`). `ais doctor` reports the Claude Code
+version: medium failure below 2.1.295, `unavailable` when `claude` cannot be run.
+
+**L2 and L3.** `scripts/probe-hook-failure.sh` runs the probes in section 5
+from the maintainer's own terminal. Results: *pending the maintainer run.*
+
 **Known limits.**
 - The dangerous guard drops quote marks before splitting a command, so a
   blocked pattern quoted as data (for example in a commit message) is still

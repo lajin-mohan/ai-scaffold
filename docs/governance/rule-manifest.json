@@ -37,8 +37,8 @@
       "prevents": "SQL injection, secrets in code, PII leaks, missing authentication or authorization, cross-tenant access",
       "appliesWhen": "Editing source, migrations, SQL or .env.example",
       "enforcedBy": [
-        { "hook": "pre-secret-guard.sh", "probe": "src/__tests__/guard-portability.test.js" },
-        { "hook": "pre-dangerous-bash-guard.sh", "probe": "src/__tests__/guard-portability.test.js" },
+        { "hook": "pre-secret-guard.sh", "probe": "tests/guards.test.js" },
+        { "hook": "pre-dangerous-bash-guard.sh", "probe": "tests/guards.test.js" },
         { "hook": "governance-file-guard.sh", "probe": "src/__tests__/guard-portability.test.js" }
       ]
     },

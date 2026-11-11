@@ -22,6 +22,7 @@ import {
   summarise,
   unavailableRemoteChecks,
 } from '../core/governance-checks.js';
+import { checkClaudeCodeVersion } from '../core/claude-version.js';
 
 /** NFR-01: ONE wall-clock deadline for the whole run, not one per call. */
 const REMOTE_BUDGET_MS = 10_000;
@@ -232,6 +233,10 @@ export async function runDiagnostics(target, options = {}) {
 
   // 12. C-05 — the commit-msg hook that rejects AI attribution trailers.
   checks.push(await checkCommitMsgHook(target));
+
+  // 13. Item 97 D5 — the security hooks block on failure only from Claude Code
+  // 2.1.295. Not installed is unavailable, never a pass.
+  checks.push(checkClaudeCodeVersion(options.claudeVersion));
 
   // C-01 and C-03. Every existing check above predates the three-state model and
   // is verified from the filesystem, so it normalises to pass/fail.

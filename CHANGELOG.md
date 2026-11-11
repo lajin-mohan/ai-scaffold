@@ -49,6 +49,19 @@ This file is configured with `merge=union` in `.gitattributes` so parallel addit
   any other recursive forced delete is still blocked. It matches the parsed
   command, never the raw hook input. Every allowed and blocked case is a fixture
   in `tests/fixtures/guards/`.
+- **The two security guards block when they fail (item 97, C1b part 2).**
+  `settings.json` sets `"onFailure": "block"` and a 15 s timeout on the secret
+  and dangerous-command guards, so a guard that times out, crashes or is
+  missing blocks the tool call instead of letting it through. The other hooks
+  are unchanged: a broken budget guard or quality gate must not lock every
+  edit. `ais update --apply` brings this to existing projects whose guard
+  entries are unmodified, and reports modified ones instead.
+  **Upgrade note:** `onFailure` needs Claude Code 2.1.295 or later. On an
+  older version a failing guard does not block. How 2.1.294 treats the field
+  is being confirmed by probe L3 before release; this note will say.
+- **`ais doctor` checks the Claude Code version.** It reports a medium failure
+  below 2.1.295 and `unavailable` when `claude` is not on PATH; neither changes
+  the exit code.
 - **The docs now say plainly that shell commands can still read secrets.** The
   secret guard covers Claude's file tools only. Its tests and the pre-publish
   smoke check claimed it blocked `cat .env` through Bash, but the guard was

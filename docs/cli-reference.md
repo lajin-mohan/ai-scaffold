@@ -128,6 +128,7 @@ It also reports **effective** governance rather than configured intent:
 | Administrator bypass | Can an administrator override that protection? |
 | Pre-commit hook | Is `.git/hooks/pre-commit` really installed and executable — not merely wired in `.claude/settings.json`? |
 | Commit-msg hook | Is `.git/hooks/commit-msg` installed and executable? Both hook checks also fail when `.claude/hooks/<hook>` is committed without the executable bit, which makes Linux and macOS clones skip it. |
+| Claude Code version | Is `claude --version` 2.1.295 or later? Older versions ignore the security hooks' `onFailure: "block"`, so a guard that times out or crashes lets the tool call through. Below the minimum is a medium failure (no change to the exit code); `claude` not on PATH is `unavailable`. For an npm install on Windows, where only `claude.cmd` is on PATH, `doctor` runs the `claude.exe` that shim wraps, without a shell. |
 
 The hook check is local and needs no network. The three GitHub checks use the
 `gh` CLI and are read-only: the only commands they can issue are
