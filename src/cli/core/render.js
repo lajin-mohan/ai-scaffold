@@ -6,7 +6,9 @@
  * injected clock `now` (BRD NFR-07).
  */
 
+import path from 'path';
 import fs from 'fs-extra';
+import { rebaseRelativeLinks } from './markdown-links.js';
 import {
   buildConstitution,
   buildContextFile,
@@ -31,6 +33,7 @@ function buildCommandGuide() {
 }
 
 export const RENDER_KINDS = ['copy', 'generate'];
+const README_TEMPLATE = 'README.template.md';
 
 function toJson(data) {
   // Byte-identical to fs-extra writeJson(..., { spaces: 2 }).
@@ -67,8 +70,14 @@ export async function renderPlannedFile(file, values, { kind, now = new Date() }
   const { src, rel } = file;
   const templated = kind === 'copy' || (rel.endsWith('README.md') && src);
   if (templated) {
-    const content = await fs.readFile(src, 'utf-8');
-    return Buffer.from(resolvePlaceholders(content, values, { now }), 'utf-8');
+    const content = resolvePlaceholders(await fs.readFile(src, 'utf-8'), values, { now });
+    // On init the README template is namespaced under .ai-scaffold/; its links
+    // are written against the project root, so rebase them to where it lands.
+    const dir = path.posix.dirname(rel);
+    // Keyed on the source: copied READMEs (e.g. under .claude/skills/) link
+    // relative to their own folder and must not be rebased.
+    const rebase = path.basename(src) === README_TEMPLATE && dir !== '.';
+    return Buffer.from(rebase ? rebaseRelativeLinks(content, dir) : content, 'utf-8');
   }
   const content = generatedContent(rel, values, now);
   return content === null ? null : Buffer.from(content, 'utf-8');

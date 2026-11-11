@@ -157,3 +157,52 @@ describe('buildFilePlan rels (Windows init README duplicate)', () => {
     expect(path.basename(readme[0].src)).toBe('README.template.md');
   });
 });
+
+// The README template links project-root files; on init it lands in
+// .ai-scaffold/, so its links are rebased there or they point at nothing.
+describe('generated README links resolve on create and init', { timeout: 60_000 }, () => {
+  let tmpDir;
+  const LINK = /\[[^\]]*\]\(([^)\s]+)\)/g;
+
+  beforeAll(async () => {
+    tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), 'ais-readme-links-'));
+    vi.spyOn(console, 'log').mockImplementation(() => {});
+  });
+
+  afterAll(async () => {
+    vi.restoreAllMocks();
+    await fs.remove(tmpDir);
+  });
+
+  async function brokenLinks(file) {
+    const text = await fs.readFile(file, 'utf-8');
+    const targets = [...text.matchAll(LINK)].map((m) => m[1])
+      .filter((t) => !/^(?:[a-z][a-z0-9+.-]*:|#|\/)/i.test(t))
+      .map((t) => t.split(/[?#]/)[0]);
+    const missing = [];
+    for (const t of targets) {
+      if (!(await fs.pathExists(path.resolve(path.dirname(file), t)))) missing.push(t);
+    }
+    return { targets, missing };
+  }
+
+  for (const profile of PROFILES) {
+    for (const mode of ['create', 'init']) {
+      it(`${profile} ${mode}: every relative link in the generated README exists`, async () => {
+        const target = path.join(tmpDir, `${mode}-${profile}`);
+        const existingTarget = mode === 'init';
+        if (existingTarget) await seedInitTarget(target);
+        const plan = await buildFilePlan(templatePath(profile), target, { existingTarget });
+        await copyFiles(plan, bootstrapFor(profile), { targetDir: target, yes: true, now: FIXED_NOW, installMode: mode });
+
+        const readme = path.join(target, existingTarget ? '.ai-scaffold/README.md' : 'README.md');
+        const { targets, missing } = await brokenLinks(readme);
+        expect(targets).toContain(existingTarget ? '../constitution.md' : './constitution.md');
+        expect(missing).toEqual([]);
+        if (existingTarget) {
+          expect(await fs.readFile(path.join(target, 'README.md'), 'utf-8')).toBe('# Existing project\n');
+        }
+      });
+    }
+  }
+});

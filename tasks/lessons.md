@@ -12,6 +12,12 @@ This file records patterns from mistakes and corrections. Claude reads this at t
 
 <!-- Add lessons below as they are captured. Most recent at the top. -->
 
+## 2026-11-11 — Generated-project checks covered `create` only, so an `init`-only defect shipped
+
+- **Mistake:** From at least 0.19.0, `ais init` wrote the profile README to `.ai-scaffold/README.md` with links written for the project root (`./constitution.md`, `./AGENTS.md`), and every one of them was broken. `check-governance` passed every release because it only generated projects with `create`, where the same file lands at the root and the links resolve.
+- **Why:** `init` moves files the adopter already owns into `.ai-scaffold/`. Moving a file changes what its relative links point at, and no check ran on an `init` install.
+- **Rule:** Any check that inspects generated output runs on both `create` and `init` installs, with the `init` target seeded with the files an adopter already has (at least `README.md`). When `init` moves a file, its relative links move with it: rebase them at render time.
+
 ## 2026-10-30 — Review fixes pushed to a branch whose PR had already merged
 
 - **Mistake:** The second-review fixes for #168 were pushed to `feature/66d-update-hooks` five minutes after the PR was squash-merged at `39481e2`. GitHub accepted the push, and the summary reported them as on the PR, but they never reached `dev`. The maintainer found it.

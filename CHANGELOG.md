@@ -39,6 +39,17 @@ This file is configured with `merge=union` in `.gitattributes` so parallel addit
 - **`templates/*/HOW-TO-USE.md` from the package.** No install ever copied it,
   and it still described commands removed in 0.19.0.
 
+### Fixed
+- **Broken links in the README that `ais init` installs.** On `init` the
+  profile README goes to `.ai-scaffold/README.md`, because the adopter's own
+  `README.md` is left alone, but its links to `constitution.md` and
+  `AGENTS.md` were written for the project root and led nowhere from inside
+  `.ai-scaffold/`. They now point back to the root (`../constitution.md`).
+  `ais update` brings an unedited copy up to date. `create` output is
+  unchanged. `npm run typecheck` (`check-governance`) now link-checks an
+  `init` install of every profile as well as a `create` install; before, only
+  `create` was checked, which is how this got through.
+
 ## [0.19.0] - 2026-11-10
 
 ### Changed
