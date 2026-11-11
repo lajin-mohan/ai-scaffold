@@ -7,6 +7,13 @@ Validation companion to items 79–89 and 94, not a second security framework.
 Design/estimate required before implementation; no security guarantees inferred
 from the presence of configuration files.
 
+**2026-11-11 — design proposed (Wave C, C1a):**
+`docs/architecture/hld-97-control-matrix.md`. It records the claimed boundary
+per control, measured current behaviour (open bypasses, fail-open on
+malformed input, Windows latency of 3–4.8 s against a 5 s timeout with its
+root cause), the fail-closed design and the L1/L2/L3 probe plan. Implementation
+(C1b) waits for maintainer approval of its section 7 decisions.
+
 ## Scope and dependencies
 
 Define the claimed trust boundary per tool/platform, then create repeatable
