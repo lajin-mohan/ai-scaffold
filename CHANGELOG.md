@@ -34,6 +34,28 @@ This file is configured with `merge=union` in `.gitattributes` so parallel addit
   guide and the CLI reference may not name a retired command.
 
 ### Changed
+- **The secret and dangerous-command guards fail closed and run fast (item 97,
+  C1b part 1).** Both guards now block a tool call they cannot read (empty
+  input, invalid JSON, or no tool name) instead of allowing it. They read the
+  hook input once in a single process, so a harmless call takes about 0.5–0.8 s
+  on Windows instead of 3–5 s, which was close to the 5 s hook timeout. Without
+  `jq` or a working Python they now read the input with bash alone.
+- **The dangerous-command guard closes two bypasses and one false block (item
+  81).** It now blocks force pushes written as a `+` refspec
+  (`git push origin +main`) and downloads piped or substituted into a shell
+  (`curl … | bash`, `bash -c "$(curl …)"`). It allows a recursive forced
+  delete when every target is a regenerated build folder such as
+  `node_modules`, `dist`, `build`, `.next`, `coverage`, `target` or `vendor`;
+  any other recursive forced delete is still blocked. It matches the parsed
+  command, never the raw hook input. Every allowed and blocked case is a fixture
+  in `tests/fixtures/guards/`.
+- **The docs now say plainly that shell commands can still read secrets.** The
+  secret guard covers Claude's file tools only. Its tests and the pre-publish
+  smoke check claimed it blocked `cat .env` through Bash, but the guard was
+  never configured to run on Bash calls, so it never did in a real session.
+  The unused Bash check is removed, and the setup guide,
+  `docs/setup/claude-permissions.md` and the shipped `security-rules.md` point
+  to sandboxing as the control for shell access.
 - **`/ais-qa` reports first and fixes only what you approve.** It walks the
   feature in the browser and reports every finding at once. Each finding has an
   ID, a severity (impact), a priority (fix order), a root cause marked Confirmed

@@ -8,11 +8,12 @@ existing `"allow"` list.
 
 ## Why
 
-The scaffold's `pre-secret-guard.sh` hook needs `jq` or a working `python3` to
-read its input. On a stock Windows machine neither is present: the Microsoft
-Store `python3` stub makes the hook exit 0, so reads of `.env` and private keys
-are **not blocked**. Claude Code's own permission rules need no parser and
-behave the same on every platform.
+The scaffold's `pre-secret-guard.sh` hook blocks Claude's file tools from
+secret paths. Before 0.20.0 it needed `jq` or a working `python3`, and on a
+stock Windows machine it allowed everything; from 0.20.0 it reads its input
+with bash alone when neither is present, and blocks any input it cannot read.
+Claude Code's own permission rules are a second layer that needs no script and
+behaves the same on every platform.
 
 - `deny` stops Claude's file tools from reading the file at all (Read, and on a
   best-effort basis Grep and Glob).
@@ -83,6 +84,12 @@ of running it.
 
 ## Limits
 
+- **Shell commands can still read secrets.** The secret guard and the `Read`
+  deny rules cover Claude's file tools only. A shell command such as
+  `cat .env` is not blocked by either, and the scaffold does not claim it is:
+  matching file names in command text is easy to get around. To keep shell
+  commands away from secrets, enable sandboxing (below) or keep real secrets
+  out of the working copy.
 - Bash rules match the command text Claude writes, not the program it runs.
   The Claude Code docs say a Bash deny or ask rule "isn't a security boundary
   around the program". For a hard boundary on files and network, enable

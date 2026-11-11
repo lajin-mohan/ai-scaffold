@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | Item | 97 (with 81 and part of 98) |
-| Status | **Proposed**, awaiting maintainer approval. No implementation until approved. |
+| Status | **Approved** 2026-11-11 (answers at the end of section 7). Implementation in C1b. |
 | Date | 2026-11-11 |
 | Release target | 0.20.0 (Wave C, PR C1b) |
 
@@ -255,3 +255,50 @@ preset (item 86), tests for the three warn-only hooks beyond D1 (item 98).
 4. Linux L2: accept "unverified" for 0.20.0, or install a WSL Ubuntu
    distribution with Claude Code so L2 can run there.
 5. L2/L3 cost: up to about $2 of maintainer-run probes, from your terminal.
+
+### Maintainer answers (2026-11-11)
+
+1. D1 approved: `"block"` on the secret and dangerous guards only.
+2. D2 approved: latency first, timeout 15 s.
+3. D4 direction approved; the exact lists are the fixtures in
+   `tests/fixtures/guards/`, one test per entry. D3 stands as designed.
+4. Linux L2: accepted as **unverified** for 0.20.0.
+5. L2/L3: up to about $2 of maintainer-run probes is approved.
+6. D5 explained and accepted.
+
+## 8. C1b results (Windows, this machine, 2026-11-11)
+
+| Measure | Before | After |
+|---|---|---|
+| Secret guard, harmless call, p95 of 20 | 3.1–4.8 s | 0.53 s with Python, 0.83 s with no parser |
+| Dangerous guard, harmless call, p95 of 20 | not measured | 0.74 s with Python, 0.73 s with no parser |
+| Empty, non-JSON or tool-less input | allowed | blocked by both guards |
+| `git push origin +main`, a download piped into `bash` | allowed | blocked |
+| Recursive forced delete of `node_modules` | blocked | allowed |
+
+**How the latency was fixed.** Each process start costs about 0.2 s in Git
+Bash. The guards now pick an interpreter with `command -v` (no process), try
+`python` before `python3` on Windows (where `python3` is often the Store stub),
+parse once in that same process, and use bash builtins for matching. With no
+parser at all they read values with `[[ =~ ]]` alone. Found during the work:
+Windows Python prints CRLF, so every parsed tool name carried a `\r` and
+matched nothing; the shared reader strips it.
+
+**D6, found in C1b.** The secret guard had a Bash branch, and its tests and
+smoke check asserted that `cat .env` was blocked, but `settings.json` has never
+run the guard on Bash calls, so the branch never ran in a real session. The
+maintainer chose to keep D6 (2026-11-11): the branch is removed; a test pins
+that the guard does not check Bash; the smoke check now tests D3 instead; and
+the setup guide, `claude-permissions.md` and the shipped `security-rules.md`
+say shell reads are not covered.
+
+**Known limits.**
+- The dangerous guard drops quote marks before splitting a command, so a
+  blocked pattern quoted as data (for example in a commit message) is still
+  blocked. That keeps `bash -c "…"` covered.
+- `--force-with-lease` is allowed: without a refspec the guard cannot tell
+  which branch is pushed.
+- With no JSON parser installed, input that names a tool and is shaped like
+  an object is read by pattern, not validated as JSON.
+- The fixtures are tested on Windows here; the Ubuntu run (with `jq`) happens
+  in CI.

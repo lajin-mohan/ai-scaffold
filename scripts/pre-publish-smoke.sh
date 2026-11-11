@@ -808,13 +808,15 @@ else
   echo "  Exit: $SECRET_TEMPLATE_STATUS Output: $SECRET_TEMPLATE_OUT"
 fi
 
-SECRET_BASH_OUT=$(printf '%s' '{"tool_name":"Bash","tool_input":{"command":"cat .env"}}' | bash .claude/hooks/pre-secret-guard.sh 2>&1)
-SECRET_BASH_STATUS=$?
-if [ "$SECRET_BASH_STATUS" -eq 2 ] && echo "$SECRET_BASH_OUT" | grep -q "BLOCK:"; then
-  pass "secret guard blocks Bash access to .env"
+# Item 97 D3: a tool call the guard cannot read is blocked, not allowed.
+# (Shell reads such as `cat .env` are a documented gap, D6, so not checked.)
+SECRET_UNREADABLE_OUT=$(printf '%s' 'not json' | bash .claude/hooks/pre-secret-guard.sh 2>&1)
+SECRET_UNREADABLE_STATUS=$?
+if [ "$SECRET_UNREADABLE_STATUS" -eq 2 ] && echo "$SECRET_UNREADABLE_OUT" | grep -q "BLOCK:"; then
+  pass "secret guard blocks input it cannot read"
 else
-  fail "secret guard blocks Bash access to .env"
-  echo "  Exit: $SECRET_BASH_STATUS Output: $SECRET_BASH_OUT"
+  fail "secret guard blocks input it cannot read"
+  echo "  Exit: $SECRET_UNREADABLE_STATUS Output: $SECRET_UNREADABLE_OUT"
 fi
 
 DANGER_OUT=$(printf '%s' '{"tool_name":"Bash","tool_input":{"command":"git reset --hard"}}' | bash .claude/hooks/pre-dangerous-bash-guard.sh 2>&1)
