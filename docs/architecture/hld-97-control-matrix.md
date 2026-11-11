@@ -235,13 +235,13 @@ did not modify).
 
 **Acceptance:**
 
-- [ ] L1 passes on the Ubuntu and Windows CI runners, including the latency check.
-- [ ] Every L1 negative case has a passing positive control.
-- [ ] L2 passes on Windows from the packed tarball; Linux recorded as verified or unverified.
-- [ ] L3 result recorded, with versions.
-- [ ] `ais update --apply` from 0.19.0 adds `onFailure` and the new timeouts; a second run changes nothing.
-- [ ] `ais doctor` reports the Claude Code version against the minimum.
-- [ ] Docs say what is and is not protected, including shell reads (D6).
+- [ ] L1 passes on the Ubuntu and Windows CI runners, including the latency check. *(Passes locally on Windows on all three parser paths; CI pending on the PR.)*
+- [x] Every L1 negative case has a passing positive control.
+- [x] L2 passes on Windows from the packed tarball; Linux recorded as unverified.
+- [x] L3 result recorded, with versions.
+- [x] `ais update --apply` from 0.19.0 adds `onFailure` and the new timeouts; a second run changes nothing.
+- [x] `ais doctor` reports the Claude Code version against the minimum.
+- [x] Docs say what is and is not protected, including shell reads (D6).
 
 **Out of scope:** Cursor `failClosed` and Codex rules (item 104), the sandbox
 preset (item 86), tests for the three warn-only hooks beyond D1 (item 98).
@@ -300,7 +300,36 @@ entry instead, and a second run changes nothing
 version: medium failure below 2.1.295, `unavailable` when `claude` cannot be run.
 
 **L2 and L3.** `scripts/probe-hook-failure.sh` runs the probes in section 5
-from the maintainer's own terminal. Results: *pending the maintainer run.*
+from the maintainer's own terminal.
+
+L2, 2026-11-11 11:20 UTC, Claude Code 2.1.319, Windows 11, Git Bash,
+`--with-user-settings`, tarball packed from this branch:
+
+| Probe | With `onFailure: "block"` | Control (no `onFailure`) |
+|---|---|---|
+| Hook times out (2 s) | not read: "hook timed out and blocked execution" | read |
+| Hook exits 1 | not read: "blocked by the pre-tool hook" | read |
+| Hook script missing | not read: "blocking hook error (`no-such-hook.sh` not found)" | read |
+| Shipped secret guard, Read `.env` | not read: "secret-path guard blocked access to `.env`" | n/a |
+
+The reasons are quoted from each run's `agent.log`, so every block is shown
+to come from the intended cause, not from a user-level rule. A first run
+without `--with-user-settings` was not logged in: every probe reported "not
+read" and the three controls failed, which is how it was caught. The script
+now stops with ERROR on a run that is not logged in.
+
+**Linux L2: unverified** (maintainer decision 4).
+
+L3, 2026-11-11 11:23 UTC, Claude Code 2.1.294 via `npx`, same machine, timeout
+probe only: 2.1.294 **starts normally with the field present and ignores it**.
+With `onFailure: "block"` the hook timed out and the read still happened (the
+sentinel reached `out.txt`), the same as the control. So on versions before
+2.1.295 the guards still block by their own exit code 2, including D3's
+unreadable input (script logic, L1), but a guard that times out, crashes or
+is missing does not block. The CHANGELOG upgrade note and `ais doctor`'s
+version warning say this. (The script's first `--version` call through `npx`
+printed an npm `ENOENT` while downloading; the summary line from the same
+command reports 2.1.294.)
 
 **Known limits.**
 - The dangerous guard drops quote marks before splitting a command, so a

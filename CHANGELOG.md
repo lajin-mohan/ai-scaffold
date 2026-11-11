@@ -56,12 +56,17 @@ This file is configured with `merge=union` in `.gitattributes` so parallel addit
   are unchanged: a broken budget guard or quality gate must not lock every
   edit. `ais update --apply` brings this to existing projects whose guard
   entries are unmodified, and reports modified ones instead.
-  **Upgrade note:** `onFailure` needs Claude Code 2.1.295 or later. On an
-  older version a failing guard does not block. How 2.1.294 treats the field
-  is being confirmed by probe L3 before release; this note will say.
+  **Upgrade note:** `onFailure` needs Claude Code 2.1.295 or later. Older
+  versions start normally with the field present but ignore it (checked on
+  2.1.294): the guards still block what they match, but a guard that times
+  out, crashes or is missing lets the call through. `ais doctor` warns when
+  Claude Code is older than 2.1.295.
 - **`ais doctor` checks the Claude Code version.** It reports a medium failure
   below 2.1.295 and `unavailable` when `claude` is not on PATH; neither changes
-  the exit code.
+  the exit code. Probes with a real signed-in Claude Code (2.1.319, Windows)
+  confirmed that a guard that times out, crashes or is missing now blocks the
+  tool call, and that without `onFailure` the same call goes through. Linux is
+  not yet verified.
 - **The docs now say plainly that shell commands can still read secrets.** The
   secret guard covers Claude's file tools only. Its tests and the pre-publish
   smoke check claimed it blocked `cat .env` through Bash, but the guard was
