@@ -12,6 +12,25 @@ This file records patterns from mistakes and corrections. Claude reads this at t
 
 <!-- Add lessons below as they are captured. Most recent at the top. -->
 
+## 2026-11-11 — Windows Python prints CRLF, and a hook that reads it matches nothing
+
+- **What happened:** after the guard parser was switched to try `python` on
+  Windows, every guard decision allowed, including a Read of `.env`. The tool
+  name parsed as `Read\r`, so no `case` branch matched and the guard fell
+  through to "allow".
+- **Why:** Python on Windows writes text-mode stdout with CRLF line endings.
+  Bash `read` keeps the `\r`. The old guards had hidden this because they never
+  reached a working Python on this machine; the Store `python3` stub always
+  failed first.
+- **Rule:** any shell script that reads a line-oriented subprocess output on
+  Windows strips a trailing `\r` before matching, and its tests run with each
+  real parser path (jq, Python, none), not only with stubs. An allow-by-default
+  fall-through is where this goes silent: test that a known-bad input blocks.
+- **Also, same session:** a JavaScript `String.replace` whose replacement text
+  contained `$'` inserted the rest of the file, because `$'` is a replacement
+  pattern. When splicing file text with Node, use `slice`, never `replace`
+  with a string you did not write for that purpose.
+
 ## 2026-11-11 — Generated-project checks covered `create` only, so an `init`-only defect shipped
 
 - **Mistake:** From at least 0.19.0, `ais init` wrote the profile README to `.ai-scaffold/README.md` with links written for the project root (`./constitution.md`, `./AGENTS.md`), and every one of them was broken. `check-governance` passed every release because it only generated projects with `create`, where the same file lands at the root and the links resolve.

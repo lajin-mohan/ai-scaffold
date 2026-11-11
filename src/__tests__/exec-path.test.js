@@ -15,7 +15,7 @@ import { spawnSync } from 'child_process';
 import { fileURLToPath } from 'url';
 import fs from 'fs-extra';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { resolveOnPath } from '../cli/core/exec-path.js';
+import { findFileOnPath, resolveOnPath } from '../cli/core/exec-path.js';
 import { REASONS, runGhApi, runGhRepoView } from '../cli/core/gh-runner.js';
 import { checkCommitMsgHook } from '../cli/core/governance-checks.js';
 
@@ -201,5 +201,24 @@ describe('not found keeps the GH_MISSING contract', () => {
     } finally {
       process.env.PATH = prevPath;
     }
+  });
+});
+
+describe('findFileOnPath (item 97 D5: locating the npm claude.cmd shim)', () => {
+  it('finds a file by its exact name in an absolute PATH directory', async () => {
+    const dir = path.join(tmp, 'bin');
+    await fs.outputFile(path.join(dir, 'claude.cmd'), '@echo off\n');
+    const env = { PATH: dir };
+    expect(findFileOnPath('claude.cmd', { env, platform: process.platform })).toBe(path.join(dir, 'claude.cmd'));
+  });
+
+  it('ignores relative PATH entries, so a shim planted in the project is never used', async () => {
+    await fs.outputFile(path.join(tmp, 'claude.cmd'), '@echo off\n');
+    const env = { PATH: '.' };
+    expect(findFileOnPath('claude.cmd', { env, platform: process.platform })).toBeNull();
+  });
+
+  it('rejects a name with a path separator', () => {
+    expect(findFileOnPath('bin/claude.cmd')).toBeNull();
   });
 });

@@ -36,6 +36,7 @@ export const LOCAL_REASONS = Object.freeze({
   EVIDENCE_TRUNCATED: 'evidence-truncated',
   NOT_PROTECTED: 'not-protected',
   BRANCH_ABSENT: 'branch-absent',
+  CLAUDE_UNAVAILABLE: 'claude-unavailable',
 });
 
 /**
@@ -60,6 +61,7 @@ const PHRASE = Object.freeze({
   [LOCAL_REASONS.EVIDENCE_TRUNCATED]: 'more evidence than the scan reads; absence not proven',
   [LOCAL_REASONS.NOT_PROTECTED]: 'no protection exists on any governed branch to bypass',
   [LOCAL_REASONS.BRANCH_ABSENT]: 'none of the governed branches exist in this repository',
+  [LOCAL_REASONS.CLAUDE_UNAVAILABLE]: 'claude is installed but did not report a version',
   [NO_EVIDENCE]: 'no merged pull request in the lookback window',
 });
 

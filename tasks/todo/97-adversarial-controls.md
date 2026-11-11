@@ -14,6 +14,14 @@ malformed input, Windows latency of 3–4.8 s against a 5 s timeout with its
 root cause), the fail-closed design and the L1/L2/L3 probe plan. Implementation
 (C1b) waits for maintainer approval of its section 7 decisions.
 
+**2026-11-11 — C1b implemented (branch `feature/97-guards-fail-closed`).**
+Decisions approved and D6 kept (shell reads documented as a gap). Guards fail
+closed, parse once (p95 0.5–0.8 s on Windows), close the item 81 bypasses;
+`onFailure: "block"` plus 15 s on the two security guards; `ais doctor`
+version check. L1 fixtures pass locally; L2 passed on Windows 2.1.319 with
+controls; L3 shows 2.1.294 ignores the field. Open after merge: CI on Ubuntu
+(first `jq` run) and Linux L2 (unverified). Results: HLD section 8.
+
 ## Scope and dependencies
 
 Define the claimed trust boundary per tool/platform, then create repeatable

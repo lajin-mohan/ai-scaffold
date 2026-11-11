@@ -60,8 +60,10 @@ describe.runIf(BASH)('guards with no working jq and a python3 stub (items 81, 97
     expect(runGuard('pre-secret-guard.sh', read(file))).toBe(status);
   });
 
-  it('secret guard: a Bash command reading .env is blocked', () => {
-    expect(runGuard('pre-secret-guard.sh', bash('cat .env'))).toBe(2);
+  // Item 97 D6: shell reads are a documented gap, not a claimed block. This
+  // pins the guard to what the docs say, so a partial Bash check cannot creep back.
+  it('secret guard does not claim to check Bash commands', () => {
+    expect(runGuard('pre-secret-guard.sh', bash('cat .env'))).toBe(0);
   });
 
   it('secret guard fails closed on a tool call it cannot read', () => {

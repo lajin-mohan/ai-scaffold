@@ -176,3 +176,4 @@ Each OWASP Top 10 category maps to specific rules and implementations:
 - `.env.example` contains all required variable names with placeholder values only.
 - Production secrets stored in AWS Secrets Manager / HashiCorp Vault / equivalent.
 - CI secrets stored in platform-provided secret store — never in YAML files.
+- The secret guard hook blocks AI file tools from secret paths, not shell commands. Do not read `.env` or keys through the shell; a sandbox is the control for shell access.

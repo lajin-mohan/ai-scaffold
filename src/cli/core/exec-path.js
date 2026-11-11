@@ -36,6 +36,23 @@ export function resolveOnPath(name, { env = process.env, platform = process.plat
   return null;
 }
 
+/**
+ * The first PATH directory holding a file with exactly this name, for files
+ * that are found but not run (an npm `.cmd` shim, to locate what it wraps).
+ * @returns {string|null} absolute path of the file
+ */
+export function findFileOnPath(fileName, { env = process.env, platform = process.platform } = {}) {
+  if (!fileName || /[\\/]/.test(fileName)) return null;
+  const isWindows = platform === 'win32';
+  const pathApi = isWindows ? path.win32 : path.posix;
+  for (const dir of pathEntries(env, isWindows)) {
+    if (!pathApi.isAbsolute(dir)) continue;
+    const full = pathApi.join(dir, fileName);
+    if (isRunnableFile(full, true)) return full;
+  }
+  return null;
+}
+
 // Windows env objects may spell the key `Path`; a spread of process.env is a
 // plain object, so the lookup is made case-insensitive there.
 function pathEntries(env, isWindows) {
