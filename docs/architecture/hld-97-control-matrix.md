@@ -297,7 +297,10 @@ say shell reads are not covered.
 replaces an unmodified guard entry with the new one, reports a locally modified
 entry instead, and a second run changes nothing
 (`src/__tests__/settings-apply.test.js`). `ais doctor` reports the Claude Code
-version: medium failure below 2.1.295, `unavailable` when `claude` cannot be run.
+version: medium failure below 2.1.295. Changed from the D5 wording at the
+maintainer's request (2026-11-11): when `claude` is not installed doctor shows
+no line, because the scaffold must not depend on one agent; `claude` found but
+reporting no version is `unavailable`.
 
 **L2 and L3.** `scripts/probe-hook-failure.sh` runs the probes in section 5
 from the maintainer's own terminal.

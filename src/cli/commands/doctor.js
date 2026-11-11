@@ -235,8 +235,9 @@ export async function runDiagnostics(target, options = {}) {
   checks.push(await checkCommitMsgHook(target));
 
   // 13. Item 97 D5 — the security hooks block on failure only from Claude Code
-  // 2.1.295. Not installed is unavailable, never a pass.
-  checks.push(checkClaudeCodeVersion(options.claudeVersion));
+  // 2.1.295. Shown only when Claude Code is installed: other agents get no line.
+  const claudeVersion = checkClaudeCodeVersion(options.claudeVersion);
+  if (claudeVersion) checks.push(claudeVersion);
 
   // C-01 and C-03. Every existing check above predates the three-state model and
   // is verified from the filesystem, so it normalises to pass/fail.

@@ -62,11 +62,12 @@ This file is configured with `merge=union` in `.gitattributes` so parallel addit
   out, crashes or is missing lets the call through. `ais doctor` warns when
   Claude Code is older than 2.1.295.
 - **`ais doctor` checks the Claude Code version.** It reports a medium failure
-  below 2.1.295 and `unavailable` when `claude` is not on PATH; neither changes
-  the exit code. Probes with a real signed-in Claude Code (2.1.319, Windows)
-  confirmed that a guard that times out, crashes or is missing now blocks the
-  tool call, and that without `onFailure` the same call goes through. Linux is
-  not yet verified.
+  below 2.1.295 and does not change the exit code. Projects that do not use
+  Claude Code get no line at all, since the scaffold works with any agent.
+  Probes with a real signed-in Claude Code (2.1.319, Windows) confirmed that a
+  guard that times out, crashes or is missing now blocks the tool call, and
+  that without `onFailure` the same call goes through. Linux is not yet
+  verified.
 - **The docs now say plainly that shell commands can still read secrets.** The
   secret guard covers Claude's file tools only. Its tests and the pre-publish
   smoke check claimed it blocked `cat .env` through Bash, but the guard was

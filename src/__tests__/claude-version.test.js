@@ -10,7 +10,7 @@ import {
   parseClaudeVersion,
 } from '../cli/core/claude-version.js';
 
-const withOutput = (output) => checkClaudeCodeVersion({ readOutput: () => output });
+const withOutput = (output) => checkClaudeCodeVersion({ read: () => ({ found: true, output }) });
 
 describe('parseClaudeVersion', () => {
   it('reads the version from `claude --version` output', () => {
@@ -48,7 +48,11 @@ describe('checkClaudeCodeVersion', () => {
     expect(result.message).toContain(MIN_CLAUDE_CODE);
   });
 
-  it('is unavailable, never a pass, when claude is missing or gives no version', () => {
+  it('shows no line when Claude Code is not installed: the scaffold works with any agent', () => {
+    expect(checkClaudeCodeVersion({ read: () => ({ found: false, output: null }) })).toBeNull();
+  });
+
+  it('is unavailable, never a pass, when claude is installed but gives no version', () => {
     for (const output of [null, 'garbage']) {
       const result = withOutput(output);
       expect(result).toMatchObject({ state: 'unavailable', passed: false, reason: 'claude-unavailable' });

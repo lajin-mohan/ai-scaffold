@@ -42,29 +42,38 @@ function findClaude() {
   return fs.existsSync(target) ? target : null;
 }
 
-/** Runs `claude --version` found through PATH only; null when not found or no answer. */
+/**
+ * Runs `claude --version` found through PATH only.
+ * @returns {{ found: boolean, output: string|null }}
+ */
 export function readClaudeVersionOutput() {
   const claude = findClaude();
-  if (!claude) return null;
+  if (!claude) return { found: false, output: null };
   const result = spawnSync(claude, ['--version'], { encoding: 'utf-8', timeout: VERSION_TIMEOUT_MS });
-  return result.status === 0 ? result.stdout : null;
+  return { found: true, output: result.status === 0 ? result.stdout : null };
 }
 
 /**
- * @param {{ readOutput?: () => string|null }} [options]  injectable for tests
+ * The scaffold works with any agent, so a project without Claude Code gets no
+ * line at all (null). Claude Code that is found but reports no version is
+ * `unavailable`, never a pass.
+ * @param {{ read?: () => { found: boolean, output: string|null } }} [options]  injectable for tests
+ * @returns {object|null}
  */
-export function checkClaudeCodeVersion({ readOutput = readClaudeVersionOutput } = {}) {
+export function checkClaudeCodeVersion({ read = readClaudeVersionOutput } = {}) {
+  const { found, output } = read();
+  if (!found) return null;
   // 'filesystem' is doctor's word for "local, no network" (AC-13); only 'api'
   // checks can be made to fail by --require-remote.
   const base = { name: CLAUDE_VERSION_CHECK, severity: 'medium', verifiedBy: 'filesystem' };
-  const version = parseClaudeVersion(readOutput());
+  const version = parseClaudeVersion(output);
   if (!version) {
     return {
       ...base,
       passed: false,
       state: 'unavailable',
       reason: LOCAL_REASONS.CLAUDE_UNAVAILABLE,
-      remedy: `If you use Claude Code, install ${MIN_CLAUDE_CODE} or later and make sure \`claude --version\` works from PATH.`,
+      remedy: `claude was found but did not report a version; check that \`claude --version\` works, and that it is ${MIN_CLAUDE_CODE} or later.`,
     };
   }
   const shown = version.join('.');
