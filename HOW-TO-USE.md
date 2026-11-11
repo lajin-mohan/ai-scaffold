@@ -205,57 +205,21 @@ verification steps. It must wait for explicit approval before implementation.
 
 ## 7. Core Commands
 
-You do not need every command on day one. Start here:
+You do not need every command on day one. Start with these six:
 
-| Command | Use it to |
-|---|---|
-| `/ais-what-next` | Ask what the next project action should be |
-| `/ais-plan` | Plan, approve, implement, and verify a task |
-| `/ais-debug` | Reproduce and root-cause a bug before changing code |
-| `/ais-review` | Run parallel AI review before human PR review |
-| `/ais-commit` | Commit with branch and verification checks |
-| `/ais-lessons` | Query or record lessons so mistakes do not repeat |
+| Command | Use it to | Example |
+|---|---|---|
+| `/ais-what-next` | See the next action and what blocks it | `/ais-what-next --brief` |
+| `/ais-plan` | Plan a change, approve it, then let the AI build and verify it | `/ais-plan "Add CSV export to invoices"` |
+| `/ais-debug` | Fix a bug from its root cause, with a regression test | `/ais-debug "Login loops back to /login"` |
+| `/ais-review` | Get an AI review before opening a pull request | `/ais-review` (or `--lite` for small changes) |
+| `/ais-commit` | Commit with the project's git rules checked | `/ais-commit` |
+| `/ais-lessons` | Find or record past root causes | `/ais-lessons "session"` |
 
-### Command names before 0.19
+**All commands, with usage and examples:** [docs/commands.md](docs/commands.md).
+Generated projects get the same guide at `.ai-scaffold/commands.md`.
 
-Every scaffold command now starts with `ais-`, so it does not collide with your
-own or a plugin's commands. Twelve commands were folded into others.
-
-| Old | Now |
-|---|---|
-| `/start-task` | `/ais-plan` (an approved plan continues through implementation and verification) |
-| `/debug-fix` | `/ais-debug` |
-| `/investigate` | `/ais-debug` (the root-cause investigation section) |
-| `/review` | `/ais-review` |
-| `/qa-review` | `/ais-review` (the test-suite quality section) |
-| `/commit-changes` | `/ais-commit` |
-| `/gen-tests` | `/ais-gen-tests` |
-| `/lessons` | `/ais-lessons` |
-| `/reflect` | `/ais-lessons --write` |
-| `/bootstrap` | `/ais-bootstrap` |
-| `/settings` | edit `.claude/settings-overrides.json` directly (see `/ais-bootstrap`) |
-| `/health` | `/ais-health` |
-| `/what-next` | `/ais-what-next` |
-| `/kickoff` | `/ais-kickoff` |
-| `/create-brd` | `/ais-create-brd` |
-| `/create-api` | `/ais-api-spec` |
-| `/estimate` | `/ais-estimate` |
-| `/architecture-review` | `/ais-architecture-review` |
-| `/deployment-review` | `/ais-deployment-review` |
-| `/ux-analysis`, `/ux-analyze`, `/ux-flow` | `/ais-ux-analysis` |
-| `/ux-create` | `/ais-ux-analysis --quick` |
-| `/ux-design-prompt`, `/ux-screen-spec`, `/ux-figma-spec` | `/ais-ux-design-prompt` |
-| `/ux-handoff` | `/ais-ux-handoff` |
-| `/ux-review` | `/ais-ux-review` |
-| `/qa` | `/ais-qa` |
-| `/qa-plan` | `/ais-qa-plan` |
-| `/qa-auth` | `/ais-qa-plan --auth` |
-| `/ponytail-audit`, `/ponytail-debt`, `/ais-plan --intensity` | removed; `TODO(<ticket>)` markers remain the way to record deferred work |
-
-On `ais update --apply`, an old command file you never edited is removed and
-its new file added. One you edited is kept beside the new file with a notice:
-move your changes into the new file, then delete the old one. Existing
-`ponytail:` comments and `tasks/ponytail-debt.md` are yours and are left alone.
+Upgrading from 0.18 or earlier? The [0.19.0 CHANGELOG entry](CHANGELOG.md) lists the renamed commands.
 
 Inspect what is installed:
 

@@ -18,6 +18,26 @@ This file is configured with `merge=union` in `.gitattributes` so parallel addit
   recurring, evidence-backed audits of outdated guidance, harness controls,
   adoption friction and process weight. It is not part of the npm package and
   is never installed into generated projects.
+- **A guide to every AI command, with usage and examples, in each project.**
+  `create` and `init` install `.ai-scaffold/commands.md`, rendered from the new
+  `docs/commands.md`, which covers all 21 `/ais-*` commands grouped by when
+  you use them. The generated `README.md` lists the six everyday commands with
+  an example each. Previously a generated project had no explanation of the
+  commands beyond one line each in `CLAUDE.md`. `ais update` adds the guide to
+  existing projects.
+- **Quick Start and setup guide.** The README opens with a Quick Start, and
+  `docs/setup/getting-started.md` walks through requirements, `create` versus
+  `init`, `ais doctor`, `/ais-bootstrap`, a first change, other AI tools,
+  updates and troubleshooting.
+- **`npm run typecheck` checks the docs.** Every installed command must appear
+  in the guide, and `README.md`, `HOW-TO-USE.md`, `docs/commands.md`, the setup
+  guide and the CLI reference may not name a retired command.
+
+### Removed
+- **The old-to-new command name table in `HOW-TO-USE.md`.** One line points to
+  the 0.19.0 entry below, which keeps the full list.
+- **`templates/*/HOW-TO-USE.md` from the package.** No install ever copied it,
+  and it still described commands removed in 0.19.0.
 
 ## [0.19.0] - 2026-11-10
 

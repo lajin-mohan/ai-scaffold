@@ -6,6 +6,36 @@ Reusable AI engineering scaffold with CLI distribution.
 
 This repository is the scaffold platform itself, not a generated application. Generated project documentation comes from profile templates during `create` or `init`; scaffold platform documentation lives separately in [README.scaffold.md](./README.scaffold.md).
 
+## Quick Start
+
+You need Node.js 16 or later (CI tests Node 24) and git. Claude Code is the
+best-supported assistant; Codex, Cursor and Copilot read the shared
+`AGENTS.md`.
+
+```bash
+# 1. New project (or, inside an existing repo: npx @lajin.m/ai-scaffold init --profile node)
+npx @lajin.m/ai-scaffold create my-app --profile node
+cd my-app
+
+# 2. Check the install
+npx @lajin.m/ai-scaffold doctor
+```
+
+Then open the project in Claude Code and run:
+
+```text
+/ais-bootstrap                               # answer a few questions about the project
+/ais-what-next                               # see the next step
+/ais-plan "Add a health-check endpoint"      # plan, approve with "go", let it build
+```
+
+> **Windows PowerShell:** quote the package name: `npx "@lajin.m/ai-scaffold" create my-app`.
+> Or install once with `npm install -g @lajin.m/ai-scaffold` and use `ais`.
+
+**Next:** [Setup guide](docs/setup/getting-started.md) for the full walk-through ·
+[AI commands](docs/commands.md) with usage and examples ·
+[CLI reference](docs/cli-reference.md) for every `ais` flag.
+
 ## Why Use This
 
 AI-assisted delivery gets messy when every assistant invents its own workflow. This scaffold gives a team one shared operating model:
@@ -234,8 +264,8 @@ execution of each profile's documented commands runs on Ubuntu.
 
 ## The Core 6 — Start Here
 
-You do not need all 35 commands on day one. Start with these six; everything else is
-opt-in as the work calls for it. Run `ais list` in a scaffolded project to see the full set.
+You do not need every command on day one. Start with these six; reach for the rest
+when the work calls for them. Usage and examples for all of them: [docs/commands.md](docs/commands.md).
 
 | Command | Use it to |
 |---|---|

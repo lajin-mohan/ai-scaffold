@@ -3,7 +3,7 @@
  * check-governance — item 105. Generates each profile and checks what it ships:
  * startup budget per tool (and Codex's byte limit), links and resolved
  * placeholders, command and hook references, retired command and model names,
- * and the rule manifest. Exits 1 on any error; warnings are printed only.
+ * the command guide, the rule manifest, and the repository's user docs. Exits 1 on any error; warnings are printed only.
  *
  *   node scripts/check-governance.js            all five profiles
  *   node scripts/check-governance.js --profile node
@@ -15,7 +15,9 @@ import path from 'node:path';
 import process from 'node:process';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
-import { checkBudget, checkObsoleteNames, checkReferences, checkRuleManifest } from './governance/checks.js';
+import {
+  checkBudget, checkCommandGuide, checkObsoleteNames, checkReferences, checkRuleManifest, checkUserDocs,
+} from './governance/checks.js';
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const PROFILES = ['generic', 'node', 'python', 'golang', 'laravel'];
@@ -37,7 +39,8 @@ function linkCheck(dir) {
 
 function checkProfile(profile, parent, manifest) {
   const dir = generate(profile, parent);
-  return [checkBudget(dir), linkCheck(dir), checkReferences(dir), checkObsoleteNames(dir), checkRuleManifest(dir, manifest, repoRoot)]
+  return [checkBudget(dir), linkCheck(dir), checkReferences(dir), checkObsoleteNames(dir), checkCommandGuide(dir),
+    checkRuleManifest(dir, manifest, repoRoot)]
     .reduce((acc, r) => ({ errors: [...acc.errors, ...r.errors], warnings: [...acc.warnings, ...r.warnings] }), { errors: [], warnings: [] });
 }
 
@@ -47,7 +50,9 @@ function main(argv) {
   if (profiles.some((p) => !PROFILES.includes(p))) throw new Error(`Unknown profile. Use one of: ${PROFILES.join(', ')}`);
   const manifest = JSON.parse(fs.readFileSync(path.join(repoRoot, 'docs/governance/rule-manifest.json'), 'utf-8'));
   const parent = fs.mkdtempSync(path.join(os.tmpdir(), 'ais-governance-'));
-  let errors = 0;
+  const docs = checkUserDocs(repoRoot);
+  for (const line of docs.errors) console.error(`✗ [docs] ${line}`);
+  let errors = docs.errors.length;
   try {
     for (const profile of profiles) {
       const { errors: e, warnings: w } = checkProfile(profile, parent, manifest);
