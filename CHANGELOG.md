@@ -33,7 +33,24 @@ This file is configured with `merge=union` in `.gitattributes` so parallel addit
   in the guide, and `README.md`, `HOW-TO-USE.md`, `docs/commands.md`, the setup
   guide and the CLI reference may not name a retired command.
 
+### Changed
+- **`/ais-qa` reports first and fixes only what you approve.** It walks the
+  feature in the browser and reports every finding at once. Each finding has an
+  ID, a severity (impact), a priority (fix order), a root cause marked Confirmed
+  or Suspected with `file:line`, and a fix plan. Then it stops. Reply `fix all`,
+  `fix QA-1, QA-3` or `none`. It fixes only the findings you chose, tests again
+  in the browser, and hands back each fix's status with the changed files left
+  **uncommitted**, so you review and commit with `/ais-commit`. With three or
+  more findings the report is also saved to
+  `docs/qa/qa-report-<feature>-<date>.md`. Previously `/ais-qa` fixed issues
+  and committed them without asking.
+- **Upgrading:** `ais update` replaces an unedited `ais-qa.md`. An edited copy
+  is kept with a notice; merge your changes into the new file.
+
 ### Removed
+- **`/qa-only` and `/setup-browser-cookies` from `/ais-qa`.** Neither was a
+  real command. Reporting is now the default, and testing behind a login uses
+  your browser tool's own sign-in or cookie import.
 - **The old-to-new command name table in `HOW-TO-USE.md`.** One line points to
   the 0.19.0 entry below, which keeps the full list.
 - **`templates/*/HOW-TO-USE.md` from the package.** No install ever copied it,
