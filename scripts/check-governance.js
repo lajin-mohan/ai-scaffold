@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * check-governance — item 105. Generates each profile and checks what it ships:
- * startup budget per tool (and Codex's byte limit), links and resolved
+ * startup budget per tool (and Codex's byte limit), links (on create and init) and resolved
  * placeholders, command and hook references, retired command and model names,
  * the command guide, the rule manifest, and the repository's user docs. Exits 1 on any error; warnings are printed only.
  *
@@ -31,6 +31,25 @@ function generate(profile, parent) {
   return dir;
 }
 
+// init writes into an existing repository and namespaces files whose root
+// path the adopter already owns (README.md lands at .ai-scaffold/README.md),
+// so its links are checked separately from create's.
+function generateInit(profile, parent) {
+  const dir = path.join(parent, `governance-init-${profile}`);
+  fs.mkdirSync(dir, { recursive: true });
+  fs.writeFileSync(path.join(dir, 'README.md'), '# Existing project\n');
+  const args = [path.join(repoRoot, 'bin/ai-scaffold.js'), 'init', dir, '--profile', profile, '--yes',
+    '--purpose', 'Governance check', '--owner-email', 'governance@example.com'];
+  const inited = spawnSync(process.execPath, args, { encoding: 'utf-8' });
+  if (inited.status !== 0) throw new Error(`ais init --profile ${profile} failed:\n${inited.stderr || inited.stdout}`);
+  return dir;
+}
+
+function initLinkCheck(profile, parent) {
+  const { errors, warnings } = linkCheck(generateInit(profile, parent));
+  return { errors: errors.map((line) => `init: ${line.trim()}`), warnings };
+}
+
 function linkCheck(dir) {
   const run = spawnSync(process.execPath, [path.join(repoRoot, 'scripts/check-generated-links.js'), dir], { encoding: 'utf-8' });
   const lines = `${run.stdout}${run.stderr}`.split('\n').filter((line) => /^(BROKEN LINK|UNRESOLVED)/.test(line.trim()));
@@ -40,7 +59,7 @@ function linkCheck(dir) {
 function checkProfile(profile, parent, manifest) {
   const dir = generate(profile, parent);
   return [checkBudget(dir), linkCheck(dir), checkReferences(dir), checkObsoleteNames(dir), checkCommandGuide(dir),
-    checkRuleManifest(dir, manifest, repoRoot)]
+    checkRuleManifest(dir, manifest, repoRoot), initLinkCheck(profile, parent)]
     .reduce((acc, r) => ({ errors: [...acc.errors, ...r.errors], warnings: [...acc.warnings, ...r.warnings] }), { errors: [], warnings: [] });
 }
 
