@@ -12,6 +12,21 @@ This file records patterns from mistakes and corrections. Claude reads this at t
 
 <!-- Add lessons below as they are captured. Most recent at the top. -->
 
+## 2026-11-12 — A repeat init rebuilt the manifest from only the files it wrote
+
+- **Mistake:** `copyFiles` set `managedFiles` from the files written in the
+  current run. On a second `ais init`, protected files that already existed
+  were skipped, not written, so `AGENTS.md`, `CLAUDE.md`, `constitution.md`,
+  `CHANGELOG.md` and `tasks/lessons.md` lost their records, and `ais update`
+  stopped updating them (`skip-unowned`). Found while implementing item 84.
+- **Why:** every test ran `init` once into a fresh directory. Skipping a
+  protected file was only tested for whether the file's content survived,
+  never for whether the scaffold still recorded owning it.
+- **Rule:** when a step rebuilds persisted state from what this run did,
+  carry forward the records for items it deliberately skipped. Test every
+  install command run twice in the same directory, and assert on the manifest
+  as well as on the files.
+
 ## 2026-11-11 — Windows Python prints CRLF, and a hook that reads it matches nothing
 
 - **What happened:** after the guard parser was switched to try `python` on

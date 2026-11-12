@@ -332,6 +332,26 @@ describe('CLI e2e smoke', { timeout: 30_000 }, () => {
     expect(await fs.readFile(path.join(targetDir, 'tasks', 'lessons.md'), 'utf-8')).toBe('# Real project lessons\n');
   });
 
+  it('a repeat init keeps the records of protected files the first init wrote', async () => {
+    const targetDir = path.join(tmpDir, 'repeat-init');
+    await fs.ensureDir(targetDir);
+    const manifestPath = path.join(targetDir, '.ai-scaffold.json');
+    const kept = ['AGENTS.md', 'CHANGELOG.md', 'CLAUDE.md', 'constitution.md', 'tasks/lessons.md'];
+    const recordsFor = (manifest) => manifest.managedFiles.filter((r) => kept.includes(r.path));
+
+    const first = runCli(['init', targetDir, '--yes', '--profile', 'node']);
+    expect(first.status, first.stderr || first.stdout).toBe(0);
+    const before = recordsFor(await fs.readJson(manifestPath));
+    expect(before.map((r) => r.path)).toEqual(kept);
+    // An adopter edit between runs must stay detectable, so the record keeps
+    // the hash the scaffold wrote rather than re-hashing the edited file.
+    await fs.appendFile(path.join(targetDir, 'CLAUDE.md'), '\nLocal note.\n');
+
+    const second = runCli(['init', targetDir, '--yes', '--profile', 'node']);
+    expect(second.status, second.stderr || second.stdout).toBe(0);
+    expect(recordsFor(await fs.readJson(manifestPath))).toEqual(before);
+  });
+
   it('update preview does not mutate installed metadata', async () => {
     const targetDir = path.join(tmpDir, 'update-placeholder');
     const createResult = runCli([
