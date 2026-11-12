@@ -9,6 +9,7 @@
 import path from 'path';
 import fs from 'fs-extra';
 import { rebaseRelativeLinks } from './markdown-links.js';
+import { pointImportAt } from './claude-import.js';
 import {
   buildConstitution,
   buildContextFile,
@@ -77,7 +78,10 @@ export async function renderPlannedFile(file, values, { kind, now = new Date() }
     // Keyed on the source: copied READMEs (e.g. under .claude/skills/) link
     // relative to their own folder and must not be rebased.
     const rebase = path.basename(src) === README_TEMPLATE && dir !== '.';
-    return Buffer.from(rebase ? rebaseRelativeLinks(content, dir) : content, 'utf-8');
+    if (rebase) return Buffer.from(rebaseRelativeLinks(content, dir), 'utf-8');
+    // Item 84: CLAUDE.md imports wherever init put the shared rules.
+    if (rel === 'CLAUDE.md') return Buffer.from(pointImportAt(content, values.agentsCore), 'utf-8');
+    return Buffer.from(content, 'utf-8');
   }
   const content = generatedContent(rel, values, now);
   return content === null ? null : Buffer.from(content, 'utf-8');

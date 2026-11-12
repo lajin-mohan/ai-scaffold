@@ -82,6 +82,22 @@ ais init ./my-existing-project --profile node --yes
 ais init --dry-run
 ```
 
+If the repository already has a `CLAUDE.md` or `AGENTS.md`, `init` connects to
+it rather than skipping it:
+
+- An existing `CLAUDE.md` gets a short `## AI Scaffold` section appended that
+  imports the shared instructions, once. The rest of the file and its line
+  endings are unchanged. A symbolic link is reported and not edited.
+- An existing `AGENTS.md` is kept. The shared instructions go to
+  `.ai-scaffold/AGENTS.md`, and `CLAUDE.md` imports that path. The location is
+  recorded in `.ai-scaffold.json` (`install.agentsCore`), so a repeat `init`
+  and `ais update` keep using it.
+- `--force` overwrites both files with the scaffold's versions, as before.
+
+`--json` output includes `claudeImport`: `{ action, core }`, where `action` is
+`add`, `present`, `symlink` or `scaffold-writes`, and `core` is where the shared
+instructions go.
+
 Options are the same as `create` (minus `--no-git`; `init` never touches git),
 including `--dry-run`, `--json`, `--force`, `--profile`, and all identity/stack
 flags. With requirements:

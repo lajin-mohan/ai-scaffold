@@ -25,6 +25,7 @@ export function valuesFromManifest(manifest) {
   return {
     profile: manifest.profile,
     installMode: manifest.install?.mode,
+    agentsCore: manifest.install?.agentsCore ?? 'AGENTS.md',
     projectName: project.slug,
     displayName: project.displayName,
     purpose: project.purpose,

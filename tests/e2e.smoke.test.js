@@ -352,6 +352,107 @@ describe('CLI e2e smoke', { timeout: 30_000 }, () => {
     expect(recordsFor(await fs.readJson(manifestPath))).toEqual(before);
   });
 
+  describe('init connects the shared rules without overwriting (item 84)', () => {
+    const IMPORT_SECTION = /## AI Scaffold\n\nShared rules for AI assistants, added by `ais init`:\n\n@(\S+)\n$/;
+    const read = (dir, rel) => fs.readFile(path.join(dir, rel), 'utf-8');
+    const initIn = (dir, extra = []) => runCli(['init', dir, '--yes', '--profile', 'node', ...extra]);
+
+    async function project(name, files) {
+      const dir = path.join(tmpDir, name);
+      await fs.ensureDir(dir);
+      for (const [rel, text] of Object.entries(files)) await fs.writeFile(path.join(dir, rel), text);
+      return dir;
+    }
+
+    it('neither file: writes both, CLAUDE.md imports the root AGENTS.md', async () => {
+      const dir = await project('init-84-neither', {});
+      const result = initIn(dir);
+      expect(result.status, result.stderr || result.stdout).toBe(0);
+      expect(await read(dir, 'CLAUDE.md')).toMatch(/^@AGENTS\.md$/m);
+      expect(await fs.pathExists(path.join(dir, 'AGENTS.md'))).toBe(true);
+      expect(await fs.pathExists(path.join(dir, '.ai-scaffold', 'AGENTS.md'))).toBe(false);
+      expect((await fs.readJson(path.join(dir, '.ai-scaffold.json'))).install).toEqual({ mode: 'init' });
+    });
+
+    it('CLAUDE.md only: appends the import, keeps the rest byte-for-byte, and a repeat init adds nothing', async () => {
+      const mine = '# My rules\r\n\r\nUse tabs.\r\n';
+      const dir = await project('init-84-claude-only', { 'CLAUDE.md': mine });
+      const result = initIn(dir);
+      expect(result.status, result.stderr || result.stdout).toBe(0);
+      expect(result.stdout).toContain('add an import of AGENTS.md');
+      const after = await read(dir, 'CLAUDE.md');
+      expect(after.startsWith(mine)).toBe(true);
+      expect(after.slice(mine.length).replace(/\r\n/g, '\n')).toMatch(IMPORT_SECTION);
+      expect(after.slice(mine.length)).not.toMatch(/[^\r]\n/);
+      expect(after).toContain('@AGENTS.md');
+      expect(await fs.pathExists(path.join(dir, 'AGENTS.md'))).toBe(true);
+
+      const again = initIn(dir);
+      expect(again.status, again.stderr || again.stdout).toBe(0);
+      expect(await read(dir, 'CLAUDE.md')).toBe(after);
+    });
+
+    it('AGENTS.md only: keeps it, installs the core under .ai-scaffold/ and points CLAUDE.md there', async () => {
+      const theirs = '# Our agent rules\n';
+      const dir = await project('init-84-agents-only', { 'AGENTS.md': theirs });
+      const result = initIn(dir);
+      expect(result.status, result.stderr || result.stdout).toBe(0);
+      expect(result.stdout).toContain('AGENTS.md is yours and was kept');
+      expect(await read(dir, 'AGENTS.md')).toBe(theirs);
+      expect(await read(dir, '.ai-scaffold/AGENTS.md')).toMatch(/\S/);
+      const claude = await read(dir, 'CLAUDE.md');
+      expect(claude).toMatch(/^@\.ai-scaffold\/AGENTS\.md$/m);
+      expect(claude).not.toMatch(/^@AGENTS\.md$/m);
+      const manifest = await fs.readJson(path.join(dir, '.ai-scaffold.json'));
+      expect(manifest.install).toEqual({ mode: 'init', agentsCore: '.ai-scaffold/AGENTS.md' });
+      const recorded = manifest.managedFiles.map((record) => record.path);
+      expect(recorded).toContain('.ai-scaffold/AGENTS.md');
+      expect(recorded).toContain('CLAUDE.md');
+      expect(recorded).not.toContain('AGENTS.md');
+
+      const manifestPath = path.join(dir, '.ai-scaffold.json');
+      // A repeat init keeps the recorded location even though the scaffold's
+      // own files now exist.
+      const again = initIn(dir);
+      expect(again.status, again.stderr || again.stdout).toBe(0);
+      expect(await read(dir, 'AGENTS.md')).toBe(theirs);
+      expect(await read(dir, 'CLAUDE.md')).toBe(claude);
+      expect((await fs.readJson(manifestPath)).install.agentsCore).toBe('.ai-scaffold/AGENTS.md');
+
+      // After the repeat init, update re-renders from the manifest: the
+      // scaffold's files are unchanged and the adopter's AGENTS.md is not
+      // touched. An older recorded version makes update plan, not "current".
+      await fs.writeJson(manifestPath, { ...(await fs.readJson(manifestPath)), version: '0.18.0' }, { spaces: 2 });
+      const preview = runCli(['update', dir, '--dry-run', '--json']);
+      const doc = JSON.parse(preview.stdout);
+      expect(doc.status, preview.stdout).toBe('planned');
+      const actionOf = (rel) => doc.entries.find((entry) => entry.path === rel)?.action;
+      expect(actionOf('CLAUDE.md')).toBe('unchanged');
+      expect(actionOf('.ai-scaffold/AGENTS.md')).toBe('unchanged');
+      expect(actionOf('AGENTS.md')).toBe('skip-unowned');
+    });
+
+    it('both files: keeps AGENTS.md, namespaces the core and appends the import to CLAUDE.md', async () => {
+      const dir = await project('init-84-both', { 'CLAUDE.md': '# Mine\n', 'AGENTS.md': '# Theirs\n' });
+      const result = initIn(dir);
+      expect(result.status, result.stderr || result.stdout).toBe(0);
+      expect(await read(dir, 'AGENTS.md')).toBe('# Theirs\n');
+      const claude = await read(dir, 'CLAUDE.md');
+      expect(claude).toMatch(IMPORT_SECTION);
+      expect(claude.match(IMPORT_SECTION)[1]).toBe('.ai-scaffold/AGENTS.md');
+      expect(await fs.pathExists(path.join(dir, '.ai-scaffold', 'AGENTS.md'))).toBe(true);
+    });
+
+    it('--dry-run --json reports the decision and writes nothing', async () => {
+      const dir = await project('init-84-json', { 'CLAUDE.md': '# Mine\n', 'AGENTS.md': '# Theirs\n' });
+      const result = runCli(['init', dir, '--dry-run', '--json', '--profile', 'node']);
+      expect(result.status, result.stderr || result.stdout).toBe(0);
+      expect(JSON.parse(result.stdout).claudeImport).toEqual({ action: 'add', core: '.ai-scaffold/AGENTS.md' });
+      expect(await read(dir, 'CLAUDE.md')).toBe('# Mine\n');
+      expect(await fs.pathExists(path.join(dir, '.ai-scaffold'))).toBe(false);
+    });
+  });
+
   it('update preview does not mutate installed metadata', async () => {
     const targetDir = path.join(tmpDir, 'update-placeholder');
     const createResult = runCli([
