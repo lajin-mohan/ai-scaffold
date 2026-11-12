@@ -57,9 +57,8 @@ The ≤ 5K budget and its enforcement shipped in 0.19.0 (PR 5,
   covering all four cases: neither file, `CLAUDE.md` only (import appended),
   `AGENTS.md` only (adopter's file kept, core installed at
   `.ai-scaffold/AGENTS.md`, recorded as `install.agentsCore`), and both.
-  Symlinked `CLAUDE.md` is reported, not edited. Found in passing and split
-  out: a repeat `init` drops `CLAUDE.md`/`AGENTS.md` from `managedFiles` (pre-existing,
-  separate fix).
+  Symlinked `CLAUDE.md` is reported, not edited. Found in passing and fixed
+  separately in #184: a repeat `init` dropped protected files from `managedFiles`.
 - Live check that Claude Code loads `AGENTS.md` through the import (signed-in
   terminal; observed context).
 - Cursor/Copilot scoped rules and runtime loading checks (items 104, 98).

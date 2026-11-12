@@ -108,6 +108,15 @@ This file is configured with `merge=union` in `.gitattributes` so parallel addit
   and it still described commands removed in 0.19.0.
 
 ### Fixed
+- **Running `ais init` twice no longer stops `AGENTS.md`, `CLAUDE.md` and
+  `constitution.md` getting updates.** The second run skips protected files
+  that already exist, but it also dropped their records from the manifest, so
+  `ais update` then treated them as the project's own (`skip-unowned`) and
+  never updated them. `CHANGELOG.md` and `tasks/lessons.md` lost their records
+  the same way. A repeat `init` now keeps the existing record for each
+  protected file it skips, with the hash the scaffold originally wrote, so an
+  edit you made since is still detected. Files the scaffold never wrote stay
+  unowned.
 - **Broken links in the README that `ais init` installs.** On `init` the
   profile README goes to `.ai-scaffold/README.md`, because the adopter's own
   `README.md` is left alone, but its links to `constitution.md` and

@@ -9,6 +9,7 @@ import { buildManagedFileRecords } from './manifest.js';
 import { renderPlannedFile } from './render.js';
 import { classifyPath } from './ownership.js';
 import { scaffoldSubset } from './settings-merge.js';
+import { toPosixPath } from './paths.js';
 
 const SETTINGS_REL = '.claude/settings.json';
 
@@ -89,13 +90,37 @@ export async function copyFiles(plan, bootstrapValues, opts = {}) {
     if (await fs.pathExists(manifestPath)) {
       const manifest = await fs.readJson(manifestPath);
       manifest.defaultedValues = values.defaulted ?? [];
-      manifest.managedFiles = await buildManagedFileRecords(opts.targetDir, writtenFiles);
+      const written = await buildManagedFileRecords(opts.targetDir, writtenFiles);
+      manifest.managedFiles = keptRecords(manifest, plan, writtenFiles).concat(written)
+        .sort(byPath);
       await recordSchema2(manifest, plan, values, now);
       await fs.writeJson(manifestPath, manifest, { spaces: 2 });
     }
   }
 
   return { copied, skipped, errors };
+}
+
+/**
+ * A repeat init skips protected files that already exist, but the scaffold may
+ * still own them from the first run. Keep their prior records unchanged: the
+ * recorded hash is what the scaffold wrote, so an adopter edit stays visible
+ * to `update`. A file with no prior record stays unowned.
+ * @returns {object[]}
+ */
+function keptRecords(manifest, plan, writtenFiles) {
+  const prior = Array.isArray(manifest.managedFiles) ? manifest.managedFiles : [];
+  const written = new Set(writtenFiles.map(toPosixPath));
+  const skipped = new Set(plan.skipProtected
+    .filter((file) => file.exists && !written.has(toPosixPath(file.rel)))
+    .map((file) => toPosixPath(file.rel)));
+  return prior.filter((record) => typeof record?.path === 'string' && skipped.has(record.path));
+}
+
+/** Code-unit order, matching the default sort buildManagedFileRecords uses. */
+function byPath(a, b) {
+  if (a.path === b.path) return 0;
+  return a.path < b.path ? -1 : 1;
 }
 
 /**

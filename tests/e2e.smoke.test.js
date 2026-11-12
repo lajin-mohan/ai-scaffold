@@ -332,6 +332,26 @@ describe('CLI e2e smoke', { timeout: 30_000 }, () => {
     expect(await fs.readFile(path.join(targetDir, 'tasks', 'lessons.md'), 'utf-8')).toBe('# Real project lessons\n');
   });
 
+  it('a repeat init keeps the records of protected files the first init wrote', async () => {
+    const targetDir = path.join(tmpDir, 'repeat-init');
+    await fs.ensureDir(targetDir);
+    const manifestPath = path.join(targetDir, '.ai-scaffold.json');
+    const kept = ['AGENTS.md', 'CHANGELOG.md', 'CLAUDE.md', 'constitution.md', 'tasks/lessons.md'];
+    const recordsFor = (manifest) => manifest.managedFiles.filter((r) => kept.includes(r.path));
+
+    const first = runCli(['init', targetDir, '--yes', '--profile', 'node']);
+    expect(first.status, first.stderr || first.stdout).toBe(0);
+    const before = recordsFor(await fs.readJson(manifestPath));
+    expect(before.map((r) => r.path)).toEqual(kept);
+    // An adopter edit between runs must stay detectable, so the record keeps
+    // the hash the scaffold wrote rather than re-hashing the edited file.
+    await fs.appendFile(path.join(targetDir, 'CLAUDE.md'), '\nLocal note.\n');
+
+    const second = runCli(['init', targetDir, '--yes', '--profile', 'node']);
+    expect(second.status, second.stderr || second.stdout).toBe(0);
+    expect(recordsFor(await fs.readJson(manifestPath))).toEqual(before);
+  });
+
   describe('init connects the shared rules without overwriting (item 84)', () => {
     const IMPORT_SECTION = /## AI Scaffold\n\nShared rules for AI assistants, added by `ais init`:\n\n@(\S+)\n$/;
     const read = (dir, rel) => fs.readFile(path.join(dir, rel), 'utf-8');
@@ -390,10 +410,18 @@ describe('CLI e2e smoke', { timeout: 30_000 }, () => {
       expect(recorded).toContain('CLAUDE.md');
       expect(recorded).not.toContain('AGENTS.md');
 
-      // update re-renders from the manifest: the scaffold's files are
-      // unchanged and the adopter's AGENTS.md is not touched. An older
-      // recorded version makes update plan instead of reporting "current".
       const manifestPath = path.join(dir, '.ai-scaffold.json');
+      // A repeat init keeps the recorded location even though the scaffold's
+      // own files now exist.
+      const again = initIn(dir);
+      expect(again.status, again.stderr || again.stdout).toBe(0);
+      expect(await read(dir, 'AGENTS.md')).toBe(theirs);
+      expect(await read(dir, 'CLAUDE.md')).toBe(claude);
+      expect((await fs.readJson(manifestPath)).install.agentsCore).toBe('.ai-scaffold/AGENTS.md');
+
+      // After the repeat init, update re-renders from the manifest: the
+      // scaffold's files are unchanged and the adopter's AGENTS.md is not
+      // touched. An older recorded version makes update plan, not "current".
       await fs.writeJson(manifestPath, { ...(await fs.readJson(manifestPath)), version: '0.18.0' }, { spaces: 2 });
       const preview = runCli(['update', dir, '--dry-run', '--json']);
       const doc = JSON.parse(preview.stdout);
@@ -402,14 +430,6 @@ describe('CLI e2e smoke', { timeout: 30_000 }, () => {
       expect(actionOf('CLAUDE.md')).toBe('unchanged');
       expect(actionOf('.ai-scaffold/AGENTS.md')).toBe('unchanged');
       expect(actionOf('AGENTS.md')).toBe('skip-unowned');
-
-      // A repeat init keeps the recorded location even though the scaffold's
-      // own files now exist.
-      const again = initIn(dir);
-      expect(again.status, again.stderr || again.stdout).toBe(0);
-      expect(await read(dir, 'AGENTS.md')).toBe(theirs);
-      expect(await read(dir, 'CLAUDE.md')).toBe(claude);
-      expect((await fs.readJson(manifestPath)).install.agentsCore).toBe('.ai-scaffold/AGENTS.md');
     });
 
     it('both files: keeps AGENTS.md, namespaces the core and appends the import to CLAUDE.md', async () => {
