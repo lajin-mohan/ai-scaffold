@@ -50,7 +50,7 @@ those tools day to day; otherwise they follow in 0.22.0.
 | 0 | 100 | This backlog sync; smoke summaries committed; items 106–111 merged | Roadmap and tickets match 0.19.0 |
 | C1 | **97**; 81; 98 (the three untested hooks) | Design and probe matrix first (ticket gate). Then `onFailure: "block"` on the security guards, probes for timeout, crash and missing script | Allow/block probes pass on Windows and WSL on a packed project, Claude Code 2.1.319, positive controls included; the three hooks have tests; unsupported cases say unsupported |
 | C2 | 84 remainder | `ais init` adds the `@AGENTS.md` import without overwriting an existing `CLAUDE.md` | Packed `init` into fixtures with and without `CLAUDE.md`; repeat `init` adds nothing |
-| C3 | **113** | Pre-commit runs a configurable verify command (`verify.command` → `verify` → `test:unit` → `npm test`); precursor to 87 | Monorepo fixture commits without `--no-verify` once configured; missing command fails closed; Windows and Linux, packed project |
+| C3 | **113** | Pre-commit runs the project's committed `scripts/verify` in place of the stack test step (`scripts/verify` → stack default); first half of 87. Design changed 2026-11-13 from a per-developer `settings-overrides.json` key, see the ticket | Monorepo fixture commits without `--no-verify` once configured; missing command fails closed; Windows and Linux, packed project |
 | C4 | **112** (after C2) | `PROJECT.md` added when missing and never touched; `@PROJECT.md` import; `.claude/rules/project/` overrides with a security floor | Hand-made `PROJECT.md` byte-identical after `update --apply`; repeat update `current`; `/memory` lists project files |
 | M | 74 | Snapshot #2 from the maintainer's `ais update` reports | M-02 recorded with method and versions |
 
@@ -831,7 +831,7 @@ the packed tarball.
   controls and validate allowed, disallowed and unavailable cases. *(XS)*
 
 **C4 — Verification and UX honesty**
-- **87. 🟡 Single `verify` contract and honest UI gates.** Honest UI gates and item 102 part A done (Wave A, PR #168, 2026-10-29; ships in 0.18.0). Open: one real `verify` script per profile.
+- **87. 🟡 Single `verify` contract and honest UI gates.** Honest UI gates and item 102 part A done (Wave A, PR #168, 2026-10-29; ships in 0.18.0). Open: one real `verify` script per profile. The entry point is fixed by 113 (`scripts/verify`, run with `bash`, used by the pre-commit hook); 87 adds the per-profile default contents and wires CI and the agent to the same file.
   - Acceptance extension: item 97 proves failure/skip and enforcement behavior;
     an AI reviewer approval alone is not verification evidence.
   - One real `verify` script per profile, shared by the git hook, CI and the

@@ -162,6 +162,25 @@ Read .claude/commands/ais-plan.md and follow it to add a health-check endpoint.
 Hooks are Claude Code only. Your git `pre-commit` and `commit-msg` hooks still
 run for every tool, because git runs them.
 
+### When the pre-commit test step does not fit
+
+The git `pre-commit` hook runs the stack's test step (`npm test`, `pytest`,
+`go test ./...`, PHPUnit, `dotnet test`). If that cannot pass on a developer
+machine, for example a monorepo whose root `test` needs a database, commit a
+`scripts/verify` that runs what every commit must pass:
+
+```bash
+#!/usr/bin/env bash
+set -euo pipefail
+npm run test:unit --workspaces --if-present
+```
+
+The hook runs it with `bash` in place of the test step; branch policy, lint,
+typecheck and the secrets scan still run. It is committed and reviewed like
+code, so the whole team runs the same checks, and there is no per-developer
+override. If the file exists it must pass; a command it calls that is not
+installed fails the commit.
+
 ## 8. Keep it up to date
 
 ```bash
