@@ -14,6 +14,9 @@ This file is configured with `merge=union` in `.gitattributes` so parallel addit
 ## [Unreleased]
 
 ### Added
+- UX profile/add-on requirements (114), feasibility study and draft implementation
+  plan: same-repository content, all-three-tool v1 support, reuse of existing
+  UX commands/agents and item 25 lifecycle machinery. No runtime behavior changes.
 - Maintainer-only `/ais-effectiveness` command (repository root only) for
   recurring, evidence-backed audits of outdated guidance, harness controls,
   adoption friction and process weight. It is not part of the npm package and

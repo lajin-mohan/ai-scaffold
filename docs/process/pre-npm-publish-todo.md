@@ -1,5 +1,18 @@
 # AI Scaffold — Backlog
 
+## Proposal intake — 2026-11-13 (114)
+
+[114 — UX profile/add-on](../../tasks/todo/114-design-system-pack.md) proposes
+same-repository design-system content and Claude Code, Codex and Cursor support
+from its first release. [Requirements v0.3](../brd/114-ux-addon-requirements.md),
+[feasibility study](../architecture/114-ux-addon-feasibility.md) and
+[draft plan](114-ux-addon-plan.md) are ready for review. Extend task 110's pack
+mechanism and task 104's native adapters, reusing completed item 25's update/apply
+and settings merge. Preserve current `ais-ux-*` command names and the shared core.
+P1 is requested, not a priority promotion: the wave order below is unchanged.
+Next action: resolve the CLI, Tailwind baseline and pilot decisions and approve
+the pack contracts/prototype phase. This intake does not authorize implementation.
+
 ## Authoritative wave plan — 2026-11-10 (after 0.19.0)
 
 **This section sets the order from here.** It continues the 2026-11-05 review

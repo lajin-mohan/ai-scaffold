@@ -4,6 +4,13 @@
 
 Proposed, P2, 2026-11-09. From the research report gap review.
 
+**Related proposal (2026-11-13):**
+[114 — UX add-on](114-design-system-pack.md) proposes extending this mechanism
+to skills, commands, hooks and owned MCP/settings contributions. ColdFusion
+remains the second consumer proving general composition. The source/licensing
+decision and scoped-rule requirements below still apply; the expansion requires
+the pack design/estimate, not a separate lifecycle engine.
+
 ## Problem
 
 The report recommends turning Techversant COE standards into AI context and

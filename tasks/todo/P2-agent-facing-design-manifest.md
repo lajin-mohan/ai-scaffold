@@ -5,6 +5,15 @@
 Proposed — rank 11, after lifecycle and reliability priorities. Analysis and
 implementation plan require approval before execution.
 
+**Related proposal (2026-11-13):**
+[114 — UX add-on requirements v0.3](../../docs/brd/114-ux-addon-requirements.md)
+proposes delivering this work in a same-repository opt-in UX pack, with DTCG
+as the canonical token source and generated DESIGN.md/CSS/Tailwind output.
+If approved, that replaces the every-profile distribution and deferred-export
+scope below. Validation, omissions, extension handling and token diff requirements
+carry forward. Original scope is retained for decision history; reconcile it in
+the pack ADR before implementation.
+
 ## Context
 
 The scaffold already documents a strong semantic design system across

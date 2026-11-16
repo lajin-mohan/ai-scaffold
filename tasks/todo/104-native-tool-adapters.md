@@ -8,6 +8,12 @@ after the 2026-11-04 effectiveness review
 item 67 describes and item 98 validates; it does not replace either. Design and
 estimate required before implementation.
 
+**Related proposal (2026-11-13):**
+[114 — UX add-on](114-design-system-pack.md) requires Claude Code, Codex and
+Cursor in its first release. Its pack-specific rules/skills/hooks/MCP configuration
+must extend these shared adapters and pass item 98's in-tool probes. This does
+not reorder the scaffold-wide wave plan or imply these adapters already ship.
+
 ## Problem
 
 A team mostly on Codex or Cursor gets little of the scaffold today:
