@@ -1,5 +1,17 @@
 # 114 — Design-system pack: opt-in AI UX design system for client delivery
 
+## Scheduling decision — 2026-11-16
+
+**Deferred, P2 candidate; no implementation scheduled.** The maintainer wants
+the current waves completed first (C/D in the authoritative wave plan). After
+their exit criteria are met, compare this feature with the remaining backlog
+by value to CLI adopters, implementation effort and ongoing maintenance cost.
+Wave completion permits a priority review, not an automatic start or P1 promotion.
+CLI/Tailwind/pilot decisions can wait until that review. The draft below is
+retained for future planning and does not block current-wave delivery.
+
+See the [value review criteria](../../docs/process/114-ux-addon-plan.md#scheduling-and-value-review).
+
 ## Current scope — revision 0.3, 2026-11-13
 
 The maintainer requested research, revised requirements, feasibility assessment

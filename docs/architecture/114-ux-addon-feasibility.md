@@ -184,7 +184,9 @@ PR-base verification is recorded separately in the plan.
 
 ## Recommendation
 
-Approve the contracts/prototype phase first. Retain the same-repository UX
-add-on and all-three-client release requirements. Resolve the public CLI,
-Tailwind baseline and component pilot, then prove one theme + one component +
-one shared validator across all three clients before expanding the catalogue.
+Per the maintainer's 2026-11-16 decision, defer until the current waves complete,
+then reassess using the [CLI value criteria](../process/114-ux-addon-plan.md#scheduling-and-value-review).
+Technical feasibility alone does not justify prioritization. If selected,
+approve the contracts/prototype phase first and revalidate these time-sensitive
+findings. Retain the same-repository and three-client requirements; prove one
+theme, one component and one shared validator before expanding the catalogue.

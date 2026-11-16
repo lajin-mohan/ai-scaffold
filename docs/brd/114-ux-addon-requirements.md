@@ -17,6 +17,11 @@ not approved implementation contracts.
 Related: [feasibility study](../architecture/114-ux-addon-feasibility.md) and
 [implementation plan](../process/114-ux-addon-plan.md).
 
+**Scheduling decision (2026-11-16):** deferred until the current waves complete.
+Retain as a P2 candidate, then rank by value to CLI users against other backlog
+work; no immediate implementation, release assignment or P1 promotion. Open
+technical choices remain draft until that reassessment.
+
 ## Product and scope
 
 Provide a selectable UX delivery profile, implemented as a composable add-on to
@@ -236,4 +241,5 @@ requires a separately verified integration if demanded by an adopter.
 | 2026-11-13 | Maintainer clarification | Same ai-scaffold repository; UX profile/add-on; no new repository |
 | 2026-11-13 | Maintainer clarification | Claude Code, Codex and Cursor required from first release |
 | 2026-11-13 | Draft recommendation | Orthogonal `ux` pack, grouped CLI, reuse UX commands and agents |
-| 2026-11-13 | Pending | First component set, Tailwind baseline, final CLI/schema, priority and estimates |
+| 2026-11-13 | Pending | First component set, Tailwind baseline, final CLI/schema and estimates |
+| 2026-11-16 | Maintainer clarification | Defer until current waves complete; reassess priority by CLI value, demand, effort and maintenance cost |

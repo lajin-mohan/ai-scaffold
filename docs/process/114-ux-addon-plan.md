@@ -17,6 +17,34 @@ delivery workflow is a deliverable, not the workflow used to edit this scaffold.
 
 ## Phases and estimates
 
+### Scheduling and value review
+
+Maintainer decision (2026-11-16): defer implementation until current waves C/D
+meet their exit criteria. This is a P2 candidate with no assigned release.
+Completing those waves triggers reassessment, not an automatic implementation
+start. The phases and estimates below are retained planning material.
+
+At reassessment, compare 114 with remaining CLI work using:
+
+- **Adopter demand and reach:** named teams/projects needing this, their actual
+  React/Tailwind and coding-tool usage, and how often the capability is needed.
+- **Incremental CLI value:** setup/update/removal work avoided, safer reusable
+  pack lifecycle and measured improvement over existing `ais-ux-*` workflows.
+  Separate general CLI infrastructure value from optional component content.
+- **Outcome evidence:** a defined pilot/baseline for setup time, manual fixes,
+  token/component compliance and accessibility failures; vendor benchmarks alone
+  do not establish scaffold value. A pilot needs its own approved scope.
+- **Cost and opportunity cost:** refreshed effort after shared pack/adapters land,
+  package/context cost, compatibility support and long-term maintenance ownership.
+
+Record evidence gaps and a proceed/smaller-slice/continue-deferral recommendation.
+Prefer a smaller shared CLI improvement if it provides more value per effort.
+No new weighted score or fixed backlog rank is implied without evidence. Resolve
+CLI/Tailwind/component-pilot questions only when this work is selected and its
+implementation plan is approved.
+
+### Retained implementation sequence
+
 Engineering days reuse the completed item 25 engine and exclude external waiting.
 
 | Phase | Work and expected source paths | Exit evidence | Days |
@@ -91,7 +119,7 @@ CI; account integration probes run separately with authorized test accounts.
 | Initial UI compatibility | React + Tailwind 4; detect v3 and explain unsupported migration | Before token exporter implementation |
 | Component pilot | Button/Input/Select/Dialog/Alert plus one form/workflow | Before content implementation |
 | First client surface | Local Claude Code, Codex and Cursor; pin exact versions after spike | Before adapter acceptance |
-| Priority | Keep P1 requested, P2 roadmap unchanged until explicitly promoted | Before scheduling against existing priorities |
+| Priority | Deferred P2 candidate after current waves; rank by CLI value, demand, effort and maintenance cost | Post-wave reassessment; no immediate decision needed |
 | Ownership/review | Maintainer for pack lifecycle; named design/a11y reviewer for theme/component changes | Before pilot rollout |
 
 The maintainer already settled repository location and all-three-tool v1 support;
