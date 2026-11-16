@@ -1,5 +1,22 @@
 # AI Scaffold — Backlog
 
+## Proposal intake — 2026-11-13 (114)
+
+[114 — UX profile/add-on](../../tasks/todo/114-design-system-pack.md) proposes
+same-repository design-system content and Claude Code, Codex and Cursor support
+from its first release. [Requirements v0.3](../brd/114-ux-addon-requirements.md),
+[feasibility study](../architecture/114-ux-addon-feasibility.md) and
+[draft plan](114-ux-addon-plan.md) are ready for review. Extend task 110's pack
+mechanism and task 104's native adapters, reusing completed item 25's update/apply
+and settings merge. Preserve current `ais-ux-*` command names and the shared core.
+**Maintainer decision, 2026-11-16:** defer 114 until the current waves (C/D) are
+complete. Keep it as a P2 candidate, with no release assignment or automatic
+promotion. Then compare its CLI adoption/reuse benefit, demand, effort and
+maintenance cost with other backlog work using the
+[value review criteria](114-ux-addon-plan.md#scheduling-and-value-review).
+CLI/Tailwind/pilot questions wait until that review; this proposal does not
+block current waves or authorize implementation.
+
 ## Authoritative wave plan — 2026-11-10 (after 0.19.0)
 
 **This section sets the order from here.** It continues the 2026-11-05 review
@@ -70,6 +87,9 @@ second settings variant. The probe runs first to learn what older versions do.
 
 ### After the team-ready release
 
+- **114 (UX add-on):** deferred until current-wave exit criteria are met; then
+  rank by demonstrated value to CLI users against remaining work. No automatic
+  next-wave slot, P1 promotion or implementation approval.
 - 0.22.0: 104 native Codex/Cursor adapters, 67, the rest of 98 (unless pulled
   into the bar above).
 - Then the 2026-11-05 rows 6–11 in order (66 remaining slices, 77, 34/68,
