@@ -9,6 +9,13 @@ import { toPosixPath } from './paths.js';
 import { isoDate, lifecycleStageToStatus } from './content-templates.js';
 import { recordFor } from './hashing.js';
 
+// agentsCore is recorded only when it is not the default root AGENTS.md (item 84).
+function installRecord(values) {
+  const install = { mode: values.installMode };
+  if (values.agentsCore && values.agentsCore !== 'AGENTS.md') install.agentsCore = values.agentsCore;
+  return install;
+}
+
 export function buildManifestData(values, { now = new Date() } = {}) {
   const today = isoDate(now);
   return {
@@ -20,7 +27,7 @@ export function buildManifestData(values, { now = new Date() } = {}) {
     updatedAt: today,
     source: 'ai-scaffold',
     // Recorded only when the caller states it; update plans with it (FR-37).
-    ...(values.installMode ? { install: { mode: values.installMode } } : {}),
+    ...(values.installMode ? { install: installRecord(values) } : {}),
     project: {
       slug: values.projectName,
       displayName: values.displayName,

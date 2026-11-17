@@ -36,6 +36,7 @@ export async function renderManagedSet(manifest, root, { today } = {}) {
   const plan = await buildFilePlan(templatePath(manifest.profile), root, {
     existingTarget: values.installMode !== 'create',
     ignoreDisk: true,
+    agentsCore: values.agentsCore,
   });
   const groups = [
     ...plan.copy.map((file) => [file, 'copy']),

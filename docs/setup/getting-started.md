@@ -51,20 +51,25 @@ ais init --profile node
 ```
 
 `init` never touches git and never overwrites your files, such as `README.md`
-or `package.json`, unless you pass `--force`. If your repository already has a
-`CLAUDE.md`, add this line at its top so Claude Code also loads the shared
-instructions:
+or `package.json`, unless you pass `--force`. If you already have AI instruction
+files, it connects to them instead:
 
-```text
-@AGENTS.md
-```
+| Your repository has | `init` does |
+|---|---|
+| Neither file | Writes `AGENTS.md` and a `CLAUDE.md` that imports it |
+| `CLAUDE.md` only | Writes `AGENTS.md` and adds a short "AI Scaffold" section to the end of your `CLAUDE.md` that imports it. Nothing else in the file changes. |
+| `AGENTS.md` only | Keeps your `AGENTS.md`. Puts the shared instructions in `.ai-scaffold/AGENTS.md` and writes a `CLAUDE.md` that imports them. |
+| Both | Keeps your `AGENTS.md`, puts the shared instructions in `.ai-scaffold/AGENTS.md`, and adds the import section to your `CLAUDE.md` |
+
+Running `init` again adds nothing twice. If your `CLAUDE.md` is a symbolic link
+(often to `AGENTS.md`), `init` leaves it alone and tells you the line to add.
 
 ### What gets written
 
 | Path | What it is |
 |---|---|
-| `AGENTS.md` | Shared instructions every AI assistant reads: commands, conventions, security boundaries, what needs approval |
-| `CLAUDE.md` | Imports `AGENTS.md` and adds Claude Code notes |
+| `AGENTS.md` | Shared instructions every AI assistant reads: commands, conventions, security boundaries, what needs approval. On `init`, `.ai-scaffold/AGENTS.md` if you already had an `AGENTS.md` |
+| `CLAUDE.md` | Imports the shared instructions and adds Claude Code notes |
 | `constitution.md` | One page: which rule wins when two conflict |
 | `.claude/` | Slash commands, agents, hooks, rules and skills |
 | `.claude/settings-overrides.json` | Project details and feature flags |
@@ -145,7 +150,9 @@ All commands with examples: `.ai-scaffold/commands.md` in your project, or
 ## 7. Using Codex, Cursor or Copilot
 
 These tools read `AGENTS.md` automatically, so they follow the same
-conventions and boundaries. They do not run Claude slash commands or Claude
+conventions and boundaries. If `init` kept your own `AGENTS.md`, they read
+yours, not the scaffold's. To have them follow the shared instructions too, add
+a line to your `AGENTS.md` pointing to `.ai-scaffold/AGENTS.md`. They do not run Claude slash commands or Claude
 hooks. To use a workflow, ask the assistant to follow the command file:
 
 ```text

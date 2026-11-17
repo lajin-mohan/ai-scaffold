@@ -147,7 +147,9 @@ export const APP_SOURCE_PATHS = [
  * Discovers `*.template.*` files and maps them to generated output paths.
  */
 export async function buildFilePlan(sourceDir, targetDir, options = {}) {
-  const { existingTarget = false, ignoreDisk = false } = options;
+  // agentsCore: where the shared rules go (item 84). '.ai-scaffold/AGENTS.md'
+  // when init kept the adopter's own AGENTS.md; recorded in the manifest.
+  const { existingTarget = false, ignoreDisk = false, agentsCore = 'AGENTS.md' } = options;
   // ignoreDisk: plan what this install mode writes, as if no target file
   // existed, so `ais update` can re-plan an init install without the files
   // init itself wrote dropping out (item 25, HLD §2).
@@ -265,6 +267,11 @@ export async function buildFilePlan(sourceDir, targetDir, options = {}) {
     // Skip raw template marker files that no generated counterpart
     if (relPath.includes('.template.')) {
       continue;
+    }
+
+    // The adopter keeps their AGENTS.md; the shared rules land beside it.
+    if (relPath === 'AGENTS.md' && agentsCore !== 'AGENTS.md') {
+      plan.copy.push({ src: srcFile, rel: agentsCore, target: path.join(targetDir, agentsCore) });
     }
 
     // Protected files — never overwrite without confirmation

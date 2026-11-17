@@ -12,6 +12,7 @@ import { detectConflicts, printConflictReport } from '../core/conflicts.js';
 import { copyFiles } from '../core/copy.js';
 import { buildDryRunPlan } from '../core/dry-run-plan.js';
 import { templatePath, isSupportedProfile, profileHelpLine } from '../core/paths.js';
+import { applyClaudeImport, chooseAgentsCore, decideClaudeImport, NAMESPACED_CORE } from '../core/claude-import.js';
 
 export function initCommand(cli) {
   cli.command('init [target-dir]', 'Install scaffold into an existing directory')
@@ -118,12 +119,17 @@ async function runInit(targetDir, options) {
   }
   const resolved = bootstrap.resolved;
 
+  // Item 84: where the shared rules go, and what happens to an existing
+  // CLAUDE.md, decided before anything is written.
+  resolved.agentsCore = await agentsCoreFor(resolvedTarget, force);
+  const claudeImport = await decideClaudeImport(resolvedTarget, resolved.agentsCore, { force });
+
   // 4. Build file plan
   if (!json) {
     console.log(chalk.gray('Building file plan...'));
   }
   const templateDir = templatePath(profile);
-  const plan = await buildFilePlan(templateDir, resolvedTarget, { existingTarget: true });
+  const plan = await buildFilePlan(templateDir, resolvedTarget, { existingTarget: true, agentsCore: resolved.agentsCore });
 
   // 5. Detect conflicts
   const conflicts = await detectConflicts(resolvedTarget, plan);
@@ -132,7 +138,7 @@ async function runInit(targetDir, options) {
   }
 
   if (json) {
-    console.log(JSON.stringify(buildDryRunPlan({
+    console.log(JSON.stringify({ ...buildDryRunPlan({
       command: 'init',
       targetDir: resolvedTarget,
       profile,
@@ -141,13 +147,15 @@ async function runInit(targetDir, options) {
       values: resolved,
       defaultedValues: bootstrap.defaulted ?? [],
       existingTarget: true,
-    }), null, 2));
+    }), claudeImport }, null, 2));
     return;
   }
 
   // 6. Copy files
   console.log(chalk.gray('\nInstalling scaffold...'));
   const result = await copyFiles(plan, bootstrap, { dryRun, force, yes, targetDir: resolvedTarget, installMode: 'init' });
+  if (!dryRun) await applyClaudeImport(resolvedTarget, claudeImport);
+  printSharedRulesReport(claudeImport, dryRun);
 
   // 7. Summary
   if (dryRun) {
@@ -156,5 +164,25 @@ async function runInit(targetDir, options) {
     console.log(chalk.green(`\n✓ Done! Scaffold installed in ${resolvedTarget}/`));
     console.log(chalk.gray(`  Profile: ${resolved.profile ?? profile}`));
     console.log(chalk.gray(`  Bootstrap: ${resolved.profile ?? profile}\n`));
+  }
+}
+
+async function agentsCoreFor(target, force) {
+  const manifestFile = path.join(target, '.ai-scaffold.json');
+  const manifest = await fs.readJson(manifestFile).catch(() => null);
+  const agentsExists = await fs.pathExists(path.join(target, 'AGENTS.md'));
+  return chooseAgentsCore({ manifest, agentsExists, force });
+}
+
+function printSharedRulesReport({ action, core }, dryRun) {
+  const will = dryRun ? '[dry-run] would ' : '';
+  if (action === 'add') {
+    console.log(chalk.green(`✓ CLAUDE.md — ${will}add an import of ${core}; the rest of your file is unchanged`));
+  } else if (action === 'symlink') {
+    console.log(chalk.yellow(`! CLAUDE.md is a link and was not edited. Add the line @${core} to it yourself so Claude Code loads the shared rules.`));
+  }
+  if (core === NAMESPACED_CORE) {
+    console.log(chalk.yellow(`! AGENTS.md is yours and was kept. The scaffold's shared rules are in ${NAMESPACED_CORE}; Claude Code loads them through CLAUDE.md.`));
+    console.log(chalk.gray(`  Codex, Cursor and Copilot read your AGENTS.md. To have them follow the shared rules too, add a line there pointing to ${NAMESPACED_CORE}.`));
   }
 }

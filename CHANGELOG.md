@@ -14,6 +14,16 @@ This file is configured with `merge=union` in `.gitattributes` so parallel addit
 ## [Unreleased]
 
 ### Added
+- **`ais init` connects to an existing `CLAUDE.md` and `AGENTS.md` instead of
+  skipping them** (item 84, Wave C PR C2). Before, `init` into a repository
+  with its own `CLAUDE.md` kept that file unchanged, so nothing imported the
+  shared instructions and Claude Code never loaded them. Now an existing
+  `CLAUDE.md` gets a short `## AI Scaffold` section appended that imports them,
+  once, in the file's own line endings. An existing `AGENTS.md` is kept; the
+  shared instructions go to `.ai-scaffold/AGENTS.md`, recorded in
+  `.ai-scaffold.json` as `install.agentsCore` so a repeat `init` and
+  `ais update` keep that location. A symlinked `CLAUDE.md` is reported and left
+  alone. `init --json` reports the decision as `claudeImport`.
 - Maintainer-only `/ais-effectiveness` command (repository root only) for
   recurring, evidence-backed audits of outdated guidance, harness controls,
   adoption friction and process weight. It is not part of the npm package and
