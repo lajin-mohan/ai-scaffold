@@ -23,7 +23,7 @@ scaffold ready for a team to adopt.
 - Not done: M-02 snapshot #2 (two live projects updated to 0.19.0, reports
   pending); live check that Claude Code loads `AGENTS.md` through the import.
 
-### Team-ready bar (target: 0.21.0)
+### Team-ready bar (target: 0.22.0 since 2026-11-18; was 0.21.0)
 
 The scaffold is ready for a team when all of these hold on projects generated
 from the packed tarball:
@@ -41,7 +41,44 @@ from the packed tarball:
    works in monorepos without `--no-verify` (113).
 
 Native Codex/Cursor adapters (104) join the bar only if the team works in
-those tools day to day; otherwise they follow in 0.22.0.
+those tools day to day; otherwise they follow in 0.23.0.
+
+### Wave C amendment — 2026-11-18 (accepted by the maintainer)
+
+Prompted by Anthropic's talk "Rethinking Claude Code Best Practices"
+(Lydia Hallie, November 2026). Its claims are checked against official docs
+before any shipped file changes; a claim that does not hold is dropped, not
+shipped. Every change is designed for all supported tools (Claude Code direct
+or through a compatible gateway, Codex, Cursor, Copilot, local models): a
+guarantee lives in git hooks, `scripts/verify` and CI, which apply whatever
+tool wrote the code; tool-specific controls are extras and are documented
+per tool.
+
+**Status:** C2 merged (#185), C3 merged (#187, CI green on Linux and
+Windows). C1a/C1b merged (#181, #182).
+
+**Prioritised to-do for 0.20.0, in order:**
+
+| # | Row | Items | Content | Acceptance |
+|---|---|---|---|---|
+| 1 | V | — | Verify the talk's claims in official docs: hook exit code 2 vs 1 on task completion, deny rules evaluated before the auto-mode classifier, auto-mode settings, prompt-audit command, hook timeout behaviour | Each claim recorded as confirmed, changed or dropped, with URL and date |
+| 2 | **C1c** | 98 rest; talk items 1–3 | Tests for `pre-write-fact-check.sh`, `post-write-console-warn.sh`, `pre-bash-quality-gate.sh`. Every gating hook exits with the blocking code; per-edit hooks stay fast; the full suite moves out of the 60 s Claude hook into `scripts/verify` and CI; timeout behaviour investigated and handled. A per-tool table of what each guard does and does not stop (hooks cannot stop a dependency inside `npm test` reading `.env`); opt-in sandbox settings for Claude. Deny list checked against "can it be undone?" (`.env*`, SSH keys, credentials, force push, history rewrite), with gitleaks in pre-commit and CI as the tool-neutral backstop | Probe tests pass; typecheck reports no hook "without a probe"; WSL check run by the maintainer; packed project on Windows and Linux |
+| 3 | **C5** | talk item 4 | Shipped rules reworded without emphasis (no BLOCK/"non-negotiable"/"Iron Law" shouting), keeping every specific instruction; all five profiles | Governance checks green; `token-report` not higher; one smoke task on a local model if the team uses one |
+| 4 | **C4** | 112 | As planned, with the revised step 5: replacement through native `claudeMdExcludes`, `overrides:` documentation-only, doctor fails on excluding floor rules, `.claude/rules/project/**` excluded from update including legacy manifest records | Ticket 112 acceptance plus a legacy-manifest test |
+| 5 | **M** | 74 | Snapshot #2 from the existing 0.19.0 live-upgrade reports; 0.20.0 adoption measured separately after release | M-02 recorded with method and versions |
+| 6 | R | — | Release 0.20.0 through the Release Action, `npm view`, backlog sync | Registry shows 0.20.0 |
+
+Rows 2 and 5 can run in parallel with row 4 on separate branches. Row 3 is
+one small PR on its own so its diff stays reviewable.
+
+### Wave C2 — "Lean core, one verify contract" (0.21.0, straight after 0.20.0)
+
+| Items | Content |
+|---|---|
+| talk item 5 | Core keeps commands, boundaries and facts not visible in code; the repository map and stack detail move to a skill or doc. Decided per tool surface, not for the strongest model only |
+| **87** (talk item 6) | Per-profile default `scripts/verify`; the same file run by the pre-commit hook, a Claude Stop hook and CI |
+
+Starts after C4 merges, because both reshape `AGENTS.md` and `CLAUDE.md`.
 
 ### Wave C — "Fail closed, proven" (0.20.0)
 
@@ -59,18 +96,17 @@ probe shows an older Claude Code rejects or ignores `onFailure`, the scaffold
 states a minimum version and `ais doctor` warns below it. It does not ship a
 second settings variant. The probe runs first to learn what older versions do.
 
-### Wave D — "Light by default" (0.21.0, team-ready)
+### Wave D — "Light by default" (0.22.0, team-ready; renumbered 2026-11-18)
 
 | Items | Content |
 |---|---|
-| **87** | One `verify` script per profile, shared by hook, CI and agent |
-| **90** | About 8 default commands; process, UX and compliance as opt-in packs; `/ais-review` picks reviewers from the diff |
+| **90** (talk item 7) | About 8 default commands; process, UX and compliance as opt-in packs; review depth by risk (fresh-context review plus CI, enforced through CI and branch protection rather than a Claude command); `/ais-review` picks reviewers from the diff |
 | **109** | Test-quality guidance aimed at the smoke finding, judged by `feature-discount` |
 | 86 | Opt-in sandbox preset with secret `denyRead` (Linux/macOS/WSL2); native Windows documented as unsandboxed |
 
 ### After the team-ready release
 
-- 0.22.0: 104 native Codex/Cursor adapters, 67, the rest of 98 (unless pulled
+- 0.23.0: 104 native Codex/Cursor adapters, 67, the rest of 98 (unless pulled
   into the bar above).
 - Then the 2026-11-05 rows 6–11 in order (66 remaining slices, 77, 34/68,
   103, …).
