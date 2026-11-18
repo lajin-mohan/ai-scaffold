@@ -22,7 +22,9 @@
 #
 # Configuration:
 #   ECC_CONSOLE_WARN_DISABLED=1 → exit 0 immediately
-#   ECC_CONSOLE_WARN_STRICT=1 → exit 2 (block) on findings
+#   ECC_CONSOLE_WARN_STRICT=1 → exit 2 on findings. This is a PostToolUse
+#     hook: exit 2 feeds the message back to Claude, but the edit has already
+#     happened and is not undone.
 #
 # Install: scripts/install-hooks.sh makes this executable; .claude/settings.json
 # wires it into PostToolUse for Edit/Write/MultiEdit.

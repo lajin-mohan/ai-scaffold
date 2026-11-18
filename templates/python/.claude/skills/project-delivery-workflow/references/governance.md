@@ -22,7 +22,7 @@ This file is the **enforcement layer** — it tells you *what happens when rules
 
 | Rule | Enforcement Method | Who Catches It |
 |---|---|---|
-| H1-H8 (hallucination) | `ai-coding-rules.md` H1-H8 + PreToolUse/PostToolUse hooks | **PreToolUse hooks** (`pre-write-fact-check.sh`) fire deterministically before Edit/Write on cited-but-unread files. **PostToolUse hooks** (`post-write-console-warn.sh`) flag new debug-log statements at write time. **PreToolUse hooks** (`pre-bash-quality-gate.sh`) run the project's pre-commit inline before `git commit` / `git push` lands. **AI self-check** still applies for cases the hooks can't see. **`/ais-review`** catches any residual issues. |
+| H1-H8 (hallucination) | `ai-coding-rules.md` H1-H8 + PreToolUse/PostToolUse hooks | **PreToolUse hooks** (`pre-write-fact-check.sh`) fire deterministically before Edit/Write on cited-but-unread files. **PostToolUse hooks** (`post-write-console-warn.sh`) flag new debug-log statements at write time. **PreToolUse hooks** (`pre-bash-quality-gate.sh`) block `git commit` when the git `pre-commit` and `commit-msg` hooks are not installed; git's own hooks then check every commit. **AI self-check** still applies for cases the hooks can't see. **`/ais-review`** catches any residual issues. |
 | Plan-and-confirm skipped | `ai-coding-rules.md` §2 | BLOCK in any review |
 | Missing verification | `ai-coding-rules.md` §5 | BLOCK — cannot claim done without evidence |
 | Half-implementation | `ai-coding-rules.md` P1-P8 | BLOCK — no stubs, no TODOs without tickets |

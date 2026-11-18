@@ -5,9 +5,9 @@
       "prevents": "Unverified claims about code, skipped plans for multi-step work, unverified 'done', stubs and half-implementations",
       "appliesWhen": "Editing source code (paths: frontmatter)",
       "enforcedBy": [
-        { "hook": "pre-write-fact-check.sh", "gap": "No test exercises this hook yet (item 98)" },
-        { "hook": "post-write-console-warn.sh", "gap": "No test exercises this hook yet (item 98)" },
-        { "hook": "pre-bash-quality-gate.sh", "gap": "No test exercises this hook yet (item 98)" }
+        { "hook": "pre-write-fact-check.sh", "probe": "tests/claude-hooks.test.js", "note": "Probed on Linux/macOS; native Windows compares drive-letter paths with /d/ paths and is a known gap (item 98)" },
+        { "hook": "post-write-console-warn.sh", "probe": "tests/claude-hooks.test.js" },
+        { "hook": "pre-bash-quality-gate.sh", "probe": "tests/claude-hooks.test.js" }
       ]
     },
     "api-standards.md": {

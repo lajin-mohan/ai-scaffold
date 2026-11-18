@@ -131,7 +131,7 @@
           {
             "type": "command",
             "command": "bash \"${CLAUDE_PROJECT_DIR}/.claude/hooks/pre-bash-quality-gate.sh\"",
-            "timeout": 60
+            "timeout": 10
           }
         ]
       }
