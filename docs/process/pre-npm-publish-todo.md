@@ -61,14 +61,15 @@ Windows). C1a/C1b merged (#181, #182).
 
 | # | Row | Items | Content | Acceptance |
 |---|---|---|---|---|
-| 1 | V | — | Verify the talk's claims in official docs: hook exit code 2 vs 1 on task completion, deny rules evaluated before the auto-mode classifier, auto-mode settings, prompt-audit command, hook timeout behaviour | Each claim recorded as confirmed, changed or dropped, with URL and date |
-| 2 | **C1c** | 98 rest; talk items 1–3 | Tests for `pre-write-fact-check.sh`, `post-write-console-warn.sh`, `pre-bash-quality-gate.sh`. Every gating hook exits with the blocking code; per-edit hooks stay fast; the full suite moves out of the 60 s Claude hook into `scripts/verify` and CI; timeout behaviour investigated and handled. A per-tool table of what each guard does and does not stop (hooks cannot stop a dependency inside `npm test` reading `.env`); opt-in sandbox settings for Claude. Deny list checked against "can it be undone?" (`.env*`, SSH keys, credentials, force push, history rewrite), with gitleaks in pre-commit and CI as the tool-neutral backstop | Probe tests pass; typecheck reports no hook "without a probe"; WSL check run by the maintainer; packed project on Windows and Linux |
+| 1 | V | — | Verify the talk's claims in official docs: hook exit code 2 vs 1 on task completion, deny rules evaluated before the auto-mode classifier, auto-mode settings, prompt-audit command, hook timeout behaviour | Each claim recorded as confirmed, changed or dropped, with URL and date. **Done 2026-11-18:** [findings](../research/2026-11-18-talk-claims-check.md) — a, b, d, e confirmed; c changed (`autoMode` and `defaultMode: "auto"` are ignored in project settings) |
+| 2 | **C1c** | 98 rest; talk items 1–2 | Hooks proven: tests for `pre-write-fact-check.sh`, `post-write-console-warn.sh`, `pre-bash-quality-gate.sh`; every blocking path asserted to exit 2; per-edit hooks stay fast; the quality gate's 60 s pre-commit run decided from V(e) (drop it for a git-hooks-installed check, add `onFailure: "block"`, or keep for push only) with the full suite left to git's pre-commit, `scripts/verify` and CI | Probe tests pass; typecheck reports no hook "without a probe"; WSL check run by the maintainer; packed project on Windows and Linux |
+| 2b | **C1d** | talk item 3 | What each guard stops: a per-tool table (Claude Code, Codex, Cursor, Copilot, local models) of what each guard does and does not stop, including that deny rules and hooks cannot stop a subprocess such as a dependency inside `npm test` reading `.env` (V(b)), and that native Windows runs unsandboxed. Deny list checked against "can it be undone?" (`.env*`, SSH keys, credentials, force push, history rewrite), with gitleaks in pre-commit and CI as the tool-neutral backstop. The opt-in sandbox preset itself stays item 86 (Wave D) | Table shipped in the generated docs; every deny entry justified; no sandbox settings added here |
 | 3 | **C5** | talk item 4 | Shipped rules reworded without emphasis (no BLOCK/"non-negotiable"/"Iron Law" shouting), keeping every specific instruction; all five profiles | Governance checks green; `token-report` not higher; one smoke task on a local model if the team uses one |
 | 4 | **C4** | 112 | As planned, with the revised step 5: replacement through native `claudeMdExcludes`, `overrides:` documentation-only, doctor fails on excluding floor rules, `.claude/rules/project/**` excluded from update including legacy manifest records | Ticket 112 acceptance plus a legacy-manifest test |
 | 5 | **M** | 74 | Snapshot #2 from the existing 0.19.0 live-upgrade reports; 0.20.0 adoption measured separately after release | M-02 recorded with method and versions |
 | 6 | R | — | Release 0.20.0 through the Release Action, `npm view`, backlog sync | Registry shows 0.20.0 |
 
-Rows 2 and 5 can run in parallel with row 4 on separate branches. Row 3 is
+Rows 2, 2b and 5 can run in parallel with row 4 on separate branches. Row 3 is
 one small PR on its own so its diff stays reviewable.
 
 ### Wave C2 — "Lean core, one verify contract" (0.21.0, straight after 0.20.0)
@@ -81,6 +82,9 @@ one small PR on its own so its diff stays reviewable.
 Starts after C4 merges, because both reshape `AGENTS.md` and `CLAUDE.md`.
 
 ### Wave C — "Fail closed, proven" (0.20.0)
+
+> **Superseded by the 2026-11-18 amendment above** for C4 onwards and the
+> new rows V, C1c, C1d and C5. Kept as the record of C1–C3.
 
 | PR | Items | Content | Acceptance |
 |---|---|---|---|
