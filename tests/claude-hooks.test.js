@@ -1,8 +1,9 @@
 // Probes for the three Claude Code tool hooks that had none (item 98, Wave C
 // C1c): pre-bash-quality-gate.sh, pre-write-fact-check.sh and
 // post-write-console-warn.sh. Each case feeds the shipped hook a payload on
-// stdin and checks the exit code: 2 blocks, anything else lets the tool call
-// go ahead (code.claude.com/docs/en/hooks, "Exit code output").
+// stdin and checks the exit code. On PreToolUse, 2 blocks the tool call; on
+// PostToolUse (the console warning), 2 only reports back after the edit
+// (code.claude.com/docs/en/hooks, "Exit code output").
 import { spawnSync } from 'node:child_process';
 import fs from 'node:fs';
 import os from 'node:os';
@@ -106,13 +107,25 @@ describe('pre-bash-quality-gate.sh', { timeout: 30_000 }, () => {
     expect(fs.existsSync(path.join(dir, MARKER))).toBe(false);
   });
 
-  it('honours core.hooksPath', () => {
+  it('honours a relative core.hooksPath', () => {
     adoptScaffold();
     git('config', 'core.hooksPath', '.husky');
     installHooks('.git/hooks');
     expect(runHook(HOOK, commit).status).toBe(2);
     installHooks('.husky');
     expect(runHook(HOOK, commit).status).toBe(0);
+  });
+
+  // Regression: the raw setting ~/hooks was read as <repo>/~/hooks.
+  it('honours a core.hooksPath under the home directory', () => {
+    adoptScaffold();
+    const home = path.join(dir, 'home');
+    fs.mkdirSync(home);
+    git('config', 'core.hooksPath', '~/hooks');
+    const env = { HOME: home, USERPROFILE: home };
+    expect(runHook(HOOK, commit, env).status).toBe(2);
+    installHooks('home/hooks');
+    expect(runHook(HOOK, commit, env).status).toBe(0);
   });
 
   it('ignores commands other than git commit, including git push', () => {
@@ -201,6 +214,8 @@ describe.skipIf(!FACT_CHECK_PROBES)('pre-write-fact-check.sh', { timeout: 30_000
   });
 });
 
+// PostToolUse: exit 2 reports the finding to Claude after the edit; it cannot
+// prevent or undo the edit (code.claude.com/docs/en/hooks#posttooluse).
 describe('post-write-console-warn.sh', { timeout: 30_000 }, () => {
   const HOOK = 'post-write-console-warn.sh';
   const edited = (rel) => ({ tool_name: 'Edit', tool_input: { file_path: rel } });
@@ -214,7 +229,7 @@ describe('post-write-console-warn.sh', { timeout: 30_000 }, () => {
     git('commit', '-q', '--no-verify', '-m', 'base');
   };
 
-  it('warns on a newly added console.log and blocks with exit 2 in strict mode', () => {
+  it('warns on a newly added console.log, and reports it with exit 2 in strict mode', () => {
     repoWith('app.js', 'export const a = 1;\n');
     write('app.js', 'export const a = 1;\nconsole.log(a);\n');
     const warn = runHook(HOOK, edited('app.js'));

@@ -21,6 +21,11 @@
 # `--no-verify` exits 0: git skips its hooks for that commit, and AGENTS.md
 # tells agents not to use it.
 #
+# Limits: the command is matched as text and the repository is the hook's
+# working directory, so `git -C <dir> commit` and `cd <dir> && git commit`
+# are not checked. This is a convenience check, not commit coverage; the
+# git hooks themselves and CI are the controls.
+#
 # Configuration:
 #   ECC_PRE_COMMIT_GATE_DISABLED=1 → exit 0 immediately
 #   ECC_PRE_COMMIT_GATE_BLOCK=0 → warn instead of block
@@ -50,10 +55,9 @@ if [ -z "$GIT_ROOT" ] || [ ! -f "$GIT_ROOT/.claude/hooks/pre-commit" ]; then
   exit 0
 fi
 
-HOOKS_DIR=$(git -C "$GIT_ROOT" config core.hooksPath 2>/dev/null || echo "")
-if [ -z "$HOOKS_DIR" ]; then
-  HOOKS_DIR=$(git -C "$GIT_ROOT" rev-parse --git-path hooks 2>/dev/null || echo ".git/hooks")
-fi
+# Ask git where it runs hooks from: --git-path resolves core.hooksPath,
+# including ~ and paths relative to the repository root.
+HOOKS_DIR=$(git -C "$GIT_ROOT" rev-parse --git-path hooks 2>/dev/null || echo ".git/hooks")
 case "$HOOKS_DIR" in
   /*|[A-Za-z]:*) ;;
   *) HOOKS_DIR="$GIT_ROOT/$HOOKS_DIR" ;;

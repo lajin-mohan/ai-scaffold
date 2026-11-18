@@ -23,7 +23,9 @@ This file is configured with `merge=union` in `.gitattributes` so parallel addit
   `git commit` only when the `pre-commit` or `commit-msg` git hook is missing
   or not executable (honouring `core.hooksPath`), finishes in about a
   second, and is wired with a 10-second timeout.
-  `git push` is no longer gated here; CI checks what is pushed. `ais update`
+  `git push` is no longer gated here; CI checks what is pushed. The command is
+  matched as text, so `git -C <dir> commit` and `cd <dir> && git commit` are not
+  checked; the git hooks and CI remain the controls. `ais update`
   updates the hook and its settings entry where they are unmodified.
 - **The runtime dependency audit in CI, release and publish now runs
   `scripts/audit-gate.js`.** It still blocks any high or critical advisory in
