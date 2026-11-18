@@ -29,7 +29,10 @@ export function pathKey(rel) {
 
 // Evaluated in order; the first matching class wins.
 const CLASS_RULES = [
-  ['excluded', ['.ai-scaffold.json', '.ai-scaffold/backups/**', '.ai-scaffold/update.lock']],
+  // .claude/rules/project/ holds the project's own rules (item 112). Excluded
+  // before the managed .claude/** rule, so update never lists, writes or
+  // removes them, whatever an older manifest recorded.
+  ['excluded', ['.ai-scaffold.json', '.ai-scaffold/backups/**', '.ai-scaffold/update.lock', '.claude/rules/project/**']],
   ['user-data', [
     '.claude/memory/**',
     '.claude/MEMORY.md',
@@ -38,7 +41,7 @@ const CLASS_RULES = [
     '.ai-scaffold/context.md',
     'tasks/lessons.md',
   ]],
-  ['seeded', ['CHANGELOG.md', 'tasks/todo/.gitkeep', 'tasks/done/.gitkeep']],
+  ['seeded', ['CHANGELOG.md', 'PROJECT.md', 'tasks/todo/.gitkeep', 'tasks/done/.gitkeep']],
   ['merged', ['.claude/settings.json']],
   ['managed', ['CLAUDE.md', 'AGENTS.md', 'constitution.md', '.ai-scaffold/**', '.claude/**']],
 ].map(([cls, patterns]) => [cls, picomatch(patterns, MATCH)]);

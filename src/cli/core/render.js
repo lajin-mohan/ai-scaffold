@@ -10,6 +10,7 @@ import path from 'path';
 import fs from 'fs-extra';
 import { rebaseRelativeLinks } from './markdown-links.js';
 import { pointImportAt } from './claude-import.js';
+import { buildStarterProject } from './project-content.js';
 import {
   buildConstitution,
   buildContextFile,
@@ -51,6 +52,7 @@ function generatedContent(relPath, values, now) {
   if (relPath === '.claude/settings-overrides.json') return toJson(buildSettingsOverridesData(values));
   if (relPath === '.claude/MEMORY.md') return buildMemoryFile(values, { now });
   if (relPath === 'constitution.md') return buildConstitution(values);
+  if (relPath === 'PROJECT.md') return buildStarterProject(values);
   if (relPath.endsWith('CHANGELOG.md')) return buildStarterChangelog(values);
   if (relPath.endsWith('tasks/lessons.md')) return buildStarterLessons(values);
   if (relPath.endsWith('.gitkeep')) return '';

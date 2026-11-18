@@ -23,6 +23,7 @@ import {
   unavailableRemoteChecks,
 } from '../core/governance-checks.js';
 import { checkClaudeCodeVersion } from '../core/claude-version.js';
+import { checkProjectContent } from '../core/project-content.js';
 
 /** NFR-01: ONE wall-clock deadline for the whole run, not one per call. */
 const REMOTE_BUDGET_MS = 10_000;
@@ -154,7 +155,7 @@ export async function runDiagnostics(target, options = {}) {
     name: 'Managed files unmodified',
     passed: integrity.modified.length === 0,
     severity: 'medium',
-    message: integrity.modified.length > 0 ? `Modified: ${integrity.modified.slice(0, 10).join(', ')}` : undefined,
+    message: integrity.modified.length > 0 ? modifiedMessage(integrity.modified) : undefined,
   });
 
   // FR-31: an update left the new version beside an edited file to merge.
@@ -233,6 +234,9 @@ export async function runDiagnostics(target, options = {}) {
 
   // 12. C-05 — the commit-msg hook that rejects AI attribution trailers.
   checks.push(await checkCommitMsgHook(target));
+
+  // Item 112: PROJECT.md is loaded, and claudeMdExcludes leaves the floor alone.
+  checks.push(...(await checkProjectContent(target, { homeDir: options.homeDir })));
 
   // 13. Item 97 D5 — the security hooks block on failure only from Claude Code
   // 2.1.295. Shown only when Claude Code is installed: other agents get no line.
@@ -376,6 +380,16 @@ async function findInvalidContextFields(manifestData, settingsFile) {
   }
 
   return [...new Set([...invalid, ...validateManifestContext(manifestData ?? {}, settingsData)])];
+}
+
+// Item 112: project content written into a core file is overwritten or left
+// stale by updates; PROJECT.md is where it survives.
+const CORE_FILES = ['CLAUDE.md', 'AGENTS.md', 'constitution.md'];
+
+function modifiedMessage(modified) {
+  const list = `Modified: ${modified.slice(0, 10).join(', ')}`;
+  if (!modified.some((rel) => CORE_FILES.includes(rel))) return list;
+  return `${list}. Move project content from core files into PROJECT.md, which updates never change.`;
 }
 
 async function findManagedFileIssues(target, manifestData) {

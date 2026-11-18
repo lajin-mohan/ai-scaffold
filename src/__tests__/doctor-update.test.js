@@ -50,7 +50,10 @@ describe('doctor verifies only the files the scaffold owns (ADR-002)', { timeout
     }
     expect(check(await runDiagnostics(target, {}), MODIFIED).state).toBe('pass');
     fs.appendFileSync(path.join(target, 'CLAUDE.md'), 'edit\n');
-    expect(check(await runDiagnostics(target, {}), MODIFIED).message).toBe('Modified: CLAUDE.md');
+    // A core file edit also points to PROJECT.md (item 112).
+    expect(check(await runDiagnostics(target, {}), MODIFIED).message).toBe(
+      'Modified: CLAUDE.md. Move project content from core files into PROJECT.md, which updates never change.',
+    );
   });
 
   it('still warns about a .ais-new beside a file it does not verify (settings.json, merged)', async () => {

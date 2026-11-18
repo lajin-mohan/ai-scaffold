@@ -7,6 +7,7 @@ import {
   chooseAgentsCore,
   decideClaudeImport,
   hasCoreImport,
+  missingImports,
   NAMESPACED_CORE,
   pointImportAt,
   ROOT_CORE,
@@ -58,13 +59,20 @@ describe('pointImportAt', () => {
 describe('withCoreImport', () => {
   it('appends one section after a blank line, keeping LF', () => {
     const out = withCoreImport('# Mine\n', NAMESPACED_CORE);
-    expect(out).toBe('# Mine\n\n## AI Scaffold\n\nShared rules for AI assistants, added by `ais init`:\n\n@.ai-scaffold/AGENTS.md\n');
+    expect(out).toBe('# Mine\n\n## AI Scaffold\n\nShared rules and project context for AI assistants, added by `ais init`:\n\n@.ai-scaffold/AGENTS.md\n@PROJECT.md\n');
+  });
+
+  it('adds only the imports that are missing, and nothing when both are there (item 112)', () => {
+    expect(missingImports('# Mine\n@AGENTS.md\n', ROOT_CORE)).toEqual(['@PROJECT.md']);
+    expect(missingImports('@PROJECT.md\n', NAMESPACED_CORE)).toEqual(['@.ai-scaffold/AGENTS.md']);
+    expect(withCoreImport('# Mine\n@AGENTS.md\n', ROOT_CORE).endsWith('\n\n@PROJECT.md\n')).toBe(true);
+    expect(withCoreImport('@AGENTS.md\n@./PROJECT.md\n', ROOT_CORE)).toBe('@AGENTS.md\n@./PROJECT.md\n');
   });
 
   it('keeps CRLF and handles a file with no final newline', () => {
     const out = withCoreImport('# Mine\r\nbody', ROOT_CORE);
     expect(out.startsWith('# Mine\r\nbody\r\n\r\n## AI Scaffold\r\n')).toBe(true);
-    expect(out.endsWith('@AGENTS.md\r\n')).toBe(true);
+    expect(out.endsWith('@AGENTS.md\r\n@PROJECT.md\r\n')).toBe(true);
     expect(out.replace(/\r\n/g, '')).not.toContain('\n');
   });
 
@@ -100,9 +108,19 @@ describe('decideClaudeImport / applyClaudeImport', () => {
     expect(await fs.readFile(file, 'utf-8')).toBe(once);
   });
 
-  it('respects a hand-written import', async () => {
-    await fs.writeFile(path.join(dir, 'CLAUDE.md'), '# Mine\n@AGENTS.md\n');
+  it('respects hand-written imports', async () => {
+    await fs.writeFile(path.join(dir, 'CLAUDE.md'), '# Mine\n@AGENTS.md\n@PROJECT.md\n');
     expect((await decideClaudeImport(dir, NAMESPACED_CORE)).action).toBe('present');
+  });
+
+  it('adds only @PROJECT.md to a CLAUDE.md that already imports the core', async () => {
+    const file = path.join(dir, 'CLAUDE.md');
+    await fs.writeFile(file, '# Mine\n@AGENTS.md\n');
+    const decision = await decideClaudeImport(dir, ROOT_CORE);
+    expect(decision).toEqual({ action: 'add', core: ROOT_CORE, imports: ['@PROJECT.md'] });
+    expect(await applyClaudeImport(dir, decision)).toBe(true);
+    expect((await fs.readFile(file, 'utf-8')).match(/^@AGENTS\.md$/gm)).toHaveLength(1);
+    expect((await decideClaudeImport(dir, ROOT_CORE)).action).toBe('present');
   });
 
   it('reports a symlinked CLAUDE.md and leaves it alone', async (ctx) => {

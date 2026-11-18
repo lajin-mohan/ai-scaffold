@@ -174,12 +174,13 @@ async function agentsCoreFor(target, force) {
   return chooseAgentsCore({ manifest, agentsExists, force });
 }
 
-function printSharedRulesReport({ action, core }, dryRun) {
+function printSharedRulesReport({ action, core, imports = [] }, dryRun) {
   const will = dryRun ? '[dry-run] would ' : '';
   if (action === 'add') {
-    console.log(chalk.green(`✓ CLAUDE.md — ${will}add an import of ${core}; the rest of your file is unchanged`));
+    const names = imports.map((line) => line.slice(1)).join(' and ');
+    console.log(chalk.green(`✓ CLAUDE.md — ${will}add an import of ${names}; the rest of your file is unchanged`));
   } else if (action === 'symlink') {
-    console.log(chalk.yellow(`! CLAUDE.md is a link and was not edited. Add the line @${core} to it yourself so Claude Code loads the shared rules.`));
+    console.log(chalk.yellow(`! CLAUDE.md is a link and was not edited. Add the lines @${core} and @PROJECT.md to it yourself so Claude Code loads the shared rules and project context.`));
   }
   if (core === NAMESPACED_CORE) {
     console.log(chalk.yellow(`! AGENTS.md is yours and was kept. The scaffold's shared rules are in ${NAMESPACED_CORE}; Claude Code loads them through CLAUDE.md.`));

@@ -32,14 +32,37 @@ core (`PROTECTED_MANAGED`, `update-plan.js:24`), never refreshes them.
 
 ## Acceptance (packed tarball, generated projects)
 
-- [ ] `init` with no `PROJECT.md` creates the starter.
-- [ ] A hand-made `PROJECT.md` is byte-identical after `update --apply`.
-- [ ] A second update reports `current`.
-- [ ] `update` never lists any path under `.claude/rules/project/**`.
+- [x] `init` with no `PROJECT.md` creates the starter.
+- [x] A hand-made `PROJECT.md` is byte-identical after `update --apply`.
+- [x] A second update reports `current`.
+- [x] `update` never lists any path under `.claude/rules/project/**`.
 - [ ] Fresh Claude Code session: `/memory` lists `PROJECT.md` and the project
       rules. If subfolder rules do not load, fall back to imports from
-      `PROJECT.md` and document it (unverified today).
-- [ ] Shared changes byte-identical across the five profiles.
+      `PROJECT.md` and document it (unverified today). **Maintainer check**
+      (signed-in `claude`).
+- [x] Shared changes byte-identical across the five profiles.
+
+## Implementation notes (2026-11-18, `feature/112-project-content`)
+
+Step 3 and 4 changed with the approved revision:
+
+- **Replacement** uses Claude Code's `claudeMdExcludes`. `overrides:` is
+  documentation only, because Claude Code reads no rule frontmatter key except
+  `paths`.
+- **Security floor** files: `AGENTS.md` (or `.ai-scaffold/AGENTS.md`),
+  `.claude/rules/security-rules.md`, `.claude/rules/branching-rules.md`.
+  `doctor` fails (high) when any settings layer it can read excludes one, and
+  warns (medium) for other scaffold rules.
+- **No precedence README in `.claude/rules/project/`.** Claude Code loads every
+  file there as a rule, so a README would cost tokens in every session.
+  Precedence is documented in "Where project content goes"
+  (`docs/commands.md`) and the `PROJECT.md` starter.
+- **Doctor** also prints the exact `@PROJECT.md` line when `CLAUDE.md` lacks
+  it, and points edited core files to `PROJECT.md` (scope item 4).
+- Verified from the packed tarball: create, init into a repo with its own
+  `CLAUDE.md`, update of a published 0.19.0 project, the hand-made
+  `PROJECT.md` and project rule surviving `update --apply`, the second update
+  reporting current, and both doctor failures.
 
 ## Out of scope
 

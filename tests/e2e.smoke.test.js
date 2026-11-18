@@ -353,7 +353,7 @@ describe('CLI e2e smoke', { timeout: 30_000 }, () => {
   });
 
   describe('init connects the shared rules without overwriting (item 84)', () => {
-    const IMPORT_SECTION = /## AI Scaffold\n\nShared rules for AI assistants, added by `ais init`:\n\n@(\S+)\n$/;
+    const IMPORT_SECTION = /## AI Scaffold\n\nShared rules and project context for AI assistants, added by `ais init`:\n\n@(\S+)\n@PROJECT\.md\n$/;
     const read = (dir, rel) => fs.readFile(path.join(dir, rel), 'utf-8');
     const initIn = (dir, extra = []) => runCli(['init', dir, '--yes', '--profile', 'node', ...extra]);
 
@@ -379,7 +379,8 @@ describe('CLI e2e smoke', { timeout: 30_000 }, () => {
       const dir = await project('init-84-claude-only', { 'CLAUDE.md': mine });
       const result = initIn(dir);
       expect(result.status, result.stderr || result.stdout).toBe(0);
-      expect(result.stdout).toContain('add an import of AGENTS.md');
+      expect(result.stdout).toContain('add an import of AGENTS.md and PROJECT.md');
+      expect(await read(dir, 'PROJECT.md')).toMatch(/^# .+ — project context/);
       const after = await read(dir, 'CLAUDE.md');
       expect(after.startsWith(mine)).toBe(true);
       expect(after.slice(mine.length).replace(/\r\n/g, '\n')).toMatch(IMPORT_SECTION);
@@ -447,7 +448,11 @@ describe('CLI e2e smoke', { timeout: 30_000 }, () => {
       const dir = await project('init-84-json', { 'CLAUDE.md': '# Mine\n', 'AGENTS.md': '# Theirs\n' });
       const result = runCli(['init', dir, '--dry-run', '--json', '--profile', 'node']);
       expect(result.status, result.stderr || result.stdout).toBe(0);
-      expect(JSON.parse(result.stdout).claudeImport).toEqual({ action: 'add', core: '.ai-scaffold/AGENTS.md' });
+      expect(JSON.parse(result.stdout).claudeImport).toEqual({
+        action: 'add',
+        core: '.ai-scaffold/AGENTS.md',
+        imports: ['@.ai-scaffold/AGENTS.md', '@PROJECT.md'],
+      });
       expect(await read(dir, 'CLAUDE.md')).toBe('# Mine\n');
       expect(await fs.pathExists(path.join(dir, '.ai-scaffold'))).toBe(false);
     });

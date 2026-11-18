@@ -63,6 +63,8 @@
 
 Read [`constitution.md`](./constitution.md) first — it is the one-page source of truth for **governance order** (which rule wins on a conflict). Then read [AGENTS.md](./AGENTS.md), the shared instructions every AI assistant reads: commands, conventions, security boundaries and what needs approval. Detailed rules live in `.claude/rules/`; the staged delivery workflow is opt-in.
 
+Project context goes in [`PROJECT.md`](./PROJECT.md) and project rules in `.claude/rules/project/`; `ais update` never changes either. See "Where project content goes" in `.ai-scaffold/commands.md`.
+
 ### AI commands
 
 Type these in Claude Code. Start with the six everyday ones:

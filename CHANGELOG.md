@@ -37,6 +37,23 @@ This file is configured with `merge=union` in `.gitattributes` so parallel addit
   only; nothing shipped to generated projects changes.
 
 ### Added
+- **Project content survives upgrades: `PROJECT.md` and `.claude/rules/project/`
+  (item 112, C4).** `create`, `init` and `update` add a `PROJECT.md` starter at
+  the root when it is missing and never change it afterwards. The template
+  `CLAUDE.md` imports it with `@PROJECT.md`, `AGENTS.md` points Codex, Cursor
+  and Copilot to it, and `init` appends the import to an existing `CLAUDE.md`
+  alongside the shared-rules import, once. Files under `.claude/rules/project/`
+  are the project's: `ais update` never lists, writes or removes them, even
+  where an older manifest recorded one. Replacing a scaffold rule uses Claude
+  Code's own `claudeMdExcludes`, which update leaves in place; an `overrides:`
+  frontmatter line is documentation only. `ais doctor` prints the exact
+  `@PROJECT.md` line when `CLAUDE.md` lacks it, fails when `claudeMdExcludes`
+  (project, local or user settings) removes `AGENTS.md`,
+  `security-rules.md` or `branching-rules.md`, warns when it removes any
+  other scaffold rule, and points edited core files to `PROJECT.md`. New
+  section "Where project content goes" in the command guide, including what
+  enforces each floor rule (tenant isolation: review and tests only). The
+  starter adds about 230 tokens to Claude Code's startup context.
 - **`ais init` connects to an existing `CLAUDE.md` and `AGENTS.md` instead of
   skipping them** (item 84, Wave C PR C2). Before, `init` into a repository
   with its own `CLAUDE.md` kept that file unchanged, so nothing imported the

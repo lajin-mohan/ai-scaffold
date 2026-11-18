@@ -1,10 +1,11 @@
 # CLAUDE.md — {{PROJECT_DISPLAY_NAME}}
 
 @AGENTS.md
+@PROJECT.md
 
-The shared instructions above apply to Claude Code as written. Precedence
-between rules is set in [`constitution.md`](constitution.md). The notes below
-cover only what is specific to Claude Code.
+The shared instructions and the project context above apply to Claude Code as
+written. Precedence between rules is set in [`constitution.md`](constitution.md).
+The notes below cover only what is specific to Claude Code.
 
 ## Claude Code specifics
 

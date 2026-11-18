@@ -137,6 +137,31 @@ describe('buildUpdatePlan on generated projects', { timeout: 60_000 }, () => {
     expect(by('.claude/settings.local.example.json').action).toBe('unchanged');
   });
 
+  it('item 112: PROJECT.md is added only when missing and never read once present', async () => {
+    const target = await install('project-md');
+    expect(await fs.readFile(path.join(target, 'PROJECT.md'), 'utf-8')).toMatch(/^# .+ — project context/);
+    await fs.writeFile(path.join(target, 'PROJECT.md'), '# Hand-made\n');
+    const present = await preview(target);
+    expect(present.by('PROJECT.md')).toMatchObject({ class: 'seeded', action: 'skip-seeded' });
+    expect(present.reads).not.toContain('PROJECT.md');
+
+    await fs.remove(path.join(target, 'PROJECT.md'));
+    expect((await preview(target)).by('PROJECT.md')).toMatchObject({ class: 'seeded', action: 'add' });
+  });
+
+  it('item 112: never lists .claude/rules/project/**, even with a legacy managed record', async () => {
+    const target = await install('project-rules');
+    const rel = '.claude/rules/project/team.md';
+    await fs.outputFile(path.join(target, rel), '# Team rule\n');
+    const { plan, reads } = await preview(target, (m) => ({
+      ...m,
+      managedFiles: [...m.managedFiles, { path: rel, class: 'managed', ...recordFor('# Old rule\n') }],
+    }));
+    expect(plan.entries.filter((e) => e.path.startsWith('.claude/rules/project/'))).toEqual([]);
+    expect(reads.filter((r) => r.startsWith('.claude/rules/project/'))).toEqual([]);
+    expect(await fs.readFile(path.join(target, rel), 'utf-8')).toBe('# Team rule\n');
+  });
+
   it('init: the adopter CLAUDE.md is unowned and never read', async () => {
     const target = await install('init-proj', {
       mode: 'init',
