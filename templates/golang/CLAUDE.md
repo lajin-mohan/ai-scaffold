@@ -11,9 +11,10 @@ cover only what is specific to Claude Code.
 - **Rules load by path.** Files in `.claude/rules/` that declare `paths:` load
   when you work on matching files. Read the relevant rule file yourself when a
   task touches its area before any matching file is open.
-- **Hooks are gates.** `.claude/settings.json` runs `.claude/hooks/pre-commit`
-  before `git commit` and `git push`, and warns on edits to files you cited but
-  did not read. When a hook blocks, report or fix the cause; do not bypass it.
+- **Hooks are gates.** Git runs `.claude/hooks/pre-commit` and `commit-msg` on
+  every commit. `.claude/settings.json` blocks `git commit` when those git hooks
+  are not installed, and warns on edits to files you cited but did not read.
+  When a hook blocks, report or fix the cause; do not bypass it.
 - **Commands.** `/ais-plan` plans and executes multi-step work after
   approval; `/ais-debug` handles bugs root cause first; `/ais-review` runs the
   reviewer agents before a pull request; `/ais-commit` checks the branch and

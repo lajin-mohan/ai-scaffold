@@ -14,6 +14,17 @@ This file is configured with `merge=union` in `.gitattributes` so parallel addit
 ## [Unreleased]
 
 ### Changed
+- **The Claude Code quality gate checks that git's hooks are installed
+  instead of running them (item 98, C1c).** `pre-bash-quality-gate.sh` used to
+  run the whole pre-commit hook, tests included, before `git commit` and
+  `git push`, under a 60-second hook timeout. A Claude Code hook that times out
+  does not block, and git runs the same pre-commit itself on every commit, so
+  the gate duplicated work and proved nothing when slow. It now blocks
+  `git commit` only when the `pre-commit` or `commit-msg` git hook is missing
+  or not executable (honouring `core.hooksPath`), finishes in about a
+  second, and is wired with a 10-second timeout.
+  `git push` is no longer gated here; CI checks what is pushed. `ais update`
+  updates the hook and its settings entry where they are unmodified.
 - **The runtime dependency audit in CI, release and publish now runs
   `scripts/audit-gate.js`.** It still blocks any high or critical advisory in
   the published dependencies, but accepts advisories listed in

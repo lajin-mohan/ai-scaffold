@@ -44,7 +44,7 @@ the settings file).
 | `pre-secret-guard.sh` | PreToolUse `Read\|Grep\|Glob\|Edit\|Write\|MultiEdit` | **Enforces** (exit 2) | 5 s | Claude tools cannot read or write secret-bearing files; templates (`.env.example`) stay readable |
 | `pre-dangerous-bash-guard.sh` | PreToolUse `Bash` | **Enforces** | 5 s | Destructive shell and git-history commands are blocked |
 | `token-budget-guard.sh` | PreToolUse, read/edit tools | Enforces at 500K est-tokens, warns at 300K | 5 s | Very long sessions stop instead of degrading |
-| `pre-bash-quality-gate.sh` | PreToolUse `Bash` | Enforces on `git commit` / `git push` | 60 s | Commits made through Claude pass the project pre-commit checks |
+| `pre-bash-quality-gate.sh` | PreToolUse `Bash` | Blocks `git commit` when the git `pre-commit`/`commit-msg` hooks are not installed (C1c, 2026-11-18; previously ran the whole pre-commit under 60 s) | 10 s | Commits made through Claude are checked by git's own hooks |
 | `governance-file-guard.sh` | PreToolUse, read/edit tools | Warns | 5 s | Edits to governance files are flagged |
 | `pre-write-fact-check.sh` | PreToolUse `Edit\|Write\|MultiEdit` | Warns (strict mode blocks) | 10 s | Edits to cited-but-unread files are flagged |
 | `post-write-console-warn.sh` | PostToolUse | Warns | 10 s | New debug-log lines are flagged |
