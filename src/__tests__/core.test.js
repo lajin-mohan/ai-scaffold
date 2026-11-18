@@ -473,7 +473,7 @@ describe('python and golang profiles', () => {
     expect(preCommit).toContain('[ ! -f go.mod ]');
     expect(preCommit).toContain('run_check "Go build" "go build ./..."');
     expect(preCommit).toContain('run_check "Go vet" "go vet ./..."');
-    expect(preCommit).toContain('run_check "Go tests" "go test ./..."');
+    expect(preCommit).toContain('run_tests "Go tests" "go test ./..."');
 
     const settings = JSON.parse(readFileSync(templatePath('generic', '.claude/settings.json'), 'utf-8'));
     expect(settings.permissions.allow).toContain('Bash(npm run lint*)');

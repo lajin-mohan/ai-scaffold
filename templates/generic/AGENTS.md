@@ -100,7 +100,9 @@ These apply to every change, whatever the task:
 - Commits carry the human author's identity only. Do not add `Co-Authored-By`
   or other AI attribution trailers.
 - Do not bypass hooks with `--no-verify`. If a hook fails, fix the cause or
-  report the exact failure to the user.
+  report the exact failure to the user. When `scripts/verify` exists, the
+  pre-commit hook runs it in place of the stack's test step; run it before
+  claiming work is done.
 - Do not force-push, rewrite pushed history, or delete branches.
 
 ## Ask before

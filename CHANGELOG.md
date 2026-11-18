@@ -24,6 +24,17 @@ This file is configured with `merge=union` in `.gitattributes` so parallel addit
   `.ai-scaffold.json` as `install.agentsCore` so a repeat `init` and
   `ais update` keep that location. A symlinked `CLAUDE.md` is reported and left
   alone. `init --json` reports the decision as `claudeImport`.
+- **A team-owned verify script for the pre-commit hook (item 113).** When a
+  project commits `scripts/verify`, the git `pre-commit` hook runs it with
+  `bash` in place of the stack's test step (`npm test`, `pytest`,
+  `go test ./...`, PHPUnit, `dotnet test`); branch policy, lint, typecheck and
+  the secrets scan still run. A monorepo whose root `test` needs a database no
+  longer has to commit with `--no-verify`, which also skipped the security
+  checks. The script is committed and reviewed, so the whole team runs the same
+  gate; if it exists it must pass, and a missing command fails the commit.
+  Without it the hook behaves as before. Failure messages now explain this
+  instead of suggesting `--no-verify`. `ais update` refreshes the installed
+  hook.
 - Maintainer-only `/ais-effectiveness` command (repository root only) for
   recurring, evidence-backed audits of outdated guidance, harness controls,
   adoption friction and process weight. It is not part of the npm package and
