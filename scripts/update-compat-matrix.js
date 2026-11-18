@@ -47,7 +47,8 @@ const NOT_APPLICABLE = [
 // ADR-002: the 0.7.x manifest generation, re-baselined to the current contract.
 const LEGACY_VERSION = '0.7.0';
 const INSTALL_ARGS = ['--yes', '--purpose', 'Compatibility matrix', '--owner-email', 'compat@example.com'];
-const SCAFFOLD_ADD = /^(\.claude\/|\.ai-scaffold\/|tasks\/|CLAUDE\.md$|AGENTS\.md$|constitution\.md$|CHANGELOG\.md$)/;
+// CHANGELOG.md and PROJECT.md (item 112) are seeded: added only when missing.
+const SCAFFOLD_ADD = /^(\.claude\/|\.ai-scaffold\/|tasks\/|CLAUDE\.md$|AGENTS\.md$|constitution\.md$|CHANGELOG\.md$|PROJECT\.md$)/;
 
 const ctx = {};
 

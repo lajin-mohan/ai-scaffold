@@ -155,7 +155,8 @@ export async function runDiagnostics(target, options = {}) {
     name: 'Managed files unmodified',
     passed: integrity.modified.length === 0,
     severity: 'medium',
-    message: integrity.modified.length > 0 ? modifiedMessage(integrity.modified) : undefined,
+    message: integrity.modified.length > 0 ? `Modified: ${integrity.modified.slice(0, 10).join(', ')}` : undefined,
+    note: coreFileNote(integrity.modified),
   });
 
   // FR-31: an update left the new version beside an edited file to merge.
@@ -383,13 +384,13 @@ async function findInvalidContextFields(manifestData, settingsFile) {
 }
 
 // Item 112: project content written into a core file is overwritten or left
-// stale by updates; PROJECT.md is where it survives.
+// stale by updates; PROJECT.md is where it survives. A note, so the
+// "Modified: a, b" message stays a plain list for scripts that parse it.
 const CORE_FILES = ['CLAUDE.md', 'AGENTS.md', 'constitution.md'];
 
-function modifiedMessage(modified) {
-  const list = `Modified: ${modified.slice(0, 10).join(', ')}`;
-  if (!modified.some((rel) => CORE_FILES.includes(rel))) return list;
-  return `${list}. Move project content from core files into PROJECT.md, which updates never change.`;
+function coreFileNote(modified) {
+  if (!modified.some((rel) => CORE_FILES.includes(rel))) return undefined;
+  return 'Move project content from core files into PROJECT.md, which updates never change.';
 }
 
 async function findManagedFileIssues(target, manifestData) {

@@ -547,3 +547,19 @@ This file records patterns from mistakes and corrections. Claude reads this at t
   re-status every ticket the CHANGELOG names, add a `done/` record for any item
   without a ticket, and commit the evidence (smoke summaries) the release
   relied on. It is a release-checklist step. Item 100 makes it mechanical.
+
+
+## 2026-11-18 — An update-path change passed every local check and failed the compat matrix (item 112, PR #194)
+
+- **What happened:** C4 made `update` add `PROJECT.md` and extended a doctor
+  message. Lint, typecheck, the full suite and a packed-tarball acceptance run
+  all passed locally. CI's update-compatibility job then failed on both
+  platforms: its AC-14 allowlist did not know the new seeded file, and its
+  doctor check parses the "Modified: a, b" message as a list, which the added
+  sentence broke.
+- **Why:** `scripts/update-compat-matrix.js` is not part of `npm test`; it runs
+  only in CI. A doctor message read by a script is an interface, not prose.
+- **Rule:** any change to ownership classes, the file plan, `update` or doctor
+  output runs `node scripts/update-compat-matrix.js` locally before pushing.
+  Add guidance to a doctor check through `note`, never by extending a
+  `message` that scripts parse.
