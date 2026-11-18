@@ -183,6 +183,8 @@ export async function buildFilePlan(sourceDir, targetDir, options = {}) {
     '.ai-scaffold/cli-reference.md',
     // The slash-command guide (docs/commands.md); same reasoning as above.
     '.ai-scaffold/commands.md',
+    // What each guard stops, per tool (docs/controls.md).
+    '.ai-scaffold/controls.md',
     // Keeps update.lock and backups/ out of git (#159). Generated, so the
     // npm pack exclusion of files named .gitignore does not apply.
     '.ai-scaffold/.gitignore',
