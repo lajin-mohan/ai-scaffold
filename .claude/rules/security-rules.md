@@ -139,11 +139,19 @@ Each OWASP Top 10 category maps to specific rules and implementations:
 
 ## Dependencies
 
-- No **shipped** dependencies with known HIGH or CRITICAL CVEs.
-- Dependency audit runs in CI on the **published surface**:
-  `npm audit --omit=dev --audit-level=high`. This audits exactly what reaches
-  users (runtime `dependencies`); dev-only tooling advisories (test/lint/build
-  transitive deps that never install for a consumer) don't block a release.
+- No **shipped** dependencies with known HIGH or CRITICAL CVEs, unless an
+  approved exception (below) shows the advisory cannot be exploited here.
+- Dependency audit runs in CI, release and publish on the **published
+  surface** through `node scripts/audit-gate.js`, which runs
+  `npm audit --omit=dev --json` and blocks on any high or critical advisory.
+  This audits exactly what reaches users (runtime `dependencies`); dev-only
+  tooling advisories (test/lint/build transitive deps that never install for a
+  consumer) don't block a release.
+- **Exceptions** are listed in `scripts/audit-exceptions.json`, one per
+  advisory id, each with the reason it cannot be exploited here and a
+  `reviewBy` date at most 30 days out. An expired or malformed entry fails
+  the gate; one that no longer matches an advisory is reported for removal. Add one only with maintainer approval and a test that keeps
+  the reason true (for example `tests/audit-gate.test.js` for picomatch).
 - Dev-tooling advisories are still tracked — reviewed with outdated packages
   monthly and via Dependabot — just not a hard CI gate, since they carry no
   user-facing exposure.

@@ -1,0 +1,8 @@
+[
+  {
+    "id": "GHSA-fc5q-39xc-vjpf",
+    "package": "picomatch",
+    "reason": "ReDoS needs an attacker-supplied glob with a repeated extglob such as +(*). The CLI passes picomatch only fixed patterns from its own source (ownership.js, file-plan.js, migrations/schema-2.js), none with extglob syntax; tests/audit-gate.test.js fails if that changes. No patched picomatch exists (<= 4.0.7 affected) as of 2026-11-18.",
+    "reviewBy": "2026-12-18"
+  }
+]
