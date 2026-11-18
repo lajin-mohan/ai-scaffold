@@ -84,6 +84,7 @@
     "build": "echo 'Build validation: checking npm pack'",
     "release:check": "bash scripts/check-release-readiness.sh",
     "token-report": "node scripts/token-report.js",
+    "audit:gate": "node scripts/audit-gate.js",
     "prepublishOnly": "npm test && npm run typecheck && npm run lint"
   },
   "keywords": [

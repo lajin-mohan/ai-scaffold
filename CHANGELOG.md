@@ -13,6 +13,16 @@ This file is configured with `merge=union` in `.gitattributes` so parallel addit
 
 ## [Unreleased]
 
+### Changed
+- **The runtime dependency audit in CI, release and publish now runs
+  `scripts/audit-gate.js`.** It still blocks any high or critical advisory in
+  the published dependencies, but accepts advisories listed in
+  `scripts/audit-exceptions.json` with a reason and a review date. The one
+  entry is GHSA-fc5q-39xc-vjpf (picomatch ReDoS, no patched release): the CLI
+  passes picomatch only fixed patterns with no extglob syntax, and a test fails
+  if that changes. The exception expires on 2026-12-18. Maintainer tooling
+  only; nothing shipped to generated projects changes.
+
 ### Added
 - **`ais init` connects to an existing `CLAUDE.md` and `AGENTS.md` instead of
   skipping them** (item 84, Wave C PR C2). Before, `init` into a repository
