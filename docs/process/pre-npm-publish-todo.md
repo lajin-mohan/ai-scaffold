@@ -1,8 +1,102 @@
 # AI Scaffold — Backlog
 
+## Authoritative wave plan — 2026-11-19 (after 0.20.0)
+
+**This section sets the order from here.** It replaces the order in the
+2026-11-10 plan and its 2026-11-18 amendment below; their item definitions
+and acceptance criteria still apply unless changed here. Accepted by the
+maintainer on 2026-11-19.
+
+### Where things stand (2026-11-19)
+
+- Published: **0.20.0** (`npm view`, 2026-11-19, `latest`), cut by the Release
+  Action after a green verify-only run; `main`, `dev` and tag `v0.20.0` at
+  `e6fdb6d`; Publish to npm ran with provenance. A project created from the
+  registry package records 0.20.0 and has `PROJECT.md`, the `@PROJECT.md`
+  import and `.ai-scaffold/controls.md`.
+- **Wave C shipped:** V, C1a–C1e, C2, C3, C4 (#181–#194). Ticket 112 is done
+  (`tasks/done/`); its `/memory` check passed on 2026-11-19.
+- Pre-release evidence on the packed tarball: Linux (`node:22` container with
+  `python3-venv`) 118/118 smoke checks and the hook tests; Windows smoke
+  116/119, where the three failures were load timeouts (the full suite passed
+  1211/1211 when run alone) and a local Go 1.21 toolchain below the template's
+  1.22. **WSL was not checked**: the maintainer's machine has only the
+  `docker-desktop` distro; Linux coverage comes from CI and the container run.
+- Not done and carried forward: C5 (moved into the lean-core work), M (see
+  below).
+
+### Inputs that set this order (maintainer, 2026-11-19)
+
+- Supported tools for the team-ready release: **Claude Code and Codex**.
+  Cursor, Copilot and Antigravity CLI follow when adopters ask.
+- Users: mainly the internal team (the maintainer and two colleagues on 2–3
+  pilot projects); external adopters later. Day-to-day weight and safe
+  upgrades of pilot projects come before onboarding polish for outsiders.
+  Upgrades from old versions (0.18.x and earlier) are not a priority.
+- Measurement (item 99) runs on existing Claude and ChatGPT subscriptions
+  only, no API spend: a pilot of 2 tasks × 3 setups (native, minimal core,
+  full scaffold) × 2 repeats, Claude Code first, then Codex. Scale up only
+  after the pilot's actual usage is known.
+- Evidence checked 2026-11-19 that shapes the plan:
+  - Agent Skills are read from `.agents/skills` by Codex
+    ([docs](https://learn.chatgpt.com/docs/build-skills)) and from
+    `.claude/skills` by Claude Code; Cursor reads both plus `.codex/skills`
+    and does not document what happens to a duplicate name
+    ([docs](https://cursor.com/docs/skills)).
+  - Codex runs project hooks only after the user trusts them, recorded per
+    hook hash ([docs](https://learn.chatgpt.com/docs/hooks)), so
+    tool-neutral guarantees stay in git hooks, `scripts/verify` and CI.
+  - arXiv 2602.11988 v3 (29 Sep 2026): context files "do not generally
+    improve task success rates" and raise inference cost by over 20%, for
+    both LLM-generated and developer-committed files. The lean core is
+    therefore measured against the baseline, not assumed to help.
+
+### 0.21.0 — "Measure, one verify contract, lean core"
+
+| # | Items | Content | Acceptance |
+|---|---|---|---|
+| 1 | **99** (pilot) | Baseline **before** any change below: 2 tasks × 3 setups × 2 repeats on Claude Code, subscription only; independent acceptance tests outside the scaffold; record pass/fail, prompts needed, time and usage | Results and method committed with tool and model versions; thresholds for row 3 written down before row 3 starts |
+| 2 | **87** | Per-profile default `scripts/verify`, the same file run by pre-commit, a Claude Stop hook and CI; `ais doctor` checks the **configuration** only (file present, hooks wired). Runtime "discovered/exercised" evidence stays with 98/104 | One verify run per profile passes in a packed project on Windows and Linux; a failing check blocks pre-commit, the Stop hook and CI alike |
+| 3 | talk item 5 + **C5** | Lean core: commands, boundaries and facts not visible in code stay; repository map and stack detail move to a skill or doc; shipped rules reworded without emphasis while keeping every specific instruction; all five profiles | `token-report` lower; governance checks green; the pilot re-run does not do worse than row 1 on pass rate |
+| 4 | **104** (skills part) | One skill source written to `.claude/skills` (Claude Code) and `.agents/skills` (Codex); names valid under the Agent Skills spec | Codex lists and runs a shipped skill in a packed project; Claude Code still does; duplicate discovery checked in Cursor and recorded (not a gate) |
+| 5 | chore | Golden-path check reports a missing toolchain component (for example no `python3-venv`) as `toolchain-missing`, not `failed` — found in the 0.20.0 container run | A test with venv unavailable reports `toolchain-missing` |
+
+### 0.22.0 — "Light by default, Claude Code and Codex verified" (team-ready)
+
+| Items | Content |
+|---|---|
+| **90** | About 8 default commands; process, UX and compliance as opt-in packs; review depth by risk. Acceptance adds explicit criteria for review precision: findings checked against the diff before they are reported, and a false-finding rate recorded on the pilot tasks |
+| **109** | Test-quality guidance aimed at the smoke finding; `feature-discount` passes at least 2/3 |
+| **98** rest, **104** core | Runtime evidence for Claude Code and Codex: each tool's hooks and skills probed in a packed project, with tool version, OS and date recorded; doctor reports that evidence with its age |
+| 99 | Pilot re-run on Claude Code and Codex; scale up only if the maintainer agrees after seeing usage |
+
+Team-ready bar (replaces the 2026-11-10 list): items 2–6 of that list stand;
+item 1 reads "on Windows and Linux" (WSL when a maintainer has a Linux distro
+there); native adapters are in the bar for **Codex only**.
+
+### Running alongside
+
+- **M (item 74, M-02):** owner the maintainer. When the pilot projects move to
+  0.20.0 or later, each `ais update --json` preview is kept and its conflict
+  count recorded. No reports were kept from the 0.19.0 upgrades; this
+  replaces them.
+- **Separate decision, not scheduled:** deny rules for `.netrc`,
+  `.git-credentials`, `.docker/config.json` and `.kube/config`.
+- The picomatch audit exception (`scripts/audit-exceptions.json`) has
+  `reviewBy` 2026-12-18; renew or remove it before then.
+
+### Later (order to be set after 0.22.0)
+
+Cursor, Copilot and Antigravity adapters (if adopters ask); 86 opt-in sandbox
+preset; 106–108, 110, 111 (Engyne signals); managed enterprise policies;
+modernization; UX add-on (114); then the 2026-11-05 rows 6–11.
+
 ## Authoritative wave plan — 2026-11-10 (after 0.19.0)
 
-**This section sets the order from here.** It continues the 2026-11-05 review
+> **Superseded for order on 2026-11-19** by the plan above. Kept for its
+> definitions, acceptance criteria and history.
+
+**This section set the order from 2026-11-10.** It continues the 2026-11-05 review
 below: that table's item definitions and acceptance criteria still apply, rows 1
 and 2 are done, and its "Next wave" paragraph is superseded. Maintainer inputs
 on 2026-11-10: order by value to the team, and pick the release that makes the
@@ -55,7 +149,9 @@ tool wrote the code; tool-specific controls are extras and are documented
 per tool.
 
 **Status:** C2 merged (#185), C3 merged (#187, CI green on Linux and
-Windows). C1a/C1b merged (#181, #182).
+Windows). C1a/C1b merged (#181, #182). **2026-11-19: released as 0.20.0**
+(row 6 done) with V, C1a–C1e, C2–C4; C5 moved into the 0.21.0 lean-core row
+and M carried forward — see the 2026-11-19 plan at the top.
 
 **Prioritised to-do for 0.20.0, in order:**
 

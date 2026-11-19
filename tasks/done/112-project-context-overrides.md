@@ -1,6 +1,6 @@
 # 112 — Project content survives upgrades (`PROJECT.md` + project rule overrides)
 
-**Priority:** P1 · **Wave:** C (0.20.0), row C4, after C2 · **Size:** M (~1–1.5 days AI-assisted)
+**Status:** Done — shipped in 0.20.0 (2026-11-19) · **Priority:** P1 · **Wave:** C (0.20.0), row C4, after C2 · **Size:** M (~1–1.5 days AI-assisted)
 **Source:** Engyne upgrade, 2026-11-11 — project content written into
 scaffold-owned `constitution.md` / `AGENTS.md` / `CLAUDE.md` conflicted or went
 stale on `ais update`.
@@ -36,10 +36,12 @@ core (`PROTECTED_MANAGED`, `update-plan.js:24`), never refreshes them.
 - [x] A hand-made `PROJECT.md` is byte-identical after `update --apply`.
 - [x] A second update reports `current`.
 - [x] `update` never lists any path under `.claude/rules/project/**`.
-- [ ] Fresh Claude Code session: `/memory` lists `PROJECT.md` and the project
-      rules. If subfolder rules do not load, fall back to imports from
-      `PROJECT.md` and document it (unverified today). **Maintainer check**
-      (signed-in `claude`).
+- [x] Fresh Claude Code session: `/memory` lists `PROJECT.md` and the project
+      rules. **Verified 2026-11-19** by the maintainer on a project created
+      from the packed 0.19.0+dev tarball (`create --profile node`): `/memory`
+      listed `CLAUDE.md` → `AGENTS.md` and `PROJECT.md` (both @-imported) and
+      `.claude\rules\project\team.md`. Subfolder rules load, so the
+      import fallback is not needed. Shipped in 0.20.0.
 - [x] Shared changes byte-identical across the five profiles.
 
 ## Implementation notes (2026-11-18, `feature/112-project-content`)
