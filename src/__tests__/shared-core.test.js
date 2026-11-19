@@ -19,8 +19,8 @@ describe('shared core: AGENTS.md is canonical, CLAUDE.md imports it (item 84)', 
     }
   });
 
-  it('CLAUDE.md imports AGENTS.md outside any code span or fence', () => {
-    expect(importTargets(read('generic', 'CLAUDE.md'))).toEqual(['AGENTS.md']);
+  it('CLAUDE.md imports AGENTS.md and PROJECT.md (item 112) outside any code span or fence', () => {
+    expect(importTargets(read('generic', 'CLAUDE.md'))).toEqual(['AGENTS.md', 'PROJECT.md']);
   });
 
   it('retires the duplicate .claude/AGENTS.md pointer', () => {

@@ -11,6 +11,7 @@
 
 import fs from 'fs-extra';
 import path from 'path';
+import { hasProjectImport, PROJECT_IMPORT_LINE } from './project-content.js';
 
 export const ROOT_CORE = 'AGENTS.md';
 export const NAMESPACED_CORE = '.ai-scaffold/AGENTS.md';
@@ -40,15 +41,25 @@ export function pointImportAt(text, agentsCore) {
   return text.replace(/^@AGENTS\.md[ \t]*$/m, `@${agentsCore}`);
 }
 
-/** The adopter's text with the import section appended, in its own line endings. */
+/** The import lines CLAUDE.md still lacks: the core, then PROJECT.md (item 112). */
+export function missingImports(text, agentsCore) {
+  const missing = [];
+  if (!hasCoreImport(text)) missing.push(`@${agentsCore}`);
+  if (!hasProjectImport(text)) missing.push(PROJECT_IMPORT_LINE);
+  return missing;
+}
+
+/** The adopter's text with the missing imports appended, in its own line endings. */
 export function withCoreImport(text, agentsCore) {
+  const imports = missingImports(text, agentsCore);
+  if (imports.length === 0) return text;
   const eol = text.includes('\r\n') ? '\r\n' : '\n';
   const lines = [
     '## AI Scaffold',
     '',
-    'Shared rules for AI assistants, added by `ais init`:',
+    'Shared rules and project context for AI assistants, added by `ais init`:',
     '',
-    `@${agentsCore}`,
+    ...imports,
   ];
   return text + blankLineBefore(text, eol) + lines.join(eol) + eol;
 }
@@ -76,7 +87,8 @@ export async function decideClaudeImport(targetDir, agentsCore, { force = false 
   // make it import itself, so a link is reported and left alone.
   if (stat.isSymbolicLink() || !stat.isFile()) return { action: 'symlink', core: agentsCore };
   const text = await fs.readFile(file, 'utf-8');
-  return { action: hasCoreImport(text) ? 'present' : 'add', core: agentsCore };
+  const imports = missingImports(text, agentsCore);
+  return { action: imports.length === 0 ? 'present' : 'add', core: agentsCore, imports };
 }
 
 /** Apply an 'add' decision. Any other decision writes nothing. */
@@ -84,7 +96,8 @@ export async function applyClaudeImport(targetDir, decision) {
   if (decision.action !== 'add') return false;
   const file = path.join(targetDir, CLAUDE);
   const text = await fs.readFile(file, 'utf-8');
-  if (hasCoreImport(text)) return false;
-  await fs.writeFile(file, withCoreImport(text, decision.core));
+  const updated = withCoreImport(text, decision.core);
+  if (updated === text) return false;
+  await fs.writeFile(file, updated);
   return true;
 }

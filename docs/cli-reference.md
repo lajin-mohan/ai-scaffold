@@ -144,6 +144,8 @@ It also reports **effective** governance rather than configured intent:
 | Administrator bypass | Can an administrator override that protection? |
 | Pre-commit hook | Is `.git/hooks/pre-commit` really installed and executable — not merely wired in `.claude/settings.json`? |
 | Commit-msg hook | Is `.git/hooks/commit-msg` installed and executable? Both hook checks also fail when `.claude/hooks/<hook>` is committed without the executable bit, which makes Linux and macOS clones skip it. |
+| Project context | Does `CLAUDE.md` import `PROJECT.md`, and does the file exist? If not, prints the line to add. Medium. |
+| Security floor | Does `claudeMdExcludes` in `.claude/settings.json`, `.claude/settings.local.json` or `~/.claude/settings.json` remove `AGENTS.md`, `security-rules.md` or `branching-rules.md`? High: fails the run. Removing any other scaffold rule is a medium warning. |
 | Claude Code version | Is `claude --version` 2.1.295 or later? Older versions ignore the security hooks' `onFailure: "block"`, so a guard that times out or crashes lets the tool call through. Below the minimum is a medium failure (no change to the exit code); Projects without Claude Code get no line: the scaffold works with any agent. `claude` found but reporting no version is `unavailable`. For an npm install on Windows, where only `claude.cmd` is on PATH, `doctor` runs the `claude.exe` that shim wraps, without a shell. |
 
 The hook check is local and needs no network. The three GitHub checks use the

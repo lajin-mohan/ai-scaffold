@@ -2,7 +2,8 @@
 
 Shared instructions for every AI coding assistant in this repository. Claude Code
 reads this file through `CLAUDE.md`; Codex, Cursor and Copilot read it directly.
-`constitution.md` decides precedence when two rules disagree.
+`constitution.md` decides precedence when two rules disagree. Project-specific
+context is in `PROJECT.md`; read it before starting work.
 
 ## Project
 
@@ -38,8 +39,9 @@ up yet; say so instead of inventing one.
 
 | Path | What it holds |
 |---|---|
+| `PROJECT.md` | This project's own context; `ais update` never changes it |
 | `constitution.md` | Precedence between rules; read when rules conflict |
-| `.claude/rules/` | Detailed rules: security, testing, API, UX, stack overlays |
+| `.claude/rules/` | Detailed rules: security, testing, API, UX, stack overlays; the project's own rules in `project/` |
 | `.claude/skills/` | On-demand guidance, including the delivery workflow |
 | `.claude/commands/`, `.claude/agents/` | Claude Code commands and reviewer agents |
 | `.claude/hooks/` | Local gates: pre-commit, commit-msg, Claude Code tool hooks |

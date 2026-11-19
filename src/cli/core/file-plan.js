@@ -123,6 +123,8 @@ export const PROTECTED_PATHS = [
   // an existing repo's real changelog/lessons file must never be overwritten.
   'CHANGELOG.md',
   'tasks/lessons.md',
+  // The project's own context (item 112): a starter only when absent.
+  'PROJECT.md',
 ];
 
 /**
@@ -197,7 +199,7 @@ export async function buildFilePlan(sourceDir, targetDir, options = {}) {
   // on both create and init, but CHANGELOG.md and tasks/lessons.md are in
   // PROTECTED_PATHS above — an existing repo's real files are never
   // overwritten, only filled in when genuinely absent (item 61).
-  alwaysGenerate.push('tasks/lessons.md', 'tasks/todo/.gitkeep', 'tasks/done/.gitkeep', 'CHANGELOG.md');
+  alwaysGenerate.push('tasks/lessons.md', 'tasks/todo/.gitkeep', 'tasks/done/.gitkeep', 'CHANGELOG.md', 'PROJECT.md');
 
   // Collect all source files from the template directory
   const sourceFiles = await collectSourceFiles(sourceDir);
@@ -387,6 +389,7 @@ function resolveGeneratedTargetRel(generatedRel, existingTarget, forceRoot) {
     // `doctor` and the CLAUDE.md workflow references that expect them at
     // root (item 61) silently point at nothing.
     generatedRel === 'CHANGELOG.md' ||
+    generatedRel === 'PROJECT.md' ||
     generatedRel === 'tasks/lessons.md' ||
     generatedRel.startsWith('tasks/todo/') ||
     generatedRel.startsWith('tasks/done/')

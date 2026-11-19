@@ -330,3 +330,53 @@ ais list commands                  # what is installed
 
 Every flag: `.ai-scaffold/cli-reference.md` in your project (`ais doctor`
 details) and `docs/cli-reference.md` in the AI Scaffold repository.
+
+## Where project content goes
+
+`ais update` rewrites the files AI Scaffold manages, so project content does
+not belong in `AGENTS.md`, `CLAUDE.md` or `constitution.md`. Put it here:
+
+| Content | Where | Updates |
+|---|---|---|
+| What the project is, terms, local conventions | `PROJECT.md` at the root | Created once if missing, then never changed |
+| Project rules | `.claude/rules/project/*.md` | Never listed, written or removed |
+| Personal notes | `CLAUDE.local.md` (not committed) | Never touched |
+
+`CLAUDE.md` loads `PROJECT.md` with the line `@PROJECT.md`; `AGENTS.md` tells
+Codex, Cursor and Copilot to read it. `ais doctor` prints the line to add if
+your `CLAUDE.md` lacks it. Claude Code loads every rule file under
+`.claude/rules/`, including `project/`; add `paths:` frontmatter to load one
+only for matching files.
+
+### Replacing a scaffold rule
+
+Claude Code's `claudeMdExcludes` setting stops a file from loading. Put it in
+`.claude/settings.json` (shared) or `.claude/settings.local.json` (yours);
+`ais update` keeps it. Patterns match absolute paths:
+
+```json
+{
+  "claudeMdExcludes": ["**/.claude/rules/ux-rules.md"]
+}
+```
+
+Then write your version in `.claude/rules/project/`. An `overrides:` line in
+its frontmatter is a note for readers only: Claude Code reads no frontmatter key
+but `paths`, so it unloads nothing. Codex, Cursor and Copilot ignore
+`claudeMdExcludes`; tell them in `PROJECT.md` which rule replaces which.
+
+### The security floor
+
+Some rules may be added to but never excluded. `ais doctor` fails if
+`claudeMdExcludes` removes `AGENTS.md`, `.claude/rules/security-rules.md` or
+`.claude/rules/branching-rules.md`, and warns about any other scaffold rule it
+removes. What enforces each floor rule:
+
+| Rule | Enforced by | Every tool? |
+|---|---|---|
+| No secrets in code or commits | gitleaks in `pre-commit` (when installed) and CI | Yes |
+| Approval before destructive commands | Claude Code ask rules and the dangerous-command guard; branch protection on the server | Server side only |
+| Tenant isolation, where it applies | Review and tests only; no hook checks it | No |
+| Human commit identity | `commit-msg` hook | Yes, unless `--no-verify` |
+
+`.ai-scaffold/controls.md` has the full list of what each guard stops.
