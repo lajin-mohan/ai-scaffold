@@ -547,3 +547,21 @@ This file records patterns from mistakes and corrections. Claude reads this at t
   re-status every ticket the CHANGELOG names, add a `done/` record for any item
   without a ticket, and commit the evidence (smoke summaries) the release
   relied on. It is a release-checklist step. Item 100 makes it mechanical.
+
+
+## 2026-11-18 — Shell-written files lost their backslashes (item 98, C1e)
+
+- **What happened:** the rewritten `pre-write-fact-check.sh` was written
+  through a Bash-tool heredoc. Every doubled backslash arrived single, so
+  `${p//\\//}` became `${p//\//}` and deleted every `/` from Windows paths.
+  `bash -n` passed and the first test run failed for reasons that looked like
+  path-matching bugs. A JS edit script written the same way failed for the
+  same reason.
+- **Why:** the shell-command path collapses backslashes even inside a quoted
+  heredoc; the file on disk never matched what was intended, and a syntax
+  check cannot see it.
+- **Rule:** write or edit any file whose content needs backslashes (shell
+  escapes, regexes, Windows paths, JSON) with the Write or Edit tool, never a
+  shell heredoc, and read the result back before testing. Where a script must
+  build a backslash, prefer `tr '\\' '/'` or `sed` over parameter-expansion
+  escapes. Also on Git Bash: `grep -iF` aborts, so fold case with `tr`.
