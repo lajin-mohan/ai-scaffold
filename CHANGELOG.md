@@ -13,6 +13,8 @@ This file is configured with `merge=union` in `.gitattributes` so parallel addit
 
 ## [Unreleased]
 
+## [0.20.0] - 2026-11-19
+
 ### Changed
 - **The Claude Code quality gate checks that git's hooks are installed
   instead of running them (item 98, C1c).** `pre-bash-quality-gate.sh` used to
