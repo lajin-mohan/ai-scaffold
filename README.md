@@ -34,6 +34,7 @@ Then open the project in Claude Code and run:
 
 **Next:** [Setup guide](docs/setup/getting-started.md) for the full walk-through ·
 [AI commands](docs/commands.md) with usage and examples ·
+[What the guards stop](docs/controls.md) per AI tool ·
 [CLI reference](docs/cli-reference.md) for every `ais` flag.
 
 ## Why Use This

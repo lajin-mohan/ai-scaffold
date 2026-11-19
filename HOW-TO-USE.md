@@ -219,6 +219,9 @@ You do not need every command on day one. Start with these six:
 **All commands, with usage and examples:** [docs/commands.md](docs/commands.md).
 Generated projects get the same guide at `.ai-scaffold/commands.md`.
 
+**What the guards stop, per AI tool:** [docs/controls.md](docs/controls.md), at
+`.ai-scaffold/controls.md` in generated projects.
+
 Upgrading from 0.18 or earlier? The [0.19.0 CHANGELOG entry](CHANGELOG.md) lists the renamed commands.
 
 Inspect what is installed:
