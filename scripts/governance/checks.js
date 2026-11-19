@@ -82,7 +82,7 @@ export function checkObsoleteNames(projectDir) {
 }
 
 // What a newcomer reads in this repository; the CHANGELOG stays history.
-export const USER_DOCS = ['README.md', 'HOW-TO-USE.md', 'docs/commands.md', 'docs/setup/getting-started.md', 'docs/cli-reference.md'];
+export const USER_DOCS = ['README.md', 'HOW-TO-USE.md', 'docs/commands.md', 'docs/controls.md', 'docs/setup/getting-started.md', 'docs/cli-reference.md'];
 
 /** The repository's user docs name no retired command or pinned model; a missing doc is an error. */
 export function checkUserDocs(repoRoot, rels = USER_DOCS) {

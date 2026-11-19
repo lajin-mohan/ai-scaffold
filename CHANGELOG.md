@@ -37,6 +37,19 @@ This file is configured with `merge=union` in `.gitattributes` so parallel addit
   only; nothing shipped to generated projects changes.
 
 ### Added
+- **`.ai-scaffold/controls.md`: what each guard stops, per AI tool (item 97,
+  C1d).** Generated projects now get a page, rendered from `docs/controls.md`
+  like the command guide, that separates the controls every tool is subject to
+  (git hooks, CI, branch protection) from the Claude Code-only settings and
+  hooks, and says what each does not stop: subprocesses reading `.env`, native
+  Windows having no sandbox, command-text matching in the guards and the
+  quality gate (`git -C <dir> commit`), the fact check being advisory, and
+  hooks failing open. Every shipped `permissions.deny` and `permissions.ask`
+  entry is listed with why it is there, tested against "can it be undone?";
+  a test fails if a profile ships an entry the page does not justify. It names
+  the credential files no deny rule covers (`.netrc`, `.git-credentials`,
+  `.docker/config.json`, `.kube/config`). No settings change; the opt-in
+  sandbox stays item 86. `ais update` adds the page to existing projects.
 - **`ais init` connects to an existing `CLAUDE.md` and `AGENTS.md` instead of
   skipping them** (item 84, Wave C PR C2). Before, `init` into a repository
   with its own `CLAUDE.md` kept that file unchanged, so nothing imported the

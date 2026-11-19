@@ -843,6 +843,30 @@ describe('generated command guide', () => {
   });
 });
 
+describe('generated controls guide (item 97, C1d)', () => {
+  const guideSource = () => readFileSync(new URL('../../docs/controls.md', import.meta.url), 'utf-8').replace(/\r\n/g, '\n');
+
+  it('is planned on create AND on init and renders docs/controls.md byte for byte', async () => {
+    for (const existingTarget of [false, true]) {
+      const plan = await buildFilePlan(templatePath('generic'), '/tmp/out', { existingTarget });
+      expect(plan.generate.map((f) => f.rel)).toContain('.ai-scaffold/controls.md');
+    }
+    const { renderPlannedFile } = await import('../cli/core/render.js');
+    const rendered = await renderPlannedFile({ src: null, rel: '.ai-scaffold/controls.md' }, {}, { kind: 'generate' });
+    expect(rendered.toString('utf-8')).toBe(guideSource());
+  });
+
+  it('justifies every deny and ask entry every profile ships', () => {
+    const guide = guideSource();
+    for (const profile of ['generic', 'golang', 'laravel', 'node', 'python']) {
+      const settings = JSON.parse(readFileSync(templatePath(profile, '.claude/settings.json'), 'utf-8'));
+      for (const entry of [...settings.permissions.deny, ...settings.permissions.ask]) {
+        expect(guide, `${profile}: ${entry}`).toContain(`| \`${entry}\` |`);
+      }
+    }
+  });
+});
+
 describe('placeholder gaps (item 77)', () => {
   const values = resolveWithDefaults({ projectName: 'acme-billing', profile: 'node', lifecycleStage: 'production' }).resolved;
 

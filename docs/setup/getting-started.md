@@ -73,7 +73,7 @@ Running `init` again adds nothing twice. If your `CLAUDE.md` is a symbolic link
 | `constitution.md` | One page: which rule wins when two conflict |
 | `.claude/` | Slash commands, agents, hooks, rules and skills |
 | `.claude/settings-overrides.json` | Project details and feature flags |
-| `.ai-scaffold/` | Setup context, the command guide (`commands.md`) and the CLI reference |
+| `.ai-scaffold/` | Setup context, the command guide (`commands.md`), what each guard stops (`controls.md`) and the CLI reference |
 | `tasks/lessons.md` | Lessons the AI and the team record |
 
 ## 4. Check the install

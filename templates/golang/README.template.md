@@ -80,6 +80,9 @@ Every command, with usage and examples: `.ai-scaffold/commands.md` (from the
 project root). In Codex, Cursor or Copilot, ask the assistant to read and follow
 the matching file in `.claude/commands/`.
 
+What each hook and setting does and does not stop, per AI tool:
+`.ai-scaffold/controls.md`. Only the git hooks and CI apply to every tool.
+
 ## License
 
 © {{YEAR}} {{PROJECT_DISPLAY_NAME}}.

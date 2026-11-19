@@ -24,13 +24,16 @@ import {
 import { buildManifestData, buildSettingsOverridesData } from './manifest.js';
 import { pkgPath } from './paths.js';
 
-// The guide adopters read is the same file published in this repository, so
-// the two cannot drift. CRLF is normalised so a Windows clone without the
+// The guides adopters read are the same files published in this repository,
+// so the two cannot drift. CRLF is normalised so a Windows clone without the
 // .gitattributes rule still renders the bytes `ais update` compares.
-const COMMAND_GUIDE_SOURCE = pkgPath('docs', 'commands.md');
+const PUBLISHED_GUIDES = {
+  '.ai-scaffold/commands.md': pkgPath('docs', 'commands.md'),
+  '.ai-scaffold/controls.md': pkgPath('docs', 'controls.md'),
+};
 
-function buildCommandGuide() {
-  return fs.readFileSync(COMMAND_GUIDE_SOURCE, 'utf-8').replace(/\r\n/g, '\n');
+function buildPublishedGuide(relPath) {
+  return fs.readFileSync(PUBLISHED_GUIDES[relPath], 'utf-8').replace(/\r\n/g, '\n');
 }
 
 export const RENDER_KINDS = ['copy', 'generate'];
@@ -44,7 +47,7 @@ function toJson(data) {
 function generatedContent(relPath, values, now) {
   if (relPath === '.ai-scaffold/README.md') return buildScaffoldReadme(values);
   if (relPath === '.ai-scaffold/cli-reference.md') return buildCliReference(values);
-  if (relPath === '.ai-scaffold/commands.md') return buildCommandGuide();
+  if (Object.hasOwn(PUBLISHED_GUIDES, relPath)) return buildPublishedGuide(relPath);
   if (relPath === '.ai-scaffold/.gitignore') return buildScaffoldGitignore();
   if (relPath === '.ai-scaffold/context.md') return buildContextFile(values);
   if (relPath === '.ai-scaffold.json') return toJson(buildManifestData(values, { now }));
