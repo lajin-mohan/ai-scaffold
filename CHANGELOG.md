@@ -159,6 +159,16 @@ This file is configured with `merge=union` in `.gitattributes` so parallel addit
   and it still described commands removed in 0.19.0.
 
 ### Fixed
+- **The fact-check hook works on native Windows (item 98, C1e).**
+  `pre-write-fact-check.sh` compared the `D:\...` paths Claude Code reports with
+  the `/d/...` paths bash uses, so a Read never matched; and with only the
+  Microsoft Store `python3` placeholder and no `jq` it silently did nothing. It
+  now normalises drive letters and backslashes, compares case-insensitively on
+  Windows, matches citations in drive-letter and JSON-escaped forms, tries
+  `python` when `python3` fails, and resolves 8.3 short names in the working
+  directory. Other platforms behave as before. The hook remains advisory unless
+  `ECC_FACT_CHECK_STRICT=1`. Tests cover native paths, the python fallback and
+  the no-parser case, and fail against the previous hook.
 - **Running `ais init` twice no longer stops `AGENTS.md`, `CLAUDE.md` and
   `constitution.md` getting updates.** The second run skips protected files
   that already exist, but it also dropped their records from the manifest, so
