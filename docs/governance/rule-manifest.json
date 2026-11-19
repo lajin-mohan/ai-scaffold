@@ -5,7 +5,7 @@
       "prevents": "Unverified claims about code, skipped plans for multi-step work, unverified 'done', stubs and half-implementations",
       "appliesWhen": "Editing source code (paths: frontmatter)",
       "enforcedBy": [
-        { "hook": "pre-write-fact-check.sh", "probe": "tests/claude-hooks.test.js", "note": "Probed on Linux/macOS; native Windows compares drive-letter paths with /d/ paths and is a known gap (item 98)" },
+        { "hook": "pre-write-fact-check.sh", "probe": "tests/claude-hooks.test.js", "note": "Advisory unless ECC_FACT_CHECK_STRICT=1. Probed on Linux, macOS and native Windows (drive-letter paths and the python fallback, item 98 C1e)" },
         { "hook": "post-write-console-warn.sh", "probe": "tests/claude-hooks.test.js" },
         { "hook": "pre-bash-quality-gate.sh", "probe": "tests/claude-hooks.test.js" }
       ]

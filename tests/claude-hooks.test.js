@@ -44,7 +44,9 @@ function runHook(hook, payload, env = {}) {
 }
 
 beforeEach(() => {
-  dir = fs.mkdtempSync(path.join(os.tmpdir(), 'ais-claude-hook-'));
+  // The long path: on Windows os.tmpdir() can be an 8.3 short name, which
+  // Claude Code never reports.
+  dir = fs.realpathSync.native(fs.mkdtempSync(path.join(os.tmpdir(), 'ais-claude-hook-')));
 });
 
 afterEach(() => fs.rmSync(dir, { recursive: true, force: true }));
@@ -153,14 +155,16 @@ describe('pre-bash-quality-gate.sh', { timeout: 30_000 }, () => {
   });
 });
 
-// The fact check reads the payload and transcript with jq or python3; with
-// neither it fails open by design, so these probes need one of them. Native
-// Windows is excluded: Claude Code reports D:\ paths there while the hook
-// compares /d/ paths, so a Read never matches (known gap, item 98).
+// The fact check reads the payload and transcript with jq, python3 or python;
+// with none it fails open by design, so these probes need one of them.
 const parserWorks = (cmd) => spawnSync(BASH, ['-c', cmd], { encoding: 'utf-8' }).status === 0;
-const HAS_PARSER = parserWorks('echo "{}" | jq -e . >/dev/null')
-  || parserWorks('python3 -c "import json"');
-const FACT_CHECK_PROBES = HAS_PARSER && process.platform !== 'win32';
+const HAS_JQ = parserWorks('echo "{}" | jq -e . >/dev/null');
+// The first Python that actually runs (on Windows python3 is often the Store
+// placeholder), as an absolute path so a stub can hand off to it.
+const REAL_PYTHON = ['python3', 'python']
+  .filter((name) => parserWorks(`${name} -c "import json"`))
+  .map((name) => spawnSync(BASH, ['-c', `command -v ${name}`], { encoding: 'utf-8' }).stdout.trim())[0] ?? null;
+const FACT_CHECK_PROBES = HAS_JQ || Boolean(REAL_PYTHON);
 
 describe.skipIf(!FACT_CHECK_PROBES)('pre-write-fact-check.sh', { timeout: 30_000 }, () => {
   const HOOK = 'pre-write-fact-check.sh';
@@ -211,6 +215,62 @@ describe.skipIf(!FACT_CHECK_PROBES)('pre-write-fact-check.sh', { timeout: 30_000
     expect(runHook(HOOK, { ...payload, transcript_path: path.join(dir, 'missing.jsonl') }, { ECC_FACT_CHECK_STRICT: '1' }).status).toBe(0);
     expect(runHook(HOOK, { ...payload, tool_input: { file_path: bashPath('src/new.ts') } }, { ECC_FACT_CHECK_STRICT: '1' }).status).toBe(0);
     expect(runHook(HOOK, payload, { ECC_FACT_CHECK_STRICT: '1', ECC_FACT_CHECK_DISABLED: '1' }).status).toBe(0);
+  });
+
+  // Parser fallback: PATH stubs that are found but fail, as the Windows Store
+  // python3 alias does. `python` hands off to the real interpreter.
+  const stubPath = (stubs) => {
+    const bin = path.join(dir, 'stub-bin');
+    fs.mkdirSync(bin, { recursive: true });
+    for (const [name, body] of Object.entries(stubs)) {
+      fs.writeFileSync(path.join(bin, name), `#!/bin/sh\n${body}\n`);
+      fs.chmodSync(path.join(bin, name), 0o755);
+    }
+    return { PATH: `${bin}${path.delimiter}${process.env.PATH}` };
+  };
+  const strict = { ECC_FACT_CHECK_STRICT: '1' };
+
+  it.runIf(REAL_PYTHON)('falls back to python when jq and python3 fail', () => {
+    const env = stubPath({ jq: 'exit 49', python3: 'exit 49', python: `exec "${REAL_PYTHON}" "$@"` });
+    expect(runHook(HOOK, setup(), { ...env, ...strict }).status).toBe(2);
+    expect(runHook(HOOK, setup({ readPath: bashPath(TARGET) }), { ...env, ...strict }).status).toBe(0);
+  });
+
+  it('fails open when no parser runs', () => {
+    const env = stubPath({ jq: 'exit 49', python3: 'exit 49', python: 'exit 49' });
+    const { status, stderr } = runHook(HOOK, setup(), { ...env, ...strict });
+    expect(status).toBe(0);
+    expect(stderr).toBe('');
+  });
+
+  // Native Windows: Claude Code sends D:\dir\file paths; bash uses /d/dir/file.
+  describe.runIf(process.platform === 'win32')('native Windows paths', () => {
+    const native = (rel) => path.join(fs.realpathSync.native(dir), ...rel.split('/'));
+    const nativeSetup = ({ cite, readPath }) => {
+      const payload = setup({ cite: false });
+      const lines = [transcriptLine([{ type: 'text', text: `See ${cite}:1.` }])];
+      if (readPath) lines.push(transcriptLine([{ type: 'tool_use', name: 'Read', id: 't1', input: { file_path: readPath } }]));
+      fs.writeFileSync(payload.transcript_path, `${lines.join('\n')}\n`);
+      return { ...payload, tool_input: { file_path: native(TARGET) } };
+    };
+
+    it('matches a drive-letter citation, stored with JSON-escaped backslashes', () => {
+      expect(runHook(HOOK, nativeSetup({ cite: native(TARGET) }), strict).status).toBe(2);
+    });
+
+    it('matches a relative citation written with backslashes', () => {
+      expect(runHook(HOOK, nativeSetup({ cite: TARGET.replaceAll('/', '\\') }), strict).status).toBe(2);
+    });
+
+    it('accepts a drive-letter read that differs only in case', () => {
+      const readPath = native(TARGET).toUpperCase();
+      expect(runHook(HOOK, nativeSetup({ cite: native(TARGET), readPath }), strict).status).toBe(0);
+    });
+
+    it('still rejects a read of a different file with the same name', () => {
+      const readPath = native('src/b/foo.ts');
+      expect(runHook(HOOK, nativeSetup({ cite: native(TARGET), readPath }), strict).status).toBe(2);
+    });
   });
 });
 
