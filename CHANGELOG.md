@@ -13,6 +13,34 @@ This file is configured with `merge=union` in `.gitattributes` so parallel addit
 
 ## [Unreleased]
 
+### Fixed
+- **`ais doctor` no longer fails a fresh clone or git worktree.**
+  `.claude/MEMORY.md` and `.claude/settings-overrides.json` are generated per
+  checkout and listed in `.gitignore`, so a clone never has them, and doctor
+  reported two HIGH failures and exit 1 on a healthy install. When one is
+  absent and gitignored, the check is now `unavailable` (reason
+  `local-file-absent`), with the remedy to copy it from the main checkout; it
+  still fails HIGH when the file is absent and not gitignored. The setup-values
+  check says when it could check `.ai-scaffold.json` only. Found upgrading a
+  pilot to 0.20.0.
+- **The setup-values finding names the bad value and the allowed set.** It
+  used to print only the field name, for example `risk.complianceScope`; it now
+  prints `.ai-scaffold.json risk.complianceScope="BOGUSSCOPE" (allowed: …)`.
+- **`ais update` no longer rewrites a file whose only difference is line
+  endings.** On Windows, git `autocrlf` checks files out with CRLF. A managed
+  file identical to the new version apart from line endings was planned as a
+  `replace` and rewritten with LF; it is now `unchanged` and left alone. What
+  the manifest records does not change.
+- **Exit code 2 is documented everywhere it can occur.** The general exit-code
+  table in `docs/cli-reference.md` listed only `0` and `1`, contradicting the
+  `update` section; it now lists `2` (update only: something to merge, not an
+  error), and `ais update` prints the same in its last line.
+
+### Added
+- A test that fails if the maintainer-only `/ais-effectiveness` command or the
+  effectiveness reports appear in any template or in the packed tarball. They
+  were not shipped before; the test keeps it that way.
+
 ## [0.20.0] - 2026-11-19
 
 ### Changed

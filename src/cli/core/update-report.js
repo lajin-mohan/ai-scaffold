@@ -66,13 +66,13 @@ function nextStep(doc) {
   if (doc.status === 'rollback-incomplete') return `✗ ${doc.error.message} Restore the paths above from ${doc.backup}.`;
   if (doc.status === 'applied') {
     return doc.exitCode === 2
-      ? `! Applied, with files that need your merge (.ais-new). Backup: ${doc.backup}.`
+      ? `! Applied, with files that need your merge (.ais-new). Backup: ${doc.backup}. Exit code 2: merge needed, not an error.`
       : `✓ Applied. Backup: ${doc.backup}.`;
   }
   if (doc.exitCode === 1) return '✗ Some paths are unsafe to read (links or outside the project). Fix them and preview again.';
   const conflicts = doc.counts.conflict ?? 0;
   return conflicts > 0
-    ? `! ${conflicts} file(s) differ from what the scaffold installed: applying keeps them and writes the new version beside them as .ais-new. Run \`ais update --apply\`.`
+    ? `! ${conflicts} file(s) differ from what the scaffold installed: applying keeps them and writes the new version beside them as .ais-new. Run \`ais update --apply\`. Exit code 2: conflicts to merge, not an error.`
     : '✓ No planning conflicts. Run `ais update --apply` to apply.';
 }
 
