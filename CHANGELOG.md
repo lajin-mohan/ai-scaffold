@@ -13,6 +13,8 @@ This file is configured with `merge=union` in `.gitattributes` so parallel addit
 
 ## [Unreleased]
 
+## [0.20.1] - 2026-11-20
+
 ### Fixed
 - **`ais doctor` no longer fails a fresh clone or git worktree.**
   `.claude/MEMORY.md` and `.claude/settings-overrides.json` are generated per
