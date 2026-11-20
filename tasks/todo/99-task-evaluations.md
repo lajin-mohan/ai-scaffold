@@ -34,6 +34,32 @@ fell on every task. Not proof of improvement: 3 repeats, one tool, one model.
 no test under `test/` calls the new function. The scaffold does not get the
 agent to write a test for new behaviour. Feeds items 109 and 87 (Wave D).
 
+### Invalidation (2026-11-20)
+
+The coding rows above are **not valid evidence**; they are kept as the
+original record, with notes in `evals/smoke/results/*/INVALIDATED.md`.
+
+- **What happened:** the harness created projects under the Windows
+  short-name temporary path (`C:\Users\USERNA~1\...`). Headless Claude Code
+  treats such a path as suspicious, needs approval to write there, and with no
+  approval surface denies automatically. All 12 coding runs contain denials (9
+  to 42 each); two slugify runs still produced diffs and one passed. Permission
+  failures contaminated the coding comparison.
+- **The finding above is withdrawn.** The discount transcripts show denied
+  attempts to write both the implementation and the tests. Item 109 keeps its
+  own justification (coverage is not fault detection) and no longer cites it.
+- **Still valid:** `orientation` (no denials) and the dedicated
+  `*-safety-b3` sets (no denials).
+- **Repair (this item, 0.21.0 row 1):** canonical long-path temporary root
+  shared by workspaces and cleanup; denials classified against the harness
+  allow-list, so an unexpected one makes the run invalid and stops the batch,
+  while intended restrictions are counted; reports and comparisons refuse a
+  verdict on invalid runs; `native`/`minimal`/`full` setups
+  (`evals/smoke/setups/`); `feature-discount` judges the agent's tests by
+  running them against a wrong `applyDiscount`; a `preflight` command run in
+  the real environment before any batch. Protocol: `evals/smoke/THRESHOLDS.md`,
+  section dated 2026-11-20.
+
 ### Smoke harness status (2026-11-06)
 
 Built: `evals/smoke/` (4 tasks, thresholds in `THRESHOLDS.md`, written before

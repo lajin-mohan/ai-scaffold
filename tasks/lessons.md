@@ -596,3 +596,31 @@ This file records patterns from mistakes and corrections. Claude reads this at t
   that file; gitignored per-checkout state is `unavailable` when absent, not a
   failure. Update and doctor tests that compare content include a CRLF working
   copy, and "unchanged" means equal apart from line endings.
+
+## 2026-11-20 — Validate evaluation execution before attributing failures to agents
+
+- **Mistake:** Review conclusions repeated the smoke evaluation's claim that
+  the agent did not write tests without checking the saved tool results.
+- **Evidence:** The discount transcripts contain attempts to write both the
+  implementation and tests that were denied without an approval surface.
+  All twelve coding runs have permission denials, but two slugify runs also
+  have implementation diffs; denial counts alone do not prove every write failed.
+- **Rule:** Inspect permission results, actual diffs and independent checks
+  before using an evaluation to justify product requirements. Separate harness
+  failures from task failures, preserve the original evidence, and verify a
+  benign write/read/test preflight before a paid or subscription evaluation.
+
+## 2026-11-20 — A Windows short-name temp path made headless Claude Code deny every write
+
+- **What happened:** the eval harness put projects under `os.tmpdir()`, which
+  on Windows can return an 8.3 short name (`C:\Users\USERNA~1\...`). Claude
+  Code treats such a path as suspicious and needs approval to write there; run
+  headless with `--permission-prompts none`, it denies automatically. Each
+  denied run was scored as an agent failure.
+- **Why it stayed hidden:** a denial is an `is_error` tool result, not a
+  process error, so the run "finished cleanly" and went to the task check.
+  `fs.realpathSync` does not expand short names; only `realpathSync.native`
+  does.
+- **Rule:** headless agent harnesses work under `fs.realpathSync.native(os.tmpdir())`
+  and classify every permission denial; an unexpected one invalidates the run
+  and stops the batch. Cleanup containment uses the same canonical root.

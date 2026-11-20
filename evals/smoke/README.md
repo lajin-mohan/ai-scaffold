@@ -1,4 +1,4 @@
-# Smoke evaluation (Wave B, item 99 subset)
+# Smoke evaluation (item 99)
 
 Four fixed tasks run headless in Claude Code on fresh projects generated from a
 packed tarball. They give a before/after quality check for the lean-core change.
@@ -13,10 +13,25 @@ From the repository root, on the commit you want to measure:
 npm pack --pack-destination ../ais-pack
 ```
 
+First, a preflight in the same terminal and environment the batch will use.
+It checks that the agent can write, read and run `npm test` in each setup
+without an unexpected permission denial; do not run a batch until it passes:
+
 ```bash
-node scripts/eval-smoke.js run --tarball ../ais-pack/lajin.m-ai-scaffold-<version>.tgz --model <model-id> --label baseline-<yyyy-mm-dd>
+node scripts/eval-smoke.js preflight --tarball ../ais-pack/lajin.m-ai-scaffold-<version>.tgz --model <model-id> --setups native,minimal,full
 ```
 
+Then the batch:
+
+```bash
+node scripts/eval-smoke.js run --tarball ../ais-pack/lajin.m-ai-scaffold-<version>.tgz --model <model-id> --label baseline-<yyyy-mm-dd> --setups native,minimal,full --repeats 2 --tasks bugfix-slugify,feature-discount
+```
+
+- `--setups` picks what the agent sees: `native` (no scaffold), `minimal`
+  (short guidance only) or `full` (`ais create`); default `full`. See
+  [setups/README.md](setups/README.md).
+- A run with an unexpected permission denial is **invalid**: its evidence is
+  kept, and the batch stops. Fix the cause and rerun under a new label.
 - `--model` is required and must be the same for before and after runs.
 - Run it from a terminal where `claude` is logged in. A shell started by the
   Claude desktop app does not pass its login to a child `claude`; the runner
@@ -26,11 +41,11 @@ node scripts/eval-smoke.js run --tarball ../ais-pack/lajin.m-ai-scaffold-<versio
   `--claude "%APPDATA%\npm\node_modules\@anthropic-ai\claude-code\bin\claude.exe"`.
 - Defaults: 3 repeats per task, `--budget-usd 1` per run, all four tasks.
   `--tasks bugfix-slugify,orientation` runs a subset.
-- Each run uses your Claude Code login and spends real tokens: 4 tasks × 3
-  repeats = 12 agent sessions per label.
+- Each run uses your Claude Code login and spends real tokens: tasks ×
+  setups × repeats agent sessions per label (the pilot: 2 × 3 × 2 = 12).
 
 Output: `evals/smoke/results/<label>/summary.json` and `summary.md` (commit
-these), plus `runs/` with the event stream, diff and check result of every run
+these), plus `runs/<task>-<setup>-r<n>/` with the event stream, diff, check result and classified denials of every run
 (git-ignored; keep it locally while reviewing failures).
 
 ## Compare
@@ -40,8 +55,9 @@ node scripts/eval-smoke.js compare evals/smoke/results/<before>/summary.json eva
 ```
 
 It refuses to compare runs with a different model, Claude Code version, repeat
-count or budget, applies thresholds T1 and T2 per task, and exits non-zero on a
-regression.
+count or budget, applies thresholds T1 and T2 per task and setup, and exits
+non-zero on a regression. It gives no verdict at all when either set has an
+invalid run or stopped early.
 
 ## Adding a task
 

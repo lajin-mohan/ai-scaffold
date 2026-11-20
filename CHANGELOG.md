@@ -13,6 +13,19 @@ This file is configured with `merge=union` in `.gitattributes` so parallel addit
 
 ## [Unreleased]
 
+### Fixed
+- **Evaluation harness (maintainer tooling, not shipped): invalid runs are no
+  longer scored as agent failures.** The item 99 smoke runner worked under a
+  Windows short-name temporary path, where headless Claude Code denies writes,
+  so every earlier coding run (`bugfix-slugify`, `feature-discount`) measured
+  the sandbox. Workspaces now use the canonical long path; each permission
+  denial is classified, an unexpected one makes the run invalid and stops the
+  batch, and reports refuse a verdict on invalid runs. Added a `preflight`
+  command, `native`/`minimal`/`full` setups, and a mutation-based check of the
+  agent's tests in `feature-discount`. The earlier coding results are kept with
+  invalidation notes, and the finding that the agent does not write tests is
+  withdrawn.
+
 ## [0.20.1] - 2026-11-20
 
 ### Fixed

@@ -79,7 +79,7 @@ files planned, 0.19.0 → 0.20.0.
 
 | # | Items | Content | Acceptance |
 |---|---|---|---|
-| 1 | **99** (pilot) | Baseline **before** any change below: 2 tasks × 3 setups × 2 repeats on Claude Code, subscription only; independent acceptance tests outside the scaffold; record pass/fail, prompts needed, time and usage | Results and method committed with tool and model versions; thresholds for row 3 written down before row 3 starts |
+| 1 | **99** (pilot) | Harness repaired first (2026-11-20: canonical temporary path, invalid runs separated and stop the batch, `native`/`minimal`/`full` setups, mutation-based test check, real-permission `preflight`). Then the baseline **before** any change below, on the 0.20.1 tarball and kept fixed: 2 tasks (`bugfix-slugify`, `feature-discount`) × 3 setups × 2 repeats on Claude Code, subscription only; record pass/fail, invalid runs, time and usage | `preflight` passes in the real environment; results and method committed with tool and model versions; no invalid runs; thresholds for row 3 written down before row 3 starts; later re-runs record exactly which changes they include |
 | 2 | **87** | Per-profile default `scripts/verify`, the same file run by pre-commit, a Claude Stop hook and CI; `ais doctor` checks the **configuration** only (file present, hooks wired). Runtime "discovered/exercised" evidence stays with 98/104 | One verify run per profile passes in a packed project on Windows and Linux; a failing check blocks pre-commit, the Stop hook and CI alike |
 | 3 | talk item 5 + **C5** | Lean core: commands, boundaries and facts not visible in code stay; repository map and stack detail move to a skill or doc; shipped rules reworded without emphasis while keeping every specific instruction; all five profiles | `token-report` lower; governance checks green; the pilot re-run does not do worse than row 1 on pass rate |
 | 4 | **104** (skills part) | One skill source written to `.claude/skills` (Claude Code) and `.agents/skills` (Codex); names valid under the Agent Skills spec | Codex lists and runs a shipped skill in a packed project; Claude Code still does; duplicate discovery checked in Cursor and recorded (not a gate) |
@@ -90,7 +90,7 @@ files planned, 0.19.0 → 0.20.0.
 | Items | Content |
 |---|---|
 | **90** | About 8 default commands; process, UX and compliance as opt-in packs; review depth by risk. Acceptance adds explicit criteria for review precision: findings checked against the diff before they are reported, and a false-finding rate recorded on the pilot tasks |
-| **109** | Test-quality guidance aimed at the smoke finding; `feature-discount` passes at least 2/3 |
+| **109** | Test-quality guidance (fault-detection checks for critical logic). Its acceptance target on `feature-discount` is set from the valid 0.21.0 baseline, not from the withdrawn smoke finding (2026-11-20) |
 | **98** rest, **104** core | Runtime evidence for Claude Code and Codex: each tool's hooks and skills probed in a packed project, with tool version, OS and date recorded; doctor reports that evidence with its age |
 | 99 | Pilot re-run on Claude Code and Codex; scale up only if the maintainer agrees after seeing usage |
 
@@ -138,6 +138,13 @@ scaffold ready for a team to adopt.
   observed**; uncached input fell on all four tasks. `feature-discount` failed
   0/3 before and after because the agent never writes a test for the new
   function.
+  **Withdrawn 2026-11-20:** every coding run (`bugfix-slugify`,
+  `feature-discount`) was contaminated by permission denials: the harness
+  worked under a Windows short-name temporary path, and headless Claude Code
+  denied writes there. The agent's denied attempts included both the
+  implementation and the tests. The verdict holds only for `orientation` and
+  the safety task; the test-writing finding is unsupported. Original results
+  are kept with invalidation notes (`evals/smoke/results/*/INVALIDATED.md`).
 - Not done: M-02 snapshot #2 (two live projects updated to 0.19.0, reports
   pending); live check that Claude Code loads `AGENTS.md` through the import.
 
@@ -154,6 +161,8 @@ from the packed tarball:
    commands, and a routine fix runs no architecture/UX ceremony (87, 90).
 4. The agent writes a test for new behaviour: `feature-discount` passes at
    least 2/3 with no regression on the other smoke tasks (109, 87).
+   *2026-11-20: the basis for this item was withdrawn (see the smoke note
+   above); the target is re-set from the valid 0.21.0 baseline.*
 5. M-02 recorded from at least two live updates (74).
 6. Project content survives `ais update` (112), and the pre-commit gate
    works in monorepos without `--no-verify` (113).
