@@ -51,6 +51,30 @@ maintainer on 2026-11-19.
     both LLM-generated and developer-committed files. The lean core is
     therefore measured against the baseline, not assumed to help.
 
+### 0.20.1 — patch from the first pilot upgrade (2026-11-20)
+
+The first pilot upgrade (0.19.0 → 0.20.0, in a git worktree on Windows)
+reported seven scaffold issues. 0.20.1 fixes four:
+
+| Issue | Fix |
+|---|---|
+| 1 | `doctor` fails HIGH on a clone or worktree: gitignored `.claude/MEMORY.md` and `settings-overrides.json` are absent → now `unavailable` with a remedy |
+| 3 | `update` rewrites CRLF checkouts with LF → equal apart from line endings is `unchanged` |
+| 2 | Exit code 2 missing from the general exit-code table → documented, and printed by `update` |
+| 5 | Setup-values finding names only the field → names the value and the allowed set |
+
+Also added: a test that the maintainer-only `/ais-effectiveness` command and
+effectiveness reports never ship (maintainer request, 2026-11-19).
+
+Not in 0.20.1: issue 7 (quality gate does not see `git -C` / `cd … && git
+commit`) goes with item 87 in 0.21.0; issue 4 (`constitution.md` is `unowned`
+in an `init` install, `ownership.js:69`) is proposed scaffold-owned in 0.21.0,
+**awaiting the maintainer's decision**; issue 6 (settings merge,
+`settings-merge.js:106`) later.
+
+M-02 first data point: 2 conflicts (`AGENTS.md`, `CLAUDE.md`) in 127 managed
+files planned, 0.19.0 → 0.20.0.
+
 ### 0.21.0 — "Measure, one verify contract, lean core"
 
 | # | Items | Content | Acceptance |
