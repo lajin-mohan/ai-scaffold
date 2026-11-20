@@ -26,6 +26,7 @@ import { checkFlags, checkVersions } from '../cli/core/update-policy.js';
 import { defaultIo } from '../cli/core/update-state.js';
 import { nativeFs } from '../cli/core/write-ops.js';
 import { resolveProjectRoot } from '../cli/core/containment.js';
+import { formatReport } from '../cli/core/update-report.js';
 
 const GIT = resolveOnPath('git');
 const NOW = new Date(Date.UTC(2026, 9, 15, 12));
@@ -182,6 +183,7 @@ describe.runIf(GIT)('ais update --apply', { timeout: 120_000 }, () => {
     expect(fs.readFileSync(at(target, 'AGENTS.md'), 'utf-8')).toContain('adopter edit');
     expect(fs.existsSync(at(target, 'AGENTS.md.ais-new'))).toBe(true);
     expect(doc.notices.join(' ')).toContain('AGENTS.md.ais-new');
+    expect(formatReport(doc)).toContain('Exit code 2: merge needed, not an error.');
   });
 
   it('leaves an identical sidecar and refuses a differing one (6.2)', async () => {
@@ -395,5 +397,19 @@ describe('a value on a switch is refused before anything runs (#159 review)', { 
     expect(doc.error.message).toContain(flags.split(' ')[0].split('=')[0]);
     expect(tree(target)).toEqual(before);
     expect(fs.existsSync(at(target, '.ai-scaffold/backups'))).toBe(false);
+  });
+});
+
+describe.runIf(GIT)('ais update --apply on a CRLF checkout (0.20.1)', { timeout: 120_000 }, () => {
+  it('leaves a managed file whose only difference is line endings untouched', async () => {
+    const target = await install();
+    const file = at(target, 'AGENTS.md');
+    const crlf = fs.readFileSync(file, 'utf-8').replace(/\n/g, '\r\n');
+    // .gitattributes normalises line endings, so git sees no change to commit.
+    fs.writeFileSync(file, crlf);
+    const doc = await apply(target, { allowDirty: true });
+    expect(doc.status).toBe('applied');
+    expect(doc.entries.find((e) => e.path === 'AGENTS.md').action).toBe('unchanged');
+    expect(fs.readFileSync(file, 'utf-8')).toBe(crlf);
   });
 });

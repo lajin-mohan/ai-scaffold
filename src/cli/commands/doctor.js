@@ -25,6 +25,9 @@ import {
 import { checkClaudeCodeVersion } from '../core/claude-version.js';
 import { checkProjectContent } from '../core/project-content.js';
 
+const MEMORY_REL = '.claude/MEMORY.md';
+const SETTINGS_REL = '.claude/settings-overrides.json';
+
 /** NFR-01: ONE wall-clock deadline for the whole run, not one per call. */
 const REMOTE_BUDGET_MS = 10_000;
 
@@ -86,8 +89,7 @@ export async function runDiagnostics(target, options = {}) {
   const scaffoldFile = path.join(target, '.ai-scaffold.json');
   const scaffoldDir = path.join(target, '.ai-scaffold');
   const claudDir = path.join(target, '.claude');
-  const memoryFile = path.join(target, '.claude', 'MEMORY.md');
-  const settingsFile = path.join(target, '.claude', 'settings-overrides.json');
+  const settingsFile = path.join(target, SETTINGS_REL);
   const contextFile = path.join(scaffoldDir, 'context.md');
 
   // 1. Scaffold file present
@@ -106,21 +108,9 @@ export async function runDiagnostics(target, options = {}) {
     message: '.claude/ directory not found.',
   });
 
-  // 3. .claude/MEMORY.md present
-  checks.push({
-    name: 'Project memory (.claude/MEMORY.md)',
-    passed: await fs.pathExists(memoryFile),
-    severity: 'high',
-    message: 'Project memory file not found.',
-  });
-
-  // 4. .claude/settings-overrides.json present
-  checks.push({
-    name: 'Settings overrides (.claude/settings-overrides.json)',
-    passed: await fs.pathExists(settingsFile),
-    severity: 'high',
-    message: 'Settings overrides file not found.',
-  });
+  // 3–4. Local per-checkout files (gitignored), present or explainably absent.
+  checks.push(await localFileCheck(target, MEMORY_REL, 'Project memory (.claude/MEMORY.md)'));
+  checks.push(await localFileCheck(target, SETTINGS_REL, 'Settings overrides (.claude/settings-overrides.json)'));
 
   // 5. Validate .ai-scaffold.json structure
   let manifestValid = false;
@@ -200,15 +190,7 @@ export async function runDiagnostics(target, options = {}) {
     message: '.ai-scaffold/context.md not found.',
   });
 
-  const invalidContextFields = await findInvalidContextFields(manifestData, settingsFile);
-  checks.push({
-    name: 'Setup context values are meaningful',
-    passed: invalidContextFields.length === 0,
-    severity: 'medium',
-    message: invalidContextFields.length > 0
-      ? `Invalid setup values found: ${invalidContextFields.join(', ')}`
-      : undefined,
-  });
+  checks.push(setupContextCheck(await findInvalidContextFields(manifestData, settingsFile)));
 
   // 7. Check .git/ directory
   checks.push({
@@ -345,42 +327,63 @@ async function gatherRequiredChecks({ repo, report, cwd, budget }) {
 }
 
 async function findInvalidContextFields(manifestData, settingsFile) {
-  const invalid = [];
-  const manifestChecks = [
-    ['.ai-scaffold.json project.kind', manifestData?.project?.kind],
-    ['.ai-scaffold.json project.lifecycleStage', manifestData?.project?.lifecycleStage],
-    ['.ai-scaffold.json stack.frontend', manifestData?.stack?.frontend],
-    ['.ai-scaffold.json risk.dataSensitivity', manifestData?.risk?.dataSensitivity],
-    ['.ai-scaffold.json profile', manifestData?.profile],
-  ];
-
-  for (const [name, value] of manifestChecks) {
-    if (typeof value === 'number') {
-      invalid.push(name);
-    }
-  }
-
   let settingsData = null;
-  if (await fs.pathExists(settingsFile)) {
+  const settingsPresent = await fs.pathExists(settingsFile);
+  if (settingsPresent) {
     try {
       settingsData = await fs.readJson(settingsFile);
-      const settingsChecks = [
-        ['settings project.type', settingsData?.project?.type],
-        ['settings project.lifecycleStage', settingsData?.project?.lifecycleStage],
-        ['settings techStack.frontend', settingsData?.techStack?.frontend],
-        ['settings project.dataSensitivity', settingsData?.project?.dataSensitivity],
-      ];
-      for (const [name, value] of settingsChecks) {
-        if (typeof value === 'number') {
-          invalid.push(name);
-        }
-      }
     } catch {
       // The existing settings-valid check reports corrupt JSON separately.
     }
   }
+  const invalid = [...new Set(validateManifestContext(manifestData ?? {}, settingsData))];
+  return { invalid, settingsPresent };
+}
 
-  return [...new Set([...invalid, ...validateManifestContext(manifestData ?? {}, settingsData)])];
+// The settings file is local to each checkout, so a pass without it covers the
+// manifest only; saying so keeps two machines' results explainable.
+function setupContextCheck({ invalid, settingsPresent }) {
+  return {
+    name: 'Setup context values are meaningful',
+    passed: invalid.length === 0,
+    severity: 'medium',
+    message: invalid.length > 0 ? `Invalid setup values found: ${invalid.join('; ')}` : undefined,
+    note: settingsPresent
+      ? undefined
+      : `${SETTINGS_REL} is not in this checkout, so only .ai-scaffold.json values were checked.`,
+  };
+}
+
+// MEMORY.md and settings-overrides.json are generated per checkout and listed
+// in .gitignore, so a fresh clone or a git worktree never has them. Their
+// absence there is unverifiable local state, not a broken install.
+async function localFileCheck(target, rel, name) {
+  const present = await fs.pathExists(path.join(target, rel));
+  if (present) return { name, passed: true, severity: 'high' };
+  if (await listedInGitignore(target, rel)) {
+    return {
+      name,
+      severity: 'high',
+      state: 'unavailable',
+      verifiedBy: 'filesystem',
+      reason: LOCAL_REASONS.LOCAL_FILE_ABSENT,
+      remedy: `${rel} is listed in .gitignore, so a fresh clone or git worktree does not have it. Copy it from your main checkout.`,
+    };
+  }
+  return { name, passed: false, severity: 'high', message: `${rel} not found.` };
+}
+
+async function listedInGitignore(target, rel) {
+  let text;
+  try {
+    text = await fs.readFile(path.join(target, '.gitignore'), 'utf-8');
+  } catch {
+    return false;
+  }
+  return text.split(/\r?\n/).some((line) => {
+    const entry = line.trim();
+    return entry === rel || entry === `/${rel}`;
+  });
 }
 
 // Item 112: project content written into a core file is overwritten or left

@@ -564,7 +564,7 @@ export function validateManifestContext(manifestData = {}, settingsData = null) 
       invalid.push('.ai-scaffold.json risk.complianceScope');
     } else {
       for (const scope of complianceScope) {
-        checkStoredValue(invalid, `.ai-scaffold.json risk.complianceScope:${scope}`, scope, VALUE_SETS.complianceScope);
+        checkStoredValue(invalid, '.ai-scaffold.json risk.complianceScope', scope, VALUE_SETS.complianceScope);
       }
     }
   }
@@ -597,8 +597,9 @@ function checkStoredValue(invalid, field, value, allowedValues) {
   if (value === undefined || value === null) {
     return;
   }
+  // Name the value and the allowed set, so the reader can fix it without the source.
   if (typeof value === 'number' || !allowedValues.has(value)) {
-    invalid.push(field);
+    invalid.push(`${field}=${JSON.stringify(value)} (allowed: ${[...allowedValues].join(', ')})`);
   }
 }
 

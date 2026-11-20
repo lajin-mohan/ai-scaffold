@@ -120,3 +120,50 @@ describe('a new install is born at manifest schema 2', { timeout: 60_000 }, () =
     expect(manifest.settingsBase).toEqual(scaffoldSubset(settings));
   });
 });
+
+describe('doctor in a fresh clone or worktree (0.20.1)', { timeout: 60_000 }, () => {
+  const MEMORY = 'Project memory (.claude/MEMORY.md)';
+  const SETTINGS = 'Settings overrides (.claude/settings-overrides.json)';
+  const CONTEXT = 'Setup context values are meaningful';
+  const removeLocalFiles = (target) => {
+    fs.rmSync(path.join(target, '.claude', 'MEMORY.md'));
+    fs.rmSync(path.join(target, '.claude', 'settings-overrides.json'));
+  };
+
+  it('gitignored local files that are absent are unavailable, not a HIGH failure', async () => {
+    const target = await install('fresh-clone');
+    removeLocalFiles(target);
+    const diagnostics = await runDiagnostics(target, {});
+    for (const name of [MEMORY, SETTINGS]) {
+      expect(check(diagnostics, name)).toMatchObject({ state: 'unavailable', reason: 'local-file-absent' });
+      expect(check(diagnostics, name).remedy).toContain('.gitignore');
+    }
+    expect(diagnostics.highFailed).toBe(0);
+    expect(check(diagnostics, CONTEXT).note).toContain('settings-overrides.json is not in this checkout');
+  });
+
+  it('still fails HIGH when an absent local file is not gitignored', async () => {
+    const target = await install('not-ignored');
+    removeLocalFiles(target);
+    const gitignore = path.join(target, '.gitignore');
+    const kept = fs.readFileSync(gitignore, 'utf-8').split(/\r?\n/)
+      .filter((line) => !line.trim().startsWith('.claude/MEMORY.md')).join('\n');
+    fs.writeFileSync(gitignore, kept);
+    const diagnostics = await runDiagnostics(target, {});
+    expect(check(diagnostics, MEMORY)).toMatchObject({ state: 'fail', severity: 'high' });
+    expect(check(diagnostics, SETTINGS).state).toBe('unavailable');
+    expect(diagnostics.highFailed).toBe(1);
+  });
+
+  it('names the invalid setup value and the allowed set', async () => {
+    const target = await install('bad-scope');
+    const file = path.join(target, '.ai-scaffold.json');
+    const manifest = fse.readJsonSync(file);
+    manifest.risk.complianceScope = ['BOGUSSCOPE'];
+    fse.writeJsonSync(file, manifest);
+    const context = check(await runDiagnostics(target, {}), CONTEXT);
+    expect(context.state).toBe('fail');
+    expect(context.message).toContain('.ai-scaffold.json risk.complianceScope="BOGUSSCOPE" (allowed: ');
+    expect(context.note).toBeUndefined();
+  });
+});

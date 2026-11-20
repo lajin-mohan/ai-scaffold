@@ -23,6 +23,10 @@ describe('managedAction: HLD §4 rows', () => {
   const R = recordFor('old\n');
   it.each([
     ['1 unchanged', { current: B('new\n'), record: R, render: B('new\n') }, 'unchanged'],
+    ['1 unchanged (CRLF checkout of the render)', { current: B('new\r\n'), record: R, render: B('new\n') }, 'unchanged'],
+    ['1 unchanged (LF checkout of a CRLF render)', { current: B('new\n'), record: R, render: B('new\r\n') }, 'unchanged'],
+    ['1 unchanged (unrecorded CRLF checkout)', { current: B('new\r\n'), record: undefined, render: B('new\n') }, 'unchanged'],
+    ['3 conflict (lone CR is content, not a line ending)', { current: B('new\r\r\n'), record: R, render: B('new\r\n') }, 'conflict'],
     ['2 replace', { current: B('old\n'), record: R, render: B('new\n') }, 'replace'],
     ['2 replace (CRLF checkout)', { current: B('old\r\n'), record: R, render: B('new\n') }, 'replace'],
     ['3 conflict', { current: B('edited\n'), record: R, render: B('new\n') }, 'conflict'],
@@ -131,7 +135,8 @@ describe('buildUpdatePlan on generated projects', { timeout: 60_000 }, () => {
       ],
     }));
     expect(by('CLAUDE.md')).toMatchObject({ action: 'conflict', reason: 'edited' });
-    expect(by('AGENTS.md').action).toBe('replace');
+    // Same text, CRLF line endings: nothing to update (0.20.1, Engyne issue 3).
+    expect(by('AGENTS.md').action).toBe('unchanged');
     expect(by('constitution.md').action).toBe('user-deleted');
     expect(by(fakeOld).action).toBe('remove');
     expect(by('.claude/settings.local.example.json').action).toBe('unchanged');

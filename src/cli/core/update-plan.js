@@ -5,7 +5,7 @@
  */
 
 import { checkContained, readContained } from './containment.js';
-import { hashRaw, isPristine } from './hashing.js';
+import { hashRaw, isPristine, normalizeCrlf } from './hashing.js';
 import { classifyPath, pathKey } from './ownership.js';
 import { MAX_SETTINGS_BYTES } from './update-manifest.js';
 import { normaliseRel } from './containment.js';
@@ -35,7 +35,9 @@ function entry(path, cls, action, recordAfter, reason = null) {
 /** HLD §4 rows 1–9 for a managed file. C: current bytes or null. */
 export function managedAction({ current, record, render }) {
   const N = render ?? null;
-  if (current && N && current.equals(N)) return { action: 'unchanged', recordAfter: hashRaw(N) };
+  // A checkout that differs from the render only in line endings (git autocrlf
+  // on Windows) is unchanged: rewriting it would only flip its line endings.
+  if (current && N && sameText(current, N)) return { action: 'unchanged', recordAfter: hashRaw(N) };
   if (N) {
     if (!current) return { action: record ? 'user-deleted' : 'add', recordAfter: hashRaw(N) };
     if (!record) return { action: 'conflict', recordAfter: hashRaw(N), reason: 'unrecorded' };
@@ -45,6 +47,10 @@ export function managedAction({ current, record, render }) {
   if (!current) return { action: 'drop-record', recordAfter: 'drop' };
   if (isPristine(current, record)) return { action: 'remove', recordAfter: 'drop' };
   return { action: 'orphan-kept', recordAfter: 'drop', reason: 'retired-but-edited' };
+}
+
+function sameText(a, b) {
+  return a.equals(b) || normalizeCrlf(a).equals(normalizeCrlf(b));
 }
 
 // A record without hashLf cannot prove the CRLF-to-LF direction; when the

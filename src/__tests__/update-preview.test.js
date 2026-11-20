@@ -217,6 +217,8 @@ describe('formatReport', { timeout: 60_000 }, () => {
     expect(text).toContain('conflict: 1');
     expect(text).toContain('.ais-new');
     expect(text).toContain('ais update --apply');
+    // Exit 2 is documented as "merge needed"; the output says so (0.20.1).
+    expect(text).toContain('Exit code 2: conflicts to merge, not an error.');
     expect(text).toMatch(/git safety is checked when you apply|applying will need --allow-no-git/);
   });
 

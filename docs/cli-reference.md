@@ -198,7 +198,9 @@ for `pass`.
 
 `unavailable` means verification was attempted and could not produce evidence —
 `gh` is missing, unauthenticated, or lacks permission; there is no GitHub remote;
-the budget expired; or the API returned a 200 without the field. It is never a
+the budget expired; the API returned a 200 without the field; or a per-checkout
+file listed in `.gitignore` (`.claude/MEMORY.md`, `.claude/settings-overrides.json`)
+is absent, as in a fresh clone or a git worktree. It is never a
 skip and never a pass: a check that could not read `bypass_actors` reports
 `unavailable`, not "no bypass". Each one names the single action that would make
 it available.
@@ -310,6 +312,7 @@ interrupted update, or a rolled-back apply.
 |---|---|
 | `0` | Success |
 | `1` | Failure — including `doctor` critical/high findings and `export-context` finding nothing to back up |
+| `2` | `update` only: there is something for you to merge — a preview found conflicts, or an apply wrote `.ais-new` files. Not an error; nothing was lost |
 
 `doctor` exits `0` when a check is `unavailable` and no check failed: being
 unable to verify is an environment problem the user may not control, while a

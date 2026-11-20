@@ -579,3 +579,20 @@ This file records patterns from mistakes and corrections. Claude reads this at t
   shell heredoc, and read the result back before testing. Where a script must
   build a backslash, prefer `tr '\\' '/'` or `sed` over parameter-expansion
   escapes. Also on Git Bash: `grep -iF` aborts, so fold case with `tr`.
+
+## 2026-11-19 — Doctor and update were only ever checked in the checkout that ran create (0.20.1)
+
+- **What happened:** upgrading a pilot to 0.20.0 in a git worktree, `ais doctor`
+  failed HIGH twice and exited 1: `.claude/MEMORY.md` and
+  `.claude/settings-overrides.json` are gitignored, so no clone or worktree
+  has them, yet doctor treated them as required install files. On the same
+  Windows machine, `ais update` planned `replace` for managed files whose only
+  difference was CRLF from git `autocrlf`, and rewrote them with LF. A unit
+  test even pinned that CRLF case as `replace`.
+- **Why:** every doctor and update test builds the project with `create` in
+  place and runs there, with LF files. Nothing exercised a second checkout of
+  the same repository, which is how every teammate and every worktree sees it.
+- **Rule:** a check that requires a file must first ask whether git carries
+  that file; gitignored per-checkout state is `unavailable` when absent, not a
+  failure. Update and doctor tests that compare content include a CRLF working
+  copy, and "unchanged" means equal apart from line endings.
