@@ -9,7 +9,7 @@ import os from 'os';
 import path from 'path';
 import { classifyDenials, deniedCalls, onAllowList } from '../../scripts/eval-smoke-denials.js';
 import { canonicalTmpRoot, makeWorkRoot, parseSetups, removeWorkRoot, seedProject, setupHashes, setupOrder } from '../../scripts/eval-smoke-setup.js';
-import { ALLOWED_TOOLS, preflightProblems, runOne } from '../../scripts/eval-smoke.js';
+import { agentDiagnosis, ALLOWED_TOOLS, preflightProblems, runOne } from '../../scripts/eval-smoke.js';
 import { compareSummaries, renderComparison, renderSummary, taskStats } from '../../scripts/eval-smoke-report.js';
 
 const CLI = path.resolve(import.meta.dirname, '../../bin/ai-scaffold.js');
@@ -151,5 +151,17 @@ describe('preflight check', () => {
     expect(preflightProblems({ dir, toolUses: uses.slice(0, 2), denials: none, ranClean: true })).toEqual(['npm test was not run']);
     fs.rmSync(path.join(dir, 'preflight.txt'));
     expect(preflightProblems({ dir, toolUses: uses, denials: none, ranClean: false })).toHaveLength(2);
+  });
+
+  it('says why the agent did not finish: exit, missing result, login and the last stderr line', () => {
+    const agent = { timedOut: false, proc: { status: 1, signal: null, error: null, stdout: '', stderr: 'warn\nNot logged in · Please run /login\n' } };
+    expect(agentDiagnosis(agent, { toolUses: [], result: null }))
+      .toBe('exit 1, no result event, 0 tool call(s), not logged in, stderr: warn | Not logged in · Please run /login');
+  });
+
+  it('reports a timeout and an error result instead of an exit code', () => {
+    const agent = { timedOut: true, proc: { status: null, signal: 'SIGTERM', error: { code: 'ETIMEDOUT' }, stdout: '', stderr: '' } };
+    const stream = { toolUses: [{ name: 'Write' }], result: { subtype: 'error_max_budget_usd', is_error: true } };
+    expect(agentDiagnosis(agent, stream)).toBe('timed out, signal SIGTERM, result error_max_budget_usd (error), 1 tool call(s)');
   });
 });

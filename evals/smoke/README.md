@@ -15,7 +15,10 @@ npm pack --pack-destination ../ais-pack
 
 First, a preflight in the same terminal and environment the batch will use.
 It checks that the agent can write, read and run `npm test` in each setup
-without an unexpected permission denial; do not run a batch until it passes:
+without an unexpected permission denial; do not run a batch until it passes.
+A failure prints how the agent ended (exit code, result, tool calls, login,
+last stderr lines) and keeps each setup's stream and stderr under
+`evals/smoke/results/preflight-<time>/runs/` (git-ignored):
 
 ```bash
 node scripts/eval-smoke.js preflight --tarball ../ais-pack/lajin.m-ai-scaffold-<version>.tgz --model <model-id> --setups native,minimal,full
