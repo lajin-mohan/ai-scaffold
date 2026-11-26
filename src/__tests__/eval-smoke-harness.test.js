@@ -9,7 +9,7 @@ import os from 'os';
 import path from 'path';
 import { classifyDenials, deniedCalls, onAllowList } from '../../scripts/eval-smoke-denials.js';
 import { canonicalTmpRoot, makeWorkRoot, parseSetups, removeWorkRoot, seedProject, setupHashes, setupOrder } from '../../scripts/eval-smoke-setup.js';
-import { agentDiagnosis, ALLOWED_TOOLS, preflightProblems, runOne } from '../../scripts/eval-smoke.js';
+import { agentDiagnosis, ALLOWED_TOOLS, LOGIN_HINT, preflightProblems, runOne } from '../../scripts/eval-smoke.js';
 import { compareSummaries, renderComparison, renderSummary, taskStats } from '../../scripts/eval-smoke-report.js';
 
 const CLI = path.resolve(import.meta.dirname, '../../bin/ai-scaffold.js');
@@ -156,7 +156,12 @@ describe('preflight check', () => {
   it('says why the agent did not finish: exit, missing result, login and the last stderr line', () => {
     const agent = { timedOut: false, proc: { status: 1, signal: null, error: null, stdout: '', stderr: 'warn\nNot logged in · Please run /login\n' } };
     expect(agentDiagnosis(agent, { toolUses: [], result: null }))
-      .toBe('exit 1, no result event, 0 tool call(s), not logged in, stderr: warn | Not logged in · Please run /login');
+      .toBe(`exit 1, no result event, 0 tool call(s), ${LOGIN_HINT}, stderr: warn | Not logged in · Please run /login`);
+  });
+
+  it('points a missing login at the user-settings env block that project-only runs skip', () => {
+    expect(LOGIN_HINT).toMatch(/env block of ~\/\.claude\/settings\.json/);
+    expect(LOGIN_HINT).toMatch(/evals\/smoke\/README\.md/);
   });
 
   it('reports a timeout and an error result instead of an exit code', () => {

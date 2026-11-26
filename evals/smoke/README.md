@@ -36,9 +36,18 @@ node scripts/eval-smoke.js run --tarball ../ais-pack/lajin.m-ai-scaffold-<versio
 - A run with an unexpected permission denial is **invalid**: its evidence is
   kept, and the batch stops. Fix the cause and rerun under a new label.
 - `--model` is required and must be the same for before and after runs.
-- Run it from a terminal where `claude` is logged in. A shell started by the
-  Claude desktop app does not pass its login to a child `claude`; the runner
-  stops at the first run that reports "Not logged in".
+- Run it from a terminal where `claude` is logged in. Runs read project
+  settings only (`--setting-sources project`, so your own hooks and settings
+  cannot change the result), which means a login kept in the `env` block of
+  `~/.claude/settings.json` never reaches them. If that is where yours is,
+  export it into the terminal first; the values stay in that shell only. In
+  PowerShell:
+
+  ```powershell
+  $s = Get-Content "$env:USERPROFILE\.claude\settings.json" -Raw | ConvertFrom-Json; foreach ($n in 'ANTHROPIC_AUTH_TOKEN','ANTHROPIC_BASE_URL','CLAUDE_CODE_OAUTH_TOKEN') { if ($s.env.$n) { Set-Item "env:$n" $s.env.$n } }
+  ```
+
+  The runner stops at the first run that reports "Not logged in".
 - On Windows, `claude` is a `.cmd` shim that the runner will not execute; pass
   the real binary, for example
   `--claude "%APPDATA%\npm\node_modules\@anthropic-ai\claude-code\bin\claude.exe"`.

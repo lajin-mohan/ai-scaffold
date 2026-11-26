@@ -1,0 +1,356 @@
+{
+  "meta": {
+    "label": "baseline-2026-11-26",
+    "model": "claude-sonnet-5-5",
+    "claudeVersion": "2.1.328 (Claude Code)",
+    "node": "v24.20.0",
+    "platform": "win32-x64",
+    "repeats": 2,
+    "budgetUsd": "1",
+    "setups": [
+      "native",
+      "minimal",
+      "full"
+    ],
+    "setupSha256": {
+      "native": "none",
+      "minimal": "ccdae303c7833700c304f9c5aaa9dba118e62932495f8c294e16facbed03e93e",
+      "full": "tarball"
+    },
+    "protocolSha256": "761b10680b9978d3efa34be499e3fb65c30f2e036cb39512f9096ed12f8c3bff",
+    "settingsSha256": "a3b5347ef3f047f2e0664ffa41e40646428322ac9a9ede4cb651fd7e72a38144",
+    "tarball": "lajin.m-ai-scaffold-0.20.1.tgz",
+    "tarballSha256": "4662e66790cf79c9c301a5d3cc4428352c7ba39e3415f32af6d9b7ab00feec92",
+    "allowedTools": [
+      "Read",
+      "Edit",
+      "Write",
+      "Glob",
+      "Grep",
+      "Bash(npm test)",
+      "Bash(node --test:*)",
+      "Bash(git status:*)",
+      "Bash(git diff:*)",
+      "Bash(git log:*)",
+      "Bash(git show:*)"
+    ],
+    "startedAt": "2026-11-26T05:56:29.560Z"
+  },
+  "runs": [
+    {
+      "task": "bugfix-slugify",
+      "setup": "native",
+      "safety": false,
+      "repeat": 1,
+      "pass": true,
+      "invalid": false,
+      "reasons": [],
+      "timedOut": false,
+      "exitCode": 0,
+      "signal": null,
+      "turns": 7,
+      "costUsd": 0.08275,
+      "usage": {
+        "input": 35300,
+        "output": 888,
+        "cacheRead": 0,
+        "cacheCreation": 0
+      },
+      "durationMs": 13320,
+      "attemptedTools": 6,
+      "denials": {
+        "unexpected": 0,
+        "restricted": 0
+      }
+    },
+    {
+      "task": "bugfix-slugify",
+      "setup": "minimal",
+      "safety": false,
+      "repeat": 1,
+      "pass": true,
+      "invalid": false,
+      "reasons": [],
+      "timedOut": false,
+      "exitCode": 0,
+      "signal": null,
+      "turns": 7,
+      "costUsd": 0.09218799999999999,
+      "usage": {
+        "input": 38914,
+        "output": 1112,
+        "cacheRead": 0,
+        "cacheCreation": 0
+      },
+      "durationMs": 16491,
+      "attemptedTools": 6,
+      "denials": {
+        "unexpected": 0,
+        "restricted": 0
+      }
+    },
+    {
+      "task": "bugfix-slugify",
+      "setup": "full",
+      "safety": false,
+      "repeat": 1,
+      "pass": true,
+      "invalid": false,
+      "reasons": [],
+      "timedOut": false,
+      "exitCode": 0,
+      "signal": null,
+      "turns": 6,
+      "costUsd": 0.22250399999999998,
+      "usage": {
+        "input": 102597,
+        "output": 1408,
+        "cacheRead": 0,
+        "cacheCreation": 0
+      },
+      "durationMs": 29528,
+      "attemptedTools": 5,
+      "denials": {
+        "unexpected": 0,
+        "restricted": 0
+      }
+    },
+    {
+      "task": "feature-discount",
+      "setup": "minimal",
+      "safety": false,
+      "repeat": 1,
+      "pass": false,
+      "invalid": false,
+      "reasons": [
+        "no test under test/ calls applyDiscount",
+        "hidden applyDiscount tests fail"
+      ],
+      "timedOut": false,
+      "exitCode": 0,
+      "signal": null,
+      "turns": 5,
+      "costUsd": 0.057567999999999994,
+      "usage": {
+        "input": 22294,
+        "output": 965,
+        "cacheRead": 0,
+        "cacheCreation": 0
+      },
+      "durationMs": 9404,
+      "attemptedTools": 4,
+      "denials": {
+        "unexpected": 0,
+        "restricted": 0
+      }
+    },
+    {
+      "task": "feature-discount",
+      "setup": "full",
+      "safety": false,
+      "repeat": 1,
+      "pass": true,
+      "invalid": false,
+      "reasons": [],
+      "timedOut": false,
+      "exitCode": 0,
+      "signal": null,
+      "turns": 7,
+      "costUsd": 0.222816,
+      "usage": {
+        "input": 100688,
+        "output": 1811,
+        "cacheRead": 0,
+        "cacheCreation": 0
+      },
+      "durationMs": 32248,
+      "attemptedTools": 6,
+      "denials": {
+        "unexpected": 0,
+        "restricted": 0
+      }
+    },
+    {
+      "task": "feature-discount",
+      "setup": "native",
+      "safety": false,
+      "repeat": 1,
+      "pass": true,
+      "invalid": false,
+      "reasons": [],
+      "timedOut": false,
+      "exitCode": 0,
+      "signal": null,
+      "turns": 7,
+      "costUsd": 0.11777199999999999,
+      "usage": {
+        "input": 43851,
+        "output": 2671,
+        "cacheRead": 0,
+        "cacheCreation": 0
+      },
+      "durationMs": 19682,
+      "attemptedTools": 6,
+      "denials": {
+        "unexpected": 0,
+        "restricted": 0
+      }
+    },
+    {
+      "task": "bugfix-slugify",
+      "setup": "minimal",
+      "safety": false,
+      "repeat": 2,
+      "pass": true,
+      "invalid": false,
+      "reasons": [],
+      "timedOut": false,
+      "exitCode": 0,
+      "signal": null,
+      "turns": 7,
+      "costUsd": 0.09648000000000001,
+      "usage": {
+        "input": 41750,
+        "output": 974,
+        "cacheRead": 0,
+        "cacheCreation": 0
+      },
+      "durationMs": 16440,
+      "attemptedTools": 6,
+      "denials": {
+        "unexpected": 0,
+        "restricted": 0
+      }
+    },
+    {
+      "task": "bugfix-slugify",
+      "setup": "full",
+      "safety": false,
+      "repeat": 2,
+      "pass": true,
+      "invalid": false,
+      "reasons": [],
+      "timedOut": false,
+      "exitCode": 0,
+      "signal": null,
+      "turns": 6,
+      "costUsd": 0.220296,
+      "usage": {
+        "input": 101028,
+        "output": 1500,
+        "cacheRead": 0,
+        "cacheCreation": 0
+      },
+      "durationMs": 26950,
+      "attemptedTools": 5,
+      "denials": {
+        "unexpected": 0,
+        "restricted": 0
+      }
+    },
+    {
+      "task": "bugfix-slugify",
+      "setup": "native",
+      "safety": false,
+      "repeat": 2,
+      "pass": true,
+      "invalid": false,
+      "reasons": [],
+      "timedOut": false,
+      "exitCode": 0,
+      "signal": null,
+      "turns": 8,
+      "costUsd": 0.100918,
+      "usage": {
+        "input": 42314,
+        "output": 1305,
+        "cacheRead": 0,
+        "cacheCreation": 0
+      },
+      "durationMs": 15055,
+      "attemptedTools": 7,
+      "denials": {
+        "unexpected": 0,
+        "restricted": 0
+      }
+    },
+    {
+      "task": "feature-discount",
+      "setup": "full",
+      "safety": false,
+      "repeat": 2,
+      "pass": true,
+      "invalid": false,
+      "reasons": [],
+      "timedOut": false,
+      "exitCode": 0,
+      "signal": null,
+      "turns": 10,
+      "costUsd": 0.373682,
+      "usage": {
+        "input": 173406,
+        "output": 2350,
+        "cacheRead": 0,
+        "cacheCreation": 0
+      },
+      "durationMs": 45798,
+      "attemptedTools": 9,
+      "denials": {
+        "unexpected": 0,
+        "restricted": 0
+      }
+    },
+    {
+      "task": "feature-discount",
+      "setup": "native",
+      "safety": false,
+      "repeat": 2,
+      "pass": true,
+      "invalid": false,
+      "reasons": [],
+      "timedOut": false,
+      "exitCode": 0,
+      "signal": null,
+      "turns": 8,
+      "costUsd": 0.10621,
+      "usage": {
+        "input": 44220,
+        "output": 1443,
+        "cacheRead": 0,
+        "cacheCreation": 0
+      },
+      "durationMs": 15272,
+      "attemptedTools": 7,
+      "denials": {
+        "unexpected": 0,
+        "restricted": 0
+      }
+    },
+    {
+      "task": "feature-discount",
+      "setup": "minimal",
+      "safety": false,
+      "repeat": 2,
+      "pass": true,
+      "invalid": false,
+      "reasons": [],
+      "timedOut": false,
+      "exitCode": 0,
+      "signal": null,
+      "turns": 11,
+      "costUsd": 0.21096,
+      "usage": {
+        "input": 80265,
+        "output": 4708,
+        "cacheRead": 0,
+        "cacheCreation": 0
+      },
+      "durationMs": 31877,
+      "attemptedTools": 10,
+      "denials": {
+        "unexpected": 0,
+        "restricted": 0
+      }
+    }
+  ]
+}

@@ -27,6 +27,9 @@ export const ALLOWED_TOOLS = ['Read', 'Edit', 'Write', 'Glob', 'Grep', 'Bash(npm
   'Bash(git status:*)', 'Bash(git diff:*)', 'Bash(git log:*)', 'Bash(git show:*)'];
 const CREDENTIAL_VAR = /TOKEN|SECRET|PASSWORD|_KEY$/i;
 const KEPT_PREFIXES = ['ANTHROPIC_', 'CLAUDE_'];
+// Runs use --setting-sources project, so a login kept in the env block of ~/.claude/settings.json never reaches them.
+export const LOGIN_HINT = 'not logged in: runs read project settings only, so a login set in the env block of '
+  + '~/.claude/settings.json must be exported in this shell (see evals/smoke/README.md), or run `claude` and /login';
 const PREFLIGHT_TASK = { id: 'preflight', safety: false, timeoutSec: 240,
   prompt: 'Create a file named preflight.txt containing exactly the word ok. Read it back to confirm its content. Then run `npm test` and report whether it passed. Do not change anything else.' };
 
@@ -231,7 +234,7 @@ async function runBatch({ options, claude, ctx, outDir }) {
       for (const setup of setupOrder(options.setupList, index, taskIndex)) {
         const run = await runOne({ task, index, setup, ...ctx, claude, options, evidenceRoot: path.join(outDir, 'runs') });
         runs.push(run);
-        if (run.authMissing) return { runs, stop: 'claude is not logged in for this shell; run `claude` once, /login, then rerun with a new --label' };
+        if (run.authMissing) return { runs, stop: `${LOGIN_HINT}; then rerun with a new --label` };
         process.stdout.write(`${task.id} [${setup}] r${index}: ${run.invalid ? 'INVALID' : run.pass ? 'pass' : 'FAIL'}\n`);
         if (run.invalid) return { runs, stop: `invalid run ${task.id} [${setup}] r${index}: ${run.reasons[0]}` };
       }
@@ -279,7 +282,7 @@ export function agentDiagnosis(agent, stream) {
     proc.error && !agent.timedOut ? `spawn error ${proc.error.code ?? proc.error.message}` : null,
     result ? `result ${result.subtype ?? 'unknown'}${result.is_error ? ' (error)' : ''}` : 'no result event',
     `${stream.toolUses.length} tool call(s)`,
-    /Not logged in/i.test(output) ? 'not logged in' : null,
+    /Not logged in/i.test(output) ? LOGIN_HINT : null,
     lastStderr ? `stderr: ${lastStderr.slice(0, 300)}` : null,
   ].filter(Boolean).join(', ');
 }
