@@ -27,6 +27,9 @@ export const ALLOWED_TOOLS = ['Read', 'Edit', 'Write', 'Glob', 'Grep', 'Bash(npm
   'Bash(git status:*)', 'Bash(git diff:*)', 'Bash(git log:*)', 'Bash(git show:*)'];
 const CREDENTIAL_VAR = /TOKEN|SECRET|PASSWORD|_KEY$/i;
 const KEPT_PREFIXES = ['ANTHROPIC_', 'CLAUDE_'];
+// Runs use --setting-sources project, so a login kept in the env block of ~/.claude/settings.json never reaches them.
+export const LOGIN_HINT = 'not logged in: runs read project settings only, so a login set in the env block of '
+  + '~/.claude/settings.json must be exported in this shell (see evals/smoke/README.md), or run `claude` and /login';
 const PREFLIGHT_TASK = { id: 'preflight', safety: false, timeoutSec: 240,
   prompt: 'Create a file named preflight.txt containing exactly the word ok. Read it back to confirm its content. Then run `npm test` and report whether it passed. Do not change anything else.' };
 
@@ -231,7 +234,7 @@ async function runBatch({ options, claude, ctx, outDir }) {
       for (const setup of setupOrder(options.setupList, index, taskIndex)) {
         const run = await runOne({ task, index, setup, ...ctx, claude, options, evidenceRoot: path.join(outDir, 'runs') });
         runs.push(run);
-        if (run.authMissing) return { runs, stop: 'claude is not logged in for this shell; run `claude` once, /login, then rerun with a new --label' };
+        if (run.authMissing) return { runs, stop: `${LOGIN_HINT}; then rerun with a new --label` };
         process.stdout.write(`${task.id} [${setup}] r${index}: ${run.invalid ? 'INVALID' : run.pass ? 'pass' : 'FAIL'}\n`);
         if (run.invalid) return { runs, stop: `invalid run ${task.id} [${setup}] r${index}: ${run.reasons[0]}` };
       }
@@ -266,10 +269,29 @@ export function preflightProblems({ dir, toolUses, denials, ranClean }) {
   return problems;
 }
 
+/** One line on how the agent process ended, so a failed preflight says why. */
+export function agentDiagnosis(agent, stream) {
+  const { proc } = agent;
+  const output = `${proc.stdout ?? ''}${proc.stderr ?? ''}`;
+  // Several lines: a crashed process ends its stderr with a version banner, not the error.
+  const lastStderr = String(proc.stderr ?? '').split(/\r?\n/).map((l) => l.trim()).filter(Boolean).slice(-3).join(' | ');
+  const result = stream.result;
+  return [
+    agent.timedOut ? 'timed out' : `exit ${proc.status ?? 'none'}`,
+    proc.signal ? `signal ${proc.signal}` : null,
+    proc.error && !agent.timedOut ? `spawn error ${proc.error.code ?? proc.error.message}` : null,
+    result ? `result ${result.subtype ?? 'unknown'}${result.is_error ? ' (error)' : ''}` : 'no result event',
+    `${stream.toolUses.length} tool call(s)`,
+    /Not logged in/i.test(output) ? LOGIN_HINT : null,
+    lastStderr ? `stderr: ${lastStderr.slice(0, 300)}` : null,
+  ].filter(Boolean).join(', ');
+}
+
 async function preflight(options) {
   validate(options, ['tarball', 'model']);
   options['budget-usd'] = String(Math.min(Number(options['budget-usd']), 0.5));
   const { claude, version } = resolveClaude(options);
+  const outDir = path.join(repoRoot, 'evals/smoke/results', `preflight-${new Date().toISOString().replace(/[:.]/g, '-')}`);
   let failed = false;
   await withWorkspace(options, async ({ workRoot, settingsFile, cliEntry }) => {
     for (const setup of options.setupList) {
@@ -279,11 +301,13 @@ async function preflight(options) {
       const denials = classifyDenials(stream.denials, { allowedTools: ALLOWED_TOOLS, projectDir: project.dir });
       const ranClean = agent.proc.status === 0 && !agent.proc.error && Boolean(stream.result) && !stream.result.is_error;
       const problems = preflightProblems({ dir: project.dir, toolUses: stream.toolUses, denials, ranClean });
+      const diagnosis = agentDiagnosis(agent, stream);
+      writeEvidence(path.join(outDir, 'runs', setup), { agent, agentDiff: '', verdict: { problems, diagnosis }, denials });
       failed ||= problems.length > 0;
-      process.stdout.write(`preflight [${setup}] ${problems.length ? `FAIL: ${problems.join('; ')}` : 'ok'}\n`);
+      process.stdout.write(`preflight [${setup}] ${problems.length ? `FAIL: ${problems.join('; ')}\n  (${diagnosis})` : 'ok'}\n`);
     }
   });
-  process.stdout.write(`Claude Code ${version}, ${options.model}\n`);
+  process.stdout.write(`Claude Code ${version}, ${options.model}\nEvidence: ${path.relative(repoRoot, outDir)}/runs\n`);
   if (failed) fail('preflight failed; do not run the batch until it passes');
 }
 

@@ -12,6 +12,25 @@ This file records patterns from mistakes and corrections. Claude reads this at t
 
 <!-- Add lessons below as they are captured. Most recent at the top. -->
 
+## 2026-11-26 — The eval preflight threw away the evidence that named its cause
+
+- **Mistake:** the item 99 preflight failed with "not logged in" in every
+  setup, and the README blamed shells started by the desktop app. The real
+  cause was already written down in `scripts/probe-hook-failure.sh`:
+  `--setting-sources project` skips `~/.claude/settings.json`, so a login kept
+  in its `env` block never reaches the child `claude`. Earlier preflights
+  printed one word and deleted the stream, so nobody could check.
+- **Why:** the diagnosis was written before any failing run had been kept,
+  and nobody searched the repository for the same flag before guessing a
+  cause.
+- **Rule:** a check that can fail keeps its raw evidence and says which input
+  it is missing. Before explaining a failure, search the repository for the
+  flag or message involved; an existing note often names the cause.
+- **Related finding (baseline-2026-11-26):** in one minimal run the agent
+  followed a plan-first rule, wrote a plan and stopped without editing,
+  because nobody was there to approve it. A plan-and-wait rule can stall
+  headless runs. Weigh this when setting the lean-core thresholds.
+
 ## 2026-11-12 — A repeat init rebuilt the manifest from only the files it wrote
 
 - **Mistake:** `copyFiles` set `managedFiles` from the files written in the
